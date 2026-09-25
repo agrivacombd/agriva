@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import AuthRoleGate from "@/components/auth/AuthRoleGate";
+export const metadata: Metadata={title:"AGRIVA Login & Signup | Farmer, Reseller & Admin",description:"AGRIVA role-based authentication entry for farmers, resellers and administrators.",robots:{index:false,follow:false}};
+export default function AuthPage(){return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f] flex items-center"><section className="mx-auto w-full max-w-5xl px-6 py-12"><p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Account</p><h1 className="mt-3 text-4xl font-black">Login / Create account</h1><p className="mt-3 max-w-2xl text-[#647468]">Choose a role to preview the AGRIVA account flow. Production authentication should use Supabase Auth and server-side role checks.</p><AuthRoleGate/></section></main>}
