@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+:root {
+  --agriva-green: #0b6b4f;
+  --agriva-green-dark: #064b39;
+  --agriva-gold: #c99a3e;
+  --agriva-cream: #f6f8f3;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--agriva-cream);
+  color: #10251d;
+  font-family: Arial, Helvetica, sans-serif;
+}
+button, input { font: inherit; }
