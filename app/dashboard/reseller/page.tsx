@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import ResellerDashboard from "@/components/dashboard/ResellerDashboard";
+export const metadata: Metadata={title:"Reseller Dashboard | AGRIVA",description:"Manage AGRIVA farmer products, referral links and commission tracking from one reseller dashboard.",robots:{index:false,follow:false}};
+export default function ResellerDashboardPage(){return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto max-w-7xl px-6 py-10"><p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Reseller</p><h1 className="mt-2 text-4xl font-black">Reseller Dashboard</h1><p className="mt-3 max-w-3xl text-[#647468]">Discover farmer products, create referral links and monitor your eligible commission.</p><ResellerDashboard/></section></main>}
