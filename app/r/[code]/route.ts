@@ -1,19 +1,3 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-
-export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
-  const { code } = await params;
-  const supabase = await createSupabaseServerClient();
-  const { data: link } = await supabase.from("reseller_links").select("code,product_id,reseller_id").eq("code", code).maybeSingle();
-  if (!link) return NextResponse.json({ error: "Reseller link not found" }, { status: 404 });
-
-  const expiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString();
-  const visitorToken = crypto.randomUUID();
-  await supabase.from("attribution_sessions").insert({ reseller_id: link.reseller_id, product_id: link.product_id, code, visitor_token: visitorToken, expires_at: expiresAt });
-
-  const target = new URL(`/marketplace/${link.product_id}`, request.url);
-  const response = NextResponse.redirect(target);
-  response.cookies.set("agriva_reseller", code, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 15 * 24 * 60 * 60, path: "/" });
-  response.cookies.set("agriva_visitor", visitorToken, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", maxAge: 15 * 24 * 60 * 60, path: "/" });
-  return response;
-}
+import {NextRequest,NextResponse} from "next/server";
+import {createSupabaseServerClient} from "@/lib/supabase/server";
+export async function GET(request:NextRequest,{params}:{params:{code:string}}){const {code}=params;const supabase=await createSupabaseServerClient();const {data:link}=await supabase.from("reseller_links").select("code,product_id,expires_at").eq("code",code).maybeSingle();if(!link||new Date(link.expires_at).getTime()<=Date.now())return NextResponse.json({error:"Reseller link not found or expired"},{status:404});const visitorToken=crypto.randomUUID();const {data:session,error}=await supabase.rpc("record_attribution_session",{p_code:code,p_visitor_token:visitorToken,p_product_id:link.product_id,p_days:15});if(error||!session)return NextResponse.json({error:error?.message||"Could not record referral"},{status:400});const target=new URL(`/marketplace/${link.product_id}`,request.url);const response=NextResponse.redirect(target);response.cookies.set("agriva_reseller",code,{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",maxAge:15*24*60*60,path:"/"});response.cookies.set("agriva_visitor",visitorToken,{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",maxAge:15*24*60*60,path:"/"});return response}
