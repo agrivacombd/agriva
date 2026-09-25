@@ -1,5 +1,7 @@
 -- AGRIVA production marketplace reconciliation.
 -- Adds the schema used by the live cart/COD/referral flows without replacing the legacy referral tables.
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path=public as $$ select exists(select 1 from public.profiles where id=auth.uid() and role='admin') $$;
+
 create table if not exists public.reseller_links (
   id uuid primary key default gen_random_uuid(),
   reseller_id uuid not null references public.profiles(id) on delete cascade,
@@ -81,7 +83,14 @@ begin
 end;$$;
 grant execute on function public.create_reseller_link(uuid,integer) to authenticated;
 
-create or replace function public.finalize_marketplace_cod_order(p_product_id uuid,p_quantity integer,p_shipping_address jsonb,p_reseller_id uuid default null,p_attribution_code text default null)
+create or replace function public.resolve_reseller_attribution(p_code text,p_visitor_token text,p_product_id uuid)
+returns table(reseller_id uuid,expires_at timestamptz)
+language sql security definer set search_path=public as $$
+ select a.reseller_id,a.expires_at from public.attribution_sessions a where a.code=p_code and a.visitor_token=p_visitor_token and a.product_id=p_product_id and a.expires_at>now() order by a.created_at desc limit 1;
+$$;
+grant execute on function public.resolve_reseller_attribution(text,text,uuid) to anon,authenticated;
+
+create or replace function public.finalize_marketplace_cod_order(p_product_id uuid,p_quantity integer,p_shipping_address jsonb,p_reseller_id uuid default null,p_attribution_code text default null,p_attribution_expires_at timestamptz default null)
 returns public.marketplace_orders language plpgsql security definer set search_path=public as $$
 declare uid uuid; p public.products; o public.marketplace_orders; total numeric; commission numeric; rate numeric;
 begin
@@ -92,13 +101,13 @@ begin
  if p.stock<p_quantity then raise exception 'Insufficient stock'; end if;
  rate:=case when p_reseller_id is null then 0 else coalesce(p.reseller_commission_percent,0) end;
  total:=round(p.price*p_quantity,2); commission:=round(total*rate/100,2);
- insert into public.marketplace_orders(buyer_id,farmer_id,reseller_id,product_id,quantity,unit_price,total_amount,commission_percent,commission_amount,attribution_code,payment_method,payment_status,status,shipping_address)
- values(uid,p.farmer_id,p_reseller_id,p.id,p_quantity,p.price,total,rate,commission,p_attribution_code,'cod','pending','processing',p_shipping_address) returning * into o;
+ insert into public.marketplace_orders(buyer_id,farmer_id,reseller_id,product_id,quantity,unit_price,total_amount,commission_percent,commission_amount,attribution_code,attribution_expires_at,payment_method,payment_status,status,shipping_address)
+ values(uid,p.farmer_id,p_reseller_id,p.id,p_quantity,p.price,total,rate,commission,p_attribution_code,p_attribution_expires_at,'cod','pending','processing',p_shipping_address) returning * into o;
  update public.products set stock=stock-p_quantity,updated_at=now() where id=p.id;
  if p_reseller_id is not null then insert into public.reseller_commissions(reseller_id,order_id,amount,status) values(p_reseller_id,o.id,commission,'pending'); end if;
  return o;
 end;$$;
-grant execute on function public.finalize_marketplace_cod_order(uuid,integer,jsonb,uuid,text) to authenticated;
+grant execute on function public.finalize_marketplace_cod_order(uuid,integer,jsonb,uuid,text,timestamptz) to authenticated;
 
 create or replace function public.request_commission_payout(p_amount numeric,p_method text)
 returns public.commission_payouts language plpgsql security definer set search_path=public as $$
