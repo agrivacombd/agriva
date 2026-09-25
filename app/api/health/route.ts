@@ -1,0 +1,3 @@
+import {NextResponse} from "next/server";
+import {createClient} from "@supabase/supabase-js";
+export async function GET(){const checks:{supabase:string;environment:string}={supabase:"not_configured",environment:"ok"};const u=process.env.NEXT_PUBLIC_SUPABASE_URL,k=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;if(!u||!k)return NextResponse.json({ok:false,checks}, {status:503});try{const s=createClient(u,k);const {error}=await s.from("profiles").select("id").limit(1);checks.supabase=error?"error":"ok";return NextResponse.json({ok:checks.supabase==="ok",checks},{status:checks.supabase==="ok"?200:503});}catch{return NextResponse.json({ok:false,checks:{...checks,supabase:"error"}},{status:503})}}
