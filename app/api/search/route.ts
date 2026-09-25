@@ -13,36 +13,21 @@ export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  await supabase.from("search_queries").insert({
-    user_id: user?.id ?? null,
-    query,
-    normalized_query: normalizedQuery,
-    intent: analysis.intent,
-    crop: analysis.crop,
-  });
+  const { data: products } = await supabase.from("products").select("id").eq("status", "active").eq("moderation_status", "approved").ilike("name", `%${query}%`).limit(10);
+  const resultCount = products?.length ?? 0;
 
-  const { data: existing } = await supabase.from("content_opportunities")
-    .select("id, search_count").eq("keyword", normalizedQuery).maybeSingle();
+  await supabase.from("search_queries").insert({ user_id: user?.id ?? null, query, normalized_query: normalizedQuery, intent: analysis.intent, crop: analysis.crop });
 
+  const { data: existing } = await supabase.from("content_opportunities").select("id,search_count").eq("keyword", normalizedQuery).maybeSingle();
   if (existing) {
-    await supabase.from("content_opportunities").update({ search_count: (existing.search_count ?? 0) + 1 }).eq("id", existing.id);
+    await supabase.from("content_opportunities").update({ search_count: (existing.search_count ?? 0) + 1, last_seen_at: new Date().toISOString(), result_count: resultCount }).eq("id", existing.id);
   } else {
-    await supabase.from("content_opportunities").insert({
-      keyword: normalizedQuery,
-      intent: analysis.intent,
-      search_count: 1,
-      opportunity_type: analysis.opportunityType,
-      status: "open",
-    });
+    await supabase.from("content_opportunities").insert({ keyword: normalizedQuery, normalized_keyword: normalizedQuery, intent: analysis.intent, search_count: 1, result_count: resultCount, opportunity_type: analysis.opportunityType, status: "open" });
   }
 
-  return NextResponse.json({
-    query,
-    normalizedQuery,
-    ...analysis,
-    aiConfigured: Boolean(process.env.OPENAI_API_KEY),
-    answer: analysis.opportunityType === "product"
-      ? `AGRIVA detected a product-intent query about ${analysis.topic}.`
-      : `AGRIVA detected an information opportunity about ${analysis.topic}.`,
-  });
+  if (resultCount === 0) {
+    await supabase.from("content_opportunities").upsert({ keyword: normalizedQuery, normalized_keyword: normalizedQuery, intent: analysis.intent, search_count: existing?.search_count ? existing.search_count + 1 : 1, result_count: 0, opportunity_type: analysis.opportunityType === "product" ? "both" : "article", status: "open", last_seen_at: new Date().toISOString() }, { onConflict: "normalized_keyword,opportunity_type" });
+  }
+
+  return NextResponse.json({ query, normalizedQuery, resultCount, zeroResult: resultCount === 0, ...analysis, aiConfigured: Boolean(process.env.OPENAI_API_KEY) });
 }
