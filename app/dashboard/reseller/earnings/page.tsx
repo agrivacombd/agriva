@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+import ResellerEarnings from "@/components/dashboard/ResellerEarnings";
+export const metadata: Metadata={title:"Reseller Earnings & Commission | AGRIVA",description:"Track AGRIVA reseller referrals, pending commissions, approved earnings, reversals and payouts.",robots:{index:false,follow:false}};
+export default function Page(){return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto max-w-7xl px-6 py-12"><p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Reseller</p><h1 className="mt-3 text-4xl font-black">Earnings & Commission</h1><p className="mt-3 max-w-3xl text-[#647468]">Track referral performance, commission status and payout history. The 15-day attribution window is controlled server-side.</p><ResellerEarnings/></section></main>}
