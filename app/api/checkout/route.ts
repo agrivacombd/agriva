@@ -23,16 +23,26 @@ export async function POST(request: NextRequest) {
   let attributionExpiresAt: string | null = null;
   const cookieCode = request.cookies.get("agriva_reseller")?.value;
   const visitorToken = request.cookies.get("agriva_visitor")?.value;
+
   if (cookieCode && visitorToken) {
-    const { data: attribution } = await supabase.rpc("resolve_reseller_attribution", {
+    const { data: rawAttribution, error: attributionError } = await supabase.rpc("resolve_reseller_attribution", {
       p_code: cookieCode,
       p_visitor_token: visitorToken,
       p_product_id: productId,
     }).maybeSingle();
 
-    const typedAttribution = attribution as ResellerAttribution | null;
-    resellerId = typedAttribution?.reseller_id ?? null;
-    attributionExpiresAt = typedAttribution?.expires_at ?? null;
+    if (!attributionError && rawAttribution) {
+      const attribution: ResellerAttribution = {
+        reseller_id: typeof (rawAttribution as Record<string, unknown>).reseller_id === "string"
+          ? (rawAttribution as Record<string, unknown>).reseller_id as string
+          : null,
+        expires_at: typeof (rawAttribution as Record<string, unknown>).expires_at === "string"
+          ? (rawAttribution as Record<string, unknown>).expires_at as string
+          : null,
+      };
+      resellerId = attribution.reseller_id;
+      attributionExpiresAt = attribution.expires_at;
+    }
   }
 
   const { data: order, error } = await supabase.rpc("finalize_marketplace_cod_order", {
@@ -43,6 +53,7 @@ export async function POST(request: NextRequest) {
     p_attribution_code: resellerId ? cookieCode : null,
     p_attribution_expires_at: resellerId ? attributionExpiresAt : null,
   });
+
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!order) return NextResponse.json({ error: "Order could not be created" }, { status: 400 });
 
