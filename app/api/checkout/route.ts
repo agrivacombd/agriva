@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+interface ResellerAttribution {
+  reseller_id: string | null;
+  expires_at: string | null;
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -24,8 +29,10 @@ export async function POST(request: NextRequest) {
       p_visitor_token: visitorToken,
       p_product_id: productId,
     }).maybeSingle();
-    resellerId = attribution?.reseller_id ?? null;
-    attributionExpiresAt = attribution?.expires_at ?? null;
+
+    const typedAttribution = attribution as ResellerAttribution | null;
+    resellerId = typedAttribution?.reseller_id ?? null;
+    attributionExpiresAt = typedAttribution?.expires_at ?? null;
   }
 
   const { data: order, error } = await supabase.rpc("finalize_marketplace_cod_order", {
@@ -37,5 +44,13 @@ export async function POST(request: NextRequest) {
     p_attribution_expires_at: resellerId ? attributionExpiresAt : null,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ orderId: order.id, total: Number(order.total_amount), commission: Number(order.commission_amount), resellerAttributed: Boolean(order.reseller_id), paymentMethod: "cod" });
+  if (!order) return NextResponse.json({ error: "Order could not be created" }, { status: 400 });
+
+  return NextResponse.json({
+    orderId: order.id,
+    total: Number(order.total_amount),
+    commission: Number(order.commission_amount),
+    resellerAttributed: Boolean(order.reseller_id),
+    paymentMethod: "cod",
+  });
 }
