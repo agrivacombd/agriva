@@ -1,0 +1,28 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Netlify's current Next.js runtime uses the OpenNext adapter automatically.
+# Keep secrets out of this file; configure them in Netlify Site configuration.
+
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build"
+
+[context.branch-deploy]
+  command = "npm run build"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "DENY"
+
+[template]
+  required-extensions = ["supabase"]
