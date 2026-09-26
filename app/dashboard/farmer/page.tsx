@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
 import FarmerDashboard from "@/components/dashboard/FarmerDashboard";
 export const metadata: Metadata={title:"Farmer Dashboard | AGRIVA",description:"Manage your AGRIVA farm, products, reseller commission, orders and farm diary from one dashboard.",robots:{index:false,follow:false}};
+export const dynamic = "force-dynamic";
 export default function FarmerDashboardPage(){return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto max-w-7xl px-6 py-10"><p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Farmer</p><h1 className="mt-2 text-4xl font-black">Farmer Dashboard</h1><p className="mt-3 max-w-3xl text-[#647468]">Manage your farm records, marketplace products, reseller commission and orders in one place.</p><FarmerDashboard/></section></main>}

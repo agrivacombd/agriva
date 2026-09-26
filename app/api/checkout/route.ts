@@ -57,11 +57,13 @@ export async function POST(request: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!order) return NextResponse.json({ error: "Order could not be created" }, { status: 400 });
 
+  const rawOrder = order as Record<string, unknown>;
+
   return NextResponse.json({
-    orderId: order.id,
-    total: Number(order.total_amount),
-    commission: Number(order.commission_amount),
-    resellerAttributed: Boolean(order.reseller_id),
+    orderId: rawOrder.id,
+    total: Number(rawOrder.total_amount),
+    commission: Number(rawOrder.commission_amount),
+    resellerAttributed: Boolean(rawOrder.reseller_id),
     paymentMethod: "cod",
   });
 }
