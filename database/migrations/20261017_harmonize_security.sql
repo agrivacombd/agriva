@@ -36,9 +36,6 @@ update public.content_opportunities
 set normalized_keyword = lower(trim(keyword))
 where normalized_keyword is null;
 
-alter table public.content_opportunities
-  alter column normalized_keyword set default '';
-
 -- Replace generated CHECK constraints for the two fields with compatible values.
 do $$
 declare c record;
@@ -73,6 +70,26 @@ drop policy if exists "approved active products public" on public.products;
 create policy "approved active products public"
   on public.products for select
   using ((status = 'active' and moderation_status = 'approved') or public.is_admin());
+
+-- Prevent ordinary users from changing their own role to admin.
+create or replace function public.prevent_profile_role_escalation()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.role is distinct from old.role and not public.is_admin() then
+    raise exception 'Only an admin can change profile roles';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists prevent_profile_role_escalation on public.profiles;
+create trigger prevent_profile_role_escalation
+before update of role on public.profiles
+for each row execute function public.prevent_profile_role_escalation();
 
 -- Ensure admin management remains restricted to admins.
 drop policy if exists "admins manage opportunities" on public.content_opportunities;
