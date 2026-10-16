@@ -35,9 +35,9 @@ export default function AIPage() {
       } catch {
         throw new Error(response.ok
           ? "সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
-          : \`সার্ভারে সমস্যা হয়েছে (HTTP \${response.status})। একটু পরে আবার চেষ্টা করুন।\`);
+          : `সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
       }
-      if (!response.ok) throw new Error(data.error || \`অনুরোধটি সম্পন্ন হয়নি (HTTP \${response.status})।\`);
+      if (!response.ok) throw new Error(data.error || `অনুরোধটি সম্পন্ন হয়নি (HTTP ${response.status})।`);
       if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setMessages((current) => [...current, { role: "assistant", content: data.answer! }]);
       if (data.source === "openai") {
