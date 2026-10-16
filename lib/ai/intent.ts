@@ -2,8 +2,8 @@ export type SearchIntent = "product" | "crop_health" | "information";
 
 export function detectIntent(query: string): SearchIntent {
   const text = query.toLowerCase();
-  if (/buy|price|product|fertilizer|medicine|সার|ওষুধ|কিনতে|দাম/.test(text)) return "product";
-  if (/disease|pest|leaf|spot|রোগ|পোকা|পাতা|দাগ/.test(text)) return "crop_health";
+  if (/(\bbuy\b|\bprice\b|\bproduct\b|\bshop\b|\bseed\b|\bseeds\b|\bfertilizer\b|\bpesticide\b|\bmedicine\b|সার|ওষুধ|কিনতে|দাম|বীজ|পণ্য|কোথায় পাব|কোথায় পাব|বিক্রেতা)/i.test(text)) return "product";
+  if (/(\bdisease\b|\bpest\b|\bleaf\b|\bspot\b|\bdiagnos\b|\binfected\b|রোগ|পোকা|পাতা|দাগ|আক্রান্ত|হলুদ হয়ে|হলুদ হয়ে|পচে)/i.test(text)) return "crop_health";
   return "information";
 }
 
