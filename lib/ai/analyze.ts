@@ -16,8 +16,8 @@ export async function analyzeSearch(query: string): Promise<SearchAnalysis> {
   const topic = text;
   const opportunityType = intent === "product" ? "product" : "article";
   const suggestedTitle = opportunityType === "product"
-    ? \`AGRIVA product opportunity: \${text}\`
-    : \`AGRIVA guide: \${text}\`;
+    ? `AGRIVA product opportunity: ${text}`
+    : `AGRIVA guide: ${text}`;
 
   return { intent, topic, crop, suggestedTitle, opportunityType };
 }
