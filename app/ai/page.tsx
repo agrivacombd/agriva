@@ -27,12 +27,23 @@ export default function AIPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: value }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "এই মুহূর্তে উত্তর পাওয়া যায়নি।");
-      setMessages((current) => [...current, { role: "assistant", content: data.answer }]);
-      setNotice(data.source === "openai" ? "AGRIVA AI · AI-generated guidance" : "AGRIVA AI · সহায়ক সাধারণ পরামর্শ");
+      const raw = await response.text();
+      let data: { answer?: string; source?: string; error?: string };
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(response.ok
+          ? "সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
+          : `সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
+      }
+      if (!response.ok) throw new Error(data.error || `অনুরোধটি সম্পন্ন হয়নি (HTTP ${response.status})।`);
+      if (typeof data.answer !== "string" || !data.answer.trim()) {
+        throw new Error("উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
+      }
+      setMessages((current) => [...current, { role: "assistant", content: data.answer! }]);
+      setNotice(data.source === "openai" ? "AGRIVA AI · AI উত্তর" : "AGRIVA AI · সাধারণ সহায়ক উত্তর");
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      setNotice(error instanceof Error ? error.message : "ইন্টারনেট সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
     }
