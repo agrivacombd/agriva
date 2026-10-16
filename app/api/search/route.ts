@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         .select("id")
         .eq("status", "active")
         .eq("moderation_status", "approved")
-        .ilike("name", `%${query.replace(/[,%_]/g, " ")}%`)
+        .ilike("name", \`%\${query.replace(/[,%_]/g, " ")}%\`)
         .limit(10);
       resultCount = products?.length ?? 0;
 
@@ -66,23 +66,19 @@ export async function POST(request: NextRequest) {
       console.error("Optional Smart Search analytics failed:", error);
     }
 
-    const payload = {
+    return NextResponse.json({
       query,
       normalizedQuery,
       resultCount,
       zeroResult: resultCount === 0,
       answer: answer.answer?.trim() || "আপনার প্রশ্নটি পেয়েছি। আরও নির্দিষ্ট পরামর্শ দিতে ফসলের নাম, এলাকা এবং সমস্যার বিস্তারিত লিখুন।",
       answerSource: answer.source || "built-in",
+      fallbackReason: answer.fallbackReason,
       aiConfigured: answer.source === "openai",
       ...analysis,
-    };
-    return NextResponse.json(payload, {
-      headers: { "Cache-Control": "no-store, max-age=0" },
-    });
+    }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (error) {
     console.error("Smart Search failed:", error);
-    return NextResponse.json({
-      error: "Smart Search উত্তর তৈরি করতে পারেনি। অনুগ্রহ করে আবার চেষ্টা করুন।",
-    }, { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } });
+    return NextResponse.json({ error: "Smart Search উত্তর তৈরি করতে পারেনি। অনুগ্রহ করে আবার চেষ্টা করুন।" }, { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } });
   }
 }
