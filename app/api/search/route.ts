@@ -7,6 +7,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function escapeLike(value: string) {
+  return value.replace(/[,%_()]/g, " ").replace(/\s+/g, " ").trim();
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
@@ -18,19 +22,32 @@ export async function POST(request: NextRequest) {
     const normalizedQuery = normalizeQuery(query);
     const answer = await answerAgricultureQuestion(query, analysis.intent);
     let resultCount = 0;
+    let products: Array<{ id: string; name: string; category: string | null; description: string | null }> = [];
 
     try {
       const supabase = await createSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: products, error: productError } = await supabase
-        .from("products")
-        .select("id")
-        .eq("status", "active")
-        .eq("moderation_status", "approved")
-        .ilike("name", "%" + query.replace(/[,%_]/g, " ") + "%")
-        .limit(10);
-      if (productError) console.error("Smart Search product lookup failed:", productError.message);
-      resultCount = products?.length ?? 0;
+      const safeQuery = escapeLike(query);
+      const terms = safeQuery.split(" ").filter((term) => term.length >= 2).slice(0, 6);
+      if (terms.length) {
+        const orFilter = terms.flatMap((term) => [
+          "name.ilike.%" + term + "%",
+          "category.ilike.%" + term + "%",
+          "description.ilike.%" + term + "%",
+        ]).join(",");
+        const { data, error: productError } = await supabase
+          .from("products")
+          .select("id,name,category,description")
+          .eq("status", "active")
+          .or(orFilter)
+          .limit(10);
+        if (productError) {
+          console.error("Smart Search product lookup failed:", productError.message);
+        } else {
+          products = data ?? [];
+          resultCount = products.length;
+        }
+      }
 
       const { error: logError } = await supabase.from("search_queries").insert({
         user_id: user?.id ?? null,
@@ -38,43 +55,18 @@ export async function POST(request: NextRequest) {
         normalized_query: normalizedQuery,
         intent: analysis.intent,
         crop: analysis.crop,
+        result_count: resultCount,
       });
       if (logError) console.error("Smart Search query logging failed:", logError.message);
-
-      const { data: existing, error: opportunityReadError } = await supabase
-        .from("content_opportunities")
-        .select("id,search_count")
-        .eq("keyword", normalizedQuery)
-        .maybeSingle();
-      if (opportunityReadError) console.error("Smart Search opportunity lookup failed:", opportunityReadError.message);
-
-      if (existing) {
-        const { error } = await supabase.from("content_opportunities").update({
-          search_count: (existing.search_count ?? 0) + 1,
-          last_seen_at: new Date().toISOString(),
-          result_count: resultCount,
-        }).eq("id", existing.id);
-        if (error) console.error("Smart Search opportunity update failed:", error.message);
-      } else if (!opportunityReadError) {
-        const { error } = await supabase.from("content_opportunities").insert({
-          keyword: normalizedQuery,
-          normalized_keyword: normalizedQuery,
-          intent: analysis.intent,
-          search_count: 1,
-          result_count: resultCount,
-          opportunity_type: analysis.opportunityType,
-          status: "open",
-        });
-        if (error) console.error("Smart Search opportunity insert failed:", error.message);
-      }
     } catch (error) {
-      console.error("Optional Smart Search analytics failed:", error);
+      console.error("Optional Smart Search database work failed:", error);
     }
 
     return NextResponse.json({
       query,
       normalizedQuery,
       resultCount,
+      products,
       zeroResult: resultCount === 0,
       answer: answer.answer.trim() || "আপনার প্রশ্নটি পেয়েছি। আরও নির্দিষ্ট পরামর্শ দিতে ফসলের নাম, এলাকা এবং সমস্যার বিস্তারিত লিখুন।",
       answerSource: answer.source,
