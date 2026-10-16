@@ -22,37 +22,41 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = await createSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: products } = await supabase
+      const { data: products, error: productError } = await supabase
         .from("products")
         .select("id")
         .eq("status", "active")
         .eq("moderation_status", "approved")
-        .ilike("name", \`%\${query.replace(/[,%_]/g, " ")}%\`)
+        .ilike("name", "%" + query.replace(/[,%_]/g, " ") + "%")
         .limit(10);
+      if (productError) console.error("Smart Search product lookup failed:", productError.message);
       resultCount = products?.length ?? 0;
 
-      await supabase.from("search_queries").insert({
+      const { error: logError } = await supabase.from("search_queries").insert({
         user_id: user?.id ?? null,
         query,
         normalized_query: normalizedQuery,
         intent: analysis.intent,
         crop: analysis.crop,
       });
+      if (logError) console.error("Smart Search query logging failed:", logError.message);
 
-      const { data: existing } = await supabase
+      const { data: existing, error: opportunityReadError } = await supabase
         .from("content_opportunities")
         .select("id,search_count")
         .eq("keyword", normalizedQuery)
         .maybeSingle();
+      if (opportunityReadError) console.error("Smart Search opportunity lookup failed:", opportunityReadError.message);
 
       if (existing) {
-        await supabase.from("content_opportunities").update({
+        const { error } = await supabase.from("content_opportunities").update({
           search_count: (existing.search_count ?? 0) + 1,
           last_seen_at: new Date().toISOString(),
           result_count: resultCount,
         }).eq("id", existing.id);
-      } else {
-        await supabase.from("content_opportunities").insert({
+        if (error) console.error("Smart Search opportunity update failed:", error.message);
+      } else if (!opportunityReadError) {
+        const { error } = await supabase.from("content_opportunities").insert({
           keyword: normalizedQuery,
           normalized_keyword: normalizedQuery,
           intent: analysis.intent,
@@ -61,6 +65,7 @@ export async function POST(request: NextRequest) {
           opportunity_type: analysis.opportunityType,
           status: "open",
         });
+        if (error) console.error("Smart Search opportunity insert failed:", error.message);
       }
     } catch (error) {
       console.error("Optional Smart Search analytics failed:", error);
@@ -71,8 +76,8 @@ export async function POST(request: NextRequest) {
       normalizedQuery,
       resultCount,
       zeroResult: resultCount === 0,
-      answer: answer.answer?.trim() || "আপনার প্রশ্নটি পেয়েছি। আরও নির্দিষ্ট পরামর্শ দিতে ফসলের নাম, এলাকা এবং সমস্যার বিস্তারিত লিখুন।",
-      answerSource: answer.source || "built-in",
+      answer: answer.answer.trim() || "আপনার প্রশ্নটি পেয়েছি। আরও নির্দিষ্ট পরামর্শ দিতে ফসলের নাম, এলাকা এবং সমস্যার বিস্তারিত লিখুন।",
+      answerSource: answer.source,
       fallbackReason: answer.fallbackReason,
       aiConfigured: answer.source === "openai",
       ...analysis,
