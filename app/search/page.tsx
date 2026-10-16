@@ -7,12 +7,22 @@ type SearchResult = {
   intent: string;
   answer: string;
   answerSource?: "openai" | "built-in";
+  fallbackReason?: "missing_api_key" | "provider_error" | "empty_response";
+  aiConfigured?: boolean;
   resultCount: number;
   zeroResult: boolean;
   opportunityType?: string;
   suggestedTitle: string;
   error?: string;
 };
+
+function aiStatus(result: SearchResult) {
+  if (result.answerSource === "openai") return "AGRIVA AI · AI উত্তর";
+  if (result.fallbackReason === "missing_api_key") return "সাধারণ সহায়ক উত্তর · OPENAI_API_KEY সেট করা নেই";
+  if (result.fallbackReason === "provider_error") return "সাধারণ সহায়ক উত্তর · AI provider-এ সংযোগ হয়নি";
+  if (result.fallbackReason === "empty_response") return "সাধারণ সহায়ক উত্তর · AI থেকে খালি response এসেছে";
+  return "সাধারণ সহায়ক উত্তর";
+}
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
@@ -30,6 +40,7 @@ export default function SearchPage() {
       const response = await fetch("/api/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ query: query.trim() }),
       });
       const raw = await response.text();
@@ -39,9 +50,9 @@ export default function SearchPage() {
       } catch {
         throw new Error(response.ok
           ? "সার্চ সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
-          : `সার্চ সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
+          : \`সার্চ সার্ভারে সমস্যা হয়েছে (HTTP \${response.status})। একটু পরে আবার চেষ্টা করুন।\`);
       }
-      if (!response.ok) throw new Error(data.error || `অনুসন্ধান করা যায়নি (HTTP ${response.status})।`);
+      if (!response.ok) throw new Error(data.error || \`অনুসন্ধান করা যায়নি (HTTP \${response.status})।\`);
       if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("এই অনুসন্ধানের উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setResult(data);
     } catch (err) {
@@ -74,13 +85,15 @@ export default function SearchPage() {
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[#e7f0e6] px-3 py-1 text-xs font-bold">প্রশ্নের ধরন: {result.intent}</span>
               <span className="rounded-full bg-[#edf2f7] px-3 py-1 text-xs font-bold">মিল পাওয়া পণ্য: {result.resultCount ?? 0}</span>
-              <span className="rounded-full bg-[#fff4d7] px-3 py-1 text-xs font-bold">{result.answerSource === "openai" ? "AI উত্তর" : "সাধারণ সহায়ক উত্তর"}</span>
+              <span className="rounded-full bg-[#fff4d7] px-3 py-1 text-xs font-bold">{aiStatus(result)}</span>
             </div>
             <div>
               <h2 className="text-xl font-bold">AGRIVA-এর পরামর্শ</h2>
               <p className="mt-3 whitespace-pre-wrap leading-7 text-[#425348]">{result.answer}</p>
             </div>
-            {result.zeroResult && <p className="rounded-2xl bg-[#fff8e7] p-4 text-sm leading-6 text-[#73561a]">এই প্রশ্নের সঙ্গে মিলে এমন অনুমোদিত পণ্য এখন পাওয়া যায়নি। প্রশ্নটি ভবিষ্যৎ কৃষি কনটেন্ট বা পণ্যের চাহিদা বোঝার জন্য সংরক্ষণ করা হতে পারে।</p>}
+            {result.fallbackReason === "missing_api_key" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">লাইভ AI চালু করতে Vercel Project Settings → Environment Variables-এ OPENAI_API_KEY যোগ করে নতুন deployment দিন। API key কখনো public page-এ রাখবেন না।</p>}
+            {result.fallbackReason === "provider_error" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">AI provider-এ সংযোগ ব্যর্থ হয়েছে। Vercel Runtime Logs পরীক্ষা করুন; সাধারণ সহায়ক উত্তর দেখানো হয়েছে।</p>}
+            {result.zeroResult && <p className="rounded-2xl bg-[#fff8e7] p-4 text-sm leading-6 text-[#73561a]">এই প্রশ্নের সঙ্গে মিলে এমন অনুমোদিত পণ্য পাওয়া যায়নি। পণ্যের নাম বা category দিয়ে আবার চেষ্টা করুন।</p>}
             <p className="text-xs leading-5 text-[#657467]">কৃষি পরামর্শ সাধারণ তথ্য হিসেবে দেওয়া হয়। রোগ বা কীটনাশক ব্যবহারের সিদ্ধান্তের আগে স্থানীয় কৃষি কর্মকর্তার সঙ্গে যাচাই করুন।</p>
           </section>
         )}
