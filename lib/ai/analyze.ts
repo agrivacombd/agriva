@@ -11,7 +11,9 @@ export type SearchAnalysis = {
 export async function analyzeSearch(query: string): Promise<SearchAnalysis> {
   const intent = detectIntent(query);
   const text = query.trim();
-  const cropMatch = text.match(/\b(black rice|mango|rice|paddy|ধান|কালো চাল|কালো ধান|আম|wheat|গম|tomato|টমেটো|potato|আলু|chili|মরিচ|maize|ভুট্টা)\b/i);
+  // Bengali Unicode letters do not form JavaScript \b word boundaries.
+  // Keep explicit boundaries for English names and match Bengali names directly.
+  const cropMatch = text.match(/black rice|mango|\brice\b|\bpaddy\b|ধান|কালো চাল|কালো ধান|আম|\bwheat\b|গম|\btomato\b|টমেটো|\bpotato\b|আলু|\bchili\b|মরিচ|\bmaize\b|ভুট্টা/i);
   const crop = cropMatch?.[0] ?? null;
   const topic = text;
   const opportunityType = intent === "product" ? "product" : "article";
