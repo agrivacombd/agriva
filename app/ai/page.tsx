@@ -25,23 +25,30 @@ export default function AIPage() {
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         body: JSON.stringify({ question: value }),
       });
       const raw = await response.text();
-      let data: { answer?: string; source?: string; error?: string };
+      let data: { answer?: string; source?: string; fallbackReason?: string; error?: string };
       try {
         data = JSON.parse(raw);
       } catch {
         throw new Error(response.ok
           ? "সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
-          : `সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
+          : \`সার্ভারে সমস্যা হয়েছে (HTTP \${response.status})। একটু পরে আবার চেষ্টা করুন।\`);
       }
-      if (!response.ok) throw new Error(data.error || `অনুরোধটি সম্পন্ন হয়নি (HTTP ${response.status})।`);
-      if (typeof data.answer !== "string" || !data.answer.trim()) {
-        throw new Error("উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
-      }
+      if (!response.ok) throw new Error(data.error || \`অনুরোধটি সম্পন্ন হয়নি (HTTP \${response.status})।\`);
+      if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setMessages((current) => [...current, { role: "assistant", content: data.answer! }]);
-      setNotice(data.source === "openai" ? "AGRIVA AI · AI উত্তর" : "AGRIVA AI · সাধারণ সহায়ক উত্তর");
+      if (data.source === "openai") {
+        setNotice("AGRIVA AI · AI উত্তর");
+      } else if (data.fallbackReason === "missing_api_key") {
+        setNotice("সাধারণ সহায়ক উত্তর · Vercel-এ OPENAI_API_KEY সেট করা নেই");
+      } else if (data.fallbackReason === "provider_error") {
+        setNotice("সাধারণ সহায়ক উত্তর · AI provider-এ সংযোগ ব্যর্থ; Vercel Runtime Logs পরীক্ষা করুন");
+      } else {
+        setNotice("সাধারণ সহায়ক উত্তর · AI provider থেকে উত্তর পাওয়া যায়নি");
+      }
     } catch (error) {
       setNotice(error instanceof Error ? error.message : "ইন্টারনেট সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
