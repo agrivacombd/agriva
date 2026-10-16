@@ -11,13 +11,13 @@ export type SearchAnalysis = {
 export async function analyzeSearch(query: string): Promise<SearchAnalysis> {
   const intent = detectIntent(query);
   const text = query.trim();
-  const cropMatch = text.match(/\b(rice|ধান|wheat|গম|tomato|টমেটো|potato|আলু|chili|মরিচ|maize|ভুট্টা)\b/i);
+  const cropMatch = text.match(/\b(black rice|mango|rice|paddy|ধান|কালো চাল|কালো ধান|আম|wheat|গম|tomato|টমেটো|potato|আলু|chili|মরিচ|maize|ভুট্টা)\b/i);
   const crop = cropMatch?.[0] ?? null;
   const topic = text;
   const opportunityType = intent === "product" ? "product" : "article";
   const suggestedTitle = opportunityType === "product"
-    ? `AGRIVA product opportunity: ${text}`
-    : `AGRIVA guide: ${text}`;
+    ? \`AGRIVA product opportunity: \${text}\`
+    : \`AGRIVA guide: \${text}\`;
 
   return { intent, topic, crop, suggestedTitle, opportunityType };
 }
