@@ -14,6 +14,7 @@ type SearchResult = {
   opportunityType?: string;
   suggestedTitle: string;
   error?: string;
+  products?: Array<{ id: string; name: string; category: string | null; description: string | null }>;
 };
 
 function aiStatus(result: SearchResult) {
@@ -93,7 +94,21 @@ export default function SearchPage() {
             </div>
             {result.fallbackReason === "missing_api_key" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">লাইভ AI চালু করতে Vercel Project Settings → Environment Variables-এ OPENAI_API_KEY যোগ করে নতুন deployment দিন। API key কখনো public page-এ রাখবেন না।</p>}
             {result.fallbackReason === "provider_error" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">AI provider-এ সংযোগ ব্যর্থ হয়েছে। Vercel Runtime Logs পরীক্ষা করুন; সাধারণ সহায়ক উত্তর দেখানো হয়েছে।</p>}
-            {result.zeroResult && <p className="rounded-2xl bg-[#fff8e7] p-4 text-sm leading-6 text-[#73561a]">এই প্রশ্নের সঙ্গে মিলে এমন অনুমোদিত পণ্য পাওয়া যায়নি। পণ্যের নাম বা category দিয়ে আবার চেষ্টা করুন।</p>}
+            {result.products && result.products.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold">মিল পাওয়া পণ্য</h2>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  {result.products.map((product) => (
+                    <article key={product.id} className="rounded-2xl border border-[#e0e8dc] p-4">
+                      <h3 className="font-bold">{product.name}</h3>
+                      {product.category && <p className="mt-1 text-xs font-semibold text-emerald-800">{product.category}</p>}
+                      {product.description && <p className="mt-2 text-sm leading-6 text-[#657467]">{product.description}</p>}
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+            {result.zeroResult && <p className="rounded-2xl bg-[#fff8e7] p-4 text-sm leading-6 text-[#73561a]">এই প্রশ্নের সঙ্গে মিলে এমন পণ্য পাওয়া যায়নি। পণ্যের নাম, category বা বর্ণনার শব্দ দিয়ে আবার চেষ্টা করুন।</p>}
             <p className="text-xs leading-5 text-[#657467]">কৃষি পরামর্শ সাধারণ তথ্য হিসেবে দেওয়া হয়। রোগ বা কীটনাশক ব্যবহারের সিদ্ধান্তের আগে স্থানীয় কৃষি কর্মকর্তার সঙ্গে যাচাই করুন।</p>
           </section>
         )}
