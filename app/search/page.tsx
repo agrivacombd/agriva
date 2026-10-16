@@ -50,9 +50,9 @@ export default function SearchPage() {
       } catch {
         throw new Error(response.ok
           ? "সার্চ সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
-          : \`সার্চ সার্ভারে সমস্যা হয়েছে (HTTP \${response.status})। একটু পরে আবার চেষ্টা করুন।\`);
+          : `সার্চ সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
       }
-      if (!response.ok) throw new Error(data.error || \`অনুসন্ধান করা যায়নি (HTTP \${response.status})।\`);
+      if (!response.ok) throw new Error(data.error || `অনুসন্ধান করা যায়নি (HTTP ${response.status})।`);
       if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("এই অনুসন্ধানের উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setResult(data);
     } catch (err) {
