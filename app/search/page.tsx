@@ -32,8 +32,17 @@ export default function SearchPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: query.trim() }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || "অনুসন্ধান করা যায়নি। আবার চেষ্টা করুন।");
+      const raw = await response.text();
+      let data: SearchResult;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        throw new Error(response.ok
+          ? "সার্চ সার্ভার থেকে সঠিক উত্তর আসেনি। পেজটি refresh করে আবার চেষ্টা করুন।"
+          : `সার্চ সার্ভারে সমস্যা হয়েছে (HTTP ${response.status})। একটু পরে আবার চেষ্টা করুন।`);
+      }
+      if (!response.ok) throw new Error(data.error || `অনুসন্ধান করা যায়নি (HTTP ${response.status})।`);
+      if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("এই অনুসন্ধানের উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
@@ -64,7 +73,7 @@ export default function SearchPage() {
           <section className="mt-8 space-y-5 rounded-3xl border border-[#e0e8dc] bg-white p-5 shadow-sm sm:p-7" aria-live="polite">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[#e7f0e6] px-3 py-1 text-xs font-bold">প্রশ্নের ধরন: {result.intent}</span>
-              <span className="rounded-full bg-[#edf2f7] px-3 py-1 text-xs font-bold">মিল পাওয়া পণ্য: {result.resultCount}</span>
+              <span className="rounded-full bg-[#edf2f7] px-3 py-1 text-xs font-bold">মিল পাওয়া পণ্য: {result.resultCount ?? 0}</span>
               <span className="rounded-full bg-[#fff4d7] px-3 py-1 text-xs font-bold">{result.answerSource === "openai" ? "AI উত্তর" : "সাধারণ সহায়ক উত্তর"}</span>
             </div>
             <div>
