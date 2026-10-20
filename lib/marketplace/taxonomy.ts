@@ -43,6 +43,20 @@ export function getSubcategory(categorySlug: string, subcategorySlug: string) {
 }
 
 export function matchesCategory(value: string | null, terms: readonly string[]) {
-  const normalized = (value || "").toLocaleLowerCase();
-  return terms.some((term) => normalized.includes(term.toLocaleLowerCase()));
+  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
+  return terms.some((term) => normalized.includes(term.normalize("NFKC").toLocaleLowerCase()));
+}
+
+export function matchesSubcategory(
+  value: string | null,
+  category: (typeof MARKETPLACE_CATEGORIES)[number],
+  subcategory: (typeof MARKETPLACE_CATEGORIES)[number]["subcategories"][number],
+) {
+  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
+  if (!normalized) return false;
+  const isNamedSubcategory = normalized === subcategory.name.normalize("NFKC").toLocaleLowerCase();
+  return isNamedSubcategory || (
+    matchesCategory(value, category.match) &&
+    matchesCategory(value, subcategory.match)
+  );
 }
