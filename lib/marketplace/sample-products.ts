@@ -1,7 +1,7 @@
 import type { MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 
 export const MARKETPLACE_SAMPLE_PRODUCTS: MarketplaceProduct[] = [
-  { id: "sample-01", slug: "brri-dhan-ধানের-বীজ", name: "BRRI ধান ৮৯ — নমুনা পণ্য", category: "ধানের বীজ", description: "ডেমো পণ্য: বোরো মৌসুমের ধানের বীজের জন্য নমুনা তালিকা। আসল জাত, উৎস ও অঙ্কুরোদ্গমের তথ্য বিক্রেতার কাছ থেকে যাচাই করুন।", price: 1250, stock: 24 },
+  { id: "sample-01", slug: "brri-dhan-89-seed", name: "BRRI ধান ৮৯ — নমুনা পণ্য", category: "ধানের বীজ", description: "ডেমো পণ্য: বোরো মৌসুমের ধানের বীজের জন্য নমুনা তালিকা। আসল জাত, উৎস ও অঙ্কুরোদ্গমের তথ্য বিক্রেতার কাছ থেকে যাচাই করুন।", price: 1250, stock: 24 },
   { id: "sample-02", slug: "hybrid-vegetable-seeds", name: "হাইব্রিড সবজি বীজ — নমুনা", category: "সবজির বীজ", description: "ডেমো পণ্য: মৌসুমি সবজি বীজের নমুনা তালিকা।", price: 380, stock: 50 },
   { id: "sample-03", slug: "organic-compost-fertilizer", name: "জৈব কম্পোস্ট সার — নমুনা", category: "জৈব সার", description: "ডেমো পণ্য: মাটির জৈব পদার্থ বাড়াতে কম্পোস্ট সারের নমুনা তালিকা।", price: 450, stock: 35 },
   { id: "sample-04", slug: "balanced-npk-fertilizer", name: "NPK সুষম সার — নমুনা", category: "রাসায়নিক সার", description: "ডেমো পণ্য: ফসলের পুষ্টি ব্যবস্থাপনার নমুনা তালিকা। ব্যবহার করার আগে মাটি পরীক্ষা ও লেবেল অনুসরণ করুন।", price: 980, stock: 18 },
@@ -13,6 +13,15 @@ export const MARKETPLACE_SAMPLE_PRODUCTS: MarketplaceProduct[] = [
   { id: "sample-10", slug: "cattle-feed-bag", name: "গবাদিপশুর খাদ্য — নমুনা", category: "গবাদিপশুর খাদ্য", description: "ডেমো পণ্য: গবাদিপশুর খাদ্যের নমুনা তালিকা। আসল পণ্যের উপাদান ও ওজন যাচাই করুন।", price: 1350, stock: 12 },
 ];
 
+function normalizeSlug(value: string) {
+  try {
+    return decodeURIComponent(value).normalize("NFC").trim().toLocaleLowerCase();
+  } catch {
+    return value.normalize("NFC").trim().toLocaleLowerCase();
+  }
+}
+
 export function getSampleProduct(slug: string) {
-  return MARKETPLACE_SAMPLE_PRODUCTS.find((product) => product.slug === slug) ?? null;
+  const normalized = normalizeSlug(slug);
+  return MARKETPLACE_SAMPLE_PRODUCTS.find((product) => normalizeSlug(product.slug) === normalized || product.id === normalized) ?? null;
 }
