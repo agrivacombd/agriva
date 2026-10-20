@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 
 export const metadata: Metadata = {
   title: "কৃষি পণ্যের অনলাইন মার্কেটপ্লেস | AGRIVA বাংলাদেশ",
@@ -22,6 +23,9 @@ export default async function MarketplacePage() {
   } catch (error) {
     console.error("Marketplace catalogue load failed:", error);
   }
+
+  const isSamplePreview = products.length === 0;
+  if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS;
 
   return <main className="min-h-screen overflow-hidden bg-[#f5f8f1] text-[#17351f]">
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#24734a] text-white">
