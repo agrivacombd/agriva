@@ -9,15 +9,25 @@ import { getSampleProduct } from "@/lib/marketplace/sample-products";
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; commission_percent?: number | null };
 
+function normalizeSlug(value: string) {
+  try {
+    return decodeURIComponent(value).normalize("NFC").trim().toLocaleLowerCase();
+  } catch {
+    return value.normalize("NFC").trim().toLocaleLowerCase();
+  }
+}
+
 async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null> {
-  const sample = getSampleProduct(slugOrId);
+  const normalized = normalizeSlug(slugOrId);
+  const sample = getSampleProduct(normalized);
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
+
   const supabase = await createSupabaseServerClient();
   const columns = "id,slug,name,category,price,stock,description,commission_percent";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", slugOrId).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slugOrId)) return null;
-  const { data: byId } = await supabase.from("products").select(columns).eq("id", slugOrId).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
+  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
 }
 
@@ -27,7 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
   const title = `${product.name} | কৃষি পণ্য | AGRIVA`;
   const description = typeof product.description === "string" && product.description.trim()
-    ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
+    ? product.description.trim().replace(/\\s+/g, " ").slice(0, 155)
     : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`;
   return {
     title, description,
@@ -52,7 +62,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     offers: { "@type": "Offer", priceCurrency: "BDT", price: Number(product.price), availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${base}${canonicalPath}` },
   };
   return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\\\u003c") }} />
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
