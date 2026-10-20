@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, MARKETPLACE_CATEGORIES, matchesCategory } from "@/lib/marketplace/taxonomy";
+import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 
 type Props = { params: Promise<{ categorySlug: string }> };
@@ -31,7 +31,7 @@ export default async function CategoryPage({ params }: Props) {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products").select("id,name,slug,category,description,price,stock")
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
-    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesCategory(product.category, category.match));
+    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category));
   } catch (error) { console.error("Marketplace category load failed:", error); }
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}`;
