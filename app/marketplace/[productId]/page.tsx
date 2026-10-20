@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
   const title = `${product.name} | কৃষি পণ্য | AGRIVA`;
   const description = typeof product.description === "string" && product.description.trim()
-    ? product.description.trim().replace(/\\s+/g, " ").slice(0, 155)
+    ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
     : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`;
   return {
     title, description,
@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     offers: { "@type": "Offer", priceCurrency: "BDT", price: Number(product.price), availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${base}${canonicalPath}` },
   };
   return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\\\u003c") }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
