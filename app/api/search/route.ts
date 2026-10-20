@@ -7,16 +7,28 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function escapeLike(value: string) {
-  return value.replace(/[,%_()]/g, " ").replace(/\s+/g, " ").trim();
+function searchTerms(value: string) {
+  // Keep user input from changing PostgREST .or() filter syntax.
+  // Preserve Unicode letters/numbers (including Bangla) and whitespace only.
+  return value
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter((term) => term.length >= 2)
+    .slice(0, 6);
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
     const query = typeof body?.query === "string" ? body.query.trim() : "";
-    if (!query) return NextResponse.json({ error: "অনুসন্ধানের জন্য প্রশ্ন লিখুন।" }, { status: 400 });
-    if (query.length > 2000) return NextResponse.json({ error: "প্রশ্নটি ২০০০ অক্ষরের মধ্যে রাখুন।" }, { status: 400 });
+    if (!query) {
+      return NextResponse.json({ error: "অনুসন্ধানের জন্য প্রশ্ন লিখুন।" }, { status: 400 });
+    }
+    if (query.length > 2000) {
+      return NextResponse.json({ error: "প্রশ্নটি ২০০০ অক্ষরের মধ্যে রাখুন।" }, { status: 400 });
+    }
 
     const analysis = await analyzeSearch(query);
     const normalizedQuery = normalizeQuery(query);
@@ -27,21 +39,25 @@ export async function POST(request: NextRequest) {
     try {
       const supabase = await createSupabaseServerClient();
       const { data: { user } } = await supabase.auth.getUser();
-      const safeQuery = escapeLike(query);
-      const terms = safeQuery.split(" ").filter((term) => term.length >= 2).slice(0, 6);
+      const terms = searchTerms(query);
+
       if (terms.length) {
         const orFilter = terms.flatMap((term) => [
           "name.ilike.%" + term + "%",
           "category.ilike.%" + term + "%",
           "description.ilike.%" + term + "%",
         ]).join(",");
+
         const { data, error: productError } = await supabase
           .from("products")
           .select("id,name,category,description")
           .eq("status", "active")
+          .eq("moderation_status", "approved")
           .or(orFilter)
           .limit(10);
+
         if (productError) {
+          // Keep AI answers available even if the optional product lookup fails.
           console.error("Smart Search product lookup failed:", productError.message);
         } else {
           products = data ?? [];
@@ -76,6 +92,9 @@ export async function POST(request: NextRequest) {
     }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (error) {
     console.error("Smart Search failed:", error);
-    return NextResponse.json({ error: "Smart Search উত্তর তৈরি করতে পারেনি। অনুগ্রহ করে আবার চেষ্টা করুন।" }, { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } });
+    return NextResponse.json(
+      { error: "Smart Search উত্তর তৈরি করতে পারেনি। অনুগ্রহ করে আবার চেষ্টা করুন।" },
+      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } },
+    );
   }
 }
