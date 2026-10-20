@@ -28,7 +28,7 @@ export const MARKETPLACE_CATEGORIES = [
 
 export function slugifyProductName(value: string) {
   return value.normalize("NFKC").trim().toLowerCase()
-    .replace(/[^\\p{L}\\p{N}]+/gu, "-")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 100);
 }
