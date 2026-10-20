@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
+import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 
 type Props = { params: Promise<{ categorySlug: string }> };
 export function generateStaticParams() {
@@ -33,6 +34,8 @@ export default async function CategoryPage({ params }: Props) {
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category));
   } catch (error) { console.error("Marketplace category load failed:", error); }
+  const isSamplePreview = products.length === 0;
+  if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesProductCategory(product.category, category));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}`;
   const jsonLd = {
@@ -52,7 +55,7 @@ export default async function CategoryPage({ params }: Props) {
         <span className="text-5xl" aria-hidden="true">{category.icon}</span><h1 className="mt-4 text-3xl font-black sm:text-5xl">{category.name}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base">{category.description}। AGRIVA Marketplace-এ এই ক্যাটাগরির পণ্য ও বিবরণ খুঁজুন।</p>
       </header>
       <section className="mt-8"><h2 className="text-xl font-black">সাব-ক্যাটাগরি</h2><div className="mt-3 flex flex-wrap gap-2">{category.subcategories.map((sub) => <Link key={sub.slug} href={`/marketplace/category/${category.slug}/${sub.slug}`} className="rounded-full border border-emerald-900/15 bg-white px-4 py-2.5 text-sm font-bold transition hover:border-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">{sub.name}</Link>)}</div></section>
-      <section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.15em] text-emerald-700">Category catalogue</p><h2 className="mt-2 text-2xl font-black">{category.name} — পণ্য তালিকা</h2></div><span className="text-sm text-slate-500">{products.length.toLocaleString("bn-BD")}টি</span></div>
+      {isSamplePreview && <p role="status" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">প্রিভিউ মোড: নমুনা পণ্য — বাস্তব বিক্রির তালিকা নয়।</p>}<section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.15em] text-emerald-700">Category catalogue</p><h2 className="mt-2 text-2xl font-black">{category.name} — পণ্য তালিকা</h2></div><span className="text-sm text-slate-500">{products.length.toLocaleString("bn-BD")}টি</span></div>
         {products.length ? <MarketplaceCore products={products} showCategories={false} /> : <div className="rounded-2xl border border-dashed border-emerald-950/20 bg-white p-8 text-center"><p className="font-extrabold">এই ক্যাটাগরিতে এখনো পণ্য নেই</p><p className="mt-2 text-sm text-slate-500">নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p><Link href="/marketplace" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-emerald-900 px-4 py-2 text-sm font-bold text-white">সব পণ্য দেখুন</Link></div>}
       </section>
     </div>
