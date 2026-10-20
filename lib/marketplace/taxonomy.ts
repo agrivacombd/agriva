@@ -47,6 +47,26 @@ export function matchesCategory(value: string | null, terms: readonly string[]) 
   return terms.some((term) => normalized.includes(term.normalize("NFKC").toLocaleLowerCase()));
 }
 
+export function matchesProductCategory(value: string | null, category: (typeof MARKETPLACE_CATEGORIES)[number]) {
+  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
+  if (!normalized) return false;
+  if (matchesCategory(value, category.match)) return true;
+  return category.subcategories.some((subcategory) => {
+    const subcategoryName = subcategory.name.normalize("NFKC").toLocaleLowerCase();
+    return normalized === subcategoryName || (normalized.includes(subcategoryName) && matchesCategory(value, subcategory.match));
+  });
+}
+
+export function getProductCategory(value: string | null) {
+  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
+  if (!normalized) return undefined;
+  for (const category of MARKETPLACE_CATEGORIES) {
+    const subcategory = category.subcategories.find((item) => normalized === item.name.normalize("NFKC").toLocaleLowerCase());
+    if (subcategory) return category;
+  }
+  return MARKETPLACE_CATEGORIES.find((category) => matchesProductCategory(value, category));
+}
+
 export function matchesSubcategory(
   value: string | null,
   category: (typeof MARKETPLACE_CATEGORIES)[number],
