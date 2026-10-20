@@ -5,9 +5,15 @@ on:
   pull_request:
     branches: [main]
 
+# Keep only the newest run for each branch/PR to avoid stale queued jobs.
+concurrency:
+  group: agriva-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
