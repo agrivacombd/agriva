@@ -71,7 +71,8 @@ create policy "approved active products public"
   on public.products for select
   using ((status = 'active' and moderation_status = 'approved') or public.is_admin());
 
--- Prevent ordinary users from changing their own role to admin.
+-- Prevent ordinary authenticated users from changing their own role to admin.
+-- Trusted SQL/service-role maintenance has no auth.uid(), and must remain possible.
 create or replace function public.prevent_profile_role_escalation()
 returns trigger
 language plpgsql
@@ -79,7 +80,9 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.role is distinct from old.role and not public.is_admin() then
+  if auth.uid() is not null
+     and new.role is distinct from old.role
+     and not public.is_admin() then
     raise exception 'Only an admin can change profile roles';
   end if;
   return new;
