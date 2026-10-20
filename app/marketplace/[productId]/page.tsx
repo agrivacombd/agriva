@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
-import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
+import { getProductCategory } from "@/lib/marketplace/taxonomy";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; commission_percent?: number | null };
@@ -38,7 +38,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
-  const category = MARKETPLACE_CATEGORIES.find((item) => item.name === product.category || item.match.some((term) => (product.category || "").toLowerCase().includes(term.toLowerCase())));
+  const category = getProductCategory(product.category);
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const jsonLd = {
