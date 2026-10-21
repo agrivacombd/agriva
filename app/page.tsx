@@ -17,6 +17,7 @@ const services = [
   { icon: TrendingUp, title: "বাজারদর", subtitle: "দাম জেনে সিদ্ধান্ত নিন", detail: "কৃষিপণ্যের বাজারদরের তথ্য দেখুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
   { icon: Tractor, title: "আমার খামার", subtitle: "খামার ও ফসলের হিসাব", detail: "খামার, মৌসুম ও কাজের ডায়েরি রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
   { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, সেচ ও উৎপাদন খরচের টুল", href: "/tools", tone: "bg-orange-50 text-orange-700" },
+  { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "একসঙ্গে তিনটি ফসলের খরচ, সম্ভাব্য আয় ও লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
 ];
 
 const toolLinks = [
@@ -24,6 +25,7 @@ const toolLinks = [
   { icon: Search, label: "স্মার্ট সার্চ", href: "/search" },
   { icon: Store, label: "কৃষি ব্লগ", href: "/blog" },
   { icon: MapPinned, label: "আমার ড্যাশবোর্ড", href: "/dashboard" },
+  { icon: TrendingUp, label: "ফসল বাছাই", href: "/crop-choice" },
 ];
 
 export const metadata: Metadata = {
