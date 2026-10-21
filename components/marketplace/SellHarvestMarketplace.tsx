@@ -95,7 +95,7 @@ export default function SellHarvestMarketplace() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/login?next=%2Fsell-harvest"; return; }
     if (!files.length) { setNotice("ফসলের অন্তত ১টি ছবি যোগ করুন।"); return; }
-    if (!phonePublic && !phone.trim()) { setNotice("যোগাযোগের নম্বর দিন অথবা ক্রেতাকে নম্বর না দেখানোর বিকল্প বেছে নিন—তবে ক্রেতার যোগাযোগের অন্য মাধ্যম পরে যোগ করতে হবে।"); return; }
+    if (phonePublic && !phone.trim()) { setNotice("ফোন নম্বর প্রকাশ করতে চাইলে আগে নম্বরটি দিন।"); return; }
     setBusy(true);
     const imageUrls: string[] = [];
     for (const file of files) {
@@ -110,7 +110,7 @@ export default function SellHarvestMarketplace() {
       owner_id: user.id, seller_name: sellerName.trim(), crop_name: cropName.trim(), variety: variety.trim() || null,
       quantity: Number(quantity), unit, price_per_unit: Number(price), district, upazila: upazila.trim() || null,
       quality, harvest_ready: ready, minimum_order: minimumOrder ? Number(minimumOrder) : null,
-      negotiable, transport_available: transport, contact_phone: phone.trim() || null,
+      negotiable, transport_available: transport, contact_phone: phonePublic ? phone.trim() : null,
       contact_phone_public: phonePublic, pickup_details: pickup.trim() || null, description: description.trim(),
       image_urls: imageUrls, status: "available", moderation_status: "pending",
     });
