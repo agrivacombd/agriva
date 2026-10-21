@@ -25,10 +25,14 @@ create index if not exists cart_items_cart_idx on public.cart_items(cart_id);
 
 alter table public.carts enable row level security;
 alter table public.cart_items enable row level security;
-create policy if not exists "cart_owner_read" on public.carts for select using (auth.uid()=user_id);
-create policy if not exists "cart_owner_write" on public.carts for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
-create policy if not exists "cart_item_owner_read" on public.cart_items for select using (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid()));
-create policy if not exists "cart_item_owner_write" on public.cart_items for all using (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid())) with check (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid()));
+drop policy if exists "cart_owner_read" on public.carts;
+create policy "cart_owner_read" on public.carts for select using (auth.uid()=user_id);
+drop policy if exists "cart_owner_write" on public.carts;
+create policy "cart_owner_write" on public.carts for all using (auth.uid()=user_id) with check (auth.uid()=user_id);
+drop policy if exists "cart_item_owner_read" on public.cart_items;
+create policy "cart_item_owner_read" on public.cart_items for select using (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid()));
+drop policy if exists "cart_item_owner_write" on public.cart_items;
+create policy "cart_item_owner_write" on public.cart_items for all using (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid())) with check (exists(select 1 from public.carts c where c.id=cart_id and c.user_id=auth.uid()));
 
 create or replace function public.add_cart_item(p_product_id uuid,p_quantity integer,p_unit_price numeric)
 returns public.cart_items
