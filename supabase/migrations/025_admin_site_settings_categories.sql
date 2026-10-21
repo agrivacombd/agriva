@@ -84,3 +84,13 @@ begin
  return result;
 end; $$;
 grant execute on function public.admin_save_product_category(uuid,text,text,text,boolean,integer) to authenticated;
+
+-- Public homepage may read only explicitly approved public settings.
+create or replace function public.get_public_site_settings()
+returns table(key text,value text)
+language sql stable security definer set search_path=public
+as $$
+  select s.key,s.value from public.site_settings s
+  where s.key in ('site_name','support_phone','support_email','homepage_notice','cod_enabled')
+$$;
+grant execute on function public.get_public_site_settings() to anon, authenticated;
