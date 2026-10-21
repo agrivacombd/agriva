@@ -33,12 +33,12 @@ export const metadata: Metadata = {
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#f7faf6] pb-20 text-[#16382b] sm:pb-0">
-      <header className="sticky top-0 z-30 border-b border-emerald-950/5 bg-[#f7faf6]/90 backdrop-blur-xl">
+    <main className="min-h-screen overflow-hidden bg-[#f8f8f1] pb-20 text-[#173629] selection:bg-emerald-200 selection:text-emerald-950 sm:pb-0">
+      <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="AGRIVA home">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#0b6b4f] text-white shadow-lg shadow-emerald-950/15"><Sprout size={25} /></span>
-            <span><span className="block text-xl font-black tracking-tight">AGRIVA</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#b48734]">Smart Agriculture</span></span>
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#16724e] to-[#0b4936] text-white shadow-lg shadow-emerald-950/20"><Sprout size={25} /></span>
+            <span><span className="block text-xl font-black tracking-tight">AGRIVA</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#a77d2f]">Smart Agriculture Platform</span></span>
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
             <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
@@ -53,19 +53,19 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="relative isolate">
+      <section className="relative isolate bg-gradient-to-b from-[#f1f6e9] via-[#f8f8f1] to-[#f8f8f1]">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute -right-32 -top-20 h-96 w-96 rounded-full bg-lime-200/35 blur-3xl" />
-          <div className="absolute -left-36 top-32 h-80 w-80 rounded-full bg-emerald-200/30 blur-3xl" />
+          <div className="absolute -right-32 -top-20 h-96 w-96 rounded-full bg-[#d8e8b6]/60 blur-3xl" />
+          <div className="absolute -left-36 top-32 h-80 w-80 rounded-full bg-[#c4e0cf]/45 blur-3xl" />
         </div>
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-14 pt-12 sm:px-6 md:pb-20 md:pt-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pt-24">
           <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/85 px-3.5 py-2 text-xs font-bold text-[#0b6b4f] shadow-sm"><span className="h-2 w-2 rounded-full bg-emerald-500" /> বাংলাদেশের কৃষির জন্য ডিজিটাল সহায়ক</div>
-            <h1 className="max-w-2xl text-4xl font-black leading-[1.14] tracking-tight sm:text-5xl md:text-6xl">আপনার কৃষির প্রতিটি ধাপে <span className="text-[#0b7955]">পাশে AGRIVA.</span></h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">ভালো বীজ বেছে নিন, ফসলের যত্ন নিন এবং কৃষক, কৃষিবিদ ও শিক্ষার্থীদের সঙ্গে যুক্ত থাকুন—কৃষির দরকারি সেবা এক জায়গায়।</p>
-            <form action="/search" method="get" className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-emerald-950/5 focus-within:border-emerald-400">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#d6e5cf] bg-white/90 px-3.5 py-2 text-xs font-bold text-[#176346] shadow-sm"><span className="h-2 w-2 rounded-full bg-[#c29a43]" /> বাংলাদেশের কৃষির জন্য এক স্মার্ট প্ল্যাটফর্ম</div>
+            <h1 className="max-w-2xl text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.15rem]">কৃষির প্রতিটি ধাপে <span className="bg-gradient-to-r from-[#0b6b4f] to-[#5d8b36] bg-clip-text text-transparent">আপনার পাশে AGRIVA.</span></h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের বিষয়ে সহায়তা নিন, নিজের খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়, সহজ বাংলায়।</p>
+            <form action="/search" method="get" role="search" className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-[#dce5d8] bg-white p-2 shadow-xl shadow-emerald-950/5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
               <Search className="ml-2 shrink-0 text-slate-400" size={21} />
-              <input name="q" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none sm:text-base" placeholder="বীজ, ফসলের রোগ বা কৃষি পরামর্শ খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
+              <input name="q" type="search" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none placeholder:text-slate-400 sm:text-base" placeholder="বীজ, ফসল বা কৃষি পরামর্শ খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
               <button type="submit" className="rounded-xl bg-[#0b6b4f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#07543e] sm:px-5">খুঁজুন</button>
             </form>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
@@ -77,9 +77,9 @@ export default function Home() {
 
           <div className="relative mx-auto w-full max-w-xl">
             <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-emerald-200/60 via-lime-100/30 to-amber-100/60 blur-xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white p-4 shadow-2xl shadow-emerald-950/10 sm:p-6">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/90 bg-white/95 p-4 shadow-2xl shadow-emerald-950/15 ring-1 ring-emerald-950/5 backdrop-blur sm:p-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">AGRIVA WORKSPACE</p><h2 className="mt-1 text-lg font-black">কৃষি সহায়তা কেন্দ্র</h2></div>
+                <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a77d2f]">YOUR AGRICULTURE, ORGANIZED</p><h2 className="mt-1 text-lg font-black">আপনার কৃষি সহায়তা কেন্দ্র</h2></div>
                 <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><Wheat size={23} /></span>
               </div>
               <Link href="/marketplace" className="group mt-4 flex items-center gap-4 rounded-2xl bg-[#0b6b4f] p-4 text-white transition hover:bg-[#07543e] sm:p-5">
@@ -133,10 +133,10 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid gap-6 lg:grid-cols-[.8fr_1.2fr]">
           <div className="rounded-[2rem] bg-[#123f30] p-7 text-white sm:p-9">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-100"><Users size={15} /> এক কৃষি কমিউনিটি</span>
-            <h2 className="mt-5 text-3xl font-black leading-tight sm:text-4xl">কৃষির মানুষ, একই প্ল্যাটফর্মে</h2>
-            <p className="mt-4 text-sm leading-7 text-emerald-50/80">প্রশ্ন করুন, অভিজ্ঞতা ভাগ করুন, শেখার উপকরণ খুঁজুন এবং কৃষি নিয়ে অন্যদের সঙ্গে যুক্ত হোন।</p>
-            <Link href="/learn" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#123f30] transition hover:bg-emerald-50">কৃষি জ্ঞান দেখুন <ArrowRight size={16} /></Link>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-100"><BookOpen size={15} /> কৃষি জ্ঞান ও শেখা</span>
+            <h2 className="mt-5 text-3xl font-black leading-tight sm:text-4xl">শিখুন, পরিকল্পনা করুন, এগিয়ে যান</h2>
+            <p className="mt-4 text-sm leading-7 text-emerald-50/80">ফসল, চাষাবাদ ও কৃষি প্রযুক্তি সম্পর্কে জানুন। কৃষক, শিক্ষার্থী, কৃষিবিদ ও উদ্যোক্তাদের জন্য দরকারি তথ্য এক জায়গায় সাজানো।</p>
+            <Link href="/learn" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#123f30] transition hover:bg-emerald-50">কৃষি গাইড দেখুন <ArrowRight size={16} /></Link>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
@@ -159,7 +159,7 @@ export default function Home() {
             <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full border-[30px] border-white/5" />
             <div className="relative"><span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-100"><Sprout size={15} /> পরিকল্পনা থেকে ফলন</span><h2 className="mt-5 max-w-md text-3xl font-black leading-tight sm:text-4xl">আপনার খামারের তথ্য থাকুক আপনার হাতেই</h2><p className="mt-4 max-w-md text-sm leading-7 text-emerald-50/75">খামার তৈরি করুন, ফসলের মৌসুম যোগ করুন এবং কাজের ডায়েরি রাখুন। ধাপে ধাপে আপনার খামারের ডিজিটাল রেকর্ড গড়ে তুলুন।</p><Link href="/farms" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#123f30] transition hover:bg-emerald-50">আমার খামার শুরু করুন <ArrowRight size={16} /></Link></div>
           </div>
-          <div className="rounded-[2rem] border border-slate-200/80 bg-white p-7 sm:p-9">
+          <div className="rounded-[2rem] border border-[#e0e7da] bg-white p-7 shadow-sm sm:p-9">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">দ্রুত প্রবেশ</p><h2 className="mt-2 text-2xl font-black">যা দরকার, এক ক্লিকেই</h2><p className="mt-2 text-sm leading-6 text-slate-500">জনপ্রিয় বিভাগগুলো থেকে সরাসরি কাজ শুরু করুন।</p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {toolLinks.map(({ icon: Icon, label, href }) => <Link key={href} href={href} className="group flex items-center gap-3 rounded-2xl border border-slate-100 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/50"><span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><Icon size={20} /></span><span className="flex-1 text-sm font-bold">{label}</span><ChevronRight size={17} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></Link>)}
