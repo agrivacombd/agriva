@@ -27,6 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/crop-disease`, changeFrequency: "weekly", priority: 0.7 },
     ...MARKETPLACE_CATEGORIES.map((category) => ({
       url: `${base}/marketplace/category/${category.slug}`,
       lastModified: now, changeFrequency: "daily" as const, priority: 0.8,
