@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
     p_reseller_id: resellerId,
     p_attribution_code: resellerId ? cookieCode : null,
     p_attribution_expires_at: resellerId ? attributionExpiresAt : null,
+    p_visitor_token: resellerId ? visitorToken : null,
   });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
