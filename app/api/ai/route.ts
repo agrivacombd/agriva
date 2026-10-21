@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const intent = detectIntent(question);
     const result = await answerAgricultureQuestion(question, intent);
-    return NextResponse.json({ question, intent, ...result, aiConfigured: result.source === "openai" });
+    return NextResponse.json({ question, intent, ...result, aiConfigured: result.source === "gemini" || result.source === "openai" });
   } catch (error) {
     console.error("AGRIVA AI route failed:", error);
     return NextResponse.json({
