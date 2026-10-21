@@ -51,8 +51,8 @@ export default function FarmFinance() {
       if (cycleResult.error) setMessage("ফসলের তালিকা লোড হয়নি—মাইগ্রেশন ০১৯ যাচাই করুন।");
       else setCycles((cycleResult.data || []) as CropCycle[]);
       if (expenseResult.error || salesResult.error) setMessage("হিসাবের টেবিল পাওয়া যাচ্ছে না। Supabase-এ migration 020 চালু করুন।");
-      setExpenses((expenseResult.data || []) as LedgerItem[]);
-      setSales((salesResult.data || []) as LedgerItem[]);
+      setExpenses((expenseResult.data || []) as unknown as LedgerItem[]);
+      setSales((salesResult.data || []) as unknown as LedgerItem[]);
     } else { setCycles([]); setExpenses([]); setSales([]); }
     setLoading(false);
   }, [router, supabase]);
