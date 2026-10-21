@@ -16,7 +16,7 @@ async function saveSetting(formData: FormData) {
   "use server";
   const key = String(formData.get("key") ?? "");
   const value = String(formData.get("value") ?? "");
-  const allowed = ["site_name","support_phone","support_email","homepage_notice","cod_enabled","online_payment_enabled"];
+  const allowed = ["site_name","support_phone","support_email","homepage_notice","homepage_hero_title","homepage_hero_subtitle","cod_enabled","online_payment_enabled"];
   if (!allowed.includes(key)) redirect("/admin/settings?notice=invalid");
   const supabase = await requireAdmin();
   const { error } = await supabase.rpc("admin_update_site_setting", { p_key: key, p_value: value });
@@ -30,6 +30,8 @@ const fields = [
   {key:"support_phone",label:"সাপোর্ট ফোন",description:"কাস্টমার সাপোর্টের ফোন নম্বর",type:"text"},
   {key:"support_email",label:"সাপোর্ট ইমেইল",description:"কাস্টমার সাপোর্টের ইমেইল",type:"email"},
   {key:"homepage_notice",label:"হোমপেজ ঘোষণা",description:"খালি রাখলে কোনো ঘোষণা দেখানো হবে না",type:"textarea"},
+  {key:"homepage_hero_title",label:"হোমপেজের প্রধান শিরোনাম",description:"হোমপেজের hero section-এর বড় শিরোনাম",type:"textarea"},
+  {key:"homepage_hero_subtitle",label:"হোমপেজের পরিচিতি",description:"প্রধান শিরোনামের নিচের বর্ণনা",type:"textarea"},
   {key:"cod_enabled",label:"Cash on delivery",description:"COD checkout চালু বা বন্ধ",type:"boolean"},
   {key:"online_payment_enabled",label:"Online payment",description:"নিরাপত্তার জন্য verified integration ছাড়া চালু করা যাবে না",type:"boolean"},
 ];
