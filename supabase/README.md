@@ -2,7 +2,7 @@
 
 ## Recommended migration path
 
-Use the migrations in `supabase/migrations/` in numeric order, `001` through `017`, in the production Supabase SQL Editor or via Supabase CLI.
+Use the migrations in `supabase/migrations/` in numeric order, `001` through `020`, in the production Supabase SQL Editor or via Supabase CLI. Confirm each migration has been applied successfully before enabling the feature that depends on it.
 
 Do **not** run `database/schema.sql` on top of these migrations; that legacy schema contains overlapping `profiles`, `products`, and search tables.
 
@@ -15,6 +15,10 @@ The important launch migrations are:
 - `014`: production reseller attribution, marketplace orders, atomic COD stock/commission flow
 - `015`: commission approval on delivery/completion and reversal on cancellation/refund
 - `016`: controlled reseller payout settlement
+- `017`: crop disease detection history and related policies
+- `018`: policy syntax repair for PostgreSQL compatibility
+- `019`: farmer-owned crop cycles and sowing/harvest planning
+- `020`: farmer-owned expense and harvest-sales ledgers
 
 ## Vercel environment variables
 
