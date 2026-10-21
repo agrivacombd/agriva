@@ -72,7 +72,7 @@ export default function Home() {
             </form>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/ai" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e]"><ShoppingCart size={17} /> বীজ কিনুন <ArrowRight size={17} /></Link>
+              <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e]"><ShoppingCart size={17} /> বীজ কিনুন <ArrowRight size={17} /></Link>
               <Link href="#services" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-[#16382b] transition hover:border-emerald-300">সব সেবা দেখুন <ArrowDownRight size={17} /></Link>
             </div>
           </div>
