@@ -31,7 +31,7 @@ export default function ToolsDashboard() {
   const [yieldKg, setYieldKg] = useState("1200");
   const [pricePerKg, setPricePerKg] = useState("35");
   const [checkedTasks, setCheckedTasks] = useState<string[]>([]);
-  const multiplier = unit === "acre" ? 1 : unit === "decimal" ? 1 / 100 : 1 / 40.4686;
+  const multiplier = unit === "acre" ? 1 : unit === "decimal" ? 1 / 100 : 2.47105;
   const acres = Math.max(0, Number(area || 0) * multiplier);
   const fertilizerTotal = useMemo(() => acres * Math.max(0, Number(fertilizerRate || 0)), [acres, fertilizerRate]);
   const seedTotal = useMemo(() => acres * Math.max(0, Number(seedRate || 0)), [acres, seedRate]);
