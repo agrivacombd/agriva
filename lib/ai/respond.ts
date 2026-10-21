@@ -49,7 +49,7 @@ export async function answerAgricultureQuestion(question: string, intent: Search
               "Never claim certainty when symptoms are insufficient. Do not invent current prices, product availability, pesticide doses, or official recommendations.",
               "For crop disease, ask for crop/location/photos if needed and recommend checking with a local agricultural officer before chemical treatment.",
               "Question: " + question
-            ].join("\\n") }] }],
+            ].join("\n") }] }],
             generationConfig: { temperature: 0.3, maxOutputTokens: 700 }
           })
         }
