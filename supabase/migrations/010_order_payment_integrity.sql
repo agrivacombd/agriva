@@ -26,8 +26,10 @@ create index if not exists order_events_order_idx on public.order_events(order_i
 
 alter table public.payment_transactions enable row level security;
 alter table public.order_events enable row level security;
-create policy if not exists "payment_transactions_admin_read" on public.payment_transactions for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
-create policy if not exists "order_events_admin_read" on public.order_events for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "payment_transactions_admin_read" on public.payment_transactions;
+create policy "payment_transactions_admin_read" on public.payment_transactions for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "order_events_admin_read" on public.order_events;
+create policy "order_events_admin_read" on public.order_events for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
 
 create or replace function public.record_payment_event(
   p_order_id uuid,
