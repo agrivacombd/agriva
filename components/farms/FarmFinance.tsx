@@ -83,8 +83,8 @@ export default function FarmFinance() {
       : "id,farm_id,crop_cycle_id,description,amount,sale_date,notes").single();
     setBusy(false);
     if (error) { setMessage("হিসাব সংরক্ষণ হয়নি। Supabase migration 020 চালু আছে কি না দেখুন।"); return; }
-    if (kind === "expense") setExpenses(current => [data as LedgerItem, ...current]);
-    else setSales(current => [data as LedgerItem, ...current]);
+    if (kind === "expense") setExpenses(current => [data as unknown as LedgerItem, ...current]);
+    else setSales(current => [data as unknown as LedgerItem, ...current]);
     setDescription(""); setAmount(""); setNotes("");
     setMessage(kind === "expense" ? "খরচ সংরক্ষণ হয়েছে।" : "বিক্রির আয় সংরক্ষণ হয়েছে।");
   }
