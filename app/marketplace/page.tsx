@@ -3,6 +3,8 @@ import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketpla
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "কৃষি পণ্যের অনলাইন মার্কেটপ্লেস | AGRIVA বাংলাদেশ",
   description: "বাংলাদেশের কৃষি পণ্য, বীজ, সার, ফসল সুরক্ষা, কৃষি যন্ত্রপাতি ও তাজা উৎপাদন খুঁজুন AGRIVA Marketplace-এ। ক্যাটাগরি অনুযায়ী পণ্য দেখুন ও মূল্য যাচাই করুন।",
