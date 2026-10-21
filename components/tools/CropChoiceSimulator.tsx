@@ -35,7 +35,7 @@ export default function CropChoiceSimulator() {
     return { ...crop, cost, yieldKg, revenue, profit, breakEvenPrice: yieldKg > 0 ? cost / yieldKg : 0 };
   }), [crops, acres]);
 
-  const ranked = [...results].filter((crop) => crop.name.trim() && (crop.costPerAcre !== "" || crop.yieldKgPerAcre !== "" || crop.pricePerKg !== ""))
+  const ranked = [...results].filter((crop) => crop.name.trim() && crop.costPerAcre !== "" && crop.yieldKgPerAcre !== "" && crop.pricePerKg !== "" && asNumber(crop.yieldKgPerAcre) > 0 && asNumber(crop.pricePerKg) > 0)
     .sort((a, b) => b.profit - a.profit);
   const updateCrop = (id: string, field: keyof CropEstimate, value: string) => {
     setCrops(current => current.map(crop => crop.id === id ? { ...crop, [field]: value } : crop));
