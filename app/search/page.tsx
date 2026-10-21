@@ -6,7 +6,7 @@ import { FormEvent, useState } from "react";
 type SearchResult = {
   intent: string;
   answer: string;
-  answerSource?: "openai" | "built-in";
+  answerSource?: "gemini" | "openai" | "built-in";
   fallbackReason?: "missing_api_key" | "provider_error" | "empty_response";
   aiConfigured?: boolean;
   resultCount: number;
@@ -18,7 +18,8 @@ type SearchResult = {
 };
 
 function aiStatus(result: SearchResult) {
-  if (result.answerSource === "openai") return "AGRIVA AI · AI উত্তর";
+  if (result.answerSource === "gemini") return "AGRIVA AI · Gemini উত্তর";
+  if (result.answerSource === "openai") return "AGRIVA AI · OpenAI উত্তর";
   if (result.fallbackReason === "missing_api_key") return "সাধারণ সহায়ক উত্তর · OPENAI_API_KEY সেট করা নেই";
   if (result.fallbackReason === "provider_error") return "সাধারণ সহায়ক উত্তর · AI provider-এ সংযোগ হয়নি";
   if (result.fallbackReason === "empty_response") return "সাধারণ সহায়ক উত্তর · AI থেকে খালি response এসেছে";
@@ -92,7 +93,7 @@ export default function SearchPage() {
               <h2 className="text-xl font-bold">AGRIVA-এর পরামর্শ</h2>
               <p className="mt-3 whitespace-pre-wrap leading-7 text-[#425348]">{result.answer}</p>
             </div>
-            {result.fallbackReason === "missing_api_key" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">লাইভ AI চালু করতে Vercel Project Settings → Environment Variables-এ OPENAI_API_KEY যোগ করে নতুন deployment দিন। API key কখনো public page-এ রাখবেন না।</p>}
+            {result.fallbackReason === "missing_api_key" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">লাইভ AI চালু করতে Vercel Project Settings → Environment Variables-এ GEMINI_API_KEY যোগ করুন (অথবা OPENAI_API_KEY ব্যবহার করুন) এবং নতুন deployment দিন। API key কখনো public page-এ রাখবেন না।</p>}
             {result.fallbackReason === "provider_error" && <p className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">AI provider-এ সংযোগ ব্যর্থ হয়েছে। Vercel Runtime Logs পরীক্ষা করুন; সাধারণ সহায়ক উত্তর দেখানো হয়েছে।</p>}
             {result.products && result.products.length > 0 && (
               <div>
