@@ -43,7 +43,7 @@ export default function AIPage() {
       if (data.source === "openai") {
         setNotice("AGRIVA AI · AI উত্তর");
       } else if (data.fallbackReason === "missing_api_key") {
-        setNotice("সাধারণ সহায়ক উত্তর · Vercel-এ OPENAI_API_KEY সেট করা নেই");
+        setNotice("সাধারণ সহায়ক উত্তর · Vercel-এ GEMINI_API_KEY / OPENAI_API_KEY সেট করা নেই");
       } else if (data.fallbackReason === "provider_error") {
         setNotice("সাধারণ সহায়ক উত্তর · AI provider-এ সংযোগ ব্যর্থ; Vercel Runtime Logs পরীক্ষা করুন");
       } else {
