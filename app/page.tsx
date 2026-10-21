@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
   ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
@@ -31,9 +32,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createSupabaseServerClient();
+  const { data: publicSettings } = await supabase.rpc("get_public_site_settings");
+  const homepageNotice = (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === "homepage_notice")?.value?.trim();
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#f8f8f1] pb-20 text-[#173629] selection:bg-emerald-200 selection:text-emerald-950 sm:pb-0">
+      {homepageNotice && <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-950">{homepageNotice}</div>}
       <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="AGRIVA home">
