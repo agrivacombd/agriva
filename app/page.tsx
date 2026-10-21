@@ -1,7 +1,8 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
-  ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search, ShieldCheck,
+  ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
   Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart,
 } from "lucide-react";
@@ -25,6 +26,12 @@ const toolLinks = [
   { icon: Store, label: "কৃষি ব্লগ", href: "/blog" },
   { icon: MapPinned, label: "আমার ড্যাশবোর্ড", href: "/dashboard" },
 ];
+
+export const metadata: Metadata = {
+  title: "বীজ, কৃষি সেবা ও কৃষি কমিউনিটি",
+  description: "AGRIVA-তে বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের পরামর্শ নিন, কৃষক-শিক্ষার্থী-কৃষিবিদের সঙ্গে যুক্ত থাকুন এবং নিজের খামারের হিসাব রাখুন।",
+  alternates: { canonical: "/" },
+};
 
 export default function Home() {
   return (
