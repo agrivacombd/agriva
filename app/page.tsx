@@ -9,15 +9,13 @@ import {
 
 const services = [
   { icon: ShoppingBasket, title: "বীজ ও কৃষি উপকরণ", subtitle: "প্রয়োজনীয় পণ্য খুঁজুন", detail: "বীজ, জাত ও পণ্যের তথ্য দেখে কেনাকাটা শুরু করুন", href: "/marketplace", tone: "bg-lime-50 text-lime-800" },
-  { icon: Users, title: "কৃষি কমিউনিটি", subtitle: "প্রশ্ন করুন, অভিজ্ঞতা ভাগ করুন", detail: "কৃষক, শিক্ষার্থী ও কৃষিবিদদের সঙ্গে যুক্ত হোন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
+  { icon: BookOpen, title: "কৃষি শেখা ও গাইড", subtitle: "জ্ঞান বাড়ান প্রতিদিন", detail: "কৃষি বিষয়ক গাইড, পাঠ ও নিবন্ধ পড়ুন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
   { icon: Bot, title: "AI কৃষি সহায়ক", subtitle: "প্রশ্ন করুন, করণীয় জানুন", detail: "ফসল, সার, রোগ ও চাষাবাদ নিয়ে AI সহায়তা", href: "/ai", tone: "bg-violet-50 text-violet-700" },
   { icon: Leaf, title: "ফসলের রোগ শনাক্ত", subtitle: "সমস্যা বুঝে সমাধান নিন", detail: "ফসলের লক্ষণ নিয়ে সহায়তা পান", href: "/crop-disease", tone: "bg-rose-50 text-rose-700" },
   { icon: CloudSun, title: "আবহাওয়া", subtitle: "পরিকল্পনা করুন আগেই", detail: "চাষাবাদের কাজে আবহাওয়ার তথ্য", href: "/weather", tone: "bg-sky-50 text-sky-700" },
   { icon: TrendingUp, title: "বাজারদর", subtitle: "দাম জেনে সিদ্ধান্ত নিন", detail: "কৃষিপণ্যের বাজারদরের তথ্য দেখুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
   { icon: Tractor, title: "আমার খামার", subtitle: "খামার ও ফসলের হিসাব", detail: "খামার, মৌসুম ও কাজের ডায়েরি রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
   { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, সেচ ও উৎপাদন খরচের টুল", href: "/tools", tone: "bg-orange-50 text-orange-700" },
-  { icon: ShoppingBasket, title: "কৃষি মার্কেটপ্লেস", subtitle: "পণ্য খুঁজুন ও কিনুন", detail: "কৃষি উপকরণ ও প্রয়োজনীয় পণ্য দেখুন", href: "/marketplace", tone: "bg-pink-50 text-pink-700" },
-  { icon: BookOpen, title: "শিখুন ও জানুন", subtitle: "জ্ঞান বাড়ান প্রতিদিন", detail: "কৃষি বিষয়ক গাইড, পাঠ ও নিবন্ধ", href: "/learn", tone: "bg-indigo-50 text-indigo-700" },
 ];
 
 const toolLinks = [
