@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       answer: answer.answer.trim() || "আপনার প্রশ্নটি পেয়েছি। আরও নির্দিষ্ট পরামর্শ দিতে ফসলের নাম, এলাকা এবং সমস্যার বিস্তারিত লিখুন।",
       answerSource: answer.source,
       fallbackReason: answer.fallbackReason,
-      aiConfigured: answer.source === "openai",
+      aiConfigured: answer.source === "gemini" || answer.source === "openai",
       ...analysis,
     }, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch (error) {
