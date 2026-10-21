@@ -10,7 +10,7 @@ type DiaryEntry = { id: string; farm_id: string; activity: string; entry_date: s
 type CropCycle = { id: string; farm_id: string; crop_name: string; variety: string | null; season_name: string | null; sowing_date: string | null; expected_harvest_date: string | null; status: "planned" | "growing" | "harvested" | "cancelled"; notes: string | null; created_at: string };
 
 export default function FarmWorkspace() {
-  const supabase = createSupabaseBrowserClient();
+  const [supabase] = useState(() => createSupabaseBrowserClient());
   const router = useRouter();
   const [farms, setFarms] = useState<Farm[]>([]);
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
@@ -174,6 +174,7 @@ export default function FarmWorkspace() {
     }
     setFarms(current => current.filter(item => item.id !== farm.id));
     setEntries(current => current.filter(item => item.farm_id !== farm.id));
+    setCropCycles(current => current.filter(item => item.farm_id !== farm.id));
     setSelectedFarm(current => current === farm.id ? (farms.find(item => item.id !== farm.id)?.id || "") : current);
     setMessage("Farm deleted.");
   }
