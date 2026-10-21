@@ -68,6 +68,10 @@ export default function Home() {
               <input name="q" type="search" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none placeholder:text-slate-400 sm:text-base" placeholder="বীজ, ফসল বা কৃষি পরামর্শ খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
               <button type="submit" className="rounded-xl bg-[#0b6b4f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#07543e] sm:px-5">খুঁজুন</button>
             </form>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <span className="mr-1 font-semibold text-slate-500">জনপ্রিয়:</span>
+              {[{ label: "ধানের বীজ", q: "ধানের বীজ" }, { label: "ফসলের রোগ", q: "ফসলের রোগ" }, { label: "আবহাওয়া", q: "আবহাওয়া" }].map(({ label, q }) => <Link key={label} href={`/search?q=${encodeURIComponent(q)}`} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
+            </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e]"><ShoppingCart size={17} /> বীজ কিনুন <ArrowRight size={17} /></Link>
@@ -78,6 +82,15 @@ export default function Home() {
           <div className="relative mx-auto w-full max-w-xl">
             <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-emerald-200/60 via-lime-100/30 to-amber-100/60 blur-xl" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/90 bg-white/95 p-4 shadow-2xl shadow-emerald-950/15 ring-1 ring-emerald-950/5 backdrop-blur sm:p-6">
+              <div className="relative mb-4 h-32 overflow-hidden rounded-2xl bg-gradient-to-br from-[#174c35] via-[#668c49] to-[#d7dfac]">
+                <div aria-hidden="true" className="absolute inset-0 opacity-55" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85')", backgroundSize: "cover", backgroundPosition: "center" }} />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0b3d2c]/85 via-[#174c35]/35 to-transparent" />
+                <div className="relative flex h-full flex-col justify-end p-4 text-white sm:p-5">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-lime-100">GROW WITH AGRIVA</span>
+                  <p className="mt-1 text-lg font-black">বাংলার মাঠ, স্মার্ট কৃষি</p>
+                  <p className="mt-1 text-xs text-white/85">জ্ঞান • পরিকল্পনা • উন্নত চাষাবাদ</p>
+                </div>
+              </div>
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a77d2f]">YOUR AGRICULTURE, ORGANIZED</p><h2 className="mt-1 text-lg font-black">আপনার কৃষি সহায়তা কেন্দ্র</h2></div>
                 <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><Wheat size={23} /></span>
