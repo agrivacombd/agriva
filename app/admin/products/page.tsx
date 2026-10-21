@@ -21,25 +21,32 @@ async function saveProduct(formData: FormData) {
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
   const status = String(formData.get("status") ?? "");
+  const category = String(formData.get("category") ?? "").trim();
   if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status)) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin();
-  const { error } = await supabase.rpc("admin_update_product", {
+  const { error: productError } = await supabase.rpc("admin_update_product", {
     p_product_id: productId, p_name: name, p_description: description || null,
     p_price: price, p_stock: stock, p_commission_percent: commission, p_status: status,
+  });
+  const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_category", {
+    p_product_id: productId, p_category: category || null,
   });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
-  redirect(error ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
-  const { data: products, error } = await supabase.from("products")
-    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,updated_at")
-    .order("updated_at", { ascending: false }).limit(100);
+  const [{ data: products, error }, { data: categories }] = await Promise.all([
+    supabase.from("products")
+      .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,updated_at")
+      .order("updated_at", { ascending: false }).limit(100),
+    supabase.from("product_categories").select("name,is_active").order("sort_order").order("name"),
+  ]);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
@@ -55,6 +62,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
+          <label className="text-sm font-bold">ক্যাটাগরি<select name="category" defaultValue={p.category ?? ""} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="">ক্যাটাগরি নেই</option>{(categories ?? []).map(category => <option key={category.name} value={category.name}>{category.name}{category.is_active ? "" : " (Inactive)"}</option>)}</select></label>
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
