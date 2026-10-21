@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import FarmFinance from "@/components/farms/FarmFinance";
 
 type Farm = { id: string; name: string; district: string | null; area_acres: number | null; created_at: string };
 type DiaryEntry = { id: string; farm_id: string; activity: string; entry_date: string; created_at: string };
@@ -212,6 +213,7 @@ export default function FarmWorkspace() {
             </section>
           </div>
           <div className="space-y-6">
+            <FarmFinance />
             <section className="rounded-3xl bg-[#124c35] p-5 text-white shadow-sm sm:p-6">
               <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-200">Farm diary</p><h2 className="mt-2 text-2xl font-black">আজ মাঠে কী কাজ করলেন?</h2><p className="mt-2 text-sm leading-6 text-emerald-50/75">সেচ, সার প্রয়োগ, বীজ বপন, রোগ-পোকা, শ্রমিক খরচ বা পর্যবেক্ষণ লিখে রাখুন।</p>
               <form onSubmit={addEntry} className="mt-5 space-y-4">
