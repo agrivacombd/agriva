@@ -76,15 +76,22 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { data: order, error } = await supabase.rpc("finalize_marketplace_cod_order", {
+  const orderArgs = {
     p_product_id: productId,
     p_quantity: rawQuantity,
     p_shipping_address: shippingAddress,
     p_reseller_id: resellerId,
     p_attribution_code: resellerId ? cookieCode : null,
     p_attribution_expires_at: resellerId ? attributionExpiresAt : null,
-    p_visitor_token: resellerId ? visitorToken : null,
-  });
+  };
+  // Keep ordinary checkout compatible with the previous RPC signature.
+  // The seven-argument overload is used only when a real attribution session was resolved.
+  const { data: order, error } = resellerId && visitorToken
+    ? await supabase.rpc("finalize_marketplace_cod_order", {
+        ...orderArgs,
+        p_visitor_token: visitorToken,
+      })
+    : await supabase.rpc("finalize_marketplace_cod_order", orderArgs);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!order) return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।" }, { status: 400 });
