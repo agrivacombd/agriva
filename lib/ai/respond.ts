@@ -2,7 +2,7 @@ import type { SearchIntent } from "@/lib/ai/intent";
 
 export type AgricultureAnswer = {
   answer: string;
-  source: "openai" | "built-in";
+  source: "gemini" | "openai" | "built-in";
   fallbackReason?: "missing_api_key" | "provider_error" | "empty_response";
 };
 
@@ -29,34 +29,76 @@ function builtInAnswer(question: string, intent: SearchIntent = "information") {
 }
 
 export async function answerAgricultureQuestion(question: string, intent: SearchIntent = "information"): Promise<AgricultureAnswer> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "missing_api_key" };
+  const geminiKey = process.env.GEMINI_API_KEY;
+  const openAiKey = process.env.OPENAI_API_KEY;
 
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + apiKey, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(12000),
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || "gpt-4o-mini",
-        temperature: 0.3,
-        max_tokens: 500,
-        messages: [
-          { role: "system", content: "You are AGRIVA AI, a careful agriculture assistant for Bangladesh. Answer in the language the user uses, preferably Bangla for Bangla questions. Give practical, concise guidance. Never claim certainty when symptoms are insufficient. Do not invent current prices, product availability, pesticide doses, or official recommendations. For crop disease, ask for crop/location/photos if needed and recommend checking with a local agricultural officer before chemical treatment." },
-          { role: "user", content: question }
-        ]
-      })
-    });
-    if (!response.ok) {
-      console.error("AGRIVA AI provider returned status:", response.status);
+  if (geminiKey) {
+    try {
+      const model = (process.env.GEMINI_MODEL || "gemini-2.5-flash").trim();
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(geminiKey),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+          signal: AbortSignal.timeout(15000),
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: [
+              "You are AGRIVA AI, a careful agriculture assistant for Bangladesh.",
+              "Answer in the language the user uses, preferably Bangla for Bangla questions. Give practical, concise guidance.",
+              "Never claim certainty when symptoms are insufficient. Do not invent current prices, product availability, pesticide doses, or official recommendations.",
+              "For crop disease, ask for crop/location/photos if needed and recommend checking with a local agricultural officer before chemical treatment.",
+              "Question: " + question
+            ].join("\\n") }] }],
+            generationConfig: { temperature: 0.3, maxOutputTokens: 700 }
+          })
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        const answer = data?.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("").trim();
+        if (typeof answer === "string" && answer) return { answer, source: "gemini" };
+        console.error("AGRIVA Gemini returned an empty response");
+      } else {
+        console.error("AGRIVA Gemini provider returned status:", response.status);
+      }
+    } catch (error) {
+      console.error("AGRIVA Gemini request failed:", error);
+    }
+    // If Gemini is temporarily unavailable, use OpenAI when configured.
+    if (!openAiKey) return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "provider_error" };
+  }
+
+  if (openAiKey) {
+    try {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + openAiKey, "Content-Type": "application/json" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(12000),
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          temperature: 0.3,
+          max_tokens: 500,
+          messages: [
+            { role: "system", content: "You are AGRIVA AI, a careful agriculture assistant for Bangladesh. Answer in the language the user uses, preferably Bangla for Bangla questions. Give practical, concise guidance. Never claim certainty when symptoms are insufficient. Do not invent current prices, product availability, pesticide doses, or official recommendations. For crop disease, ask for crop/location/photos if needed and recommend checking with a local agricultural officer before chemical treatment." },
+            { role: "user", content: question }
+          ]
+        })
+      });
+      if (!response.ok) {
+        console.error("AGRIVA OpenAI provider returned status:", response.status);
+        return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "provider_error" };
+      }
+      const data = await response.json();
+      const answer = data?.choices?.[0]?.message?.content;
+      if (typeof answer !== "string" || !answer.trim()) return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "empty_response" };
+      return { answer: answer.trim(), source: "openai" };
+    } catch (error) {
+      console.error("AGRIVA OpenAI provider request failed:", error);
       return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "provider_error" };
     }
-    const data = await response.json();
-    const answer = data?.choices?.[0]?.message?.content;
-    if (typeof answer !== "string" || !answer.trim()) return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "empty_response" };
-    return { answer: answer.trim(), source: "openai" };
-  } catch (error) {
-    console.error("AGRIVA AI provider request failed:", error);
-    return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "provider_error" };
   }
+
+  return { answer: builtInAnswer(question, intent), source: "built-in", fallbackReason: "missing_api_key" };
 }
