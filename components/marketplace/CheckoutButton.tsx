@@ -13,6 +13,16 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
   const [address, setAddress] = useState("");
 
   async function checkout() {
+    if (!fullName.trim() || !phone.trim() || !district.trim() || !address.trim()) {
+      setMessage("অর্ডার করতে নাম, মোবাইল নম্বর, জেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
+      return;
+    }
+    const normalizedPhone = phone.trim().replace(/[\\s()-]/g, "");
+    if (!/^\\+?\\d{10,14}$/.test(normalizedPhone)) {
+      setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
+      return;
+    }
+
     setLoading(true);
     setMessage("");
     setOrderId("");
