@@ -25,7 +25,8 @@ create table if not exists public.content_drafts (
 create index if not exists content_drafts_status_idx on public.content_drafts(status);
 create index if not exists content_drafts_opportunity_idx on public.content_drafts(opportunity_id);
 alter table public.content_drafts enable row level security;
-create policy if not exists "content_drafts_admin_all" on public.content_drafts for all using (exists(select 1 from public.profiles where id=auth.uid() and role='admin')) with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "content_drafts_admin_all" on public.content_drafts;
+create policy "content_drafts_admin_all" on public.content_drafts for all using (exists(select 1 from public.profiles where id=auth.uid() and role='admin')) with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
 
 create or replace function public.create_content_draft_from_opportunity(p_opportunity_id uuid)
 returns public.content_drafts
