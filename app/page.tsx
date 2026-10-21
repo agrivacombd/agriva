@@ -35,7 +35,10 @@ export const metadata: Metadata = {
 export default async function Home() {
   const supabase = await createSupabaseServerClient();
   const { data: publicSettings } = await supabase.rpc("get_public_site_settings");
-  const homepageNotice = (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === "homepage_notice")?.value?.trim();
+  const settingValue = (key: string, fallback = "") => (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === key)?.value?.trim() || fallback;
+  const homepageNotice = settingValue("homepage_notice");
+  const homepageHeroTitle = settingValue("homepage_hero_title", "কৃষির প্রতিটি ধাপে আপনার পাশে AGRIVA.");
+  const homepageHeroSubtitle = settingValue("homepage_hero_subtitle", "বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের বিষয়ে সহায়তা নিন, নিজের খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়, সহজ বাংলায়।");
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#f8f8f1] pb-20 text-[#173629] selection:bg-emerald-200 selection:text-emerald-950 sm:pb-0">
@@ -67,8 +70,8 @@ export default async function Home() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-14 pt-12 sm:px-6 md:pb-20 md:pt-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pt-24">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#d6e5cf] bg-white/90 px-3.5 py-2 text-xs font-bold text-[#176346] shadow-sm"><span className="h-2 w-2 rounded-full bg-[#c29a43]" /> বাংলাদেশের কৃষির জন্য এক স্মার্ট প্ল্যাটফর্ম</div>
-            <h1 className="max-w-2xl text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.15rem]">কৃষির প্রতিটি ধাপে <span className="bg-gradient-to-r from-[#0b6b4f] to-[#5d8b36] bg-clip-text text-transparent">আপনার পাশে AGRIVA.</span></h1>
-            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের বিষয়ে সহায়তা নিন, নিজের খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়, সহজ বাংলায়।</p>
+            <h1 className="max-w-2xl text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.15rem]"><span className="bg-gradient-to-r from-[#0b6b4f] to-[#5d8b36] bg-clip-text text-transparent">{homepageHeroTitle}</span></h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">{homepageHeroSubtitle}</p>
             <form action="/search" method="get" role="search" className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-[#dce5d8] bg-white p-2 shadow-xl shadow-emerald-950/5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
               <Search className="ml-2 shrink-0 text-slate-400" size={21} />
               <input name="q" type="search" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none placeholder:text-slate-400 sm:text-base" placeholder="বীজ, ফসল বা কৃষি পরামর্শ খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
