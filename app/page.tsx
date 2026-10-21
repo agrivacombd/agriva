@@ -80,7 +80,7 @@ export default async function Home() {
             </form>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="mr-1 font-semibold text-slate-500">জনপ্রিয়:</span>
-              {[{ label: "ধানের বীজ", q: "ধানের বীজ" }, { label: "ফসলের রোগ", q: "ফসলের রোগ" }, { label: "আবহাওয়া", q: "আবহাওয়া" }].map(({ label, q }) => <Link key={label} href={`/search?q=${encodeURIComponent(q)}`} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
+              {[{ label: "ধানের বীজ", href: "/marketplace" }, { label: "ফসলের রোগ", href: "/crop-disease" }, { label: "আবহাওয়া", href: "/weather" }].map(({ label, href }) => <Link key={label} href={href} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
             <div className="mt-8 flex flex-wrap gap-3">
