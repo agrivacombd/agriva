@@ -1,50 +1,136 @@
 import Link from "next/link";
-import { ArrowRight, Bot, BookOpen, Leaf, Search, ShoppingBag, Sparkles, TrendingUp, Wheat, CloudSun, Store, LayoutDashboard } from "lucide-react";
+import {
+  ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
+  ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search, ShieldCheck,
+  ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
+} from "lucide-react";
 
-const modules = [
-  { icon: Bot, title: "AGRIVA AI", text: "Ask agriculture questions and get practical next steps.", href: "/ai" },
-  { icon: Search, title: "Smart Search", text: "Search agriculture knowledge, products and articles in one place.", href: "/search" },
-  { icon: Leaf, title: "Farm Intelligence", text: "Bring farms, crops, weather and insights into one workspace.", href: "/farms" },
-  { icon: ShoppingBag, title: "Marketplace", text: "Discover agriculture products with smarter recommendations.", href: "/marketplace" },
+const services = [
+  { icon: Bot, title: "AI কৃষি সহায়ক", subtitle: "প্রশ্ন করুন, করণীয় জানুন", detail: "ফসল, সার, রোগ ও চাষাবাদ নিয়ে AI সহায়তা", href: "/ai", tone: "bg-violet-50 text-violet-700" },
+  { icon: Leaf, title: "ফসলের রোগ শনাক্ত", subtitle: "সমস্যা বুঝে সমাধান নিন", detail: "ফসলের লক্ষণ নিয়ে সহায়তা পান", href: "/crop-disease", tone: "bg-rose-50 text-rose-700" },
+  { icon: CloudSun, title: "আবহাওয়া", subtitle: "পরিকল্পনা করুন আগেই", detail: "চাষাবাদের কাজে আবহাওয়ার তথ্য", href: "/weather", tone: "bg-sky-50 text-sky-700" },
+  { icon: TrendingUp, title: "বাজারদর", subtitle: "দাম জেনে সিদ্ধান্ত নিন", detail: "কৃষিপণ্যের বাজারদরের তথ্য দেখুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
+  { icon: Tractor, title: "আমার খামার", subtitle: "খামার ও ফসলের হিসাব", detail: "খামার, মৌসুম ও কাজের ডায়েরি রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
+  { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, সেচ ও উৎপাদন খরচের টুল", href: "/tools", tone: "bg-orange-50 text-orange-700" },
+  { icon: ShoppingBasket, title: "কৃষি মার্কেটপ্লেস", subtitle: "পণ্য খুঁজুন ও কিনুন", detail: "কৃষি উপকরণ ও প্রয়োজনীয় পণ্য দেখুন", href: "/marketplace", tone: "bg-pink-50 text-pink-700" },
+  { icon: BookOpen, title: "শিখুন ও জানুন", subtitle: "জ্ঞান বাড়ান প্রতিদিন", detail: "কৃষি বিষয়ক গাইড, পাঠ ও নিবন্ধ", href: "/learn", tone: "bg-indigo-50 text-indigo-700" },
 ];
 
-const quickLinks = [
-  { icon: Wheat, title: "Tools", text: "Explore practical agriculture tools.", href: "/tools" },
-  { icon: CloudSun, title: "Farm & Crops", text: "Track crops and farm insights.", href: "/farms" },
-  { icon: Store, title: "Marketplace", text: "Browse agriculture products.", href: "/marketplace" },
-  { icon: BookOpen, title: "Articles", text: "Read agriculture knowledge.", href: "/blog" },
+const toolLinks = [
+  { icon: CalendarDays, label: "ফসল ক্যালেন্ডার", href: "/crop-calendar" },
+  { icon: Search, label: "স্মার্ট সার্চ", href: "/search" },
+  { icon: Store, label: "কৃষি নিবন্ধ", href: "/blog" },
+  { icon: MapPinned, label: "আমার ড্যাশবোর্ড", href: "/dashboard" },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden">
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-3" aria-label="AGRIVA home">
-          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#0b6b4f] text-white shadow-lg"><Leaf size={23} /></div>
-          <div><div className="text-xl font-black tracking-tight text-[#064b39]">AGRIVA</div><div className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#c99a3e]">AI Agriculture</div></div>
-        </Link>
-        <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
-          <Link href="/ai" className="hover:text-[#0b6b4f]">AI</Link><Link href="/tools" className="hover:text-[#0b6b4f]">Tools</Link><Link href="/farms" className="hover:text-[#0b6b4f]">Farms</Link><Link href="/marketplace" className="hover:text-[#0b6b4f]">Marketplace</Link><Link href="/blog" className="hover:text-[#0b6b4f]">Articles</Link>
-        </nav>
-        <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-[#064b39]"><LayoutDashboard size={16} /> Open App</Link>
+    <main className="min-h-screen overflow-hidden bg-[#f7faf6] text-[#16382b]">
+      <header className="sticky top-0 z-30 border-b border-emerald-950/5 bg-[#f7faf6]/90 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="AGRIVA home">
+            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#0b6b4f] text-white shadow-lg shadow-emerald-950/15"><Sprout size={25} /></span>
+            <span><span className="block text-xl font-black tracking-tight">AGRIVA</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#b48734]">Smart Agriculture</span></span>
+          </Link>
+          <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
+            <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
+            <Link className="hover:text-[#0b6b4f]" href="/tools">কৃষি টুলস</Link>
+            <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
+            <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
+          </nav>
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#0b6b4f] hover:bg-emerald-50 sm:inline-flex">লগইন</Link>
+            <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-900/15 transition hover:bg-[#07543e]">অ্যাপ খুলুন <ArrowRight size={16} /></Link>
+          </div>
+        </div>
       </header>
 
-      <section className="mx-auto max-w-7xl px-6 pb-20 pt-12 lg:px-8 lg:pt-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-bold text-[#0b6b4f] shadow-sm"><Sparkles size={14} /> AI-powered agriculture intelligence</div>
-          <h1 className="text-5xl font-black tracking-tight text-[#12352a] md:text-7xl">One intelligent platform for <span className="text-[#0b6b4f]">modern agriculture.</span></h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-600">AGRIVA brings AI assistance, smart search, farm intelligence, agriculture content and marketplace tools into one modern web Super App.</p>
-          <form action="/search" method="get" className="mx-auto mt-9 flex max-w-2xl items-center rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-emerald-900/5"><Search className="ml-3 text-slate-400" size={21} /><input name="q" className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm outline-none" placeholder="Ask AGRIVA anything about agriculture…" aria-label="Search AGRIVA" /><button type="submit" className="rounded-xl bg-[#0b6b4f] px-5 py-3 text-sm font-bold text-white">Search</button></form>
+      <section className="relative isolate">
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -right-32 -top-20 h-96 w-96 rounded-full bg-lime-200/35 blur-3xl" />
+          <div className="absolute -left-36 top-32 h-80 w-80 rounded-full bg-emerald-200/30 blur-3xl" />
         </div>
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-14 pt-12 sm:px-6 md:pb-20 md:pt-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pt-24">
+          <div>
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/85 px-3.5 py-2 text-xs font-bold text-[#0b6b4f] shadow-sm"><span className="h-2 w-2 rounded-full bg-emerald-500" /> বাংলাদেশের কৃষির জন্য ডিজিটাল সহায়ক</div>
+            <h1 className="max-w-2xl text-4xl font-black leading-[1.14] tracking-tight sm:text-5xl md:text-6xl">আপনার কৃষির প্রতিটি ধাপে <span className="text-[#0b7955]">পাশে AGRIVA.</span></h1>
+            <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">ফসলের সমস্যা, আবহাওয়া, বাজারদর, খামারের হিসাব কিংবা কৃষি পণ্য—প্রয়োজনীয় সেবা খুঁজুন এক জায়গায়। সিদ্ধান্ত নিন আরও তথ্যভিত্তিকভাবে।</p>
+            <form action="/search" method="get" className="mt-8 flex max-w-xl items-center gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-emerald-950/5 focus-within:border-emerald-400">
+              <Search className="ml-2 shrink-0 text-slate-400" size={21} />
+              <input name="q" className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm outline-none sm:text-base" placeholder="ফসলের রোগ, সার বা কৃষি বিষয়ে খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
+              <button type="submit" className="rounded-xl bg-[#0b6b4f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#07543e] sm:px-5">খুঁজুন</button>
+            </form>
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/ai" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e]">AI-কে প্রশ্ন করুন <ArrowRight size={17} /></Link>
+              <Link href="#services" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-[#16382b] transition hover:border-emerald-300">সব সেবা দেখুন <ArrowDownRight size={17} /></Link>
+            </div>
+          </div>
 
-        <div id="features" className="mt-20 grid gap-5 md:grid-cols-2 lg:grid-cols-4">{modules.map(({ icon: Icon, title, text, href }) => <Link href={href} key={title} className="group rounded-3xl border border-white bg-white p-6 shadow-lg shadow-slate-900/5 transition hover:-translate-y-1 hover:shadow-xl"><div className="mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-[#0b6b4f]"><Icon size={23} /></div><h2 className="font-extrabold text-[#12352a]">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{text}</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-[#0b6b4f]">Explore <ArrowRight size={14} /></span></Link>)}</div>
-
-        <section className="mt-10"><div className="mb-5"><p className="text-xs font-bold uppercase tracking-widest text-[#0b6b4f]">Explore AGRIVA</p><h2 className="mt-2 text-2xl font-black text-[#12352a]">Everything farmers need, in one place.</h2></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{quickLinks.map(({ icon: Icon, title, text, href }) => <Link href={href} key={title} className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-emerald-200 hover:shadow-md"><Icon className="text-[#0b6b4f]" size={21} /><h3 className="mt-3 font-bold text-[#12352a]">{title}</h3><p className="mt-1 text-sm text-slate-500">{text}</p></Link>)}</div></section>
-
-        <section id="intelligence" className="mt-10 grid gap-6 rounded-[2rem] bg-[#064b39] p-8 text-white md:p-10 lg:grid-cols-[1.1fr_.9fr]"><div><div className="mb-4 flex items-center gap-2 text-sm font-bold text-emerald-200"><TrendingUp size={17} /> AGRIVA Intelligence</div><h2 className="text-3xl font-black md:text-4xl">Make your next farming decision with confidence.</h2><p className="mt-4 max-w-xl leading-7 text-emerald-50/75">Explore practical agriculture topics, use farm tools, and find relevant products. Verified market-demand insights will appear here when real usage data is available.</p><Link href="/tools" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#064b39]">Explore farm tools <ArrowRight size={16} /></Link></div><div className="rounded-3xl bg-white/10 p-5 backdrop-blur"><div className="text-xs font-bold uppercase tracking-widest text-emerald-200">Suggested topics</div><div className="mt-5 space-y-3">{["Rice disease management", "Organic fertilizer", "Tomato pest control"].map((q) => <div key={q} className="flex items-center justify-between rounded-2xl bg-white/10 p-4"><span className="text-sm font-semibold">{q}</span><span className="text-xs font-bold text-emerald-200">Explore →</span></div>)}</div><p className="mt-4 text-xs leading-5 text-emerald-50/65">Topic suggestions only — no fabricated search counts.</p></div></section>
-
-        <footer className="mt-14 flex flex-col gap-4 border-t border-slate-200 pt-7 text-sm text-slate-500 md:flex-row md:items-center md:justify-between"><p>© {new Date().getFullYear()} AGRIVA. AI-powered agriculture intelligence.</p><div className="flex flex-wrap gap-5"><Link href="/blog">Articles</Link><Link href="/marketplace">Marketplace</Link><Link href="/tools">Tools</Link><Link href="/contact">Contact</Link></div></footer>
+          <div className="relative mx-auto w-full max-w-xl">
+            <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-emerald-200/60 via-lime-100/30 to-amber-100/60 blur-xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white p-4 shadow-2xl shadow-emerald-950/10 sm:p-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">AGRIVA WORKSPACE</p><h2 className="mt-1 text-lg font-black">কৃষি সহায়তা কেন্দ্র</h2></div>
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-emerald-700"><Wheat size={23} /></span>
+              </div>
+              <Link href="/ai" className="group mt-4 flex items-center gap-4 rounded-2xl bg-[#0b6b4f] p-4 text-white transition hover:bg-[#07543e] sm:p-5">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15"><Bot size={26} /></span>
+                <span className="min-w-0 flex-1"><span className="block text-xs font-semibold text-emerald-100">আপনার প্রশ্নের উত্তর খুঁজুন</span><span className="mt-1 block text-lg font-extrabold">AI কৃষি সহায়ক</span><span className="mt-1 block text-xs text-emerald-100/80">ফসল • রোগ • সার • পরিচর্যা</span></span>
+                <ChevronRight size={20} className="transition group-hover:translate-x-1" />
+              </Link>
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Link href="/crop-disease" className="rounded-2xl border border-rose-100 bg-rose-50/70 p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-rose-700"><Leaf size={21} /></span><span className="mt-3 block text-sm font-extrabold">ফসলের রোগ</span><span className="mt-1 block text-xs leading-5 text-slate-500">সমস্যা ও করণীয়</span></Link>
+                <Link href="/market-prices" className="rounded-2xl border border-amber-100 bg-amber-50/70 p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-amber-700"><TrendingUp size={21} /></span><span className="mt-3 block text-sm font-extrabold">বাজারদর</span><span className="mt-1 block text-xs leading-5 text-slate-500">দাম দেখে পরিকল্পনা</span></Link>
+                <Link href="/weather" className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-sky-700"><CloudSun size={21} /></span><span className="mt-3 block text-sm font-extrabold">আবহাওয়া</span><span className="mt-1 block text-xs leading-5 text-slate-500">চাষের পরিকল্পনা</span></Link>
+                <Link href="/farms" className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 transition hover:-translate-y-0.5 hover:shadow-md"><span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-emerald-700"><Sprout size={21} /></span><span className="mt-3 block text-sm font-extrabold">আমার খামার</span><span className="mt-1 block text-xs leading-5 text-slate-500">ফসল ও কাজের রেকর্ড</span></Link>
+              </div>
+              <div className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-3 text-xs leading-5 text-slate-500"><ShieldCheck size={17} className="shrink-0 text-emerald-700" /> গুরুত্বপূর্ণ সিদ্ধান্তে স্থানীয় কৃষি বিশেষজ্ঞের পরামর্শও যাচাই করুন।</div>
+            </div>
+            <div className="absolute -bottom-5 -left-2 hidden items-center gap-3 rounded-2xl border border-white bg-white px-4 py-3 shadow-xl sm:flex"><span className="grid h-10 w-10 place-items-center rounded-xl bg-lime-50 text-lime-700"><Droplets size={20} /></span><span><span className="block text-sm font-extrabold">সহজ কৃষি টুলস</span><span className="block text-xs text-slate-500">হিসাব করুন, পরিকল্পনা করুন</span></span></div>
+          </div>
+        </div>
       </section>
+
+      <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
+          <Link href="/tools" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
+        </div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-h-52 flex-col rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-5 text-lg font-extrabold">{title}</h3><p className="mt-1 text-sm font-bold text-emerald-800">{subtitle}</p><p className="mt-2 text-sm leading-6 text-slate-500">{detail}</p></Link>)}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#123f30] p-7 text-white sm:p-9">
+            <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full border-[30px] border-white/5" />
+            <div className="relative"><span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-emerald-100"><Sprout size={15} /> পরিকল্পনা থেকে ফলন</span><h2 className="mt-5 max-w-md text-3xl font-black leading-tight sm:text-4xl">আপনার খামারের তথ্য থাকুক আপনার হাতেই</h2><p className="mt-4 max-w-md text-sm leading-7 text-emerald-50/75">খামার তৈরি করুন, ফসলের মৌসুম যোগ করুন এবং কাজের ডায়েরি রাখুন। ধাপে ধাপে আপনার খামারের ডিজিটাল রেকর্ড গড়ে তুলুন।</p><Link href="/farms" className="mt-7 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-[#123f30] transition hover:bg-emerald-50">আমার খামার শুরু করুন <ArrowRight size={16} /></Link></div>
+          </div>
+          <div className="rounded-[2rem] border border-slate-200/80 bg-white p-7 sm:p-9">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">দ্রুত প্রবেশ</p><h2 className="mt-2 text-2xl font-black">যা দরকার, এক ক্লিকেই</h2><p className="mt-2 text-sm leading-6 text-slate-500">জনপ্রিয় বিভাগগুলো থেকে সরাসরি কাজ শুরু করুন।</p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {toolLinks.map(({ icon: Icon, label, href }) => <Link key={href} href={href} className="group flex items-center gap-3 rounded-2xl border border-slate-100 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/50"><span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><Icon size={20} /></span><span className="flex-1 text-sm font-bold">{label}</span><ChevronRight size={17} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></Link>)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
+        <div className="flex flex-col items-start justify-between gap-5 rounded-[2rem] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-lime-50 p-7 sm:p-10 md:flex-row md:items-center">
+          <div><p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">শুরু করুন আজই</p><h2 className="mt-2 text-2xl font-black sm:text-3xl">আপনার কৃষিকাজকে আরও পরিকল্পিত করুন</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">কৃষি জিজ্ঞাসা দিয়ে শুরু করুন, অথবা খামার, বাজারদর ও টুলস ঘুরে দেখুন।</p></div>
+          <Link href="/ai" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-md transition hover:bg-[#07543e]">AGRIVA ব্যবহার করুন <ArrowRight size={17} /></Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <Link href="/" className="flex items-center gap-2 font-black text-[#16382b]"><Sprout size={20} className="text-emerald-700" /> AGRIVA <span className="font-normal text-slate-400">— স্মার্ট কৃষির সহায়ক</span></Link>
+          <div className="flex flex-wrap gap-x-5 gap-y-3"><Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link><Link href="/learn" className="hover:text-emerald-800">শিখুন</Link><Link href="/contact" className="hover:text-emerald-800">যোগাযোগ</Link></div>
+          <p>© {new Date().getFullYear()} AGRIVA</p>
+        </div>
+      </footer>
     </main>
   );
 }
