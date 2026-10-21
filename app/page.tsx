@@ -36,6 +36,7 @@ export default async function Home() {
   const supabase = await createSupabaseServerClient();
   const { data: publicSettings } = await supabase.rpc("get_public_site_settings");
   const settingValue = (key: string, fallback = "") => (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === key)?.value?.trim() || fallback;
+  const siteName = settingValue("site_name", "AGRIVA");
   const homepageNotice = settingValue("homepage_notice");
   const homepageHeroTitle = settingValue("homepage_hero_title", "কৃষির প্রতিটি ধাপে আপনার পাশে AGRIVA.");
   const homepageHeroSubtitle = settingValue("homepage_hero_subtitle", "বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের বিষয়ে সহায়তা নিন, নিজের খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়, সহজ বাংলায়।");
@@ -45,9 +46,9 @@ export default async function Home() {
       {homepageNotice && <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-950">{homepageNotice}</div>}
       <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="AGRIVA home">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteName} home`}>
             <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#16724e] to-[#0b4936] text-white shadow-lg shadow-emerald-950/20"><Sprout size={25} /></span>
-            <span><span className="block text-xl font-black tracking-tight">AGRIVA</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#a77d2f]">Smart Agriculture Platform</span></span>
+            <span><span className="block text-xl font-black tracking-tight">{siteName}</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#a77d2f]">Smart Agriculture Platform</span></span>
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
             <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
