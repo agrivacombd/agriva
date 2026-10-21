@@ -23,9 +23,12 @@ create unique index if not exists content_opportunities_keyword_type_idx on publ
 create index if not exists content_opportunities_status_idx on public.content_opportunities(status);
 create index if not exists content_opportunities_search_count_idx on public.content_opportunities(search_count desc);
 alter table public.content_opportunities enable row level security;
-create policy if not exists "content_opportunities_admin_read" on public.content_opportunities for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
-create policy if not exists "content_opportunities_admin_update" on public.content_opportunities for update using (exists(select 1 from public.profiles where id=auth.uid() and role='admin')) with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
-create policy if not exists "content_opportunities_admin_insert" on public.content_opportunities for insert with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists content_opportunities_admin_read on public.content_opportunities;
+create policy content_opportunities_admin_read on public.content_opportunities for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists content_opportunities_admin_update on public.content_opportunities;
+create policy content_opportunities_admin_update on public.content_opportunities for update using (exists(select 1 from public.profiles where id=auth.uid() and role='admin')) with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists content_opportunities_admin_insert on public.content_opportunities;
+create policy content_opportunities_admin_insert on public.content_opportunities for insert with check (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
 
 -- Keep the older table for compatibility during migration, but new application code should use content_opportunities only.
 comment on table public.content_opportunities is 'Canonical AGRIVA search/content opportunity table. AI output remains draft/review until an admin approves publication.';
