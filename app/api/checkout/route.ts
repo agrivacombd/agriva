@@ -32,6 +32,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "অনলাইন পেমেন্ট এখনো চালু হয়নি। ক্যাশ অন ডেলিভারি নির্বাচন করুন।" }, { status: 400 });
   }
 
+  // Enforce the admin-controlled COD switch on the server, not only in the UI.
+  const { data: publicSettings, error: settingsError } = await supabase.rpc("get_public_site_settings");
+  if (settingsError) {
+    return NextResponse.json({ error: "Checkout settings যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।" }, { status: 503 });
+  }
+  const codSetting = (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === "cod_enabled");
+  if (codSetting?.value !== "true") {
+    return NextResponse.json({ error: "এই মুহূর্তে Cash on Delivery বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।" }, { status: 403 });
+  }
+
   const rawAddress = body.shippingAddress && typeof body.shippingAddress === "object" && !Array.isArray(body.shippingAddress)
     ? body.shippingAddress as Record<string, unknown>
     : {};
