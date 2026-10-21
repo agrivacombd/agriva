@@ -169,7 +169,7 @@ export default function CropDiseasePanel() {
                 {preview ? <img src={preview} alt="আপলোডের জন্য নির্বাচিত ফসলের ছবি" className="mt-3 max-h-72 w-full rounded-2xl border border-slate-200 object-contain" /> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">পরিষ্কার আলোতে আক্রান্ত অংশের কাছ থেকে ছবি তুলুন। সম্ভব হলে পুরো গাছ ও আক্রান্ত অংশের আলাদা ছবি তুলুন—প্রতিবার একটি ছবি বিশ্লেষণ করা যাবে।</div>}
               </div>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">ব্যক্তিগত ছবি ও বিশ্লেষণের ইতিহাস আপনার লগইন করা অ্যাকাউন্টে সংরক্ষিত হয়। ছবি বিশ্লেষণের আগে লগইন প্রয়োজন; Gemini API key এবং Supabase migration কনফিগার না থাকলে সেবা চলবে না।</div>
+            <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">বিশ্লেষণের জন্য নির্বাচিত ছবি Google Gemini API-তে পাঠানো হয়। সফল হলে ছবিটি private Supabase Storage-এ এবং ফলাফল আপনার অ্যাকাউন্টের ইতিহাসে সংরক্ষিত হয়। ছবি বিশ্লেষণের আগে লগইন প্রয়োজন; Gemini API key ও Supabase migration কনফিগার না থাকলে সেবা চলবে না।</div>
             {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm leading-6 text-rose-800">{error} {error.includes("লগইন") || error.includes("লগ ইন") ? <Link href="/login" className="font-bold underline">লগইন করুন</Link> : null}</p>}
             <button type="submit" disabled={!photo || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
           </form>
