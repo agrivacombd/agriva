@@ -19,6 +19,7 @@ const services = [
   { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, সেচ ও উৎপাদন খরচের টুল", href: "/tools", tone: "bg-orange-50 text-orange-700" },
   { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "একসঙ্গে তিনটি ফসলের খরচ, সম্ভাব্য আয় ও লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
   { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে সার হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার দেওয়া মাত্রা থেকে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
+  { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "সরাসরি ক্রেতার কাছে", detail: "ফসলের ছবি, পরিমাণ ও দাম দিয়ে পোস্ট দিন; ক্রেতার সঙ্গে সরাসরি যোগাযোগ করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
 ];
 
 const toolLinks = [
@@ -28,6 +29,7 @@ const toolLinks = [
   { icon: MapPinned, label: "আমার ড্যাশবোর্ড", href: "/dashboard" },
   { icon: TrendingUp, label: "ফসল বাছাই", href: "/crop-choice" },
   { icon: Sprout, label: "মাটি ও সার পরিকল্পনা", href: "/soil-fertilizer" },
+  { icon: Wheat, label: "ফসল বিক্রি করুন", href: "/sell-harvest" },
 ];
 
 export const metadata: Metadata = {
