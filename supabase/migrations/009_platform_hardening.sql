@@ -26,8 +26,10 @@ create index if not exists admin_audit_log_created_idx on public.admin_audit_log
 
 alter table public.commission_payouts enable row level security;
 alter table public.admin_audit_log enable row level security;
-create policy if not exists "payouts_reseller_read" on public.commission_payouts for select using (auth.uid()=reseller_id or exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
-create policy if not exists "audit_admin_read" on public.admin_audit_log for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "payouts_reseller_read" on public.commission_payouts;
+create policy "payouts_reseller_read" on public.commission_payouts for select using (auth.uid()=reseller_id or exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "audit_admin_read" on public.admin_audit_log;
+create policy "audit_admin_read" on public.admin_audit_log for select using (exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
 
 create or replace function public.request_commission_payout(p_amount numeric, p_method text)
 returns public.commission_payouts
