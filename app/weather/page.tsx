@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/weather" },
   keywords: ["কৃষি আবহাওয়া", "বাংলাদেশ আবহাওয়ার পূর্বাভাস", "চাষাবাদের আবহাওয়া", "কৃষকের আবহাওয়া", "ফসল ও বৃষ্টি"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "কৃষি আবহাওয়া ও পূর্বাভাস | AGRIVA", description: "চাষাবাদের পরিকল্পনার জন্য নির্বাচিত এলাকার বর্তমান আবহাওয়া ও ৫ দিনের পূর্বাভাস।", url: "/weather" },
+  twitter: { card: "summary", title: "কৃষি আবহাওয়া ও পূর্বাভাস | AGRIVA", description: "চাষাবাদের পরিকল্পনার জন্য নির্বাচিত এলাকার বর্তমান আবহাওয়া ও ৫ দিনের পূর্বাভাস।" },
 };
 
 export default function WeatherPage() {
