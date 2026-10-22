@@ -31,7 +31,7 @@ create table if not exists public.transport_bookings (
   selected_partner_id uuid references public.transport_partners(user_id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  constraint transport_booking_not_same_place check (lower(trim(origin)) <> lower(trim(destination))
+  constraint transport_booking_not_same_place check (lower(trim(origin)) <> lower(trim(destination)))
 );
 
 create table if not exists public.transport_booking_contacts (
