@@ -76,6 +76,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ...(product.sku ? { sku: product.sku } : {}),
     ...(product.category ? { category: product.category } : {}),
     url: canonicalUrl,
+    ...(product.crop_name || product.seed_variety || product.pack_size || product.germination_rate != null || product.sowing_season || product.suitable_regions ? { additionalProperty: [
+      ...(product.crop_name ? [{ "@type": "PropertyValue", name: "ফসল", value: product.crop_name }] : []),
+      ...(product.seed_variety ? [{ "@type": "PropertyValue", name: "জাত", value: product.seed_variety }] : []),
+      ...(product.pack_size ? [{ "@type": "PropertyValue", name: "প্যাকেটের পরিমাণ", value: product.pack_size }] : []),
+      ...(product.germination_rate != null ? [{ "@type": "PropertyValue", name: "অঙ্কুরোদ্গমের হার (%)", value: product.germination_rate }] : []),
+      ...(product.sowing_season ? [{ "@type": "PropertyValue", name: "বপনের মৌসুম", value: product.sowing_season }] : []),
+      ...(product.suitable_regions ? [{ "@type": "PropertyValue", name: "উপযোগী অঞ্চল", value: product.suitable_regions }] : []),
+    ] } : {}),
     offers: {
       "@type": "Offer",
       url: canonicalUrl,
