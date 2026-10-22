@@ -154,12 +154,12 @@ export default function BuyerDemandBoard() {
     if (!sharePhone || farmerPhone.trim().length < 6) { setNotice("ক্রেতার সঙ্গে যোগাযোগের জন্য ফোন নম্বর দিন এবং নম্বর শেয়ারের সম্মতি দিন।"); return; }
     if (Number(availableQuantity) <= 0) { setNotice("আপনার কাছে থাকা ফসলের পরিমাণ লিখুন।"); return; }
     setBusy(true);
-    const { error } = await supabase.from("buyer_demand_responses").upsert({
+    const { error } = await supabase.from("buyer_demand_responses").insert({
       demand_id: respondingTo.id, farmer_id: user.id, available_quantity: Number(availableQuantity),
       unit: availableUnit, offered_price: offeredPrice ? Number(offeredPrice) : null,
       available_date: availableDate || null, location: farmerLocation.trim(), contact_phone: farmerPhone.trim(),
       message: farmerMessage.trim(), status: "interested",
-    }, { onConflict: "demand_id,farmer_id" });
+    });
     setBusy(false);
     if (error) { setNotice(error.code === "23505" ? "এই চাহিদায় আপনি আগে আগ্রহ জানিয়েছেন। নিজের পোস্টের আগ্রহ দেখতে 'আমার পোস্ট' দেখুন।" : "আগ্রহ পাঠানো যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।"); return; }
     setRespondingTo(null); setAvailableQuantity(""); setOfferedPrice(""); setAvailableDate(""); setFarmerLocation(""); setFarmerPhone(""); setSharePhone(false); setFarmerMessage("");
