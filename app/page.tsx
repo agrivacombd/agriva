@@ -5,7 +5,7 @@ import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
   ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
-  Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart,
+  Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart, Truck,
 } from "lucide-react";
 
 const services = [
@@ -21,6 +21,7 @@ const services = [
   { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে সার হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার দেওয়া মাত্রা থেকে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
   { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "সরাসরি ক্রেতার কাছে", detail: "ফসলের ছবি, পরিমাণ ও দাম দিয়ে পোস্ট দিন; ক্রেতার সঙ্গে সরাসরি যোগাযোগ করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
   { icon: Users, title: "ক্রেতার চাহিদা", subtitle: "চাহিদা দেখে ফসলের অফার দিন", detail: "ক্রেতা কী ফসল, কত পরিমাণ, কোথায় ও কবে চান তা দেখুন", href: "/buyer-demands", tone: "bg-emerald-50 text-emerald-800" },
+  { icon: Truck, title: "কৃষিপণ্য পরিবহন", subtitle: "গাড়ি খুঁজুন ও ভাড়া তুলনা করুন", detail: "ফসল পরিবহনের অনুরোধ দিন এবং পার্টনারদের ভাড়ার অফার নিন", href: "/transport", tone: "bg-sky-50 text-sky-800" },
 ];
 
 const toolLinks = [
@@ -32,6 +33,7 @@ const toolLinks = [
   { icon: Sprout, label: "মাটি ও সার পরিকল্পনা", href: "/soil-fertilizer" },
   { icon: Wheat, label: "ফসল বিক্রি করুন", href: "/sell-harvest" },
   { icon: Users, label: "ক্রেতার চাহিদা", href: "/buyer-demands" },
+  { icon: Truck, label: "কৃষিপণ্য পরিবহন", href: "/transport" },
 ];
 
 export const metadata: Metadata = {
