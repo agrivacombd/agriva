@@ -214,10 +214,24 @@ export default async function Home() {
         </div>
       </nav>
       <footer className="border-t border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <Link href="/" aria-label="AGRIVA home" className="flex items-center"><img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-10 w-36 object-contain object-left" /></Link>
-          <div className="flex flex-wrap gap-x-5 gap-y-3"><Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link><Link href="/learn" className="hover:text-emerald-800">শিখুন</Link><Link href="/contact" className="hover:text-emerald-800">যোগাযোগ</Link></div>
-          <p>© {new Date().getFullYear()} AGRIVA</p>
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 text-sm text-slate-500 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <Link href="/" aria-label="AGRIVA home" className="flex items-center"><img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-10 w-36 object-contain object-left" /></Link>
+            <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-3">
+              <Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link>
+              <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
+              <Link href="/learn" className="hover:text-emerald-800">শিখুন</Link>
+              <Link href="/about-us" className="hover:text-emerald-800">About Us</Link>
+              <Link href="/contact-us" className="hover:text-emerald-800">Contact Us</Link>
+            </nav>
+          </div>
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <nav aria-label="Legal links" className="flex flex-wrap gap-x-5 gap-y-2">
+              <Link href="/privacy-policy" className="hover:text-emerald-800">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="hover:text-emerald-800">Terms of Service</Link>
+            </nav>
+            <p>Copyright © {new Date().getFullYear()} | Agriva.com.bd</p>
+          </div>
         </div>
       </footer>
     </main>
