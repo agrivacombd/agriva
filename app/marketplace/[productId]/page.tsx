@@ -7,7 +7,7 @@ import { getProductCategory } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; brand?: string | null; sku?: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -23,7 +23,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,price,stock,description,commission_percent,seo_title,seo_description,seo_keywords,image_url,brand,sku";
+  const columns = "id,slug,name,category,price,stock,description,commission_percent,seo_title,seo_description,seo_keywords,image_url,brand,sku,crop_name,seed_variety,pack_size,germination_rate,sowing_season,suitable_regions,seed_expiry_date";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -85,7 +85,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
-          {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}
+          {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}\n          {(product.crop_name || product.seed_variety || product.pack_size || product.germination_rate != null || product.sowing_season || product.suitable_regions) && <section className="mt-5 rounded-xl bg-emerald-50 p-4"><h2 className="font-extrabold">বীজের তথ্য</h2><dl className="mt-3 grid grid-cols-2 gap-3 text-sm">{product.crop_name && <div><dt className="text-slate-500">ফসল</dt><dd className="font-bold">{product.crop_name}</dd></div>}{product.seed_variety && <div><dt className="text-slate-500">জাত</dt><dd className="font-bold">{product.seed_variety}</dd></div>}{product.pack_size && <div><dt className="text-slate-500">প্যাকেটের পরিমাণ</dt><dd className="font-bold">{product.pack_size}</dd></div>}{product.germination_rate != null && <div><dt className="text-slate-500">অঙ্কুরোদ্গম</dt><dd className="font-bold">{product.germination_rate}%</dd></div>}{product.sowing_season && <div><dt className="text-slate-500">বপনের মৌসুম</dt><dd className="font-bold">{product.sowing_season}</dd></div>}{product.suitable_regions && <div><dt className="text-slate-500">উপযোগী অঞ্চল</dt><dd className="font-bold">{product.suitable_regions}</dd></div>}</dl></section>}
           {typeof product.description === "string" && product.description.trim() && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{product.description}</p>}
           <p className="mt-6 text-3xl font-black text-emerald-900">{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price || 0).toLocaleString("bn-BD")}</p>
           <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : `প্রাপ্য মজুত: ${Number(product.stock || 0).toLocaleString("bn-BD")}`}</p>
