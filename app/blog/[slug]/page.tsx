@@ -33,8 +33,8 @@ function getDescription(article: ArticleRecord) {
   const explicit = article.meta_description?.trim();
   if (explicit) return explicit.slice(0, 160);
   const excerpt = (article.body_markdown || "")
-    .replace(/[#>*_`~\\[\\]()!-]/g, " ")
-    .replace(/\\s+/g, " ")
+    .replace(/[#>*_`~]/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
   return (excerpt || `বাংলাদেশের কৃষকদের জন্য ${article.title} বিষয়ে ব্যবহারিক বাংলা কৃষি গাইড।`).slice(0, 160);
 }
@@ -91,7 +91,7 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
 
   return (
     <main className="min-h-screen bg-[#f5f7f2] px-6 py-14 text-[#17351f]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, "\\\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, "\\u003c") }} />
       <article className="mx-auto max-w-4xl rounded-3xl bg-white p-7 shadow-sm md:p-12">
         <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA কৃষি জ্ঞান</p>
         <h1 className="mt-4 text-4xl font-black md:text-5xl">{article.title}</h1>
