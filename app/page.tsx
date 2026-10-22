@@ -225,6 +225,20 @@ export default async function Home() {
               <Link href="/contact-us" className="hover:text-emerald-800">Contact Us</Link>
             </nav>
           </div>
+          <div className="grid gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4 sm:grid-cols-2 sm:p-5">
+            <div>
+              <p className="text-sm font-extrabold text-[#173629]">সরাসরি যোগাযোগ করুন</p>
+              <p className="mt-1 text-xs leading-5 text-slate-600">কোনো প্রশ্ন বা সহায়তার জন্য ফোন করুন অথবা WhatsApp-এ মেসেজ পাঠান।</p>
+            </div>
+            <div className="flex flex-col gap-2 sm:items-end">
+              <a href="tel:01717504028" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#0b6b4f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#07543e] sm:w-auto" aria-label="AGRIVA-তে 01717504028 নম্বরে ফোন করুন">
+                <span aria-hidden="true">☎</span> ফোন করুন: 01717504028
+              </a>
+              <a href="https://wa.me/8801717504028?text=Hello%20AGRIVA%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services." target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-100 sm:w-auto" aria-label="AGRIVA-কে WhatsApp-এ মেসেজ পাঠান 01717504028">
+                <span aria-hidden="true">✉</span> WhatsApp-এ মেসেজ দিন
+              </a>
+            </div>
+          </div>
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <nav aria-label="Legal links" className="flex flex-wrap gap-x-5 gap-y-2">
               <Link href="/privacy-policy" className="hover:text-emerald-800">Privacy Policy</Link>
