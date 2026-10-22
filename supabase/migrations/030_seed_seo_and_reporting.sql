@@ -8,13 +8,28 @@ alter table public.products
   add column if not exists suitable_regions text,
   add column if not exists seed_expiry_date date;
 
-alter table public.products
-  add constraint products_crop_name_length check (crop_name is null or length(crop_name) <= 120),
-  add constraint products_seed_variety_length check (seed_variety is null or length(seed_variety) <= 160),
-  add constraint products_pack_size_length check (pack_size is null or length(pack_size) <= 80),
-  add constraint products_germination_rate_range check (germination_rate is null or (germination_rate >= 0 and germination_rate <= 100)),
-  add constraint products_sowing_season_length check (sowing_season is null or length(sowing_season) <= 160),
-  add constraint products_suitable_regions_length check (suitable_regions is null or length(suitable_regions) <= 500);
+do $constraints$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'products_crop_name_length' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_crop_name_length check (crop_name is null or length(crop_name) <= 120);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_seed_variety_length' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_seed_variety_length check (seed_variety is null or length(seed_variety) <= 160);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_pack_size_length' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_pack_size_length check (pack_size is null or length(pack_size) <= 80);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_germination_rate_range' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_germination_rate_range check (germination_rate is null or (germination_rate >= 0 and germination_rate <= 100));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_sowing_season_length' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_sowing_season_length check (sowing_season is null or length(sowing_season) <= 160);
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'products_suitable_regions_length' and conrelid = 'public.products'::regclass) then
+    alter table public.products add constraint products_suitable_regions_length check (suitable_regions is null or length(suitable_regions) <= 500);
+  end if;
+end;
+$constraints$;
 
 create or replace function public.admin_set_seed_details(
   p_product_id uuid,
