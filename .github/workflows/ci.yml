@@ -3,9 +3,12 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+  schedule:
+    - cron: "23 3 * * 1"
 
-# Keep only the newest run for each branch/PR to avoid stale queued jobs.
+permissions:
+  contents: read
+
 concurrency:
   group: agriva-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,13 +22,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
+      - name: Install dependencies
+        run: npm install
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
+      - name: SEO roadmap smoke checks
+        run: npm run test:seo
       - name: Production build
         run: npm run build
         env:
