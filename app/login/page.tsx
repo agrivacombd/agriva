@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -50,5 +50,14 @@ export default function LoginPage() {
         <p className="text-center text-sm text-slate-600">Don&apos;t have an account? <Link className="font-semibold text-emerald-700 underline underline-offset-4" href="/signup">Create an account</Link></p>
       </form>
     </main>
+  );
+}
+
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<main className="mx-auto flex min-h-screen max-w-md items-center px-6 py-12"><p className="text-sm text-slate-600">Loading sign-in…</p></main>}>
+      <LoginForm />
+    </Suspense>
   );
 }
