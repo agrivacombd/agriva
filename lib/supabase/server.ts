@@ -9,7 +9,17 @@ export async function createSupabaseServerClient() {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
+        setAll: (cookiesToSet) => {
+          // Server Components cannot write cookies. Middleware refreshes the
+          // session before rendering; this fallback prevents auth refreshes
+          // from crashing a read-only Server Component render.
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+          } catch {
+            // Expected in Server Components; Route Handlers and Server Actions
+            // can write cookies, while middleware persists refreshed sessions.
+          }
+        },
       },
     }
   );
