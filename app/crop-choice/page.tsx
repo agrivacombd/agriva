@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/crop-choice" },
   keywords: ["ফসল বাছাই", "চাষের লাভ লোকসান", "ফসলের লাভ হিসাব", "কৃষি ক্যালকুলেটর", "ফসলের ফলন ও দাম"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "ফসল বাছাই ও লাভ তুলনা | AGRIVA", description: "খরচ, ফলন ও বাজারদর দিয়ে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন।", url: "/crop-choice" },
+  twitter: { card: "summary", title: "ফসল বাছাই ও লাভ তুলনা | AGRIVA", description: "খরচ, ফলন ও বাজারদর দিয়ে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন।" },
 };
 
 export default function CropChoicePage() {
