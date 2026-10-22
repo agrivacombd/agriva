@@ -38,6 +38,7 @@ export default async function AdminSetupPage({ searchParams }: { searchParams?: 
 
   const ownerEmail = process.env.AGRIVA_OWNER_EMAIL?.trim().toLowerCase();
   const isOwner = Boolean(ownerEmail && user.email?.trim().toLowerCase() === ownerEmail);
+  const hasServiceKey = Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const notice = params?.notice;
   const messages: Record<string, string> = {
     not_owner: "এই account-টি owner email allowlist-এর সঙ্গে মেলেনি।",
@@ -58,9 +59,9 @@ export default async function AdminSetupPage({ searchParams }: { searchParams?: 
         <p className="mt-1"><span className="font-bold">Owner email match:</span> {isOwner ? "Yes" : "No"}</p>
       </div>
       {notice && <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{messages[notice] ?? "Setup status unavailable."}</p>}
-      {!ownerEmail && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{messages.configuration}</p>}
+      {(!ownerEmail || !hasServiceKey) && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">{messages.configuration}</p>}
       <form action={bootstrapFirstAdmin} className="mt-6">
-        <button disabled={!isOwner || !process.env.SUPABASE_SERVICE_ROLE_KEY} className="w-full rounded-xl bg-[#17452c] px-4 py-3 font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50">Bootstrap first admin</button>
+        <button disabled={!isOwner || !hasServiceKey} className="w-full rounded-xl bg-[#17452c] px-4 py-3 font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50">Bootstrap first admin</button>
       </form>
       <p className="mt-4 text-xs leading-5 text-[#7b887d]">Bootstrap শুধুমাত্র একবার কাজ করে। Service role key কখনো browser-এ পাঠানো হয় না। Admin ইতিমধ্যে থাকলে এই পদ্ধতি আর কাজ করবে না।</p>
     </section>
