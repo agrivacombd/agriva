@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const migration = read("../supabase/migrations/030_seed_seo_and_reporting.sql");
+const integrationsMigration = read("../supabase/migrations/031_google_site_integrations.sql");
+const integrationsPage = read("../app/admin/site-integrations/page.tsx");
+const seoHealthPage = read("../app/admin/seo-health/page.tsx");
+const indexnowRoute = read("../app/[indexnowKey].txt/route.ts");
 const seoMigration = read("../supabase/migrations/029_product_seo_schema.sql");
 const adminBootstrap = read("../supabase/migrations/028_admin_bootstrap_product_creation.sql");
 const productForm = read("../app/admin/products/page.tsx");
@@ -50,4 +54,9 @@ assert.ok(paymentIpn.includes('payment_status: "paid"') && !paymentIpn.split("\n
 for (const sql of [seoMigration, migration]) {
   assert.ok(sql.includes("do $constraints$"), "product schema constraints should be added idempotently");
 }
-console.log("SEO, security, feed, analytics and payment regression checks passed.");
+assert.ok(integrationsMigration.includes("site_public_integrations") && integrationsMigration.includes("indexnow_key"), "Google/Bing/IndexNow settings must be stored");
+assert.ok(integrationsMigration.includes("public.is_admin()"), "only admins may write integration settings");
+assert.ok(integrationsPage.includes("ga4_measurement_id") && integrationsPage.includes("bing_site_verification") && integrationsPage.includes("indexnow_key"), "admin UI must expose search engine setup fields");
+assert.ok(seoHealthPage.includes("Submit URLs to IndexNow") && seoHealthPage.includes("/sitemap.xml") && seoHealthPage.includes("/robots.txt"), "SEO health page must expose crawler resources and IndexNow submit");
+assert.ok(indexnowRoute.includes("text/plain") && indexnowRoute.includes("indexnow_key"), "IndexNow key verification endpoint must serve the configured key as text");
+console.log("SEO, search engine integrations, security, feed, analytics and payment regression checks passed.");
