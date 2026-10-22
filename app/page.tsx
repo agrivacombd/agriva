@@ -20,6 +20,7 @@ const services = [
   { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "একসঙ্গে তিনটি ফসলের খরচ, সম্ভাব্য আয় ও লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
   { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে সার হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার দেওয়া মাত্রা থেকে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
   { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "সরাসরি ক্রেতার কাছে", detail: "ফসলের ছবি, পরিমাণ ও দাম দিয়ে পোস্ট দিন; ক্রেতার সঙ্গে সরাসরি যোগাযোগ করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
+  { icon: Users, title: "ক্রেতার চাহিদা", subtitle: "চাহিদা দেখে ফসলের অফার দিন", detail: "ক্রেতা কী ফসল, কত পরিমাণ, কোথায় ও কবে চান তা দেখুন", href: "/buyer-demands", tone: "bg-emerald-50 text-emerald-800" },
 ];
 
 const toolLinks = [
@@ -30,6 +31,7 @@ const toolLinks = [
   { icon: TrendingUp, label: "ফসল বাছাই", href: "/crop-choice" },
   { icon: Sprout, label: "মাটি ও সার পরিকল্পনা", href: "/soil-fertilizer" },
   { icon: Wheat, label: "ফসল বিক্রি করুন", href: "/sell-harvest" },
+  { icon: Users, label: "ক্রেতার চাহিদা", href: "/buyer-demands" },
 ];
 
 export const metadata: Metadata = {
@@ -86,7 +88,7 @@ export default async function Home() {
             </form>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="mr-1 font-semibold text-slate-500">জনপ্রিয়:</span>
-              {[{ label: "ফসল বিক্রি করুন", href: "/sell-harvest" }].map(({ label, href }) => <Link key={label} href={href} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
+              {[{ label: "ফসল বিক্রি করুন", href: "/sell-harvest" }, { label: "ক্রেতার চাহিদা", href: "/buyer-demands" }].map(({ label, href }) => <Link key={label} href={href} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
             <div className="mt-8 flex flex-wrap gap-3">
