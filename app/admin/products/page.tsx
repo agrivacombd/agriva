@@ -36,7 +36,7 @@ async function saveProduct(formData: FormData) {
   const sowingSeason = String(formData.get("sowing_season") ?? "").trim();
   const suitableRegions = String(formData.get("suitable_regions") ?? "").trim();
   const seedExpiryDate = String(formData.get("seed_expiry_date") ?? "").trim();
-  if (seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageUrl.length > 2048 || (imageUrl && !/^https:\/\//i.test(imageUrl)) || brand.length > 120 || sku.length > 100 || cropName.length > 120 || seedVariety.length > 160 || packSize.length > 80 || (germinationRate !== null && (!Number.isFinite(germinationRate) || germinationRate < 0 || germinationRate > 100)) || sowingSeason.length > 160 || suitableRegions.length > 500 || (seedExpiryDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(seedExpiryDate))) redirect("/admin/products?notice=invalid");
+  if (seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageUrl.length > 2048 || (imageUrl && !/^https:\/\//i.test(imageUrl)) || brand.length > 120 || sku.length > 100 || cropName.length > 120 || seedVariety.length > 160 || packSize.length > 80 || (germinationRate !== null && (!Number.isFinite(germinationRate) || germinationRate < 0 || germinationRate > 100)) || sowingSeason.length > 160 || suitableRegions.length > 500 || (seedExpiryDate && Number.isNaN(Date.parse(seedExpiryDate)))) redirect("/admin/products?notice=invalid");
   if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status)) {
     redirect("/admin/products?notice=invalid");
   }
