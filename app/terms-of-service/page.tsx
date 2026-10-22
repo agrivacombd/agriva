@@ -2,29 +2,45 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "Terms for accessing and using AGRIVA digital services.",
+  title: "ব্যবহারের শর্তাবলি | AGRIVA",
+  description: "AGRIVA ওয়েবসাইট ও ডিজিটাল সেবা ব্যবহারের জন্য প্রযোজ্য সাধারণ শর্তাবলি পড়ুন।",
+  alternates: { canonical: "/terms-of-service" },
 };
+
+const sections = [
+  { title: "১. শর্তাবলির গ্রহণযোগ্যতা", text: "AGRIVA ওয়েবসাইট বা এর কোনো ফিচার ব্যবহার করার মাধ্যমে আপনি এই শর্তাবলি মেনে চলতে সম্মত হচ্ছেন। কোনো নির্দিষ্ট ফিচারের জন্য অতিরিক্ত শর্ত দেখানো হলে সেগুলোও প্রযোজ্য হতে পারে। আপনি শর্তগুলোর সঙ্গে একমত না হলে সংশ্লিষ্ট সেবা ব্যবহার বন্ধ রাখুন।" },
+  { title: "২. সেবার পরিধি ও পরিবর্তন", text: "AGRIVA কৃষিপণ্য ও মার্কেটপ্লেস, কৃষি-শিক্ষা, AI-সহায়ক তথ্য, ফসল ও খামার পরিকল্পনার টুলস, বাজার-সংক্রান্ত তথ্য এবং অন্যান্য ডিজিটাল সুবিধা দিতে পারে। ফিচারের প্রাপ্যতা, বিষয়বস্তু ও কার্যপদ্ধতি সময়ের সঙ্গে পরিবর্তিত, সীমিত বা বন্ধ হতে পারে।" },
+  { title: "৩. অ্যাকাউন্ট ও ব্যবহারকারীর দায়িত্ব", text: "অ্যাকাউন্ট তৈরি বা কোনো ফর্মে তথ্য দেওয়ার সময় যথাসম্ভব সঠিক ও হালনাগাদ তথ্য দিন। আপনার লগইন তথ্য নিরাপদ রাখুন এবং অ্যাকাউন্টে সন্দেহজনক কার্যক্রম দেখলে দ্রুত যোগাযোগ করুন। অন্যের পরিচয় ব্যবহার, অনুমতি ছাড়া প্রবেশের চেষ্টা, সিস্টেমে বিঘ্ন ঘটানো, প্রতারণামূলক বা বেআইনি কার্যক্রম এবং ক্ষতিকর কনটেন্ট জমা দেওয়া নিষিদ্ধ।" },
+  { title: "৪. কৃষি তথ্য ও AI-সহায়ক ফিচার", text: "কৃষি গাইড, ক্যালকুলেটর, বাজার বা আবহাওয়ার তথ্য এবং AI-উৎপন্ন উত্তর সাধারণ তথ্য ও পরিকল্পনায় সহায়তার জন্য। এগুলো নির্ভুল, সম্পূর্ণ, হালনাগাদ বা আপনার নির্দিষ্ট পরিস্থিতির জন্য উপযুক্ত হবে—এমন নিশ্চয়তা দেওয়া হয় না। বীজ, সার, কীটনাশক, রোগ ব্যবস্থাপনা, সেচ বা বিনিয়োগের গুরুত্বপূর্ণ সিদ্ধান্তের আগে পণ্যের লেবেল, সরকারি নির্দেশনা এবং যোগ্য কৃষি বিশেষজ্ঞের পরামর্শ যাচাই করুন।" },
+  { title: "৫. মার্কেটপ্লেস, তালিকা ও লেনদেন", text: "ব্যবহারকারীর দেওয়া পণ্যের বিবরণ, ছবি, মূল্য, পরিমাণ, সরবরাহের সময় বা অন্যান্য দাবি সব ক্ষেত্রে AGRIVA স্বাধীনভাবে যাচাই করেছে—এমন ধরে নেওয়া যাবে না। ক্রয়-বিক্রয়ের আগে পণ্যের পরিচয়, মান, মূল্য, পরিবহন, পেমেন্ট, ফেরত বা বিরোধ-সংক্রান্ত শর্ত সংশ্লিষ্ট পক্ষের সঙ্গে পরিষ্কার করে নিন। কোনো নির্দিষ্ট লেনদেনের জন্য আলাদা নিয়ম দেখানো হলে সেটিও পড়ুন।" },
+  { title: "৬. ব্যবহারকারীর জমা দেওয়া কনটেন্ট", text: "আপনি যে লেখা, ছবি, তালিকা বা অন্যান্য উপাদান জমা দেন তার অধিকার ও বৈধতার দায়িত্ব আপনার। অন্যের মেধাস্বত্ব, গোপনীয়তা বা আইনগত অধিকার লঙ্ঘন করে এমন উপাদান জমা দেবেন না। সেবা পরিচালনা, প্রদর্শন ও সংশ্লিষ্ট ফিচার সরবরাহের জন্য প্রয়োজনীয় সীমার মধ্যে জমা দেওয়া কনটেন্ট প্রক্রিয়াকৃত হতে পারে; ব্যক্তিগত তথ্যের ব্যবহার সম্পর্কে গোপনীয়তা নীতিও দেখুন।" },
+  { title: "৭. তৃতীয় পক্ষের সেবা ও লিংক", text: "কিছু ফিচার তৃতীয় পক্ষের ওয়েবসাইট, পেমেন্ট, যোগাযোগ বা প্রযুক্তিগত সেবার সঙ্গে যুক্ত হতে পারে। ওই সেবাগুলোর প্রাপ্যতা, শর্ত ও গোপনীয়তা নীতি তাদের নিজস্ব নিয়ন্ত্রণে থাকতে পারে। ব্যবহার করার আগে সংশ্লিষ্ট শর্ত যাচাই করুন।" },
+  { title: "৮. সেবার প্রাপ্যতা ও দায়ের সীমা", text: "AGRIVA সেবাকে কার্যকর ও নির্ভরযোগ্য রাখার চেষ্টা করে, তবে নিরবচ্ছিন্ন বা ত্রুটিমুক্ত কার্যক্রমের নিশ্চয়তা দিতে পারে না। প্রযোজ্য আইনে অনুমোদিত সীমার মধ্যে, ওয়েবসাইটের তথ্য বা সেবার ওপর নির্ভর করে নেওয়া সিদ্ধান্ত, সেবা বিঘ্ন, অথবা ব্যবহারকারীদের পারস্পরিক লেনদেন থেকে উদ্ভূত ক্ষতির বিষয়ে দায়ের সীমা প্রযোজ্য হতে পারে। কোনো কিছুই প্রযোজ্য আইনে বাদ দেওয়া যায় না এমন অধিকার বা দায় বাতিল করে না।" },
+  { title: "৯. শর্তাবলির হালনাগাদ", text: "সেবা বা আইনগত প্রয়োজন পরিবর্তিত হলে এই শর্তাবলি সংশোধন করা হতে পারে। সংশোধিত সংস্করণ এই পেজে প্রকাশিত হওয়ার পর থেকে প্রযোজ্য হবে, যদি আইন অনুযায়ী অন্য কোনো প্রক্রিয়া প্রয়োজন না হয়।" },
+  { title: "১০. প্রযোজ্য আইন ও যোগাযোগ", text: "এই শর্তাবলির ব্যাখ্যা ও প্রয়োগ প্রযোজ্য বাংলাদেশের আইন এবং বাধ্যতামূলক আইনগত বিধানের অধীন হবে। কোনো প্রশ্ন বা অভিযোগ জানাতে Agriva.com.bd@gmail.com ঠিকানায় ইমেইল করুন অথবা 01717504028 নম্বরে যোগাযোগ করুন।" },
+];
 
 export default function TermsOfServicePage() {
   return (
-    <main className="min-h-screen bg-[#f8f8f1] px-4 py-12 text-[#173629] sm:px-6 lg:px-8">
-      <article className="mx-auto max-w-3xl rounded-3xl border border-emerald-950/10 bg-white p-6 shadow-sm sm:p-10">
-        <Link href="/" className="text-sm font-semibold text-emerald-800 hover:underline">← AGRIVA home</Link>
-        <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Using AGRIVA</p>
-        <h1 className="mt-3 text-3xl font-black sm:text-4xl">Terms of Service</h1>
-        <p className="mt-4 text-sm text-slate-500">Last updated: October 23, 2026</p>
-        <p className="mt-6 leading-8 text-slate-600">By accessing AGRIVA, you agree to use the platform lawfully and responsibly. If you do not agree with these terms, please discontinue use of the relevant services.</p>
-        <h2 className="mt-8 text-xl font-bold">Platform information</h2>
-        <p className="mt-3 leading-8 text-slate-600">Agricultural information, AI-generated responses, calculators, weather information, and other tools are provided for general informational support. Verify important decisions with qualified professionals and authoritative local sources.</p>
-        <h2 className="mt-8 text-xl font-bold">Accounts and acceptable use</h2>
-        <p className="mt-3 leading-8 text-slate-600">Keep your account credentials secure, provide accurate information where requested, and do not misuse the platform, attempt unauthorized access, interfere with its operation, or submit unlawful, misleading, or harmful content.</p>
-        <h2 className="mt-8 text-xl font-bold">Marketplace activity</h2>
-        <p className="mt-3 leading-8 text-slate-600">Users are responsible for verifying product descriptions, prices, seller or buyer details, delivery arrangements, and any transaction terms. Do not assume that every listing or user-submitted claim has been independently verified by AGRIVA.</p>
-        <h2 className="mt-8 text-xl font-bold">Availability and changes</h2>
-        <p className="mt-3 leading-8 text-slate-600">Features may change, be interrupted, or become unavailable. To the extent permitted by applicable law, AGRIVA does not guarantee that all information or services will always be uninterrupted, error-free, or suitable for every purpose.</p>
-        <h2 className="mt-8 text-xl font-bold">Updates and applicable law</h2>
-        <p className="mt-3 leading-8 text-slate-600">These terms may be revised as the platform evolves. Applicable laws and regulations govern use of the service. Have this draft reviewed for AGRIVA’s actual operations and legal obligations before relying on it as a final legal agreement.</p>
+    <main className="min-h-screen bg-[#f8f8f1] px-4 py-10 text-[#173629] sm:px-6 sm:py-16 lg:px-8">
+      <article className="mx-auto max-w-4xl rounded-3xl border border-emerald-950/10 bg-white p-6 shadow-sm sm:p-10 lg:p-12">
+        <Link href="/" className="text-sm font-semibold text-emerald-800 transition hover:underline">← AGRIVA হোম</Link>
+        <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">সেবা ব্যবহারের নিয়ম</p>
+        <h1 className="mt-3 text-3xl font-black sm:text-5xl">ব্যবহারের শর্তাবলি</h1>
+        <p className="mt-4 text-sm text-slate-500">সর্বশেষ হালনাগাদ: ২৩ অক্টোবর ২০২৬</p>
+        <p className="mt-6 leading-8 text-slate-600">এই শর্তাবলি AGRIVA-র ওয়েবসাইট ও ডিজিটাল ফিচার ব্যবহারের সাধারণ নিয়ম ব্যাখ্যা করে। কোনো ফিচার ব্যবহারের আগে সংশ্লিষ্ট নির্দেশনা ও প্রযোজ্য অতিরিক্ত শর্তও পড়ে নিন।</p>
+        <p className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">প্রকাশের আগে এই খসড়াটি AGRIVA-র প্রকৃত ব্যবসায়িক প্রক্রিয়া, পেমেন্ট/ডেলিভারি/ফেরত নীতি এবং প্রযোজ্য আইনগত বাধ্যবাধকতার সঙ্গে মিলিয়ে পর্যালোচনা করা উচিত।</p>
+        <div className="mt-8 divide-y divide-slate-100">
+          {sections.map((section) => <section key={section.title} className="py-6 first:pt-0 last:pb-0">
+            <h2 className="text-xl font-extrabold">{section.title}</h2>
+            <p className="mt-3 leading-8 text-slate-600">{section.text}</p>
+          </section>)}
+        </div>
+        <div className="mt-8 rounded-2xl bg-[#f8f8f1] p-5">
+          <h2 className="font-extrabold">সহায়তা প্রয়োজন?</h2>
+          <p className="mt-2 leading-7 text-slate-600">সেবা ব্যবহার বা শর্তাবলি সম্পর্কে প্রশ্ন থাকলে আমাদের সঙ্গে যোগাযোগ করুন।</p>
+          <Link href="/contact-us" className="mt-3 inline-block text-sm font-bold text-emerald-800 hover:underline">যোগাযোগ করুন →</Link>
+        </div>
       </article>
     </main>
   );
