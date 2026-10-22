@@ -45,7 +45,7 @@ assert.ok(analytics.includes('profile?.role !== "admin"'), "analytics endpoint m
 
 assert.ok(paymentIpn.includes('gatewayCurrency !== "BDT"') && paymentIpn.includes("expectedAmount - receivedAmount"), "payment IPN must verify currency and exact order amount");
 assert.ok(paymentIpn.includes("SUPABASE_SERVICE_ROLE_KEY") && !paymentIpn.includes("NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY"), "payment IPN must use server-only service credentials");
-assert.ok(paymentIpn.includes('payment_status: "paid"') && !paymentIpn.split("\\n").some(line => /^\\s*status: "paid"/.test(line)), "payment confirmation must not overwrite fulfilment status");
+assert.ok(paymentIpn.includes('payment_status: "paid"') && !paymentIpn.split("\n").some(line => /^\s*status: "paid"/.test(line)), "payment confirmation must not overwrite fulfilment status");
 
 for (const sql of [seoMigration, migration]) {
   assert.ok(sql.includes("do $constraints$"), "product schema constraints should be added idempotently");
