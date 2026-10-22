@@ -47,6 +47,7 @@ async function saveProduct(formData: FormData) {
     p_category: category || null, p_seo_title: seoTitle || null, p_seo_description: seoDescription || null,
     p_seo_keywords: seoKeywords || null, p_image_url: imageUrl || null, p_brand: brand || null, p_sku: sku || null,
   });
+  const { error: seedError } = productError ? { error: productError } : await supabase.rpc("admin_set_seed_details", { p_product_id: productId, p_crop_name: cropName || null, p_seed_variety: seedVariety || null, p_pack_size: packSize || null, p_germination_rate: germinationRate, p_sowing_season: sowingSeason || null, p_suitable_regions: suitableRegions || null, p_seed_expiry_date: seedExpiryDate || null });
   const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_category", {
     p_product_id: productId, p_category: category || null,
   });
@@ -72,7 +73,15 @@ async function createProduct(formData: FormData) {
   const imageUrl = String(formData.get("image_url") ?? "").trim();
   const brand = String(formData.get("brand") ?? "").trim();
   const sku = String(formData.get("sku") ?? "").trim();
-  if (seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageUrl.length > 2048 || (imageUrl && !/^https:\/\//i.test(imageUrl)) || brand.length > 120 || sku.length > 100) redirect("/admin/products?notice=invalid");
+  const cropName = String(formData.get("crop_name") ?? "").trim();
+  const seedVariety = String(formData.get("seed_variety") ?? "").trim();
+  const packSize = String(formData.get("pack_size") ?? "").trim();
+  const germinationRaw = String(formData.get("germination_rate") ?? "").trim();
+  const germinationRate = germinationRaw ? Number(germinationRaw) : null;
+  const sowingSeason = String(formData.get("sowing_season") ?? "").trim();
+  const suitableRegions = String(formData.get("suitable_regions") ?? "").trim();
+  const seedExpiryDate = String(formData.get("seed_expiry_date") ?? "").trim();
+  if (seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageUrl.length > 2048 || (imageUrl && !/^https:\/\//i.test(imageUrl)) || brand.length > 120 || sku.length > 100 || cropName.length > 120 || seedVariety.length > 160 || packSize.length > 80 || (germinationRate !== null && (!Number.isFinite(germinationRate) || germinationRate < 0 || germinationRate > 100)) || sowingSeason.length > 160 || suitableRegions.length > 500 || (seedExpiryDate && !/^\d{4}-\d{2}-\d{2}$/.test(seedExpiryDate))) redirect("/admin/products?notice=invalid");
   if (!name || name.length > 160 || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status)) {
     redirect("/admin/products?notice=invalid");
   }
@@ -83,10 +92,11 @@ async function createProduct(formData: FormData) {
     p_seo_title: seoTitle || null, p_seo_description: seoDescription || null, p_seo_keywords: seoKeywords || null,
     p_image_url: imageUrl || null, p_brand: brand || null, p_sku: sku || null,
   });
+  const { error: seedError } = error || !createdProduct ? { error } : await supabase.rpc("admin_set_seed_details", { p_product_id: createdProduct.id, p_crop_name: cropName || null, p_seed_variety: seedVariety || null, p_pack_size: packSize || null, p_germination_rate: germinationRate, p_sowing_season: sowingSeason || null, p_suitable_regions: suitableRegions || null, p_seed_expiry_date: seedExpiryDate || null });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
-  redirect(error ? "/admin/products?notice=create_error" : "/admin/products?notice=created");
+  redirect(error || seedError ? "/admin/products?notice=create_error" : "/admin/products?notice=created");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
