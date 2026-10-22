@@ -12,7 +12,7 @@ async function requireAdmin() {
 }
 
 type Product = {
-  id: string; name: string; slug: string | null; status: string | null; moderation_status: string | null;
+  id: string; name: string; stock?: number | null; slug: string | null; status: string | null; moderation_status: string | null;
   description: string | null; seo_title: string | null; seo_description: string | null; image_url: string | null;
   brand: string | null; sku: string | null; category: string | null; crop_name?: string | null;
   seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null;
@@ -39,12 +39,12 @@ function audit(p: Product) {
 export default async function SeoAuditPage() {
   const supabase = await requireAdmin();
   const { data, error } = await supabase.from("products")
-    .select("id,name,slug,status,moderation_status,description,seo_title,seo_description,image_url,brand,sku,category,crop_name,seed_variety,pack_size,germination_rate,sowing_season,suitable_regions")
+    .select("id,name,slug,status,moderation_status,stock,description,seo_title,seo_description,image_url,brand,sku,category,crop_name,seed_variety,pack_size,germination_rate,sowing_season,suitable_regions")
     .order("updated_at", { ascending: false }).limit(500);
   const products = (data ?? []) as Product[];
   const rows = products.map(p => ({ product: p, result: audit(p) }));
   const average = rows.length ? Math.round(rows.reduce((sum, row) => sum + row.result.score, 0) / rows.length) : 0;
-  const feedEligible = products.filter(p => p.status === "active" && p.moderation_status === "approved" && Boolean(p.slug && p.image_url && Number((p as Product & { stock?: number }).stock ?? 0) > 0)).length;
+  const feedEligible = products.filter(p => p.status === "active" && p.moderation_status === "approved" && Boolean(p.slug && p.image_url && Number(p.stock ?? 0) > 0)).length;
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6"><div className="mx-auto max-w-7xl">
     <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><p className="text-sm text-emerald-100">AGRIVA Admin</p><h1 className="text-2xl font-black">SEO Audit Dashboard</h1></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
     <p className="mt-5 text-sm leading-6 text-[#637266]">Completeness score হলো catalogue checklist—এটি Google ranking score নয়। সর্বোচ্চ ৫০০টি সাম্প্রতিক পণ্য যাচাই করা হয়।</p>
