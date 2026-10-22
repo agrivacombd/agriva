@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title, description,
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
-    keywords: [product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
+    keywords: [...(product.seo_keywords?.split(",").map((keyword) => keyword.trim()).filter(Boolean) ?? []), product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
     openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}` },
   };
 }
