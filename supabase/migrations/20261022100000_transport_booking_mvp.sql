@@ -79,10 +79,6 @@ using (
     select 1 from public.transport_partners p
     where p.user_id = (select auth.uid()) and p.verification_status = 'verified'
   ))
-  or exists (
-    select 1 from public.transport_quotes q
-    where q.booking_id = id and q.partner_id = (select auth.uid())
-  )
   or selected_partner_id = (select auth.uid())
 );
 
