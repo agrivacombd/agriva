@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Script from "next/script";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd"),
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   category: "agriculture",
   creator: "AGRIVA",
   publisher: "AGRIVA",
-  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } } : {}),
+  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   openGraph: {
     type: "website",
@@ -30,7 +31,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const supabase = await createSupabaseServerClient();
+  const { data: googleSettings } = await supabase.from("site_public_integrations").select("ga4_measurement_id,google_site_verification").eq("id", 1).maybeSingle();
+  const gaMeasurementId = googleSettings?.ga4_measurement_id || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const googleVerification = googleSettings?.google_site_verification || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -53,8 +58,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="bn">
       <body>
-        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && /^G-[A-Z0-9]+$/.test(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) && <>
-          <Script src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+        {gaMeasurementId && /^G-[A-Z0-9]+$/.test(gaMeasurementId) && <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
           <Script id="agriva-ga4" strategy="afterInteractive">{`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}", { anonymize_ip: true });`}</Script>
         </>}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c") }} />
