@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   description:
     "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও রিসেলারদের জন্য AGRIVA—কৃষি পণ্য, স্মার্ট সার্চ, কৃষি তথ্য ও ডিজিটাল টুলস এক জায়গায়।",
   applicationName: "AGRIVA",
+  category: "agriculture",
+  creator: "AGRIVA",
+  publisher: "AGRIVA",
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   openGraph: {
     type: "website",
     siteName: "AGRIVA",
