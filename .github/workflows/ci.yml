@@ -5,7 +5,9 @@ on:
   pull_request:
     branches: [main]
 
-# Keep only the newest run for each branch/PR to avoid stale queued jobs.
+permissions:
+  contents: read
+
 concurrency:
   group: agriva-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,11 +21,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
       - name: Production build
