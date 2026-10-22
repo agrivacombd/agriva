@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     keywords: [...(product.seo_keywords?.split(",").map((keyword) => keyword.trim()).filter(Boolean) ?? []), product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
-    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}` },
+    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
   };
 }
 
