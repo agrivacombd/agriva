@@ -46,6 +46,24 @@ assert.ok(articlePage.includes('"@type": "Article"') && articlePage.includes("da
 for (const route of ["/tools", "/market-prices", "/weather", "/crop-calendar", "/crop-choice", "/soil-fertilizer"]) {
   assert.ok(sitemap.includes(route), `sitemap should include public tool route ${route}`);
 }
+const marketPricesPage = read("../app/market-prices/page.tsx");
+const cropDiseasePage = read("../app/crop-disease/page.tsx");
+const weatherPage = read("../app/weather/page.tsx");
+const cropCalendarPage = read("../app/crop-calendar/page.tsx");
+const cropChoicePage = read("../app/crop-choice/page.tsx");
+const soilFertilizerPage = read("../app/soil-fertilizer/page.tsx");
+const blogIndexPage = read("../app/blog/page.tsx");
+for (const [name, page] of [
+  ["market prices", marketPricesPage],
+  ["crop disease", cropDiseasePage],
+  ["weather", weatherPage],
+  ["crop calendar", cropCalendarPage],
+  ["crop choice", cropChoicePage],
+  ["soil fertilizer", soilFertilizerPage],
+  ["blog index", blogIndexPage],
+]) {
+  assert.ok(page.includes("openGraph:") && page.includes("twitter:"), `${name} must define page-specific social metadata`);
+}
 assert.ok(sitemap.includes("MARKETPLACE_CATEGORIES.map") && sitemap.includes("MARKETPLACE_CATEGORIES.flatMap"), "category landing pages must be discoverable in sitemap");
 assert.ok(categoryPage.includes("matchesProductCategory") && categoryPage.includes("CollectionPage"), "category pages must filter products and expose collection metadata");
 assert.ok(subcategoryPage.includes("matchesSubcategory") && subcategoryPage.includes("CollectionPage"), "subcategory pages must filter products and expose collection metadata");
