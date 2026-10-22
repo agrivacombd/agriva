@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   category: "agriculture",
   creator: "AGRIVA",
   publisher: "AGRIVA",
-  ...(googleVerification ? { verification: { google: googleVerification } } : {}),
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   openGraph: {
     type: "website",
@@ -57,6 +56,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   };
   return (
     <html lang="bn">
+      <head>{googleVerification && <meta name="google-site-verification" content={googleVerification} />}</head>
       <body>
         {gaMeasurementId && /^G-[A-Z0-9]+$/.test(gaMeasurementId) && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
