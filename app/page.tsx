@@ -133,6 +133,36 @@ export default async function Home() {
         </div>
       </section>
 
+      <section aria-labelledby="quick-start-title" className="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+        <div className="rounded-[1.75rem] border border-emerald-100 bg-white/90 p-5 shadow-sm shadow-emerald-950/[0.03] sm:p-7">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">শুরু করা সহজ</p>
+              <h2 id="quick-start-title" className="mt-2 text-xl font-black tracking-tight sm:text-2xl">আজ আপনার কী কাজে সাহায্য দরকার?</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">নিজের প্রয়োজন অনুযায়ী একটি বেছে নিন—সরাসরি কাজ শুরু করুন।</p>
+            </div>
+            <Link href="#services" className="inline-flex items-center gap-1 self-start text-sm font-bold text-emerald-800 transition hover:gap-2 sm:self-auto">সব সেবা <ArrowRight size={15} /></Link>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <Link href="/marketplace" className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-[#fbfdf9] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/60 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-lime-100 text-emerald-900"><ShoppingBasket size={22} /></span>
+              <span className="min-w-0 flex-1"><span className="block font-extrabold text-[#173629]">বীজ ও পণ্য কিনব</span><span className="mt-1 block text-xs leading-5 text-slate-500">পণ্য দেখুন ও তুলনা করুন</span></span>
+              <ChevronRight size={18} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-800" />
+            </Link>
+            <Link href="/crop-disease" className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-[#fbfdf9] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/60 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-800"><Leaf size={22} /></span>
+              <span className="min-w-0 flex-1"><span className="block font-extrabold text-[#173629]">ফসলের সমস্যার সমাধান</span><span className="mt-1 block text-xs leading-5 text-slate-500">লক্ষণ বুঝে সহায়তা নিন</span></span>
+              <ChevronRight size={18} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-800" />
+            </Link>
+            <Link href="/market-prices" className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-[#fbfdf9] p-4 transition hover:border-emerald-300 hover:bg-emerald-50/60 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-800"><TrendingUp size={22} /></span>
+              <span className="min-w-0 flex-1"><span className="block font-extrabold text-[#173629]">বাজারদর দেখব</span><span className="mt-1 block text-xs leading-5 text-slate-500">দাম জেনে পরিকল্পনা করুন</span></span>
+              <ChevronRight size={18} className="shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-emerald-800" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
