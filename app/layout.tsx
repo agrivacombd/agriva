@@ -61,7 +61,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         {gaMeasurementId && /^G-[A-Z0-9]+$/.test(gaMeasurementId) && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
-          <Script id="agriva-ga4" strategy="afterInteractive">{`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}", { anonymize_ip: true });`}</Script>
+          <Script id="agriva-ga4" strategy="afterInteractive">{`window.dataLayer = window.dataLayer || []; function gtag(){window.dataLayer.push(arguments);} gtag("js", new Date()); gtag("config", "${gaMeasurementId}", { anonymize_ip: true });`}</Script>
         </>}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c") }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c") }} />
