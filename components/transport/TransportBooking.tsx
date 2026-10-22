@@ -17,6 +17,8 @@ type Partner = {
   vehicle_registration: string; notes: string; verification_status: string;
 };
 type Quote = { id: string; booking_id: string; partner_id: string; price: number; eta_text: string; loading_fee: number; note: string; status: string; created_at: string; };
+type BookingContact = { booking_id: string; customer_id: string; phone: string; };
+type PartnerDirectoryEntry = { user_id: string; full_name: string; phone: string; vehicle_registration: string; };
 
 const vehicleLabels: Record<Vehicle, string> = { van: "ভ্যান / ছোট যান", pickup: "পিকআপ", truck: "ট্রাক", covered: "কাভার্ড ভ্যান", refrigerated: "রেফ্রিজারেটেড গাড়ি" };
 const unitLabels: Record<Unit, string> = { kg: "কেজি", maund: "মণ", ton: "টন", bag: "বস্তা" };
@@ -30,7 +32,7 @@ export default function TransportBooking() {
   const [userId, setUserId] = useState<string | null>(null);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);\n  const [contacts, setContacts] = useState<BookingContact[]>([]);\n  const [partnerDirectory, setPartnerDirectory] = useState<PartnerDirectoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -41,7 +43,7 @@ export default function TransportBooking() {
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState<Unit>("kg");
   const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
+  const [destination, setDestination] = useState("");\n  const [customerPhone, setCustomerPhone] = useState("");
   const [vehicle, setVehicle] = useState<Vehicle>("pickup");
   const [pickupDate, setPickupDate] = useState("");
   const [loadingHelp, setLoadingHelp] = useState("discuss");
@@ -74,9 +76,9 @@ export default function TransportBooking() {
       else setPartner(null);
       if (!bookingResult.error) setBookings((bookingResult.data ?? []) as Booking[]);
       else setNotice("বুকিং লোড করা যায়নি। ডেটাবেস মাইগ্রেশন প্রয়োগ হয়েছে কি না যাচাই করুন।");
-      if (!quoteResult.error) setQuotes((quoteResult.data ?? []) as Quote[]);
+      if (!quoteResult.error) setQuotes((quoteResult.data ?? []) as Quote[]);\n      const { data: contactData } = await supabase.from("transport_booking_contacts").select("booking_id,customer_id,phone");\n      setContacts((contactData ?? []) as BookingContact[]);\n      const selectedIds = Array.from(new Set(((bookingResult.data ?? []) as Booking[]).map(b => b.selected_partner_id).filter((id): id is string => Boolean(id))));\n      if (selectedIds.length) {\n        const { data: partnerData } = await supabase.from("transport_partners").select("user_id,full_name,phone,vehicle_registration").in("user_id", selectedIds);\n        setPartnerDirectory((partnerData ?? []) as PartnerDirectoryEntry[]);\n      } else setPartnerDirectory([]);
     } else {
-      setPartner(null); setBookings([]); setQuotes([]);
+      setPartner(null); setBookings([]); setQuotes([]); setContacts([]); setPartnerDirectory([]);
     }
     setLoading(false);
   }, [supabase]);
@@ -102,7 +104,7 @@ export default function TransportBooking() {
     setBusy(false);
     if (error) { setNotice("বুকিং তৈরি হয়নি। তথ্য ও ডেটাবেস মাইগ্রেশন যাচাই করে আবার চেষ্টা করুন।"); return; }
     setNotice("পরিবহনের অনুরোধ প্রকাশ হয়েছে। যাচাইকৃত পার্টনাররা অফার দিতে পারবেন।");
-    setShowBookingForm(false); setMineOnly(true); setCrop("আলু"); setQuantity(""); setOrigin(""); setDestination(""); setPickupDate(""); setBudget(""); setNotes("");
+    setShowBookingForm(false); setMineOnly(true); setCrop("আলু"); setQuantity(""); setOrigin(""); setDestination(""); setCustomerPhone(""); setPickupDate(""); setBudget(""); setNotes("");
     await load();
   }
 
@@ -193,7 +195,7 @@ export default function TransportBooking() {
               <label className={labelClass}>পরিমাণ<input className={inputClass} required type="number" min="0.01" step="0.01" value={quantity} onChange={e => setQuantity(e.target.value)} /></label>
               <label className={labelClass}>একক<select className={inputClass} value={unit} onChange={e => setUnit(e.target.value as Unit)}>{Object.entries(unitLabels).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
               <label className={labelClass}>পণ্য তোলার স্থান<input className={inputClass} required minLength={3} maxLength={240} value={origin} onChange={e => setOrigin(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>
-              <label className={labelClass}>গন্তব্য<input className={inputClass} required minLength={3} maxLength={240} value={destination} onChange={e => setDestination(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>
+              <label className={labelClass}>গন্তব্য<input className={inputClass} required minLength={3} maxLength={240} value={destination} onChange={e => setDestination(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>\n              <label className={labelClass}>যোগাযোগের ফোন<input className={inputClass} required type="tel" minLength={6} maxLength={30} value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" /><span className="mt-1 block text-xs font-normal text-slate-500">শুধু বুকিং গ্রহণ করা পরিবহন পার্টনার দেখতে পারবেন।</span></label>
               <label className={labelClass}>গাড়ির ধরন<select className={inputClass} value={vehicle} onChange={e => setVehicle(e.target.value as Vehicle)}>{Object.entries(vehicleLabels).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
               <label className={labelClass}>পণ্য তোলার তারিখ<input className={inputClass} required type="date" min={new Date().toISOString().slice(0,10)} value={pickupDate} onChange={e => setPickupDate(e.target.value)} /></label>
               <label className={labelClass}>আনুমানিক বাজেট (ঐচ্ছিক, টাকা)<input className={inputClass} type="number" min="1" step="1" value={budget} onChange={e => setBudget(e.target.value)} /></label>
@@ -242,7 +244,7 @@ export default function TransportBooking() {
               {own && <div className="mt-4 border-t border-slate-100 pt-4"><p className="text-sm font-extrabold">ভাড়ার অফার ({bn(ownQuotes.length)})</p>{ownQuotes.length === 0 ? <p className="mt-2 text-sm text-slate-500">এখনো অফার আসেনি।</p> : <div className="mt-3 space-y-3">{ownQuotes.map(q => <div key={q.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><strong>৳{bn(Number(q.price))}</strong><span className="text-xs text-slate-500">{q.status === "accepted" ? "গৃহীত" : q.status === "rejected" ? "প্রত্যাখ্যাত" : "অপেক্ষমাণ"}</span></div><p className="mt-1 text-sm text-slate-600">পৌঁছানোর সময়: {q.eta_text} · লোডিং: ৳{bn(Number(q.loading_fee))}</p>{q.note && <p className="mt-2 text-sm text-slate-500">{q.note}</p>}{booking.status === "open" && q.status === "pending" && <button disabled={busy} onClick={() => void acceptQuote(booking,q)} className="mt-3 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white">এই অফার গ্রহণ করুন</button>}</div>)}</div>}</div>}
               {!own && partner?.verification_status === "verified" && booking.status === "open" && !ownQuotes.some(q => q.partner_id === userId) && <button onClick={() => { setQuoteFor(booking); setShowBookingForm(false); setShowPartnerForm(false); }} className="mt-4 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-extrabold text-white">ভাড়ার অফার দিন</button>}
               {booking.status === "booked" && booking.selected_partner_id === userId && <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm"><p className="font-bold">বুকিং নিশ্চিত হয়েছে</p>{booking.selected_quote_id && chosenQuote && <p className="mt-1">সম্মত ভাড়া: ৳{bn(Number(chosenQuote.price))} + লোডিং ৳{bn(Number(chosenQuote.loading_fee))}</p>}<p className="mt-2 text-slate-600">কৃষকের সঙ্গে যোগাযোগের আগে বুকিংয়ের শর্ত ও যোগাযোগের ব্যবস্থা নিশ্চিত করুন।</p><div className="mt-3 flex flex-wrap gap-2"><button onClick={() => void updateStatus(booking,"picked_up")} className="rounded-lg bg-white px-3 py-2 text-xs font-bold">পণ্য তোলা হয়েছে</button><button onClick={() => void updateStatus(booking,"in_transit")} className="rounded-lg bg-white px-3 py-2 text-xs font-bold">পথে আছে</button><button onClick={() => void updateStatus(booking,"delivered")} className="rounded-lg bg-white px-3 py-2 text-xs font-bold">পৌঁছে গেছে</button></div></div>}
-              {booking.selected_partner_id && (booking.customer_id === userId || booking.selected_partner_id === userId) && <p className="mt-3 flex items-center gap-2 text-xs text-slate-500"><ShieldCheck size={14} /> নির্বাচিত পরিবহন পার্টনার: {booking.selected_partner_id === userId ? "আপনি" : "নির্বাচিত পার্টনার"}</p>}
+              {booking.selected_partner_id && (booking.customer_id === userId || booking.selected_partner_id === userId) && <div className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm"><p className="flex items-center gap-2 font-bold"><ShieldCheck size={14} /> বুকিংয়ের যোগাযোগ</p>{booking.customer_id === userId && partnerDirectory.find(p => p.user_id === booking.selected_partner_id) && <p className="mt-2">পার্টনার: {partnerDirectory.find(p => p.user_id === booking.selected_partner_id)?.full_name} · গাড়ি: {partnerDirectory.find(p => p.user_id === booking.selected_partner_id)?.vehicle_registration} · <a className="font-bold text-emerald-800" href={"tel:" + partnerDirectory.find(p => p.user_id === booking.selected_partner_id)?.phone}>{partnerDirectory.find(p => p.user_id === booking.selected_partner_id)?.phone}</a></p>}{booking.selected_partner_id === userId && contacts.find(c => c.booking_id === booking.id) && <p className="mt-2">ক্রেতার ফোন: <a className="font-bold text-emerald-800" href={"tel:" + contacts.find(c => c.booking_id === booking.id)?.phone}>{contacts.find(c => c.booking_id === booking.id)?.phone}</a></p>}</div>}
               {own && ["booked","picked_up","in_transit"].includes(booking.status) && <div className="mt-3 flex flex-wrap gap-2">{booking.status !== "delivered" && <button onClick={() => void updateStatus(booking,"delivered")} className="rounded-lg border px-3 py-2 text-xs font-bold">পণ্য পৌঁছেছে নিশ্চিত করুন</button>}</div>}
               {own && booking.status === "open" && <button disabled={busy} onClick={() => void updateStatus(booking,"cancelled")} className="mt-4 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">বুকিং বাতিল করুন</button>}
             </article>;
