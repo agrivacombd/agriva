@@ -32,9 +32,10 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const supabase = await createSupabaseServerClient();
-  const { data: googleSettings } = await supabase.from("site_public_integrations").select("ga4_measurement_id,google_site_verification").eq("id", 1).maybeSingle();
+  const { data: googleSettings } = await supabase.from("site_public_integrations").select("ga4_measurement_id,google_site_verification,bing_site_verification").eq("id", 1).maybeSingle();
   const gaMeasurementId = googleSettings?.ga4_measurement_id || process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const googleVerification = googleSettings?.google_site_verification || process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
+  const bingVerification = googleSettings?.bing_site_verification;
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -56,7 +57,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   };
   return (
     <html lang="bn">
-      <head>{googleVerification && <meta name="google-site-verification" content={googleVerification} />}</head>
+      <head>{googleVerification && <meta name="google-site-verification" content={googleVerification} />}{bingVerification && <meta name="msvalidate.01" content={bingVerification} />}</head>
       <body>
         {gaMeasurementId && /^G-[A-Z0-9]+$/.test(gaMeasurementId) && <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} strategy="afterInteractive" />
