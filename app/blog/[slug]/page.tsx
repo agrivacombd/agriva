@@ -71,7 +71,8 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
   const article = await getArticle(slug);
   if (!article) notFound();
 
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const configuredBase = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
+  const base = configuredBase.endsWith("/") ? configuredBase.slice(0, -1) : configuredBase;
   const canonicalUrl = `${base}/blog/${article.slug}`;
   const description = getDescription(article);
   const articleSchema = {
@@ -91,7 +92,7 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
 
   return (
     <main className="min-h-screen bg-[#f5f7f2] px-6 py-14 text-[#17351f]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replace(/</g, String.fromCharCode(92) + "u003c") }} />
       <article className="mx-auto max-w-4xl rounded-3xl bg-white p-7 shadow-sm md:p-12">
         <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA কৃষি জ্ঞান</p>
         <h1 className="mt-4 text-4xl font-black md:text-5xl">{article.title}</h1>
