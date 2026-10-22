@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { ArrowLeft, CalendarDays, Clock3, MapPin, Package, Plus, RefreshCw, ShieldCheck, Truck, X } from "lucide-react";
+import { ArrowLeft, CalendarDays, MapPin, Package, Plus, RefreshCw, ShieldCheck, Truck, X } from "lucide-react";
 
 type Vehicle = "van" | "pickup" | "truck" | "covered" | "refrigerated";
 type Unit = "kg" | "maund" | "ton" | "bag";
