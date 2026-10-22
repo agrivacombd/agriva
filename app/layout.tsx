@@ -29,9 +29,32 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${base}/#organization`,
+    name: "AGRIVA",
+    url: base,
+    description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও রিসেলারদের জন্য কৃষি পণ্য ও ডিজিটাল কৃষি প্ল্যাটফর্ম।",
+    areaServed: { "@type": "Country", name: "Bangladesh" },
+  };
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${base}/#website`,
+    url: base,
+    name: "AGRIVA",
+    inLanguage: ["bn-BD", "en"],
+    publisher: { "@id": `${base}/#organization` },
+  };
   return (
     <html lang="bn">
-      <body>{children}</body>
+      <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema).replace(/</g, "\\u003c") }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c") }} />
+        {children}
+      </body>
     </html>
   );
 }
