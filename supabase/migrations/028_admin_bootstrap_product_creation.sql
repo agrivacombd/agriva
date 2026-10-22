@@ -95,3 +95,23 @@ end;
 $$;
 revoke all on function public.admin_create_product(text, text, numeric, numeric, numeric, public.product_status, text) from public, anon;
 grant execute on function public.admin_create_product(text, text, numeric, numeric, numeric, public.product_status, text) to authenticated;
+
+
+-- Expose only the non-sensitive online-payment availability flag to checkout.
+-- The setting's value is a boolean gate, not a credential or payment secret.
+create or replace function public.get_public_site_settings()
+returns table(key text, value text)
+language sql
+stable
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $$
+  select s.key, s.value
+    from public.site_settings s
+   where s.key in (
+     'site_name', 'support_phone', 'support_email', 'homepage_notice',
+     'homepage_hero_title', 'homepage_hero_subtitle', 'cod_enabled',
+     'online_payment_enabled'
+   );
+$$;
+grant execute on function public.get_public_site_settings() to anon, authenticated;
