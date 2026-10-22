@@ -14,6 +14,9 @@ const productPage = read("../app/marketplace/[productId]/page.tsx");
 const audit = read("../app/admin/seo/page.tsx");
 const feed = read("../app/api/merchant-center/route.ts");
 const sitemap = read("../app/sitemap.ts");
+const homepage = read("../app/page.tsx");
+const toolsPage = read("../app/tools/page.tsx");
+const articlePage = read("../app/blog/[slug]/page.tsx");
 const robots = read("../app/robots.ts");
 const guides = read("../app/guides/[slug]/page.tsx");
 const analytics = read("../app/api/analytics-report/route.ts");
@@ -37,6 +40,12 @@ assert.ok(feed.includes("p.image_url && /^https:") && feed.includes("Cache-Contr
 assert.ok(productPage.includes("BreadcrumbList") && productPage.includes("additionalProperty"), "product page must emit breadcrumb and seed structured data");
 assert.ok(sitemap.includes("/guides/") && guides.includes("seed-selection"), "Bengali guides must be crawlable");
 assert.ok(!sitemap.includes("\\n"), "sitemap must not contain escaped newline tokens that break TypeScript parsing");
+assert.ok(homepage.includes("openGraph:") && homepage.includes("keywords:"), "homepage should expose search and social metadata");
+assert.ok(toolsPage.includes("WebApplication") && toolsPage.includes("alternates: { canonical: \"/tools\" }"), "tools page should expose canonical and application structured data");
+assert.ok(articlePage.includes('"@type": "Article"') && articlePage.includes("datePublished") && articlePage.includes("openGraph:"), "published articles should expose article structured data and social metadata");
+for (const route of ["/tools", "/market-prices", "/weather", "/crop-calendar", "/crop-choice", "/soil-fertilizer"]) {
+  assert.ok(sitemap.includes(route), `sitemap should include public tool route ${route}`);
+}
 assert.ok(sitemap.includes("MARKETPLACE_CATEGORIES.map") && sitemap.includes("MARKETPLACE_CATEGORIES.flatMap"), "category landing pages must be discoverable in sitemap");
 assert.ok(categoryPage.includes("matchesProductCategory") && categoryPage.includes("CollectionPage"), "category pages must filter products and expose collection metadata");
 assert.ok(subcategoryPage.includes("matchesSubcategory") && subcategoryPage.includes("CollectionPage"), "subcategory pages must filter products and expose collection metadata");
