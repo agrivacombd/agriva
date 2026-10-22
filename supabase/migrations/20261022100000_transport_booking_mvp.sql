@@ -91,9 +91,10 @@ create policy transport_bookings_insert_self on public.transport_bookings for in
 with check (customer_id = (select auth.uid()) and status = 'open' and selected_quote_id is null and selected_partner_id is null);
 
 drop policy if exists transport_bookings_update_owner on public.transport_bookings;
-create policy transport_bookings_update_owner on public.transport_bookings for update to authenticated
-using (customer_id = (select auth.uid()))
-with check (customer_id = (select auth.uid()));
+drop policy if exists transport_bookings_update_parties on public.transport_bookings;
+create policy transport_bookings_update_parties on public.transport_bookings for update to authenticated
+using (customer_id = (select auth.uid()) or selected_partner_id = (select auth.uid()))
+with check (customer_id = (select auth.uid()) or selected_partner_id = (select auth.uid()));
 
 drop policy if exists transport_quotes_read_parties on public.transport_quotes;
 create policy transport_quotes_read_parties on public.transport_quotes for select to authenticated
