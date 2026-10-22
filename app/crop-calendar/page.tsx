@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/crop-calendar" },
   keywords: ["ফসল ক্যালেন্ডার", "চাষের কাজের তালিকা", "কৃষি পরিকল্পনা", "ফসলের মৌসুম", "কৃষি টুলস বাংলা"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "ফসল ক্যালেন্ডার ও চাষ পরিকল্পনা | AGRIVA", description: "ফসলভিত্তিক কাজের তালিকা তৈরি ও চাষের পরিকল্পনা গুছিয়ে রাখুন।", url: "/crop-calendar" },
+  twitter: { card: "summary", title: "ফসল ক্যালেন্ডার ও চাষ পরিকল্পনা | AGRIVA", description: "ফসলভিত্তিক কাজের তালিকা তৈরি ও চাষের পরিকল্পনা গুছিয়ে রাখুন।" },
 };
 
 export default function CropCalendarPage() {
