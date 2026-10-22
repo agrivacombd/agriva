@@ -61,6 +61,7 @@ export default async function Home() {
             <Link className="hover:text-[#0b6b4f]" href="/tools">কৃষি টুলস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
+            <Link className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1.5 font-bold text-amber-900 transition hover:bg-amber-200" href="/sell-harvest"><Wheat size={15} /> ফসল বিক্রি করুন</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link href="/login" className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#0b6b4f] hover:bg-emerald-50 sm:inline-flex">লগইন</Link>
