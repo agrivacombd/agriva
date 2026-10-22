@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test:smart-search": "node scripts/smoke-smart-search.mjs"
+    "lint": "eslint .",
+    "test:smart-search": "node scripts/smoke-smart-search.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "next": "15.5.28",
