@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 function csvCell(value: unknown) {
   const text = value == null ? "" : String(value);
   return '"' + text.replace(/"/g, '""') + '"';
