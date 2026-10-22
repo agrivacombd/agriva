@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
   ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
