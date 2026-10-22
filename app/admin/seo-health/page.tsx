@@ -41,7 +41,7 @@ const notices: Record<string, string> = {
 export default async function SeoHealthPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
   const params = await searchParams;
   const supabase = await requireAdmin();
-  const { data: settings } = await supabase.from("site_public_integrations").select("indexnow_key,google_site_verification,bing_site_verification,ga4_measurement_id").eq("id", 1).maybeSingle();
+  const { data: settings } = await supabase.from("site_public_integrations").select("indexnow_key,google_site_verification,bing_site_verification,ga4_measurement_id,merchant_center_verification,yandex_verification,pinterest_verification,facebook_domain_verification,tiktok_verification,google_tag_manager_id,google_ads_conversion_id").eq("id", 1).maybeSingle();
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const checks = [
     { name: "robots.txt", href: "/robots.txt", detail: "Crawler access rules" },
@@ -56,6 +56,13 @@ export default async function SeoHealthPage({ searchParams }: { searchParams?: P
       ["Google Analytics", Boolean(settings?.ga4_measurement_id)],
       ["Google verification code", Boolean(settings?.google_site_verification)],
       ["Bing verification code", Boolean(settings?.bing_site_verification)],
+      ["Merchant Center verification", Boolean(settings?.merchant_center_verification)],
+      ["Yandex verification", Boolean(settings?.yandex_verification)],
+      ["Pinterest verification", Boolean(settings?.pinterest_verification)],
+      ["Meta domain verification", Boolean(settings?.facebook_domain_verification)],
+      ["TikTok verification", Boolean(settings?.tiktok_verification)],
+      ["Google Tag Manager", Boolean(settings?.google_tag_manager_id)],
+      ["Google Ads ID", Boolean(settings?.google_ads_conversion_id)],
       ["IndexNow key", Boolean(settings?.indexnow_key)],
     ].map(([name,ok])=><div key={String(name)} className="rounded-xl bg-white p-4"><p className="font-bold">{name}</p><p className={ok?"mt-1 text-sm text-emerald-700":"mt-1 text-sm text-amber-800"}>{ok?"Configured":"Needs setup"}</p></div>)}</section>
     <section className="mt-5 rounded-2xl bg-white p-5"><h2 className="font-black">Crawler resources</h2><div className="mt-3 space-y-3">{checks.map(check=><div key={check.href} className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3"><div><p className="font-bold">{check.name}</p><p className="text-xs text-slate-500">{check.detail}</p></div><Link className="font-semibold text-emerald-800 underline" href={check.href} target="_blank">{base+check.href} ↗</Link></div>)}</div></section>
