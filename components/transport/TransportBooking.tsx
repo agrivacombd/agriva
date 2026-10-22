@@ -32,7 +32,9 @@ export default function TransportBooking() {
   const [userId, setUserId] = useState<string | null>(null);
   const [partner, setPartner] = useState<Partner | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [quotes, setQuotes] = useState<Quote[]>([]);\n  const [contacts, setContacts] = useState<BookingContact[]>([]);\n  const [partnerDirectory, setPartnerDirectory] = useState<PartnerDirectoryEntry[]>([]);
+  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [contacts, setContacts] = useState<BookingContact[]>([]);
+  const [partnerDirectory, setPartnerDirectory] = useState<PartnerDirectoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -43,7 +45,8 @@ export default function TransportBooking() {
   const [quantity, setQuantity] = useState("");
   const [unit, setUnit] = useState<Unit>("kg");
   const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");\n  const [customerPhone, setCustomerPhone] = useState("");
+  const [destination, setDestination] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
   const [vehicle, setVehicle] = useState<Vehicle>("pickup");
   const [pickupDate, setPickupDate] = useState("");
   const [loadingHelp, setLoadingHelp] = useState("discuss");
@@ -76,7 +79,14 @@ export default function TransportBooking() {
       else setPartner(null);
       if (!bookingResult.error) setBookings((bookingResult.data ?? []) as Booking[]);
       else setNotice("বুকিং লোড করা যায়নি। ডেটাবেস মাইগ্রেশন প্রয়োগ হয়েছে কি না যাচাই করুন।");
-      if (!quoteResult.error) setQuotes((quoteResult.data ?? []) as Quote[]);\n      const { data: contactData } = await supabase.from("transport_booking_contacts").select("booking_id,customer_id,phone");\n      setContacts((contactData ?? []) as BookingContact[]);\n      const selectedIds = Array.from(new Set(((bookingResult.data ?? []) as Booking[]).map(b => b.selected_partner_id).filter((id): id is string => Boolean(id))));\n      if (selectedIds.length) {\n        const { data: partnerData } = await supabase.from("transport_partners").select("user_id,full_name,phone,vehicle_registration").in("user_id", selectedIds);\n        setPartnerDirectory((partnerData ?? []) as PartnerDirectoryEntry[]);\n      } else setPartnerDirectory([]);
+      if (!quoteResult.error) setQuotes((quoteResult.data ?? []) as Quote[]);
+      const { data: contactData } = await supabase.from("transport_booking_contacts").select("booking_id,customer_id,phone");
+      setContacts((contactData ?? []) as BookingContact[]);
+      const selectedIds = Array.from(new Set(((bookingResult.data ?? []) as Booking[]).map(b => b.selected_partner_id).filter((id): id is string => Boolean(id))));
+      if (selectedIds.length) {
+        const { data: partnerData } = await supabase.from("transport_partners").select("user_id,full_name,phone,vehicle_registration").in("user_id", selectedIds);
+        setPartnerDirectory((partnerData ?? []) as PartnerDirectoryEntry[]);
+      } else setPartnerDirectory([]);
     } else {
       setPartner(null); setBookings([]); setQuotes([]); setContacts([]); setPartnerDirectory([]);
     }
@@ -95,14 +105,22 @@ export default function TransportBooking() {
     event.preventDefault();
     const user = await requireUser(); if (!user) return;
     if (origin.trim().toLocaleLowerCase() === destination.trim().toLocaleLowerCase()) { setNotice("পিকআপ ও গন্তব্য আলাদা হতে হবে।"); return; }
+    if (customerPhone.trim().length < 6) { setNotice("যোগাযোগের সঠিক ফোন নম্বর দিন।"); return; }
     setBusy(true); setNotice("");
-    const { error } = await supabase.from("transport_bookings").insert({
+    const { data: createdBooking, error } = await supabase.from("transport_bookings").insert({
       customer_id: user.id, crop_name: crop.trim(), quantity: Number(quantity), unit, origin: origin.trim(),
       destination: destination.trim(), vehicle_type: vehicle, pickup_date: pickupDate, loading_help: loadingHelp,
       payment_preference: payment, budget: budget ? Number(budget) : null, notes: notes.trim(), status: "open",
+    }).select("id").single();
+    if (error || !createdBooking) { setBusy(false); setNotice("বুকিং তৈরি হয়নি। তথ্য ও ডেটাবেস মাইগ্রেশন যাচাই করে আবার চেষ্টা করুন।"); return; }
+    const { error: contactError } = await supabase.from("transport_booking_contacts").insert({
+      booking_id: createdBooking.id, customer_id: user.id, phone: customerPhone.trim(),
     });
     setBusy(false);
-    if (error) { setNotice("বুকিং তৈরি হয়নি। তথ্য ও ডেটাবেস মাইগ্রেশন যাচাই করে আবার চেষ্টা করুন।"); return; }
+    if (contactError) {
+      setNotice("বুকিং প্রকাশ হয়েছে, তবে যোগাযোগের নম্বর সংরক্ষণ হয়নি। অনুগ্রহ করে সহায়তা নিন।");
+      await load(); return;
+    }
     setNotice("পরিবহনের অনুরোধ প্রকাশ হয়েছে। যাচাইকৃত পার্টনাররা অফার দিতে পারবেন।");
     setShowBookingForm(false); setMineOnly(true); setCrop("আলু"); setQuantity(""); setOrigin(""); setDestination(""); setCustomerPhone(""); setPickupDate(""); setBudget(""); setNotes("");
     await load();
@@ -195,7 +213,8 @@ export default function TransportBooking() {
               <label className={labelClass}>পরিমাণ<input className={inputClass} required type="number" min="0.01" step="0.01" value={quantity} onChange={e => setQuantity(e.target.value)} /></label>
               <label className={labelClass}>একক<select className={inputClass} value={unit} onChange={e => setUnit(e.target.value as Unit)}>{Object.entries(unitLabels).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
               <label className={labelClass}>পণ্য তোলার স্থান<input className={inputClass} required minLength={3} maxLength={240} value={origin} onChange={e => setOrigin(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>
-              <label className={labelClass}>গন্তব্য<input className={inputClass} required minLength={3} maxLength={240} value={destination} onChange={e => setDestination(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>\n              <label className={labelClass}>যোগাযোগের ফোন<input className={inputClass} required type="tel" minLength={6} maxLength={30} value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" /><span className="mt-1 block text-xs font-normal text-slate-500">শুধু বুকিং গ্রহণ করা পরিবহন পার্টনার দেখতে পারবেন।</span></label>
+              <label className={labelClass}>গন্তব্য<input className={inputClass} required minLength={3} maxLength={240} value={destination} onChange={e => setDestination(e.target.value)} placeholder="গ্রাম / বাজার / উপজেলা / জেলা" /></label>
+              <label className={labelClass}>যোগাযোগের ফোন<input className={inputClass} required type="tel" minLength={6} maxLength={30} value={customerPhone} onChange={e => setCustomerPhone(e.target.value)} placeholder="01XXXXXXXXX" /><span className="mt-1 block text-xs font-normal text-slate-500">শুধু বুকিং গ্রহণ করা পরিবহন পার্টনার দেখতে পারবেন।</span></label>
               <label className={labelClass}>গাড়ির ধরন<select className={inputClass} value={vehicle} onChange={e => setVehicle(e.target.value as Vehicle)}>{Object.entries(vehicleLabels).map(([v,l]) => <option key={v} value={v}>{l}</option>)}</select></label>
               <label className={labelClass}>পণ্য তোলার তারিখ<input className={inputClass} required type="date" min={new Date().toISOString().slice(0,10)} value={pickupDate} onChange={e => setPickupDate(e.target.value)} /></label>
               <label className={labelClass}>আনুমানিক বাজেট (ঐচ্ছিক, টাকা)<input className={inputClass} type="number" min="1" step="1" value={budget} onChange={e => setBudget(e.target.value)} /></label>
