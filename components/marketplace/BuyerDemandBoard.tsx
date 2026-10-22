@@ -161,7 +161,7 @@ export default function BuyerDemandBoard() {
       message: farmerMessage.trim(), status: "interested",
     });
     setBusy(false);
-    if (error) { setNotice(error.code === "23505" ? "এই চাহিদায় আপনি আগে আগ্রহ জানিয়েছেন। নিজের পোস্টের আগ্রহ দেখতে 'আমার পোস্ট' দেখুন।" : "আগ্রহ পাঠানো যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।"); return; }
+    if (error) { setNotice(error.code === "23505" ? "এই চাহিদায় আপনি আগেই আগ্রহ জানিয়েছেন। একই চাহিদায় একবারই আগ্রহ পাঠানো যাবে।" : "আগ্রহ পাঠানো যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।"); return; }
     setRespondingTo(null); setAvailableQuantity(""); setOfferedPrice(""); setAvailableDate(""); setFarmerLocation(""); setFarmerPhone(""); setSharePhone(false); setFarmerMessage("");
     setNotice("আপনার আগ্রহ ক্রেতার কাছে পাঠানো হয়েছে। ক্রেতা এখন আপনার দেওয়া ফোন নম্বরে যোগাযোগ করতে পারবেন।");
     await loadBoard();
