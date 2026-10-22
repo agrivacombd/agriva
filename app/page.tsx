@@ -57,8 +57,7 @@ export default async function Home() {
       <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteName} home`}>
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-[#16724e] to-[#0b4936] text-white shadow-lg shadow-emerald-950/20"><Sprout size={25} /></span>
-            <span><span className="block text-xl font-black tracking-tight">{siteName}</span><span className="block text-[9px] font-bold uppercase tracking-[0.24em] text-[#a77d2f]">Smart Agriculture Platform</span></span>
+            <img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-12 w-44 object-contain object-left sm:w-52" />
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
             <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
@@ -215,7 +214,7 @@ export default async function Home() {
       </nav>
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 text-sm text-slate-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <Link href="/" className="flex items-center gap-2 font-black text-[#16382b]"><Sprout size={20} className="text-emerald-700" /> AGRIVA <span className="font-normal text-slate-400">— স্মার্ট কৃষির সহায়ক</span></Link>
+          <Link href="/" aria-label="AGRIVA home" className="flex items-center"><img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-10 w-36 object-contain object-left" /></Link>
           <div className="flex flex-wrap gap-x-5 gap-y-3"><Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link><Link href="/learn" className="hover:text-emerald-800">শিখুন</Link><Link href="/contact" className="hover:text-emerald-800">যোগাযোগ</Link></div>
           <p>© {new Date().getFullYear()} AGRIVA</p>
         </div>
