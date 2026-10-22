@@ -5,7 +5,7 @@ import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
   ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
-  Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart,
+  Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart, Truck,
 } from "lucide-react";
 
 const services = [
