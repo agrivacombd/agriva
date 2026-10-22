@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/soil-fertilizer" },
   keywords: ["মাটি পরীক্ষা", "সার হিসাব", "সার প্রয়োগ পরিকল্পনা", "কৃষি ক্যালকুলেটর", "জমির সার হিসাব"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "মাটি ও সার পরিকল্পনাকারী | AGRIVA", description: "মাটি পরীক্ষার রিপোর্ট ও যাচাইকৃত সুপারিশের ভিত্তিতে সার হিসাব সাজান।", url: "/soil-fertilizer" },
+  twitter: { card: "summary", title: "মাটি ও সার পরিকল্পনাকারী | AGRIVA", description: "মাটি পরীক্ষার রিপোর্ট ও যাচাইকৃত সুপারিশের ভিত্তিতে সার হিসাব সাজান।" },
 };
 
 export default function SoilFertilizerPage() {
