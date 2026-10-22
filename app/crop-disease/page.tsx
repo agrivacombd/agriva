@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/crop-disease" },
   keywords: ["ফসলের রোগ শনাক্ত", "গাছের রোগের ছবি", "ধানের রোগ", "সবজির রোগ", "AI ফসল রোগ বিশ্লেষণ"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "ছবি দিয়ে ফসলের রোগ শনাক্তকরণ | AGRIVA", description: "ফসলের ছবি দিয়ে প্রাথমিক রোগ বিশ্লেষণ ও নিরাপদ পরবর্তী পদক্ষেপ সম্পর্কে জানুন।", url: "/crop-disease" },
+  twitter: { card: "summary_large_image", title: "ছবি দিয়ে ফসলের রোগ শনাক্তকরণ | AGRIVA", description: "ফসলের ছবি দিয়ে প্রাথমিক রোগ বিশ্লেষণ ও নিরাপদ পরবর্তী পদক্ষেপ সম্পর্কে জানুন।" },
 };
 
 export default function CropDiseasePage() {
