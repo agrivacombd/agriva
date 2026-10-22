@@ -8,9 +8,12 @@ export async function POST(request: NextRequest) {
   if (!orderId) return NextResponse.json({ error: "orderId is required" }, { status: 400 });
   if (!process.env.SSLCOMMERZ_STORE_ID || !process.env.SSLCOMMERZ_STORE_PASSWORD) return NextResponse.json({ error: "Payment gateway is not configured" }, { status: 503 });
 
-  const { data: order } = await supabase.from("marketplace_orders").select("id,total_amount,buyer_id,status").eq("id", orderId).maybeSingle();
+  const { data: setting } = await supabase.from("site_settings").select("value").eq("key", "online_payment_enabled").maybeSingle();
+  if (setting?.value !== "true") return NextResponse.json({ error: "Online payment is currently disabled" }, { status: 503 });
+
+  const { data: order } = await supabase.from("marketplace_orders").select("id,total_amount,buyer_id,status,payment_status").eq("id", orderId).maybeSingle();
   if (!order || (order.buyer_id && order.buyer_id !== user?.id)) return NextResponse.json({ error: "Order not found" }, { status: 404 });
-  if (order.status !== "pending") return NextResponse.json({ error: "Order is not payable" }, { status: 400 });
+  if (!["pending", "processing"].includes(order.status) || order.payment_status === "paid") return NextResponse.json({ error: "Order is not payable" }, { status: 400 });
 
   const base = process.env.NEXT_PUBLIC_SITE_URL;
   if (!base) return NextResponse.json({ error: "NEXT_PUBLIC_SITE_URL is not configured" }, { status: 503 });
@@ -20,6 +23,10 @@ export async function POST(request: NextRequest) {
   const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form });
   const data = await response.json().catch(() => null);
   if (!response.ok || !data?.GatewayPageURL) return NextResponse.json({ error: "Unable to initialize payment" }, { status: 502 });
-  await supabase.from("marketplace_orders").update({ payment_reference: tranId }).eq("id", order.id);
+  const { error: referenceError } = await supabase.from("marketplace_orders")
+    .update({ payment_reference: tranId, payment_method: "sslcommerz" })
+    .eq("id", order.id)
+    .eq("payment_status", "pending");
+  if (referenceError) return NextResponse.json({ error: "Unable to reserve payment reference" }, { status: 500 });
   return NextResponse.json({ gatewayUrl: data.GatewayPageURL });
 }
