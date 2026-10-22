@@ -56,7 +56,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const canonicalUrl = `${base}${canonicalPath}`;
-  const jsonLd = {
+  const breadcrumbJsonLd = {\n    "@context": "https://schema.org",\n    "@type": "BreadcrumbList",\n    itemListElement: [\n      { "@type": "ListItem", position: 1, name: "হোম", item: base },\n      { "@type": "ListItem", position: 2, name: "মার্কেটপ্লেস", item: `${base}/marketplace` },\n      ...(category ? [{ "@type": "ListItem", position: 3, name: category.name, item: `${base}/marketplace/category/${category.slug}` }] : []),\n      { "@type": "ListItem", position: category ? 4 : 3, name: product.name, item: canonicalUrl },\n    ],\n  };\n  const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
