@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
+    "test:seo": "node scripts/smoke-seo.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
