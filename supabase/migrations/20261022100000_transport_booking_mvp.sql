@@ -34,6 +34,34 @@ create table if not exists public.transport_bookings (
   constraint transport_booking_not_same_place check (lower(trim(origin)) <> lower(trim(destination))
 );
 
+create table if not exists public.transport_booking_contacts (
+  booking_id uuid primary key references public.transport_bookings(id) on delete cascade,
+  customer_id uuid not null references auth.users(id) on delete cascade,
+  phone text not null check (char_length(trim(phone)) between 6 and 30),
+  created_at timestamptz not null default now()
+);
+
+alter table public.transport_booking_contacts enable row level security;
+drop policy if exists transport_booking_contacts_read_parties on public.transport_booking_contacts;
+create policy transport_booking_contacts_read_parties on public.transport_booking_contacts for select to authenticated
+using (
+  customer_id = (select auth.uid())
+  or exists (
+    select 1 from public.transport_bookings b
+    where b.id = booking_id and b.selected_partner_id = (select auth.uid())
+  )
+);
+drop policy if exists transport_booking_contacts_insert_customer on public.transport_booking_contacts;
+create policy transport_booking_contacts_insert_customer on public.transport_booking_contacts for insert to authenticated
+with check (
+  customer_id = (select auth.uid())
+  and exists (
+    select 1 from public.transport_bookings b
+    where b.id = booking_id and b.customer_id = (select auth.uid())
+  )
+);
+grant select, insert on public.transport_booking_contacts to authenticated;
+
 create table if not exists public.transport_quotes (
   id uuid primary key default gen_random_uuid(),
   booking_id uuid not null references public.transport_bookings(id) on delete cascade,
