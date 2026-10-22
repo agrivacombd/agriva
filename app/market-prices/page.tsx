@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/market-prices" },
   keywords: ["কৃষিপণ্যের বাজারদর", "বাংলাদেশ কৃষি বাজারদর", "ধানের দাম", "সবজির দাম", "কৃষি বিপণন অধিদপ্তর বাজারদর"],
   openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA", title: "কৃষিপণ্যের বাজারদর যাচাই করুন | AGRIVA", description: "সরকারি উৎসে কৃষিপণ্যের বাজারদর যাচাই করার লিংক ও নির্দেশনা।", url: "/market-prices" },
+  twitter: { card: "summary", title: "কৃষিপণ্যের বাজারদর যাচাই করুন | AGRIVA", description: "ধান, চাল, সবজি ও অন্যান্য কৃষিপণ্যের বাজারদর সরকারি উৎসে যাচাই করুন।" },
 };
 
 export default function MarketPricesPage() {
