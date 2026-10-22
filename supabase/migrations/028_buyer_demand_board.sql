@@ -114,15 +114,9 @@ create policy "buyer_demand_responses_authenticated_insert"
     )
   );
 
-drop policy if exists "buyer_demand_responses_farmer_update" on public.buyer_demand_responses;
-create policy "buyer_demand_responses_farmer_update"
-  on public.buyer_demand_responses for update to authenticated
-  using (farmer_id = (select auth.uid()))
-  with check (farmer_id = (select auth.uid()));
-
 grant select on public.buyer_demands to anon, authenticated;
 grant insert, update, delete on public.buyer_demands to authenticated;
-grant select, insert, update on public.buyer_demand_responses to authenticated;
+grant select, insert on public.buyer_demand_responses to authenticated;
 
 create or replace function public.set_buyer_demand_updated_at()
 returns trigger language plpgsql set search_path = pg_catalog, public, pg_temp as $$
