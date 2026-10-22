@@ -1,5 +1,3 @@
-"use server";
-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -21,7 +19,7 @@ async function saveSettings(formData: FormData) {
   const match = verificationInput.match(/<meta[^>]+name=["']google-site-verification["'][^>]+content=["']([^"']+)["'][^>]*>/i);
   const verification = match?.[1] ?? verificationInput;
   if (ga4 && !/^G-[A-Z0-9]+$/.test(ga4)) redirect("/admin/site-integrations?notice=invalid_ga");
-  if (verification && !/^[A-Za-z0-9_\-]+$/.test(verification)) redirect("/admin/site-integrations?notice=invalid_verification");
+  if (verification && !/^[A-Za-z0-9_+=\/-]+$/.test(verification)) redirect("/admin/site-integrations?notice=invalid_verification");
   const { supabase, user } = await requireAdmin();
   const { error } = await supabase.from("site_public_integrations").upsert({
     id: 1,
