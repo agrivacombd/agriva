@@ -36,6 +36,9 @@ $$;
 revoke all on function public.bootstrap_first_admin(uuid) from public, anon, authenticated;
 grant execute on function public.bootstrap_first_admin(uuid) to service_role;
 
+-- The category column is required by the existing category assignment RPC and admin UI.
+alter table public.products add column if not exists category text;
+
 -- Let the verified admin create the first real catalogue items from the console.
 create or replace function public.admin_create_product(
   p_name text,
