@@ -38,7 +38,6 @@ export async function POST(request: NextRequest) {
 
     try {
       const supabase = await createSupabaseServerClient();
-      const { data: { user } } = await supabase.auth.getUser();
       const terms = searchTerms(query);
 
       if (terms.length) {
@@ -65,15 +64,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const { error: logError } = await supabase.from("search_queries").insert({
-        user_id: user?.id ?? null,
-        query,
-        normalized_query: normalizedQuery,
-        intent: analysis.intent,
-        crop: analysis.crop,
-        result_count: resultCount,
-      });
-      if (logError) console.error("Smart Search query logging failed:", logError.message);
+      // Use the database's canonical aggregation RPC. Direct inserts used
+      // columns that do not exist in search_queries and failed on every search.
+      // The RPC also safely aggregates repeated normalized queries.
+      if (query.length <= 200) {
+        const { error: logError } = await supabase.rpc("track_search", {
+          p_query: query,
+          p_session_id: null,
+        });
+        if (logError) console.error("Smart Search query logging failed:", logError.message);
+      }
     } catch (error) {
       console.error("Optional Smart Search database work failed:", error);
     }
