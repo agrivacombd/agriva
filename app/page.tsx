@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -57,7 +58,7 @@ export default async function Home() {
       <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteName} home`}>
-            <img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-12 w-44 object-contain object-left sm:w-52" />
+            <Image src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width={320} height={85} priority sizes="(max-width: 640px) 176px, 208px" className="h-12 w-44 object-contain object-left sm:w-52" />
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
             <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
@@ -102,7 +103,7 @@ export default async function Home() {
             <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-emerald-200/60 via-lime-100/30 to-amber-100/60 blur-xl" />
             <div className="relative overflow-hidden rounded-[2rem] border border-white/90 bg-white/95 p-4 shadow-2xl shadow-emerald-950/15 ring-1 ring-emerald-950/5 backdrop-blur sm:p-6">
               <div className="relative mb-4 h-32 overflow-hidden rounded-2xl bg-gradient-to-br from-[#174c35] via-[#668c49] to-[#d7dfac]">
-                <div aria-hidden="true" className="absolute inset-0 opacity-55" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=85')", backgroundSize: "cover", backgroundPosition: "center" }} />
+                <div aria-hidden="true" className="absolute inset-0 opacity-70" style={{ backgroundImage: "radial-gradient(ellipse at 78% 18%, rgba(231,240,182,.7), transparent 30%), radial-gradient(ellipse at 25% 80%, rgba(184,216,150,.65), transparent 42%), linear-gradient(135deg, #174c35 0%, #668c49 55%, #d7dfac 100%)" }} />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0b3d2c]/85 via-[#174c35]/35 to-transparent" />
                 <div className="relative flex h-full flex-col justify-end p-4 text-white sm:p-5">
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-lime-100">GROW WITH AGRIVA</span>
