@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/blog`, changeFrequency: "weekly", priority: 0.8 },\n    { url: `${base}/guides`, changeFrequency: "weekly", priority: 0.8 },\n    ...["seed-selection", "sowing-preparation", "seed-storage"].map((slug) => ({ url: `${base}/guides/${slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${base}/crop-disease`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/about-us`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/contact-us`, changeFrequency: "monthly", priority: 0.4 },
