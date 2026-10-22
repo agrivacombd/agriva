@@ -38,6 +38,9 @@ grant execute on function public.bootstrap_first_admin(uuid) to service_role;
 
 -- The category column is required by the existing category assignment RPC and admin UI.
 alter table public.products add column if not exists category text;
+alter table public.marketplace_orders add column if not exists payment_reference text;
+create unique index if not exists marketplace_orders_payment_reference_unique
+  on public.marketplace_orders(payment_reference) where payment_reference is not null;
 
 -- Let the verified admin create the first real catalogue items from the console.
 create or replace function public.admin_create_product(
