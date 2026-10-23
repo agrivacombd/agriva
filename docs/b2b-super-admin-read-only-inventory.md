@@ -81,3 +81,16 @@ The product behavior requested for implementation is:
 - **Super Admin only by default:** creating/revoking wholesale-view grants and verifying business accounts are Super Admin-only. Delegation to an Admin must be an explicit separate permission grant with audit trail; the live is_admin() helper is not sufficient.
 
 These rules are the product acceptance criteria for implementation and security tests, not a claim that the feature is already implemented. Quantity units/pack semantics and the trusted Super Admin identity remain blockers before final executable SQL.
+
+## Confirmed requirement: wholesaler public store / storefront
+
+Each approved wholesaler/company should have a dedicated public storefront page that lists all of that wholesaler's publicly approved and active items. The storefront should show company/store name, logo or cover image when available, a seller-provided description, relevant location/contact details only when intentionally public, product categories, search/filter/sort, and product cards linking to canonical product pages. Do not expose private verification documents, internal business identifiers, reviewer notes, account permissions, or pending/rejected product revisions.
+
+- Store identity/profile edits and product changes follow appropriate review/validation rules; pending edits must not replace currently approved public content.
+- List only products that are approved for publication and `products.status='active'`. Do not remove approval checks as a workaround for the known missing `moderation_status` schema; first resolve the publication source-of-truth mismatch.
+- A wholesaler store is not a wholesale-price access bypass. Public/anonymous visitors and retail users see retail prices only. Wholesale prices are returned only through a server-authorized path to buyers with current approved B2B verification **and** an active Super Admin-granted `marketplace.wholesale_prices.view` permission.
+- Store product listings, page metadata, JSON-LD, Open Graph, sitemap and public APIs must not contain wholesale price tiers. Keep shared caching from leaking authenticated buyer pricing.
+- Add a canonical store slug/URL, collision-safe slug handling, a store-level sitemap entry only for approved/public stores, and appropriate Store/Organization plus BreadcrumbList schema using verified facts only. Avoid fabricated ratings/reviews or claims.
+- Tests: public store only shows active approved items; pending/unapproved items never leak; a wholesaler cannot list another seller's private/unapproved products; wholesale price data never appears in public storefront responses; store slug changes do not create redirect loops; empty stores have a useful state.
+
+This is a documented product requirement, not an implemented live storefront. The existing product publication/schema compatibility blockers and Super Admin authorization decision must be resolved before executable migration or deployment.
