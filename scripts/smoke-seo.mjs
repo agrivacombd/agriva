@@ -70,6 +70,10 @@ for (const [name, page] of [
 assert.ok(sitemap.includes("MARKETPLACE_CATEGORIES.map") && sitemap.includes("MARKETPLACE_CATEGORIES.flatMap"), "category landing pages must be discoverable in sitemap");
 assert.ok(categoryPage.includes("matchesProductCategory") && categoryPage.includes("CollectionPage"), "category pages must filter products and expose collection metadata");
 assert.ok(subcategoryPage.includes("matchesSubcategory") && subcategoryPage.includes("CollectionPage"), "subcategory pages must filter products and expose collection metadata");
+assert.ok(!read("../app/marketplace/page.tsx").includes("✓ ক্যাটাগরি অনুযায়ী ব্রাউজ"), "marketplace hero should not show promotional checklist claims");
+assert.ok(!read("../app/marketplace/page.tsx").includes("✓ মোবাইল-ফ্রেন্ডলি") && !read("../app/marketplace/page.tsx").includes("✓ অনুমোদিত পণ্য"), "marketplace hero should not show mobile-friendly or approved-product claims");
+assert.ok(read("../components/marketplace/MarketplaceCore.tsx").includes("item.subcategories.map") && read("../components/marketplace/MarketplaceCore.tsx").includes("/marketplace/category/${item.slug}/${sub.slug}"), "marketplace category cards must link directly to subcategory landing pages");
+assert.ok(read("../lib/marketplace/taxonomy.ts").includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumbs should connect to the canonical subcategory hierarchy");
 assert.ok(robots.includes('"/admin"') && robots.includes('"/api"') && robots.includes("/sitemap.xml"), "robots must exclude private routes and declare sitemap");
 
 assert.ok(analytics.includes("analytics.readonly") && analytics.includes("webmasters.readonly"), "reporting must use read-only Google API scopes");
