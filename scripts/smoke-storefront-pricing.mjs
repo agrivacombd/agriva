@@ -23,7 +23,7 @@ assert.ok(storePage.includes("alternates: { canonical: `/store/${storeId}` }"),
 
 // Product structured data and merchant feed must be driven by the public
 // retail price only; private wholesale pricing must not be added to SEO feeds.
-assert.ok(productPage.includes('price: Number(product.price || 0)'),
+assert.ok(productPage.includes("price: Number(product.price)"),
   "Product/Offer structured data must use the retail product price");
 assert.ok(!/wholesale_price|product_wholesale_prices|wholesalePrice/i.test(productPage),
   "public product page/metadata must not reference wholesale price data");
