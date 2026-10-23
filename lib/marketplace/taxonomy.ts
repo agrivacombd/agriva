@@ -67,6 +67,28 @@ export function getProductCategory(value: string | null) {
   return MARKETPLACE_CATEGORIES.find((category) => matchesProductCategory(value, category));
 }
 
+export function getProductTaxonomy(value: string | null) {
+  const normalized = (value || "").normalize("NFKC").trim().toLocaleLowerCase();
+  if (!normalized) return undefined;
+
+  for (const category of MARKETPLACE_CATEGORIES) {
+    const exactSubcategory = category.subcategories.find((subcategory) =>
+      normalized === subcategory.name.normalize("NFKC").toLocaleLowerCase() || normalized === subcategory.slug.toLocaleLowerCase()
+    );
+    if (exactSubcategory) return { category, subcategory: exactSubcategory };
+  }
+
+  for (const category of MARKETPLACE_CATEGORIES) {
+    const matchedSubcategory = category.subcategories.find((subcategory) =>
+      matchesCategory(value, category.match) && matchesCategory(value, subcategory.match)
+    );
+    if (matchedSubcategory) return { category, subcategory: matchedSubcategory };
+  }
+
+  const category = getProductCategory(value);
+  return category ? { category, subcategory: undefined } : undefined;
+}
+
 export function matchesSubcategory(
   value: string | null,
   category: (typeof MARKETPLACE_CATEGORIES)[number],
