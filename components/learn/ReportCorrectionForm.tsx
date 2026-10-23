@@ -38,7 +38,7 @@ export default function ReportCorrectionForm({ contentSlug, contentTitle }: Prop
         : "অনুরোধ জমা হয়নি। কিছুক্ষণ পরে আবার চেষ্টা করুন।");
       return;
     }
-    setMessage("ধন্যবাদ! সংশোধনের অনুরোধ অ্যাডমিন যাচাই করবেন। অনুমোদনের আগে এটি প্রকাশিত হবে না।");
+    setMessage("ধন্যবাদ! অ্যাডমিন যাচাই না করা পর্যন্ত কিছু বদলাবে না। অনুমোদিত হলে মিল থাকা বাক্যটি প্রতিস্থাপিত হবে।");
     setReportedText("");
     setSuggestedCorrection("");
     setSourceUrl("");
@@ -52,7 +52,7 @@ export default function ReportCorrectionForm({ contentSlug, contentTitle }: Prop
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-black text-amber-950">তথ্যে ভুল পেয়েছেন?</h2>
-          <p className="mt-1 text-sm leading-6 text-amber-900">ভুল তথ্য, পুরোনো নির্দেশনা বা ভুল সূত্র রিপোর্ট করুন। অ্যাডমিন যাচাই না করা পর্যন্ত রিপোর্টটি পাবলিক কনটেন্ট বদলাবে না।</p>
+          <p className="mt-1 text-sm leading-6 text-amber-900">ভুল তথ্য, পুরোনো নির্দেশনা বা ভুল সূত্র রিপোর্ট করুন। যে বাক্যটি বদলাতে চান সেটি হুবহু দিন; অ্যাডমিন যাচাই করে অনুমোদন করলে সেই বাক্যটি শেখার কেসে প্রতিস্থাপিত হবে।</p>
         </div>
         <button type="button" onClick={() => setOpen(v => !v)} className="rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-bold text-white">{open ? "ফর্ম বন্ধ করুন" : "সংশোধন জানান"}</button>
       </div>
@@ -64,7 +64,7 @@ export default function ReportCorrectionForm({ contentSlug, contentTitle }: Prop
           </select>
         </label>
         <label className="grid gap-1 text-sm font-semibold text-slate-800">কোন তথ্যটি ভুল? *
-          <textarea required minLength={5} maxLength={5000} value={reportedText} onChange={e => setReportedText(e.target.value)} className="min-h-24 rounded-lg border border-amber-200 bg-white px-3 py-2.5 font-normal" placeholder="ভুল বা সন্দেহজনক বাক্য/তথ্য লিখুন" />
+          <textarea required minLength={5} maxLength={5000} value={reportedText} onChange={e => setReportedText(e.target.value)} className="min-h-24 rounded-lg border border-amber-200 bg-white px-3 py-2.5 font-normal" placeholder="পেজে থাকা বাক্যটি হুবহু কপি করুন—এটিই পরে প্রতিস্থাপিত হবে" />
         </label>
         <label className="grid gap-1 text-sm font-semibold text-slate-800">আপনার প্রস্তাবিত সংশোধন
           <textarea maxLength={5000} value={suggestedCorrection} onChange={e => setSuggestedCorrection(e.target.value)} className="min-h-20 rounded-lg border border-amber-200 bg-white px-3 py-2.5 font-normal" placeholder="সঠিক তথ্য কী হওয়া উচিত বলে মনে করেন?" />
