@@ -20,6 +20,7 @@ The following later migrations have been applied and verified in production:
 - `20261023144623_index_existing_foreign_keys`
 - `20261023144817_split_public_and_authenticated_read_policies`
 - `20261023144859_remove_overlapping_products_read_policy`
+- `20261023145924_rls_auth_uid_initplan_optimization`
 
 Do **not** run `database/schema.sql` on top of these migrations; that legacy schema contains overlapping `profiles`, `products`, and search tables.
 
