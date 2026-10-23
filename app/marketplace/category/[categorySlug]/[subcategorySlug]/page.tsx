@@ -6,6 +6,7 @@ import { getCategory, getSubcategory, MARKETPLACE_CATEGORIES, matchesSubcategory
 import type { MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import MarketplaceCore from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
+import { hasIndexableSubcategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string; subcategorySlug: string }> };
 export function generateStaticParams() {
@@ -16,10 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   if (!category || !subcategory) return { title: "সাব-ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
+  const hasProducts = await hasIndexableSubcategoryProducts(categorySlug, subcategorySlug);
   const title = `${subcategory.name} | ${category.name} | AGRIVA`;
   const description = `${subcategory.name} ও ${category.name}-এর কৃষি পণ্য দেখুন AGRIVA Marketplace-এ।`;
   return {
     title, description,
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}/${subcategory.slug}` },
     keywords: [subcategory.name, category.name, "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
