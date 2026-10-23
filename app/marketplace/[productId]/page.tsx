@@ -4,7 +4,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
-import { getProductCategory } from "@/lib/marketplace/taxonomy";
+import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
@@ -62,7 +62,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
-  const category = getProductCategory(product.category);
+  const taxonomy = getProductTaxonomy(product.category);
+  const category = taxonomy?.category;
+  const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const canonicalUrl = `${base}${canonicalPath}`;
@@ -73,7 +75,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
       { "@type": "ListItem", position: 1, name: "হোম", item: base },
       { "@type": "ListItem", position: 2, name: "মার্কেটপ্লেস", item: `${base}/marketplace` },
       ...(category ? [{ "@type": "ListItem", position: 3, name: category.name, item: `${base}/marketplace/category/${category.slug}` }] : []),
-      { "@type": "ListItem", position: category ? 4 : 3, name: product.name, item: canonicalUrl },
+      ...(subcategory && category ? [{ "@type": "ListItem", position: 4, name: subcategory.name, item: `${base}/marketplace/category/${category.slug}/${subcategory.slug}` }] : []),
+      { "@type": "ListItem", position: subcategory && category ? 5 : category ? 4 : 3, name: product.name, item: canonicalUrl },
     ],
   };
   const jsonLd = {
@@ -108,7 +111,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <div className="mx-auto max-w-5xl">
-      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
+      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}{subcategory && category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
         <div className="flex aspect-square min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 sm:p-8 md:min-h-[420px]">{product.image_url ? <Image src={product.image_url} alt={product.image_alt?.trim() || product.name} width={1200} height={1200} sizes="(max-width: 768px) 100vw, 42vw" quality={88} priority unoptimized={!isOptimizedProductImage(product.image_url)} className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
