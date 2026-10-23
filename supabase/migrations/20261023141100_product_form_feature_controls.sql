@@ -153,6 +153,7 @@ revoke all on public.admin_feature_permission_grants from anon;
 revoke all on public.product_form_feature_audit from anon;
 grant select on public.product_form_feature_settings to authenticated;
 grant update (enabled) on public.product_form_feature_settings to authenticated;
-grant select, insert, update on public.admin_feature_permission_grants to authenticated;
+grant select, insert on public.admin_feature_permission_grants to authenticated;
+grant update (revoked_at, revoked_by, revoke_reason) on public.admin_feature_permission_grants to authenticated;
 grant select on public.product_form_feature_audit to authenticated;
 revoke all on function public.audit_product_form_feature_changes() from public, anon, authenticated;
