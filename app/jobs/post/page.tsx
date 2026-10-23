@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { submitJobPost } from "./actions";
+import { submitJobPost } from "./actions";\nimport JobLocationPicker from "@/components/jobs/JobLocationPicker";
 
 export const metadata: Metadata = { title:"কৃষি চাকরি পোস্ট করুন | AGRIVA Jobs", description:"এককালীন কৃষিকাজ, পার্ট-টাইম বা ফুল-টাইম চাকরির জন্য কর্মী নিয়োগ দিন।", alternates:{canonical:"/jobs/post"}, robots:{index:false,follow:true} };
 export default async function PostJob({searchParams}:{searchParams:Promise<{error?:string;submitted?:string}>}) {
