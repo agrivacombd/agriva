@@ -19,7 +19,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Farmer access required" }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody: unknown = await request.json().catch(() => ({}));
+  const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
+    ? parsedBody as Record<string, unknown>
+    : {};
   const name = String(body.name ?? "").trim();
   const description = String(body.description ?? "").trim();
   const category = String(body.category ?? "").trim();
@@ -32,6 +35,8 @@ export async function POST(request: NextRequest) {
   if (
     !name ||
     name.length > 160 ||
+    body.price === undefined || body.price === null || body.price === "" ||
+    body.stock === undefined || body.stock === null || body.stock === "" ||
     !Number.isFinite(price) ||
     price < 0 ||
     !Number.isInteger(stock) ||
