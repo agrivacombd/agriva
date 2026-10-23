@@ -137,9 +137,16 @@ $$;
 drop trigger if exists job_posts_set_updated_at on public.job_posts;
 create trigger job_posts_set_updated_at before update on public.job_posts
 for each row execute function public.set_job_post_updated_at();
+create or replace function public.set_job_application_updated_at()
+returns trigger language plpgsql set search_path = pg_catalog, public as $
+begin
+  new.updated_at = now();
+  return new;
+end;
+$;
 drop trigger if exists job_applications_set_updated_at on public.job_applications;
 create trigger job_applications_set_updated_at before update on public.job_applications
-for each row execute function public.set_job_post_updated_at();
+for each row execute function public.set_job_application_updated_at();
 
 comment on table public.job_posts is 'AGRIVA agriculture jobs; only reviewed and published posts are public.';
 comment on column public.job_posts.location_is_approximate is 'Public pages should default to approximate coordinates to protect private farm/home locations.';
