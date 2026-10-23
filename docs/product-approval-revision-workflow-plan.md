@@ -41,13 +41,13 @@ Implementation details:
 
 ### Why this design preserves the published revision
 
-For an edit, the revision row stores the proposed values; the existing `products` row remains unchanged and continues serving public requests. Approval atomically applies the revision snapshot to the canonical `products` row and records review metadata. Rejection leaves the public row untouched. For a new product, the canonical product row is created only on approval (or remains non-public until approval if a separately reviewed product-creation strategy is selected).
+For an edit, the revision row stores the proposed values; the existing `products` row remains unchanged and continues serving public requests. Approval atomically applies the revision snapshot to the canonical `products` row and records review metadata. Rejection leaves the public row untouched. For a new product, the canonical product row is created only on approval. This is the selected policy.
 
 ## 3. Lifecycle and state rules
 
 1. **New product:** create a pending revision; no public product row is created before approval.
 2. **Edit an approved product:** create a pending revision linked to the existing product. Continue serving the old approved product row.
-3. **Pending edit:** prevent concurrent pending revisions for the same product, or explicitly supersede the prior pending revision when a new one is submitted.
+3. **Pending edit (selected default):** block a second pending revision for the same product. Show the submitter the pending revision and its timestamp. If changes are needed, an authorized submitter may explicitly withdraw/cancel the pending revision (with audit history) and submit a new one; never silently overwrite or supersede a revision that an Admin may already be reviewing.
 4. **Approve:** in one database transaction, re-check reviewer authorization, ensure revision is still pending, validate current target state and uniqueness constraints, apply the snapshot to `products`, set revision status to approved, set reviewer/time, and write `admin_audit_log`.
 5. **Reject:** require a non-empty, bounded reason; mark the revision rejected with reviewer/time and audit log. Do not alter the canonical product row.
 6. **Resubmit after rejection:** create a new revision with a new ID; preserve the rejected revision for history.
@@ -58,7 +58,7 @@ For an edit, the revision row stores the proposed values; the existing `products
 ## 4. Authorization, RLS, and RPC boundaries
 
 - Enable RLS on `product_revisions`.
-- Submit/read own revisions only for authorized submitters; do not expose all proposed data to anonymous users or unrelated farmers/resellers.
+- Allow an authenticated product owner/farmer to submit and read their own product revisions, subject to verifying ownership server-side. Admins can submit revisions on behalf of a product only through an explicitly authorized, audited admin path. Do not expose proposed data to anonymous users or unrelated farmers/resellers.
 - Admin review queue and full revision data are admin-only.
 - Revoke direct `INSERT/UPDATE/DELETE` privileges on revision lifecycle fields from `anon` and ordinary `authenticated` clients as appropriate. Route state transitions through narrow RPCs.
 - Any `SECURITY DEFINER` RPC must use a locked `search_path`, schema-qualified object references, explicit `auth.uid()` checks, and an explicit `public.is_admin()` check for approve/reject. Grant execution only to intended roles; review existing grants rather than assuming defaults.
