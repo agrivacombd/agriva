@@ -34,6 +34,10 @@
 - The draft stores document storage paths only; the storage bucket must be private and access must be authorized/time-limited. The migration draft intentionally does not create bucket policies or expose application documents.
 - Super Admin verification must not grant seller, reseller, Admin, or product-approval privileges automatically.
 
+## Application consumer audit
+
+The follow-up source-code audit is documented in [`docs/b2b-checkout-permission-consumer-audit.md`](./b2b-checkout-permission-consumer-audit.md). It confirms that the checkout API calls the existing `finalize_marketplace_cod_order` RPC and calculates price server-side in the database path; the client loops over cart items one request at a time, which creates a partial-order risk if a later request fails. It also confirms category CRUD and category assignment currently authorize with `is_admin()`, so the “Super Admin” comment on migration 027 does not enforce Super Admin-only access. This is repository evidence, not a live Supabase recheck.
+
 ## Review-only SQL artifact
 
 Created: [`docs/drafts/b2b-permissions-wholesale-review-only.sql`](./drafts/b2b-permissions-wholesale-review-only.sql)
