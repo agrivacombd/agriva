@@ -59,6 +59,6 @@ If `GEMINI_API_KEY` is configured, the admin SEO draft endpoint can generate str
 
 ## Crop disease photo analysis
 
-Apply the versioned crop-disease migration only if it is present in the active production migration history. It creates the private `crop-disease-photos` Storage bucket, a per-user diagnosis history table, and row-level security policies. Users must be signed in; photos are limited to JPG, PNG, or WebP up to 5 MB.
+Migration `017_crop_disease_detections` is already part of the recorded production migration history; do not re-run it. It creates the private `crop-disease-photos` Storage bucket, a per-user diagnosis history table, and row-level security policies. Users must be signed in; photos are limited to JPG, PNG, or WebP up to 5 MB.
 
 Set `GEMINI_API_KEY` and a model available to your Google AI Studio / Gemini API project in `GEMINI_MODEL`. The server sends the uploaded image to Gemini for a cautious Bengali-language triage result; it does not claim a verified diagnosis. Never put the Gemini key in a `NEXT_PUBLIC_*` variable. The API reports a configuration error rather than pretending to analyze photos when the key is missing.
