@@ -94,3 +94,7 @@ Each approved wholesaler/company should have a dedicated public storefront page 
 - Tests: public store only shows active approved items; pending/unapproved items never leak; a wholesaler cannot list another seller's private/unapproved products; wholesale price data never appears in public storefront responses; store slug changes do not create redirect loops; empty stores have a useful state.
 
 This is a documented product requirement, not an implemented live storefront. The existing product publication/schema compatibility blockers and Super Admin authorization decision must be resolved before executable migration or deployment.
+
+## Super Admin seller-form feature visibility requirement
+
+Company sellers and wholesalers need a simple default product-add form. Super Admin must be able to configure whether seller cohorts see optional sections such as SEO Studio, structured data, AI SEO assistance, advanced fields and category-specific attributes, and can delegate narrowly scoped management capabilities to selected Admins. This is UI configuration only; server-side validation, publication approval, pricing authorization and wholesale secrecy remain mandatory. Feature flags must be allowlisted, audited, server-derived, and fail closed. See the detailed design in `docs/b2b-permissions-and-wholesale-design.md`.
