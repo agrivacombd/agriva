@@ -232,3 +232,21 @@ Do not make irrelevant fields required. Policy/legal requirements must be config
 ## Explicit non-actions
 
 This plan is documentation and design only. No SQL migration was applied, no Supabase schema or data was changed, no PR was merged, and no production deployment was run.
+
+## 14. Wholesaler storefront / public seller shop
+
+- Each approved wholesaler/company gets a dedicated public store page with a stable canonical slug. It lists all of that seller's publicly approved and active products, with pagination and search/filter/sort when the catalog grows.
+- Store page basics: approved public store name, logo/cover when supplied, seller-provided description, category filters, product cards and links to canonical product detail pages. Contact/location information is shown only if the seller explicitly marks it public. Private verification documents, legal identifiers not intended for public display, reviewer notes, account permissions and pending product revisions never appear.
+- Storefront visibility is distinct from wholesale-price authorization. Visitors and retail buyers see retail prices only. Wholesale prices must not be embedded in storefront HTML, product cards, API responses, metadata, JSON-LD, Open Graph, sitemap, or public feeds. An authorized wholesale buyer may receive wholesale pricing only from a separate server-authorized endpoint/checkout path after current verification and explicit Super Admin-granted permission checks.
+- Only products meeting the single canonical publication contract (approved and `products.status='active'`) appear. Because the audited live schema lacks the currently queried `moderation_status` field, do not ship a storefront query that assumes the field exists or bypasses approval. Resolve the schema/publication source of truth first; query failures fail closed.
+- Use a canonical store URL and collision-safe slug policy; preserve redirects when a published slug changes. Add the store page to sitemap only when the store is approved/public and indexable. Add Organization/Store and BreadcrumbList structured data only from verified, public facts; never fabricate reviews, ratings, credentials or sales metrics.
+- Empty storefronts show a helpful empty state. Pending/unapproved products are never listed. A wholesaler can manage only their own store/catalog. Store profile edits that affect public identity should be validated/reviewed; the currently published approved profile remains visible until a proposed revision is approved.
+
+### Storefront acceptance tests
+
+- Store page lists all and only the seller's approved, active products across pagination.
+- Another seller's products, pending revisions and private verification data never appear.
+- Public/retail clients receive retail price only; no wholesale tier is present in HTML, API, metadata, cache, JSON-LD, Open Graph or sitemap.
+- Store slug canonical/redirect handling has no loops or duplicate canonical URLs.
+- Store page fails closed if publication/schema queries fail and records an operational signal.
+- Empty store and inactive/unapproved store states are handled safely.
