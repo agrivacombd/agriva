@@ -29,7 +29,7 @@ create table if not exists public.admin_permission_grants (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.profiles(id) on delete cascade,
   permission_key text not null check (
-    permission_key in ('marketplace.category_config.manage')
+    permission_key in ('marketplace.category_config.manage','marketplace.wholesale_prices.view')
   ),
   granted_by uuid not null references public.profiles(id) on delete restrict,
   reason text not null check (length(trim(reason)) between 3 and 500),
@@ -108,6 +108,30 @@ revoke all on public.b2b_business_profiles from anon, authenticated;
 revoke all on public.b2b_verification_events from anon, authenticated;
 -- Add only reviewed narrow RPCs; do not add a broad profile/document read policy.
 
+-- 2a) Company representatives: owner-scoped, revocable seller authority.
+-- The business profile's user_id is the company owner/account owner. Only that owner
+-- or a separately verified server-side company-admin flow may authorize a representative.
+-- Representative grants do NOT grant buyer wholesale visibility, Admin, or approval rights.
+create table if not exists public.b2b_company_representatives (
+  id uuid primary key default gen_random_uuid(),
+  business_profile_id uuid not null references public.b2b_business_profiles(id) on delete restrict,
+  representative_user_id uuid not null references public.profiles(id) on delete restrict,
+  granted_by uuid not null references public.profiles(id) on delete restrict,
+  reason text not null check (length(trim(reason)) between 3 and 500),
+  created_at timestamptz not null default now(),
+  revoked_by uuid null references public.profiles(id) on delete restrict,
+  revoked_at timestamptz null,
+  revoke_reason text null check (revoke_reason is null or length(trim(revoke_reason)) between 3 and 500),
+  check ((revoked_at is null and revoked_by is null) or (revoked_at is not null and revoked_by is not null))
+);
+create unique index if not exists b2b_company_representatives_one_active
+  on public.b2b_company_representatives(business_profile_id, representative_user_id)
+  where revoked_at is null;
+alter table public.b2b_company_representatives enable row level security;
+revoke all on public.b2b_company_representatives from anon, authenticated;
+-- Owner-only grant/revoke RPCs must verify the caller owns this business profile,
+-- prohibit self-approval, and write admin_audit_log in the same transaction.
+
 -- 3) Wholesale quantity tiers are separate from products.price (retail price).
 --    The final schema may need product variant IDs after variant support is audited.
 create table if not exists public.product_wholesale_prices (
@@ -129,6 +153,9 @@ create index if not exists product_wholesale_prices_product_active
   on public.product_wholesale_prices(product_id, is_active, min_quantity);
 alter table public.product_wholesale_prices enable row level security;
 revoke all on public.product_wholesale_prices from anon, authenticated;
+-- SECURITY: never grant anon/authenticated direct SELECT on this table. Public product
+-- queries, SEO/JSON-LD, OG, sitemap, feeds, exports and retail APIs must never join/serialize
+-- these rows. Authorized wholesale API must gate on approved business + explicit grant.
 -- IMPORTANT: prevent overlapping quantity tiers/effective windows in the final draft.
 -- A correct exclusion constraint needs a reviewed range model and likely btree_gist;
 -- do not approximate this with a simple unique constraint.
@@ -142,6 +169,9 @@ revoke all on public.product_wholesale_prices from anon, authenticated;
 --   reads a server-managed source of truth, and cannot be changed by user profile edits.
 --   public.has_admin_permission(text) returns boolean, SECURITY DEFINER, fixed
 --   search_path, and checks auth.uid() against an active permission grant.
+--   wholesale visibility requires BOTH approved b2b_business_profiles status AND
+--   active marketplace.wholesale_prices.view grant. Buyer account type alone is not enough.
+--   company-owner/representative seller authority is checked separately from buyer access.
 --
 -- Pseudocode for grant/revoke/review RPCs (must be implemented after helper review):
 --
@@ -161,9 +191,15 @@ revoke all on public.product_wholesale_prices from anon, authenticated;
 --   validate transition; update status/reviewer/time and append event + audit atomically
 --
 -- get_wholesale_prices(product_ids, quantities):
---   require authenticated buyer and current verification_status='approved';
---   filter to active/public products and valid effective tier;
---   return only requested products and matching quantity tiers; never bulk dump
+--   require authenticated buyer, current verification_status='approved', AND active
+--   marketplace.wholesale_prices.view grant; buyer category (entrepreneur/shopkeeper/
+--   enterprise) by itself never grants access;
+--   filter to active/public products and valid effective tier; return only requested
+--   products and matching quantity tiers; never bulk dump.
+-- set_product_wholesale_tiers(product_id, tiers):
+--   require verified company owner or active representative scoped to the product's seller;
+--   submit a pricing revision for Admin approval; pending changes do not replace approved tiers;
+--   immutable audit trail for create/edit/deactivate; reject arbitrary seller/product IDs.
 --
 -- checkout:
 --   modify the existing finalize/order RPC after inspecting all callers;
@@ -172,6 +208,8 @@ revoke all on public.product_wholesale_prices from anon, authenticated;
 --   and preserve commission/cancel/refund semantics. Do not add a second checkout RPC.
 
 -- 5) Order snapshot columns (PROPOSED, DO NOT APPLY until existing code is updated).
+-- Checkout must re-check B2B verification + explicit view grant at transaction time and
+-- compute price from the current approved tier server-side; never trust a client price.
 -- Existing marketplace_orders already has unit_price, quantity, total_amount and
 -- commission fields. Additive candidates only after reviewing all order consumers:
 --   pricing_mode text NOT NULL DEFAULT 'retail' CHECK (pricing_mode IN ('retail','wholesale'))
