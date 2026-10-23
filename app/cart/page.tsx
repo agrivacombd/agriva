@@ -94,8 +94,11 @@ export default function Cart() {
       await remove(item);
       return;
     }
-    if (nextQuantity > item.stock) {
-      setMessage("স্টকে থাকা পরিমাণের বেশি পণ্য যোগ করা যাবে না।");
+    const maxQuantity = Math.min(item.stock, 100);
+    if (nextQuantity > maxQuantity) {
+      setMessage(item.stock > 100
+        ? "একটি পণ্যের জন্য সর্বোচ্চ ১০০টি অর্ডার করা যাবে।"
+        : "স্টকে থাকা পরিমাণের বেশি পণ্য যোগ করা যাবে না।");
       return;
     }
     setBusyItem(item.id);
@@ -147,7 +150,7 @@ export default function Cart() {
               <div className="inline-flex items-center rounded-xl border border-slate-200">
                 <button type="button" onClick={() => void changeQuantity(item, item.qty - 1)} disabled={busyItem === item.id || !item.available} aria-label="পরিমাণ কমান" className="grid h-10 w-10 place-items-center hover:bg-emerald-50 disabled:opacity-40"><Minus size={15} /></button>
                 <span aria-live="polite" className="min-w-10 text-center text-sm font-extrabold">{money(item.qty)}</span>
-                <button type="button" onClick={() => void changeQuantity(item, item.qty + 1)} disabled={busyItem === item.id || !item.available || item.qty >= item.stock} aria-label="পরিমাণ বাড়ান" className="grid h-10 w-10 place-items-center hover:bg-emerald-50 disabled:opacity-40"><Plus size={15} /></button>
+                <button type="button" onClick={() => void changeQuantity(item, item.qty + 1)} disabled={busyItem === item.id || !item.available || item.qty >= Math.min(item.stock, 100)} aria-label="পরিমাণ বাড়ান" className="grid h-10 w-10 place-items-center hover:bg-emerald-50 disabled:opacity-40"><Plus size={15} /></button>
               </div>
               <p className="text-right font-black">৳{money(item.price * item.qty)}</p>
             </div>
