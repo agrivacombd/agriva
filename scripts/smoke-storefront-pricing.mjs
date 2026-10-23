@@ -7,6 +7,7 @@ const productPage = read("../app/marketplace/[productId]/page.tsx");
 const sitemap = read("../app/sitemap.ts");
 const merchantFeed = read("../app/api/merchant-center/route.ts");
 const schemaPlan = read("../docs/product-schema-mismatch-safe-resolution.md");
+const wholesaleRoute = read("../app/api/b2b/wholesale-prices/route.ts");
 
 const wholesalePattern = /wholesale_price|product_wholesale_prices|wholesalePrice|wholesale_price_tiers/i;
 
@@ -25,4 +26,11 @@ assert.ok(sitemap.includes('.eq("moderation_status", "approved")'), "sitemap mus
 assert.ok(schemaPlan.includes("Do not drop approval filters"), "schema plan must prohibit bypassing approval checks");
 assert.ok(schemaPlan.includes("Do not add `moderation_status` with a permissive default"), "schema plan must prohibit permissive approval backfill");
 
-console.log("Public retail-pricing and schema-mismatch guard checks passed.");
+assert.ok(wholesaleRoute.includes('supabase.auth.getUser()'), "wholesale endpoint must require an authenticated session");
+assert.ok(wholesaleRoute.includes('"get_authorized_wholesale_prices"'), "wholesale endpoint must use the dedicated authorization RPC");
+assert.ok(wholesaleRoute.includes("marketplace.wholesale_prices.view"), "wholesale endpoint contract must require explicit Super Admin grant");
+assert.ok(wholesaleRoute.includes('"Cache-Control": "private, no-store, max-age=0"'), "wholesale response must not be shared/cached");
+assert.ok(wholesaleRoute.includes("if (error || !Array.isArray(data))"), "missing/unavailable authorization RPC must fail closed");
+assert.ok(!wholesaleRoute.includes('from("products")'), "wholesale endpoint must not bypass the protected pricing RPC");
+
+console.log("Public retail-pricing, schema-mismatch, and protected-wholesale route guard checks passed.");
