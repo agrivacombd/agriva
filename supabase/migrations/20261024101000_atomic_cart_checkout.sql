@@ -42,7 +42,8 @@ declare
   product_row public.products;
   checkout_row public.marketplace_checkouts;
   order_row public.marketplace_orders;
-  attribution_row record;
+  attribution_reseller_id uuid;
+  attribution_expires_at timestamptz;
   total numeric(12,2) := 0;
   created_order_ids uuid[] := '{}';
 begin
@@ -96,9 +97,10 @@ begin
     where cart_id = cart_row.id
     order by product_id
   loop
-    attribution_row := null;
+    attribution_reseller_id := null;
+    attribution_expires_at := null;
     if p_attribution_code is not null and p_visitor_token is not null then
-      select a.reseller_id, a.expires_at into attribution_row
+      select a.reseller_id, a.expires_at into attribution_reseller_id, attribution_expires_at
       from public.attribution_sessions a
       where a.code = p_attribution_code
         and a.visitor_token = p_visitor_token
@@ -108,11 +110,11 @@ begin
       limit 1;
     end if;
 
-    if attribution_row.reseller_id is not null then
+    if attribution_reseller_id is not null then
       select * into order_row
       from public.finalize_marketplace_cod_order(
         cart_item.product_id, cart_item.quantity, p_shipping_address,
-        attribution_row.reseller_id, p_attribution_code, attribution_row.expires_at,
+        attribution_reseller_id, p_attribution_code, attribution_expires_at,
         p_visitor_token
       );
     else
