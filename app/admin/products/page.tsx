@@ -28,6 +28,7 @@ async function createProduct(formData: FormData) {
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const status = String(formData.get("status") ?? "draft");
+  const imageProcessing = String(formData.get("image_processing") ?? "false");
 
   if (
     !name || name.length > 160 ||
@@ -35,7 +36,7 @@ async function createProduct(formData: FormData) {
     !Number.isFinite(stock) || stock < 0 || stock > 9_999_999_999.99 ||
     description.length > 5000 || category.length > 120 ||
     (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl))) ||
-    brand.length > 120 || sku.length > 100 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 ||
+    brand.length > 120 || sku.length > 100 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageProcessing === "true" ||
     !["draft", "active"].includes(status)
   ) redirect("/admin/products?notice=invalid");
 
@@ -82,9 +83,10 @@ async function updateProduct(formData: FormData) {
   const seoKeywords = String(formData.get("seo_keywords") ?? "").trim();
   const brand = String(formData.get("brand") ?? "").trim();
   const sku = String(formData.get("sku") ?? "").trim();
+  const imageProcessing = String(formData.get("image_processing") ?? "false");
   if (!productId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !["draft", "active", "paused", "sold_out"].includes(status) ||
-      description.length > 5000 || category.length > 120 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || brand.length > 120 || sku.length > 100 || (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl)))) {
+      description.length > 5000 || category.length > 120 || imageProcessing === "true" || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || brand.length > 120 || sku.length > 100 || (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl)))) {
     redirect("/admin/products?notice=invalid");
   }
   const { supabase, user } = await requireSuperAdmin();
@@ -121,7 +123,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const noticeText: Record<string, string> = {
     created: "নতুন পণ্য সংরক্ষিত হয়েছে। Active নির্বাচন করলে পণ্যটি Marketplace-এ দেখা যাবে।",
     saved: "পণ্যের তথ্য আপডেট হয়েছে।",
-    invalid: "তথ্য যাচাই করুন। SEO title ৭০, description ১৭০, alt text ১৮০ অক্ষরের মধ্যে রাখুন; ছবি HTTPS হতে হবে।",
+    invalid: "তথ্য যাচাই করুন। SEO title ৭০, description ১৭০, alt text ১৮০ অক্ষরের মধ্যে রাখুন; ছবি upload চললে শেষ হওয়া পর্যন্ত অপেক্ষা করুন।",
     create_error: "পণ্য তৈরি হয়নি। SKU duplicate বা database permission/schema error আছে কি না যাচাই করুন।",
     update_error: "পণ্য আপডেট হয়নি। Database RPC ও permissions যাচাই করুন।",
   };
