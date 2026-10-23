@@ -76,7 +76,8 @@ export function getProductCategory(value: string | null) {
   return MARKETPLACE_CATEGORIES.find((category) => matchesCategory(value, category.match));
 }
 
-export function matchesProductCategory(value: string | null, category: (typeof MARKETPLACE_CATEGORIES)[number]) {
+export function matchesProductCategory(value: string | null, category: (typeof MARKETPLACE_CATEGORIES)[number], categorySlug?: string | null) {
+  if (categorySlug) return categorySlug === category.slug;
   return getProductCategory(value)?.slug === category.slug;
 }
 
