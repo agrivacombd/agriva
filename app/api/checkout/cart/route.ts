@@ -55,6 +55,9 @@ export async function POST(request: NextRequest) {
     if (/Authentication required/i.test(error.message)) {
       return NextResponse.json({ error: "সেশন শেষ হয়েছে। আবার লগইন করুন।" }, { status: 401 });
     }
+    if (/Maximum quantity per product/i.test(error.message)) {
+      return NextResponse.json({ error: "একটি পণ্যের জন্য সর্বোচ্চ ১০০টি অর্ডার করা যাবে। কার্টের পরিমাণ কমিয়ে আবার চেষ্টা করুন।" }, { status: 400 });
+    }
     if (/Insufficient stock|Product unavailable/i.test(error.message)) {
       return NextResponse.json({ error: "কার্টের একটি পণ্যের স্টক বা availability বদলে গেছে। কার্ট যাচাই করে আবার চেষ্টা করুন।" }, { status: 409 });
     }
