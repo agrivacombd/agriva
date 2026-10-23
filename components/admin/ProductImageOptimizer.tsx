@@ -63,6 +63,7 @@ export default function ProductImageOptimizer({ initialUrl = "", initialAlt = ""
 
   return <div className="rounded-xl border border-emerald-950/10 bg-[#f8fbf6] p-3 sm:p-4">
     <input type="hidden" name="image_url" value={imageUrl} />
+    <input type="hidden" name="image_processing" value={busy ? "true" : "false"} />
     <label className="block text-sm font-bold">পণ্যের ছবি <span className="font-normal text-slate-500">(ঐচ্ছিক)</span>
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void processImage(file); }} className="mt-2 block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-900 file:px-3 file:py-2 file:font-bold file:text-white" />
     </label>
