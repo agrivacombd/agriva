@@ -162,7 +162,8 @@ export default function Cart() {
           <p className="mt-2 text-sm text-[#647468]">সাবটোটাল</p>
           <p className="mt-1 text-3xl font-black">৳{money(total)}</p>
           <p className="mt-3 text-xs leading-5 text-[#647468]">ডেলিভারি চার্জ checkout-এ নিশ্চিত করা হবে।</p>
-          <Link href="/checkout" aria-disabled={items.some(item => !item.available)} className={`mt-6 block rounded-xl px-5 py-3 text-center font-bold text-white ${items.some(item => !item.available) ? "pointer-events-none bg-slate-400" : "bg-[#17351f] hover:bg-emerald-900"}`}>ক্যাশ অন ডেলিভারি checkout</Link>
+          <Link href="/checkout" aria-disabled={items.some(item => !item.available || item.qty > Math.min(item.stock, 100))} className={`mt-6 block rounded-xl px-5 py-3 text-center font-bold text-white ${items.some(item => !item.available || item.qty > Math.min(item.stock, 100)) ? "pointer-events-none bg-slate-400" : "bg-[#17351f] hover:bg-emerald-900"}`}>ক্যাশ অন ডেলিভারি checkout</Link>
+          {items.some(item => item.available && item.qty > Math.min(item.stock, 100)) && <p className="mt-2 text-xs leading-5 text-amber-800">checkout-এর আগে যেসব পণ্যের পরিমাণ স্টক বা ১০০টির সীমা ছাড়িয়েছে, সেগুলোর পরিমাণ কমিয়ে নিন।</p>}
           <Link href="/marketplace" className="mt-3 block rounded-xl border border-[#17351f] px-5 py-3 text-center text-sm font-bold">আরও পণ্য যোগ করুন</Link>
         </aside>
       </section>}
