@@ -95,7 +95,7 @@ export default async function AdminFeatureControlsPage({ searchParams }: { searc
       : Promise.resolve({ data: null, error: null }),
   ]);
 
-  const settingMap = new Map((settings ?? []).map((setting) => [setting.feature_key, setting]));
+  const settingMap = new Map((settings ?? []).map((setting) => [setting.feature_key, setting] as const));
   const noticeText: Record<string, string> = {
     saved: "Feature setting saved.",
     granted: "Feature-management permission granted.",
