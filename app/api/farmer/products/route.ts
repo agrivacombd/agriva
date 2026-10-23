@@ -66,9 +66,8 @@ export async function POST(request: NextRequest) {
     .slice(0, 100);
   const slug = `${slugBase || "product"}-${crypto.randomUUID().slice(0, 8)}`;
 
-  // Keep this insert compatible with the currently verified products schema.
-  // SEO/image fields are intentionally excluded until their migration is applied
-  // to the confirmed target database.
+  // Optional SEO columns are written only when the server-side feature flag is enabled.
+  // Apply migration 032 before enabling SEO Studio in production.
   const productInsert: Record<string, string | number | null> = {
       farmer_id: user.id,
       name,
