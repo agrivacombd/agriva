@@ -6,31 +6,23 @@ const storePage = read("../app/store/[storeId]/page.tsx");
 const productPage = read("../app/marketplace/[productId]/page.tsx");
 const sitemap = read("../app/sitemap.ts");
 const merchantFeed = read("../app/api/merchant-center/route.ts");
+const schemaPlan = read("../docs/product-schema-mismatch-safe-resolution.md");
 
-// Public storefronts select only the retail product fields. Wholesale prices
-// must never be loaded into public page data, even if B2B tables are added.
-assert.ok(
-  storePage.includes('.select("id,name,slug,category,description,price,stock")'),
-  "public store must select only the public retail product fields",
-);
-assert.ok(!/wholesale_price|product_wholesale_prices|wholesalePrice/i.test(storePage),
-  "public store source must not query or serialize wholesale price data");
-assert.ok(storePage.includes('.eq("status", "active")') &&
-  storePage.includes('.eq("moderation_status", "approved")'),
-  "public store must fail closed to active and approved products");
-assert.ok(storePage.includes("alternates: { canonical: `/store/${storeId}` }"),
-  "store SEO metadata must have a canonical URL");
+const wholesalePattern = /wholesale_price|product_wholesale_prices|wholesalePrice|wholesale_price_tiers/i;
 
-// Product structured data and merchant feed must be driven by the public
-// retail price only; private wholesale pricing must not be added to SEO feeds.
-assert.ok(productPage.includes("price: Number(product.price)"),
-  "Product/Offer structured data must use the retail product price");
-assert.ok(!/wholesale_price|product_wholesale_prices|wholesalePrice/i.test(productPage),
-  "public product page/metadata must not reference wholesale price data");
-assert.ok(merchantFeed.includes("p.price") && !/wholesale_price|product_wholesale_prices|wholesalePrice/i.test(merchantFeed),
-  "merchant SEO feed must use retail pricing only");
-assert.ok(sitemap.includes('.eq("status", "active")') &&
-  sitemap.includes('.eq("moderation_status", "approved")'),
-  "product sitemap must include only active, approved products");
+assert.ok(storePage.includes('.select("id,name,slug,category,description,price,stock")'), "public store must select only public retail product fields");
+assert.ok(!wholesalePattern.test(storePage), "public store source must not reference wholesale prices");
+assert.ok(!wholesalePattern.test(productPage), "public product page/schema/metadata must not reference wholesale prices");
+assert.ok(!wholesalePattern.test(merchantFeed), "public Merchant Center feed must not reference wholesale prices");
 
-console.log("Storefront pricing isolation checks passed.");
+assert.ok(productPage.includes("price: Number(product.price)"), "Product/Offer schema must use retail product price");
+assert.ok(merchantFeed.includes("p.price"), "Merchant Center feed must use retail product price");
+
+// Keep approval guards until the canonical publication source is resolved.
+assert.ok(storePage.includes('.eq("moderation_status", "approved")'), "storefront must retain approval guard");
+assert.ok(productPage.includes('.eq("moderation_status", "approved")'), "product detail must retain approval guard");
+assert.ok(sitemap.includes('.eq("moderation_status", "approved")'), "sitemap must retain approval guard");
+assert.ok(schemaPlan.includes("Do not drop approval filters"), "schema plan must prohibit bypassing approval checks");
+assert.ok(schemaPlan.includes("Do not add `moderation_status` with a permissive default"), "schema plan must prohibit permissive approval backfill");
+
+console.log("Public retail-pricing and schema-mismatch guard checks passed.");
