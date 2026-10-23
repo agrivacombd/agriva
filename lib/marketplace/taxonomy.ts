@@ -47,24 +47,37 @@ export function matchesCategory(value: string | null, terms: readonly string[]) 
   return terms.some((term) => normalized.includes(term.normalize("NFKC").toLocaleLowerCase()));
 }
 
-export function matchesProductCategory(value: string | null, category: (typeof MARKETPLACE_CATEGORIES)[number]) {
-  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
-  if (!normalized) return false;
-  if (matchesCategory(value, category.match)) return true;
-  return category.subcategories.some((subcategory) => {
-    const subcategoryName = subcategory.name.normalize("NFKC").toLocaleLowerCase();
-    return normalized === subcategoryName || (normalized.includes(subcategoryName) && matchesCategory(value, subcategory.match));
-  });
+export function getProductCategory(value: string | null) {
+  const normalized = (value || "").normalize("NFKC").trim().toLocaleLowerCase();
+  if (!normalized) return undefined;
+
+  const exactCategory = MARKETPLACE_CATEGORIES.find((category) =>
+    normalized === category.slug.toLocaleLowerCase() ||
+    normalized === category.name.normalize("NFKC").toLocaleLowerCase()
+  );
+  if (exactCategory) return exactCategory;
+
+  for (const category of MARKETPLACE_CATEGORIES) {
+    const exactSubcategory = category.subcategories.find((subcategory) =>
+      normalized === subcategory.slug.toLocaleLowerCase() ||
+      normalized === subcategory.name.normalize("NFKC").toLocaleLowerCase()
+    );
+    if (exactSubcategory) return category;
+  }
+
+  // Prefer a category + subcategory term pair over a broad category keyword.
+  // This prevents e.g. "ধানের বীজ" from being classified as both seeds and produce.
+  for (const category of MARKETPLACE_CATEGORIES) {
+    if (category.subcategories.some((subcategory) =>
+      matchesCategory(value, category.match) && matchesCategory(value, subcategory.match)
+    )) return category;
+  }
+
+  return MARKETPLACE_CATEGORIES.find((category) => matchesCategory(value, category.match));
 }
 
-export function getProductCategory(value: string | null) {
-  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
-  if (!normalized) return undefined;
-  for (const category of MARKETPLACE_CATEGORIES) {
-    const subcategory = category.subcategories.find((item) => normalized === item.name.normalize("NFKC").toLocaleLowerCase());
-    if (subcategory) return category;
-  }
-  return MARKETPLACE_CATEGORIES.find((category) => matchesProductCategory(value, category));
+export function matchesProductCategory(value: string | null, category: (typeof MARKETPLACE_CATEGORIES)[number]) {
+  return getProductCategory(value)?.slug === category.slug;
 }
 
 export function getProductTaxonomy(value: string | null) {
@@ -94,11 +107,6 @@ export function matchesSubcategory(
   category: (typeof MARKETPLACE_CATEGORIES)[number],
   subcategory: (typeof MARKETPLACE_CATEGORIES)[number]["subcategories"][number],
 ) {
-  const normalized = (value || "").normalize("NFKC").toLocaleLowerCase();
-  if (!normalized) return false;
-  const isNamedSubcategory = normalized === subcategory.name.normalize("NFKC").toLocaleLowerCase();
-  return isNamedSubcategory || (
-    matchesCategory(value, category.match) &&
-    matchesCategory(value, subcategory.match)
-  );
+  const taxonomy = getProductTaxonomy(value);
+  return taxonomy?.category.slug === category.slug && taxonomy.subcategory?.slug === subcategory.slug;
 }
