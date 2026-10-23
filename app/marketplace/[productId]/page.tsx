@@ -10,6 +10,14 @@ import { getSampleProduct } from "@/lib/marketplace/sample-products";
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; image_alt?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
 
+function isOptimizedProductImage(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname.endsWith(".supabase.co")
+      && url.pathname.startsWith("/storage/v1/object/public/product-images/");
+  } catch { return false; }
+}
+
 function normalizeSlug(value: string) {
   try {
     return decodeURIComponent(value).normalize("NFC").trim().toLocaleLowerCase();
@@ -102,7 +110,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-8 md:min-h-[420px]">{product.image_url ? <img src={product.image_url} alt={product.name} className="max-h-[380px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
+        <div className="flex aspect-square min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 sm:p-8 md:min-h-[420px]">{product.image_url ? <Image src={product.image_url} alt={product.image_alt?.trim() || product.name} width={1200} height={1200} sizes="(max-width: 768px) 100vw, 42vw" quality={88} priority unoptimized={!isOptimizedProductImage(product.image_url)} className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
