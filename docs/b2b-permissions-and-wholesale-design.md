@@ -159,3 +159,13 @@ Avoid putting uploaded document contents, identity numbers, phone numbers, or co
 ## Non-actions
 
 This is a design document only. It does not apply migrations, change live permissions, alter data, merge a PR, or deploy production.
+
+## 8. Non-negotiable wholesale privacy and SEO boundary
+
+- **Retail price is the only price eligible for public SEO.** Public product pages, Product/Offer JSON-LD, Open Graph/Twitter metadata, canonical pages, XML sitemap, Merchant Center/feed exports, search indexes, and AI crawler-facing public content may expose only the normal retail `products.price`.
+- Wholesale prices and quantity tiers must never be included in public HTML, hydration/RSC payloads, public API responses, client-side state, page source, metadata, JSON-LD, public feeds/exports, sitemap URLs/labels, or public caching layers. Do not render wholesale data and hide it with CSS.
+- A public product's schema `offers.price` must be exactly the retail price shown to ordinary visitors. Do not emit alternate wholesale `Offer` entries, wholesale `PriceSpecification`, or B2B price ranges in structured data.
+- Public Store pages may be indexed only as a storefront/product-discovery page. Their product list and metadata must be based on approved + active products and public retail fields. Wholesale values are not a ranking signal and must not be placed in SEO text, keywords, hidden content, schema, or AI discovery summaries.
+- B2B price access must be implemented through a separate authenticated server-side response that checks both current business verification status and the explicit active `marketplace.wholesale_prices.view` permission. Do not reuse public product loaders, public caches, or SEO data loaders for this response.
+- Server authorization is required on every read and checkout; hiding a UI control is not access control. Checkout must revalidate approval and permission, calculate the eligible tier server-side, ignore client-submitted prices, and store the actual charged price in the order snapshot.
+- Add regression tests that fail if public product/store/SEO/feed/sitemap code starts querying or serializing wholesale fields. Do not enable indexing or launch B2B pricing until these tests and the live-schema compatibility checks pass.
