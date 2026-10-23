@@ -88,7 +88,7 @@ export function buildJobPostingJsonLd(job: JobSeoRecord) {
     datePosted: job.published_at || job.created_at,
     ...(job.application_deadline ? { validThrough: job.application_deadline } : {}),
     employmentType: job.job_type === "full-time" ? "FULL_TIME" : job.job_type === "part-time" ? "PART_TIME" : "TEMPORARY",
-    hiringOrganization: { "@type": "Organization", name: "AGRIVA Jobs employer", sameAs: base, description: "Employer details are provided on the job page." },
+    hiringOrganization: { "@type": "Organization", name: job.employer_name },
     jobLocation: location,
     ...(salary ? { baseSalary: salary } : {}),
     url: `${base}${jobPath(job)}`,
