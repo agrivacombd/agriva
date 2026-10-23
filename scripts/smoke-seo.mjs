@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
-const migration = read("../supabase/migrations/030_seed_seo_and_reporting.sql");
-const integrationsMigration = read("../supabase/migrations/031_google_site_integrations.sql");
+const migration = read("../supabase/legacy_unapplied_migrations/030_seed_seo_and_reporting.sql");
+const integrationsMigration = read("../supabase/legacy_unapplied_migrations/031_google_site_integrations.sql");
 const integrationsPage = read("../app/admin/site-integrations/page.tsx");
 const seoHealthPage = read("../app/admin/seo-health/page.tsx");
 const indexnowRoute = read("../app/[indexnowKey].txt/route.ts");
-const seoMigration = read("../supabase/migrations/029_product_seo_schema.sql");
+const seoMigration = read("../supabase/legacy_unapplied_migrations/029_product_seo_schema.sql");
 const adminBootstrap = read("../supabase/migrations/028_admin_bootstrap_product_creation.sql");
 const productForm = read("../app/admin/products/page.tsx");
 const productPage = read("../app/marketplace/[productId]/page.tsx");
