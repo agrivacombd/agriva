@@ -9,7 +9,7 @@ The filenames in `supabase/migrations/` use the exact version prefixes recorded 
 Files in `supabase/legacy_unapplied_migrations/` are intentionally excluded from the active migration directory because they are not present in the confirmed production migration history. They are preserved for review, not approved for automatic execution:
 - `029_product_seo_schema.sql` includes additional admin RPC overloads and must be reviewed against live RPCs before any adoption.
 - `030_seed_seo_and_reporting.sql` adds optional seed-specific product attributes and an admin RPC; apply only after product-schema and UI review.
-- `032_more_site_verification_providers.sql` adds optional integration settings; verify the live `site_public_integrations` schema and consumers first.
+- `031_google_site_integrations.sql` and `032_more_site_verification_providers.sql` add optional site verification / tracking settings; verify the live `site_public_integrations` schema and consumers first.
 
 The following later migrations have been applied and verified in production:
 - `20261023142537_product_seo_fields_compat`
