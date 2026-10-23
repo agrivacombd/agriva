@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
     "test:seo": "node scripts/smoke-seo.mjs",
+    "test:storefront-pricing": "node scripts/smoke-storefront-pricing.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
