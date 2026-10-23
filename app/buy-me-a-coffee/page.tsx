@@ -126,7 +126,6 @@ export default function BuyMeACoffeePage() {
                   <p className="text-sm font-bold text-slate-500">{method.note}</p>
                   <h3 className="mt-1 text-xl font-black text-emerald-950">{method.name}</h3>
                   <p className="mt-3 break-all font-mono text-lg font-bold tracking-wide text-slate-800">{method.account}</p>
-                  <button type="button" onClick={() => navigator.clipboard?.writeText(method.account!)} className="mt-4 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-50">নম্বর কপি করুন</button>
                 </div>
               ))}
               {bank.name && bank.account && (
@@ -139,7 +138,6 @@ export default function BuyMeACoffeePage() {
                     {bank.branch && <div><dt className="text-slate-500">শাখা</dt><dd className="font-bold text-slate-900">{bank.branch}</dd></div>}
                     {bank.routing && <div><dt className="text-slate-500">রাউটিং নম্বর</dt><dd className="font-mono font-bold text-slate-900">{bank.routing}</dd></div>}
                   </dl>
-                  <button type="button" onClick={() => navigator.clipboard?.writeText(bank.account!)} className="mt-4 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-50">অ্যাকাউন্ট নম্বর কপি করুন</button>
                 </div>
               )}
             </div>
