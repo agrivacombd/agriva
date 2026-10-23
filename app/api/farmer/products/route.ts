@@ -49,8 +49,10 @@ export async function POST(request: NextRequest) {
     name.length > 160 ||
     !Number.isFinite(price) ||
     price < 0 ||
+    price > 9_999_999_999.99 ||
     !Number.isSafeInteger(stock) ||
     stock < 0 ||
+    stock > 9_999_999_999 ||
     description.length > 5000 ||
     category.length > 120 ||
     seoTitle.length > 70 ||
