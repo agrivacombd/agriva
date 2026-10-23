@@ -38,6 +38,10 @@
 
 The follow-up source-code audit is documented in [`docs/b2b-checkout-permission-consumer-audit.md`](./b2b-checkout-permission-consumer-audit.md). It confirms that the checkout API calls the existing `finalize_marketplace_cod_order` RPC and calculates price server-side in the database path; the client loops over cart items one request at a time, which creates a partial-order risk if a later request fails. It also confirms category CRUD and category assignment currently authorize with `is_admin()`, so the “Super Admin” comment on migration 027 does not enforce Super Admin-only access. This is repository evidence, not a live Supabase recheck.
 
+## Live verification follow-up
+
+The intended Supabase project was rechecked read-only on 2026-10-23. The verified migration drift, current role enum, category RPC authorization gap, storage inventory, checkout contract, and Security Advisor notices are recorded in [`docs/b2b-live-supabase-verification-2026-10-23.md`](./b2b-live-supabase-verification-2026-10-23.md). No SQL mutation or migration apply occurred.
+
 ## Review-only SQL artifact
 
 Created: [`docs/drafts/b2b-permissions-wholesale-review-only.sql`](./drafts/b2b-permissions-wholesale-review-only.sql)
