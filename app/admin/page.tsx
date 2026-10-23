@@ -12,6 +12,24 @@ async function requireAdmin() {
   return { supabase, user };
 }
 
+async function reviewLearningCorrection(formData: FormData) {
+  "use server";
+  const reportId = String(formData.get("reportId") ?? "");
+  const status = String(formData.get("status") ?? "");
+  const adminNote = String(formData.get("adminNote") ?? "").trim().slice(0, 2000);
+  if (!reportId || !["approved", "rejected", "needs_info"].includes(status)) redirect("/admin?notice=correction_invalid");
+  const { supabase, user } = await requireAdmin();
+  const { error } = await supabase.from("learning_correction_reports").update({
+    status,
+    admin_note: adminNote || null,
+    reviewed_by: user.id,
+    reviewed_at: new Date().toISOString(),
+  }).eq("id", reportId).eq("status", "pending");
+  revalidatePath("/admin");
+  revalidatePath("/learn/plant-disease");
+  redirect(error ? "/admin?notice=correction_error" : "/admin?notice=correction_reviewed");
+}
+
 async function updateOrderStatus(formData: FormData) {
   "use server";
   const orderId = String(formData.get("orderId") ?? "");
@@ -70,6 +88,9 @@ const noticeText: Record<string, string> = {
   payout_approved: "পেআউট অনুমোদিত হয়েছে।",
   payout_error: "পেআউট অনুমোদন করা যায়নি।",
   payout_paid: "পেআউট পরিশোধ হিসেবে চিহ্নিত হয়েছে।",
+  correction_reviewed: "সংশোধন রিপোর্টের রিভিউ স্ট্যাটাস আপডেট হয়েছে।",
+  correction_error: "সংশোধন রিপোর্ট আপডেট হয়নি। migration ও database policy যাচাই করুন।",
+  correction_invalid: "সংশোধন রিপোর্টের তথ্য সঠিক নয়।",
   payout_complete_error: "পেআউট সম্পন্ন হয়নি। ব্যালেন্স ও পেমেন্ট রেফারেন্স যাচাই করুন।",
   invalid_order: "অর্ডারের তথ্য সঠিক নয়।",
   invalid_commission: "কমিশনের তথ্য সঠিক নয়।",
@@ -83,7 +104,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
   const [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
     commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
-    recentPayouts, opportunities,
+    recentPayouts, opportunities, correctionReports, correctionCount,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "farmer"),
@@ -97,6 +118,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
     supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("commission_payouts").select("id,reseller_id,amount,status,payment_method,requested_at,payment_reference").order("requested_at", { ascending: false }).limit(8),
     supabase.from("content_opportunities").select("id,keyword,search_count,opportunity_type,status").order("search_count", { ascending: false }).limit(5),
+    supabase.from("learning_correction_reports").select("id,content_title,content_slug,issue_type,reported_text,suggested_correction,source_url,reporter_name,reporter_email,status,created_at").order("created_at", { ascending: false }).limit(30),
+    supabase.from("learning_correction_reports").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const orders = orderTotals.data ?? [];
@@ -158,6 +181,24 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
             <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার পেআউট</h2><p className="mt-1 text-sm text-[#748074]">Approve এবং পেমেন্ট রেফারেন্সসহ paid mark করুন</p></div>
             <div className="divide-y divide-[#edf1ea]">{(recentPayouts.data ?? []).map(p => <div key={p.id} className="px-5 py-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-bold">{money(p.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{p.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Reseller #{p.reseller_id.slice(0,8)} · {p.payment_method ?? "Method not set"}</p></div>{p.status === "requested" && <form action={approvePayout}><input type="hidden" name="payoutId" value={p.id}/><button className="rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs font-bold">Approve</button></form>}</div>{["requested","approved"].includes(p.status) && <form action={completePayout} className="mt-3 flex flex-wrap gap-2"><input type="hidden" name="payoutId" value={p.id}/><input name="reference" defaultValue={p.payment_reference ?? ""} required placeholder="Payment transaction/reference" className="min-w-[200px] flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs"/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Mark paid</button></form>}</div>)}{!recentPayouts.data?.length && <p className="p-6 text-sm text-[#6b786d]">পেআউট অনুরোধ নেই।</p>}</div>
           </div>
+        </section>
+
+        <section className="mt-5 overflow-hidden rounded-2xl border border-amber-200 bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-100 bg-amber-50 px-5 py-4">
+            <div><h2 className="text-xl font-black">🔔 Learning Content Correction Inbox</h2><p className="mt-1 text-sm text-[#748074]">ব্যবহারকারীর রিপোর্ট পর্যালোচনা করুন। Pending: {correctionCount.count ?? "—"}</p></div>
+            <span className="rounded-full bg-amber-200 px-3 py-1.5 text-sm font-black text-amber-950">{correctionCount.count ?? 0} pending</span>
+          </div>
+          {correctionReports.error ? <p className="p-5 text-sm leading-6 text-amber-900">Correction inbox এখনো চালু হয়নি। Supabase-এ <code>20261024090000_learning_correction_reports.sql</code> migration প্রয়োগ করুন।</p> : <div className="divide-y divide-[#edf1ea]">
+            {(correctionReports.data ?? []).map(report => <article key={report.id} className="p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-black">{report.content_title}</h3><p className="mt-1 text-xs text-[#748074]">{report.issue_type} · {new Date(report.created_at).toLocaleString("bn-BD")} · {report.reporter_name || "নাম দেননি"} {report.reporter_email ? "· " + report.reporter_email : ""}</p></div><span className={"rounded-full px-3 py-1 text-xs font-bold " + (report.status === "pending" ? "bg-amber-100 text-amber-900" : report.status === "approved" ? "bg-emerald-100 text-emerald-900" : "bg-slate-100 text-slate-700")}>{report.status}</span></div>
+              <div className="mt-3 rounded-xl bg-[#f7faf5] p-3"><p className="text-xs font-bold text-[#657467]">রিপোর্ট করা তথ্য</p><p className="mt-1 whitespace-pre-wrap text-sm leading-6">{report.reported_text}</p></div>
+              {report.suggested_correction && <div className="mt-2 rounded-xl border border-emerald-100 p-3"><p className="text-xs font-bold text-emerald-800">প্রস্তাবিত সংশোধন</p><p className="mt-1 whitespace-pre-wrap text-sm leading-6">{report.suggested_correction}</p></div>}
+              {report.source_url && <p className="mt-2 break-all text-sm">সূত্র: <a href={report.source_url} target="_blank" rel="noreferrer" className="text-emerald-800 underline">{report.source_url}</a></p>}
+              {report.status === "pending" && <form action={reviewLearningCorrection} className="mt-4 grid gap-2 md:grid-cols-[1fr_auto_auto_auto]"><input type="hidden" name="reportId" value={report.id}/><input name="adminNote" maxLength={2000} placeholder="Admin note / কী যাচাই করা হয়েছে" className="min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2 text-sm"/><button name="status" value="approved" className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">Approve</button><button name="status" value="needs_info" className="rounded-xl border border-amber-300 px-4 py-2 text-sm font-bold text-amber-900">আরও তথ্য</button><button name="status" value="rejected" className="rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-800">Reject</button></form>}
+            </article>)}
+            {!correctionReports.data?.length && <p className="p-5 text-sm text-[#748074]">এখনো কোনো correction request নেই।</p>}
+          </div>}
+          <p className="border-t border-[#edf1ea] px-5 py-3 text-xs leading-5 text-[#748074]">Approval status রেকর্ড হয়। কনটেন্টে সংশোধন প্রকাশ করতে যাচাইকৃত তথ্য দিয়ে সংশ্লিষ্ট লার্নিং কেস আপডেট করাও প্রয়োজন; শুধু approve করলে hard-coded কনটেন্ট নিজে থেকে বদলায় না।</p>
         </section>
 
         <section className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">AI Search Opportunities</h2><p className="mt-1 text-sm text-[#748074]">জনপ্রিয় search demand থেকে product ও content আইডিয়া</p></div><Link href="/admin/opportunities" className="rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">সব দেখুন ↗</Link></div><div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">{(opportunities.data ?? []).map(item=><div key={item.id} className="rounded-xl bg-[#f7faf5] p-4"><p className="font-bold">{item.keyword}</p><p className="mt-2 text-xs text-[#748074]">{item.search_count} searches · {item.opportunity_type}</p><p className="mt-1 text-xs font-semibold text-[#39724a]">{item.status}</p></div>)}{!opportunities.data?.length && <p className="text-sm text-[#748074]">এখনো search signal নেই।</p>}</div></section>
