@@ -48,7 +48,15 @@ export default function MarketplaceCore({ products, showCategories = true }: { p
 
     {showCategories && <section className="mt-8" aria-labelledby="marketplace-categories-heading">
       <div className="flex items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Browse by category</p><h2 id="marketplace-categories-heading" className="mt-2 text-2xl font-black">ক্যাটাগরি অনুযায়ী পণ্য</h2></div></div>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{MARKETPLACE_CATEGORIES.map((item) => <Link key={item.slug} href={`/marketplace/category/${item.slug}`} className="group rounded-2xl border border-emerald-950/10 bg-white p-4 transition hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-700"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">{item.icon}</span><h3 className="mt-3 text-sm font-extrabold group-hover:text-emerald-800">{item.name}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{item.description}</p></Link>)}</div>
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">{MARKETPLACE_CATEGORIES.map((item) => <article key={item.slug} className="rounded-2xl border border-emerald-950/10 bg-white p-4 transition hover:border-emerald-700/40 hover:shadow-md">
+        <Link href={`/marketplace/category/${item.slug}`} className="group flex gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-700">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">{item.icon}</span>
+          <span className="min-w-0"><span className="block text-sm font-extrabold group-hover:text-emerald-800">{item.name}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{item.description}</span></span>
+        </Link>
+        <div className="mt-3 flex flex-wrap gap-1.5 border-t border-slate-100 pt-3" aria-label={`${item.name} সাব-ক্যাটাগরি`}>
+          {item.subcategories.map((sub) => <Link key={sub.slug} href={`/marketplace/category/${item.slug}/${sub.slug}`} className="rounded-full bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-700">{sub.name}</Link>)}
+        </div>
+      </article>)}</div>
     </section>}
 
     <section className="mt-10" aria-labelledby="marketplace-products-heading">

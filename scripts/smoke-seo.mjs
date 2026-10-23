@@ -67,9 +67,19 @@ for (const [name, page] of [
 ]) {
   assert.ok(page.includes("openGraph:") && page.includes("twitter:"), `${name} must define page-specific social metadata`);
 }
-assert.ok(sitemap.includes("MARKETPLACE_CATEGORIES.map") && sitemap.includes("MARKETPLACE_CATEGORIES.flatMap"), "category landing pages must be discoverable in sitemap");
+assert.ok(sitemap.includes("categoryUrls = MARKETPLACE_CATEGORIES.flatMap") && sitemap.includes("matchesProductCategory") && sitemap.includes("matchesSubcategory"), "only populated category and subcategory landing pages should be discoverable in sitemap");
 assert.ok(categoryPage.includes("matchesProductCategory") && categoryPage.includes("CollectionPage"), "category pages must filter products and expose collection metadata");
 assert.ok(subcategoryPage.includes("matchesSubcategory") && subcategoryPage.includes("CollectionPage"), "subcategory pages must filter products and expose collection metadata");
+assert.ok(categoryPage.includes("hasIndexableCategoryProducts") && categoryPage.includes("robots: { index: false, follow: true }"), "empty category pages should be noindex while retaining crawlable links");
+assert.ok(subcategoryPage.includes("hasIndexableSubcategoryProducts") && subcategoryPage.includes("robots: { index: false, follow: true }"), "empty subcategory pages should be noindex while retaining crawlable links");
+assert.ok(subcategoryPage.includes("subcategory.description") && read("../lib/marketplace/taxonomy.ts").includes("description: \"ধান চাষের জন্য বীজের পণ্য"), "subcategory landing pages should have unique, taxonomy-owned descriptions");
+assert.ok(categoryPage.includes("/guides/seed-selection") && categoryPage.includes("/soil-fertilizer") && categoryPage.includes("/crop-disease"), "relevant farming guides should be internally linked from matching category pages");
+assert.ok(read("../lib/marketplace/indexability.ts").includes("status\"") && read("../lib/marketplace/indexability.ts").includes("matchesSubcategory"), "indexability checks must use active real products, not preview samples");
+assert.ok(read("../lib/marketplace/taxonomy.ts").includes("getProductCategory(value)?.slug === category.slug") && read("../lib/marketplace/taxonomy.ts").includes("taxonomy.subcategory?.slug === subcategory.slug"), "a product category must map deterministically to one category/subcategory to prevent duplicate taxonomy matches");
+assert.ok(!read("../app/marketplace/page.tsx").includes("✓ ক্যাটাগরি অনুযায়ী ব্রাউজ"), "marketplace hero should not show promotional checklist claims");
+assert.ok(!read("../app/marketplace/page.tsx").includes("✓ মোবাইল-ফ্রেন্ডলি") && !read("../app/marketplace/page.tsx").includes("✓ অনুমোদিত পণ্য"), "marketplace hero should not show mobile-friendly or approved-product claims");
+assert.ok(read("../components/marketplace/MarketplaceCore.tsx").includes("item.subcategories.map") && read("../components/marketplace/MarketplaceCore.tsx").includes("/marketplace/category/${item.slug}/${sub.slug}"), "marketplace category cards must link directly to subcategory landing pages");
+assert.ok(read("../lib/marketplace/taxonomy.ts").includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumbs should connect to the canonical subcategory hierarchy");
 assert.ok(robots.includes('"/admin"') && robots.includes('"/api"') && robots.includes("/sitemap.xml"), "robots must exclude private routes and declare sitemap");
 
 assert.ok(analytics.includes("analytics.readonly") && analytics.includes("webmasters.readonly"), "reporting must use read-only Google API scopes");

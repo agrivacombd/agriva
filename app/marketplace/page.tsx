@@ -37,7 +37,6 @@ export default async function MarketplacePage() {
         <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">বাংলাদেশের কৃষি পণ্য <span className="text-lime-300">এক জায়গায়</span></h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/85 sm:text-lg sm:leading-8">বীজ, সার, ফসল সুরক্ষা, কৃষি যন্ত্রপাতি ও তাজা কৃষিপণ্য ক্যাটাগরি অনুযায়ী খুঁজুন। পণ্যের বিবরণ, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন।</p>
         <a href="#catalogue" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] transition hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#145b3c]">পণ্য খুঁজুন ↓</a>
-        <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/75 sm:text-sm"><span>✓ ক্যাটাগরি অনুযায়ী ব্রাউজ</span><span>✓ মোবাইল-ফ্রেন্ডলি</span><span>✓ অনুমোদিত পণ্য</span></div>
       </div>
     </section>
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">

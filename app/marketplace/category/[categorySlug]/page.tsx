@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
+import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string }> };
 export function generateStaticParams() {
@@ -14,10 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
   const category = getCategory(categorySlug);
   if (!category) return { title: "ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
+  const hasProducts = await hasIndexableCategoryProducts(categorySlug);
   const title = `${category.name} | কৃষি পণ্য | AGRIVA`;
   const description = `${category.name} কিনুন ও পণ্যের তথ্য দেখুন AGRIVA Marketplace-এ। ${category.description}।`;
   return {
     title, description,
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}` },
     keywords: [category.name, `${category.name} বাংলাদেশ`, "কৃষি পণ্য", "AGRIVA Marketplace"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
@@ -55,6 +58,10 @@ export default async function CategoryPage({ params }: Props) {
         <span className="text-5xl" aria-hidden="true">{category.icon}</span><h1 className="mt-4 text-3xl font-black sm:text-5xl">{category.name}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base">{category.description}। AGRIVA Marketplace-এ এই ক্যাটাগরির পণ্য ও বিবরণ খুঁজুন।</p>
       </header>
       <section className="mt-8"><h2 className="text-xl font-black">সাব-ক্যাটাগরি</h2><div className="mt-3 flex flex-wrap gap-2">{category.subcategories.map((sub) => <Link key={sub.slug} href={`/marketplace/category/${category.slug}/${sub.slug}`} className="rounded-full border border-emerald-900/15 bg-white px-4 py-2.5 text-sm font-bold transition hover:border-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">{sub.name}</Link>)}</div></section>
+      {category.slug === "seeds" && <section className="mt-8 rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="text-lg font-black">বীজ নির্বাচন ও সংরক্ষণ গাইড</h2><p className="mt-2 text-sm leading-6 text-slate-600">বীজ কেনার আগে নির্বাচন, বপনের প্রস্তুতি ও সঠিক সংরক্ষণ সম্পর্কে আরও জানুন।</p><div className="mt-3 flex flex-wrap gap-3 text-sm font-bold text-emerald-800"><Link href="/guides/seed-selection" className="underline underline-offset-4">বীজ নির্বাচন</Link><Link href="/guides/sowing-preparation" className="underline underline-offset-4">বপনের প্রস্তুতি</Link><Link href="/guides/seed-storage" className="underline underline-offset-4">বীজ সংরক্ষণ</Link></div></section>}
+      {category.slug === "fertilizer" && <section className="mt-8 rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="text-lg font-black">মাটি ও সার ব্যবস্থাপনা</h2><p className="mt-2 text-sm leading-6 text-slate-600">সারের পণ্য দেখার পাশাপাশি মাটির অবস্থা ও পুষ্টি ব্যবস্থাপনা সম্পর্কিত নির্দেশনা পড়ুন।</p><Link href="/soil-fertilizer" className="mt-3 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">মাটি ও সার গাইড</Link></section>}
+      {category.slug === "crop-protection" && <section className="mt-8 rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="text-lg font-black">ফসলের রোগবালাই সম্পর্কে জানুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">পণ্য বাছাইয়ের আগে ফসলের রোগবালাই শনাক্তকরণ ও ব্যবস্থাপনার তথ্য দেখুন।</p><Link href="/crop-disease" className="mt-3 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">ফসলের রোগবালাই গাইড</Link></section>}
+      {category.slug === "tools-equipment" && <section className="mt-8 rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="text-lg font-black">কৃষি সরঞ্জাম ও ব্যবহারিক টুল</h2><p className="mt-2 text-sm leading-6 text-slate-600">কৃষিকাজের সহায়ক অনলাইন টুলগুলোও ব্যবহার করে দেখুন।</p><Link href="/tools" className="mt-3 inline-flex text-sm font-bold text-emerald-800 underline underline-offset-4">কৃষি টুল দেখুন</Link></section>}
       {isSamplePreview && <p role="status" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">প্রিভিউ মোড: নমুনা পণ্য — বাস্তব বিক্রির তালিকা নয়।</p>}<section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.15em] text-emerald-700">Category catalogue</p><h2 className="mt-2 text-2xl font-black">{category.name} — পণ্য তালিকা</h2></div><span className="text-sm text-slate-500">{products.length.toLocaleString("bn-BD")}টি</span></div>
         {products.length ? <MarketplaceCore products={products} showCategories={false} /> : <div className="rounded-2xl border border-dashed border-emerald-950/20 bg-white p-8 text-center"><p className="font-extrabold">এই ক্যাটাগরিতে এখনো পণ্য নেই</p><p className="mt-2 text-sm text-slate-500">নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p><Link href="/marketplace" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-emerald-900 px-4 py-2 text-sm font-bold text-white">সব পণ্য দেখুন</Link></div>}
       </section>
