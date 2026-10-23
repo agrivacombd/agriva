@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient(url, key);
     const [articleResult, productResult] = await Promise.all([
       supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article"),
-      supabase.from("products").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
+      supabase.from("products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).limit(5000),
     ]);
     if (!articleResult.error && articleResult.data) articles = articleResult.data as SitemapArticle[];
     if (!productResult.error && productResult.data) products = productResult.data as SitemapProduct[];
