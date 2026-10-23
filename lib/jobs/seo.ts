@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export type JobSeoRecord = {
   id: string;
   title: string;
+  employer_name: string;
   slug: string;
   description: string;
   job_type: "one-time" | "part-time" | "full-time";
