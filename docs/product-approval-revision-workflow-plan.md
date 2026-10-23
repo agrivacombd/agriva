@@ -166,6 +166,65 @@ Do not make irrelevant fields required. Policy/legal requirements must be config
 6. AI draft assistant and claim validation.
 7. SEO/performance dashboard and alerts.
 
+
+## 11. Super Admin-controlled configuration and permission-gated Admin panel
+
+- Treat Super Admin as the only role that can create/edit/delete marketplace categories, define category attributes, mark fields required/optional, configure validation rules from a safe allowlist, and change category-level policy.
+- Keep these controls in a dedicated **Marketplace Configuration** section. It is hidden from all users except Super Admin by default.
+- Super Admin may explicitly grant a narrowly scoped permission (for example, `marketplace.category_config.manage`) to selected Admin profiles. Only then should that section appear in the permitted Admin's own profile/admin panel.
+- Permission is enforced server-side on every read/write and in RPC authorization; hiding navigation or checking a client-side role is not security. Default deny, least privilege, auditable grants/revocations, and immediate permission revocation are required.
+- Do not let delegated Admins grant this permission to themselves or others, change roles, modify security-sensitive validation code, or bypass product approval.
+- Use controlled attribute types and validation operators (text, number, boolean, enum, measurement, date, URL, etc.). No arbitrary SQL, executable expressions, or client-defined database column names.
+- Keep sensitive/legal/compliance rules, authorization logic, pricing visibility, and database schema changes developer-controlled and reviewed. Super Admin can configure business metadata only within the supported safe options.
+- Audit category/attribute changes with actor, timestamp, before/after values, and reason. Changes to a category's fields must not silently invalidate existing products; show an impact preview and require a migration/backfill plan where needed.
+- Product approval/revision workflow remains separate from category configuration. A permission to manage categories does not imply permission to approve products or verify B2B accounts.
+
+## 12. B2B buyer accounts and wholesale pricing
+
+### Buyer account application and verification
+
+- Add a distinct **B2B / Wholesale** buyer account type for entrepreneurs, registered businesses, enterprises, and eligible trade buyers. Ordinary retail customers remain retail accounts.
+- B2B applicants submit business type, legal/business name, contact details, business address, and appropriate supporting documents/registration identifiers where applicable. Collect only necessary information, protect documents from public access, and define retention/access rules.
+- Initial state is `pending_verification`; only a Super Admin can approve, reject, suspend, or revoke B2B wholesale eligibility. Admins cannot approve their own application or elevate an account without explicit separately granted permission; default policy is Super Admin-only verification.
+- Keep verification status distinct from the user's normal account role and product seller permissions. Approval grants wholesale-buyer eligibility, not Admin access, seller privileges, or product-approval rights.
+- Store reviewer, decision timestamp, reason, and an audit event. Rejection should include an actionable reason; resubmission creates a new review event. Suspended/revoked accounts immediately lose wholesale-price access.
+- Verify documents through an approved operational process; do not treat a user-entered business name or uploaded document alone as proof of verification.
+
+### Price model and visibility
+
+- Retail price is the default public/customer price. Wholesale pricing is shown only to authenticated accounts whose B2B verification is currently approved and active.
+- Unverified, pending, rejected, suspended, anonymous, and retail accounts must never receive wholesale prices through page HTML, API/RPC responses, search results, structured data, metadata, cached responses, exports, or client-side payloads.
+- Model wholesale pricing explicitly rather than replacing the retail price. Support product-level wholesale price and, if required, tiered quantity breaks (minimum order quantity, quantity range, unit price, effective dates). Use a clear currency/precision policy and validate wholesale prices against configured business rules.
+- If no wholesale price is configured, show the retail price or a clear “contact for wholesale pricing” state only to verified B2B users; never invent a wholesale discount.
+- Use server-authoritative price selection for cart, checkout, order totals, and order creation. Re-check B2B eligibility and price at checkout; never trust a price or buyer-type value submitted by the browser.
+- Persist the applied unit price, pricing mode (retail/wholesale), quantity tier, and relevant product/price snapshot on each order item so later price edits do not rewrite historical orders. Recalculate safely if quantity changes, and ensure discounts, commissions, tax, delivery, cancellation, and refund logic use the correct price basis.
+- Product schema markup and public SEO pages expose only retail pricing. Never put B2B-only prices in public Product/Offer JSON-LD, public page source, sitemap, Open Graph, or anonymous APIs.
+- Avoid shared-cache leakage: vary or disable caching for authenticated price responses; test account switching and logout/login in the same browser.
+- Product approval applies to retail and wholesale price changes. Proposed wholesale price edits remain private in the pending revision and only take effect after approval.
+
+### B2B acceptance tests
+
+- Anonymous and retail users see retail price only.
+- Pending/rejected/suspended B2B applicants cannot retrieve wholesale price by calling APIs/RPCs directly.
+- Approved B2B users see wholesale price only where a valid wholesale price/tier is configured.
+- Revoking B2B status immediately blocks new wholesale-price reads and checkout; existing order snapshots remain intact.
+- Cart/checkout recomputes eligibility, minimum quantity, tier, and total on the server.
+- Product JSON-LD, sitemap, public page HTML, and anonymous responses never expose wholesale prices.
+- Super Admin verification actions and permission changes are audited; delegated Admin cannot self-approve or self-grant access.
+- Retail and wholesale orders preserve the correct price basis, quantity tier, commission, cancellation, and refund calculations.
+
+## 13. Updated delivery order
+
+1. Finish read-only schema/RPC compatibility inventory and resolve publication source of truth.
+2. Draft role/permission matrix, Super Admin-only configuration authorization, and B2B verification state model.
+3. Draft category/attribute configuration and B2B pricing tables/RPCs as review-only migrations; no application to live database.
+4. Implement revision-based product submission and Admin approval queue.
+5. Implement permission-gated Marketplace Configuration UI and dynamic category form.
+6. Implement B2B application, Super Admin verification queue, and server-authoritative wholesale price visibility/checkout.
+7. Align public product pages, retail-only structured data, sitemap, cart/order snapshots, and cache policy.
+8. Add RLS/RPC authorization tests, price-leak tests, role-escalation tests, concurrency tests, and staging-only end-to-end tests.
+9. Review all diffs and obtain explicit authorization before staging DB application, PR merge, or production deployment.
+
 ## Explicit non-actions
 
 This plan is documentation and design only. No SQL migration was applied, no Supabase schema or data was changed, no PR was merged, and no production deployment was run.
