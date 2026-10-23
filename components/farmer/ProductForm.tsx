@@ -8,6 +8,9 @@ type ProductFormState = {
   price: string;
   stock: string;
   description: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
 };
 
 const initialForm: ProductFormState = {
@@ -16,9 +19,12 @@ const initialForm: ProductFormState = {
   price: "",
   stock: "",
   description: "",
+  seoTitle: "",
+  seoDescription: "",
+  seoKeywords: "",
 };
 
-export default function ProductForm() {
+export default function ProductForm({ seoStudioEnabled = false }: { seoStudioEnabled?: boolean }) {
   const [form, setForm] = useState<ProductFormState>(initialForm);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
@@ -42,6 +48,9 @@ export default function ProductForm() {
           ...form,
           price: Number(form.price),
           stock: Number(form.stock),
+          seo_title: form.seoTitle,
+          seo_description: form.seoDescription,
+          seo_keywords: form.seoKeywords,
         }),
       });
       const data = await response.json();
@@ -91,6 +100,24 @@ export default function ProductForm() {
         <label htmlFor="product-description" className="text-sm font-bold">Description</label>
         <textarea id="product-description" maxLength={5000} value={form.description} onChange={(event) => set("description", event.target.value)} className={`${inputClass} min-h-32`} placeholder="Describe quality, origin, harvest, and packaging..." />
       </div>
+
+      {seoStudioEnabled && (
+        <fieldset className="space-y-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+          <legend className="px-2 text-sm font-black">SEO Studio</legend>
+          <div>
+            <label htmlFor="seo-title" className="text-sm font-bold">SEO title</label>
+            <input id="seo-title" maxLength={70} value={form.seoTitle} onChange={(event) => set("seoTitle", event.target.value)} className={inputClass} placeholder="Up to 70 characters" />
+          </div>
+          <div>
+            <label htmlFor="seo-description" className="text-sm font-bold">SEO description</label>
+            <textarea id="seo-description" maxLength={170} value={form.seoDescription} onChange={(event) => set("seoDescription", event.target.value)} className={inputClass} placeholder="Up to 170 characters" />
+          </div>
+          <div>
+            <label htmlFor="seo-keywords" className="text-sm font-bold">SEO keywords (optional)</label>
+            <input id="seo-keywords" maxLength={500} value={form.seoKeywords} onChange={(event) => set("seoKeywords", event.target.value)} className={inputClass} placeholder="Comma-separated relevant terms" />
+          </div>
+        </fieldset>
+      )}
 
       <p className="text-xs leading-5 text-slate-500">Products are saved as drafts for review. Advanced SEO and image options will appear only when enabled for your account by an authorized administrator.</p>
 
