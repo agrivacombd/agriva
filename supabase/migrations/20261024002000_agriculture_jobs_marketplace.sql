@@ -150,3 +150,55 @@ for each row execute function public.set_job_application_updated_at();
 
 comment on table public.job_posts is 'AGRIVA agriculture jobs; only reviewed and published posts are public.';
 comment on column public.job_posts.location_is_approximate is 'Public pages should default to approximate coordinates to protect private farm/home locations.';
+
+
+-- Moderation audit trail and admin-only status transitions.
+create table if not exists public.job_moderation_events (
+  id uuid primary key default gen_random_uuid(),
+  job_id uuid not null references public.job_posts(id) on delete cascade,
+  admin_id uuid not null references auth.users(id),
+  previous_status text not null,
+  new_status text not null check (new_status in ('published','rejected','paused','filled')),
+  note text,
+  created_at timestamptz not null default now()
+);
+alter table public.job_moderation_events enable row level security;
+drop policy if exists "Admins can read job moderation events" on public.job_moderation_events;
+create policy "Admins can read job moderation events" on public.job_moderation_events for select to authenticated
+using (exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
+revoke all on public.job_moderation_events from anon, authenticated;
+grant select on public.job_moderation_events to authenticated;
+
+create or replace function public.admin_moderate_job_post(p_job_id uuid, p_status text, p_note text default null)
+returns void
+language plpgsql
+security definer
+set search_path = pg_catalog, public
+as $$
+declare
+  v_admin uuid := auth.uid();
+  v_previous text;
+begin
+  if v_admin is null or not exists(select 1 from public.profiles p where p.id=v_admin and p.role='admin') then
+    raise exception 'admin access required' using errcode='42501';
+  end if;
+  if p_status not in ('published','rejected','paused','filled') then
+    raise exception 'invalid moderation status' using errcode='22023';
+  end if;
+  if p_note is not null and char_length(p_note)>1000 then
+    raise exception 'moderation note too long' using errcode='22023';
+  end if;
+  select status into v_previous from public.job_posts where id=p_job_id for update;
+  if not found then raise exception 'job not found' using errcode='P0002'; end if;
+  update public.job_posts
+    set status=p_status,
+        moderation_note=nullif(trim(p_note),''),
+        published_at=case when p_status='published' then coalesce(published_at,now()) else published_at end,
+        updated_at=now()
+    where id=p_job_id;
+  insert into public.job_moderation_events(job_id,admin_id,previous_status,new_status,note)
+  values(p_job_id,v_admin,v_previous,p_status,nullif(trim(p_note),''));
+end;
+$$;
+revoke all on function public.admin_moderate_job_post(uuid,text,text) from public, anon;
+grant execute on function public.admin_moderate_job_post(uuid,text,text) to authenticated;
