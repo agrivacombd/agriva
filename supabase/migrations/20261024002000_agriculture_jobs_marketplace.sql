@@ -202,3 +202,8 @@ end;
 $$;
 revoke all on function public.admin_moderate_job_post(uuid,text,text) from public, anon;
 grant execute on function public.admin_moderate_job_post(uuid,text,text) to authenticated;
+
+
+drop policy if exists "Admins can read all job posts" on public.job_posts;
+create policy "Admins can read all job posts" on public.job_posts for select to authenticated
+using (exists(select 1 from public.profiles p where p.id=(select auth.uid()) and p.role='admin'));
