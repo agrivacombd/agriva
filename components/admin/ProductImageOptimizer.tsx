@@ -9,7 +9,7 @@ const SIZE = 1200;
 const MAX_BYTES = 3 * 1024 * 1024;
 
 export default function ProductImageOptimizer({ initialUrl = "", initialAlt = "", suggestedAlt = "" }: Props) {
-  const [imageUrl, setImageUrl] = useState(initialUrl);
+  const [imageUrl, setImageUrl] = useState(initialUrl || "");
   const [alt, setAlt] = useState(initialAlt || suggestedAlt);
   const [quality, setQuality] = useState(84);
   const [busy, setBusy] = useState(false);
