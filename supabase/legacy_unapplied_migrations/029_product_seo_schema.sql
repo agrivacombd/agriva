@@ -22,7 +22,8 @@ begin
     alter table public.products add constraint products_seo_keywords_length check (seo_keywords is null or length(seo_keywords) <= 500);
   end if;
   if not exists (select 1 from pg_constraint where conname = 'products_image_url_length' and conrelid = 'public.products'::regclass) then
-    alter table public.products add constraint products_image_url_length check (image_url is null or length(image_url) <= 2048);
+    alter table public.products add constraint products_image_url_length
+      check (image_url is null or (length(image_url) <= 2048 and image_url ~* '^https://'));
   end if;
   if not exists (select 1 from pg_constraint where conname = 'products_brand_length' and conrelid = 'public.products'::regclass) then
     alter table public.products add constraint products_brand_length check (brand is null or length(brand) <= 120);
