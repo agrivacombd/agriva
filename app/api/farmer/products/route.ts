@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
   const slug = `${slugBase || "product"}-${crypto.randomUUID().slice(0, 8)}`;
 
   // Optional SEO columns are written only when the server-side feature flag is enabled.
-  // Apply migration 032 before enabling SEO Studio in production.
+  // Apply migration 20261023141000_product_seo_fields_compat.sql before enabling SEO Studio in production.
   const productInsert: Record<string, string | number | null> = {
       farmer_id: user.id,
       name,
