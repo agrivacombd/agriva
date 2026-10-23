@@ -73,7 +73,7 @@ export default function ProductImageOptimizer({ initialUrl = "", initialAlt = ""
       </label>
       {busy && <span role="status" className="text-xs font-bold text-emerald-800">ছবি optimize ও upload হচ্ছে…</span>}
     </div>
-    <p className="mt-2 text-xs leading-5 text-slate-600">স্বয়ংক্রিয়ভাবে square 1200×1200 WebP-তে রূপান্তর হয়; ছবির অনুপাত না কেটে চারপাশে জায়গা রাখা হয়। ৩ MB সীমা ও quality control মোবাইল লোড দ্রুত রাখতে সাহায্য করে।</p>
+    <p className="mt-2 text-xs leading-5 text-slate-600">স্বয়ংক্রিয়ভাবে square 1200×1200 WebP-তে রূপান্তর হয়; ছবির অনুপাত না কেটে চারপাশে জায়গা রাখা হয়। ৩ MB সীমা ও quality control মোবাইল লোড দ্রুত রাখতে সাহায্য করে। Quality বদলালে নতুন quality প্রয়োগ করতে ছবিটি আবার বেছে নিন।</p>
     {imageUrl && <div className="mt-3 flex items-center gap-3"><img src={imageUrl} alt={alt || suggestedAlt || "Product image preview"} className="h-20 w-20 rounded-lg border bg-white object-contain" /><button type="button" onClick={() => { setImageUrl(""); setMessage("ছবির URL সরানো হয়েছে; সংরক্ষণ করলে পণ্য থেকে ছবিটি বাদ যাবে।"); }} className="text-xs font-bold text-red-700 underline">ছবি সরান</button></div>}
     <label className="mt-3 block text-sm font-bold">ছবির Alt text (SEO)
       <input name="image_alt" value={alt} onChange={(event) => setAlt(event.target.value)} maxLength={180} placeholder="যেমন: সবজি চাষের উচ্চমানের টমেটো বীজের প্যাকেট" className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 font-normal" />
