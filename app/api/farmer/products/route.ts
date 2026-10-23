@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-const DEFAULT_RESELLER_COMMISSION_PERCENT = 10;
-
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -59,7 +57,6 @@ export async function POST(request: NextRequest) {
       slug,
       price,
       stock,
-      reseller_commission_percent: DEFAULT_RESELLER_COMMISSION_PERCENT,
       description: description || null,
       category: category || null,
       status: "draft",
