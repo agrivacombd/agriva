@@ -18,9 +18,9 @@ create table if not exists public.learning_correction_reports (
 create index if not exists learning_correction_reports_status_created_idx
   on public.learning_correction_reports(status, created_at desc);
 alter table public.learning_correction_reports enable row level security;
-revoke all on public.learning_correction_reports from anon, authenticated;
-grant insert on public.learning_correction_reports to anon, authenticated;
-grant select, update on public.learning_correction_reports to authenticated;
+revoke all on table public.learning_correction_reports from anon, authenticated;
+grant insert on table public.learning_correction_reports to anon, authenticated;
+grant select, update on table public.learning_correction_reports to authenticated;
 drop policy if exists "Anyone can submit a learning correction" on public.learning_correction_reports;
 create policy "Anyone can submit a learning correction"
   on public.learning_correction_reports for insert to anon, authenticated
@@ -29,7 +29,7 @@ create policy "Anyone can submit a learning correction"
     and char_length(content_title) between 1 and 200
     and char_length(reported_text) between 5 and 5000
     and status = 'pending'
-    and reviewed_by is null and reviewed_at is null
+    and reviewed_by is null and reviewed_at is null and admin_note is null
   );
 drop policy if exists "Admins can read correction reports" on public.learning_correction_reports;
 create policy "Admins can read correction reports"
