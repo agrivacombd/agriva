@@ -53,10 +53,6 @@ create policy cart_item_owner_write
     )
   );
 
--- A user should have one active cart. Partial index leaves converted/abandoned
--- carts intact and does not affect any future guest-cart implementation.
-create unique index if not exists carts_one_active_cart_per_user
-  on public.carts (user_id)
-  where user_id is not null and status = 'active';
+-- Migration 011 already provides a unique partial index for one active cart per user.
 
 commit;
