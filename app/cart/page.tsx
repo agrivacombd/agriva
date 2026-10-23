@@ -58,7 +58,7 @@ export default function Cart() {
 
     const ids = (rows || []).map(row => row.product_id);
     const { data: products, error: productsError } = ids.length
-      ? await supabase.from("products").select("id,name,price,stock,status,moderation_status").in("id", ids)
+      ? await supabase.from("products").select("id,name,price,stock,status").in("id", ids)
       : { data: [], error: null };
 
     if (productsError) {
@@ -71,7 +71,7 @@ export default function Cart() {
     setItems((rows || []).map(row => {
       const product = productMap.get(row.product_id);
       const stock = Math.max(0, Number(product?.stock || 0));
-      const available = Boolean(product && product.status === "active" && product.moderation_status === "approved" && stock > 0);
+      const available = Boolean(product && product.status === "active" && stock > 0);
       return {
         id: row.id,
         product_id: row.product_id,
