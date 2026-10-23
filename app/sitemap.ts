@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
 type SitemapArticle = { slug: string; updated_at: string | null };
-type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null };
+type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -18,14 +18,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient(url, key);
     const [articleResult, productResult] = await Promise.all([
       supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article"),
-      supabase.from("products").select("slug,updated_at,category").eq("status", "active").not("slug", "is", null).limit(5000),
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").not("slug", "is", null).limit(5000),
     ]);
     if (!articleResult.error && articleResult.data) articles = articleResult.data as SitemapArticle[];
     if (!productResult.error && productResult.data) {
       products = productResult.data as SitemapProduct[];
-      const realCategories = products.map((product) => product.category);
+      const realCategories = products;
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
-        const categoryHasProducts = realCategories.some((value) => matchesProductCategory(value ?? null, category));
+        const categoryHasProducts = realCategories.some((product) => matchesProductCategory(product.category ?? null, category, product.category_slug));
         if (!categoryHasProducts) return [];
         const urls: MetadataRoute.Sitemap = [{
           url: `${base}/marketplace/category/${category.slug}`,
@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           priority: 0.8,
         }];
         for (const subcategory of category.subcategories) {
-          const subcategoryHasProducts = realCategories.some((value) => matchesSubcategory(value ?? null, category, subcategory));
+          const subcategoryHasProducts = realCategories.some((product) => matchesSubcategory(product.category ?? null, category, subcategory, product.category_slug, product.subcategory_slug));
           if (subcategoryHasProducts) urls.push({
             url: `${base}/marketplace/category/${category.slug}/${subcategory.slug}`,
             lastModified: now,

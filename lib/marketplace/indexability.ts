@@ -1,13 +1,13 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
-type ProductCategoryRecord = { category: string | null };
+type ProductCategoryRecord = { category: string | null; category_slug: string | null; subcategory_slug: string | null };
 
 async function getActiveProductCategories(): Promise<ProductCategoryRecord[] | null> {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("category")
+      .select("category,category_slug,subcategory_slug")
       .eq("status", "active")
       .limit(5000);
     if (error || !data) return null;
@@ -23,7 +23,7 @@ export async function hasIndexableCategoryProducts(categorySlug: string): Promis
   if (!category) return false;
   const products = await getActiveProductCategories();
   if (!products) return null;
-  return products.some((product) => matchesProductCategory(product.category, category));
+  return products.some((product) => matchesProductCategory(product.category, category, product.category_slug));
 }
 
 /** Returns null when the catalogue cannot be checked, so temporary DB errors do not deindex pages. */
@@ -33,5 +33,5 @@ export async function hasIndexableSubcategoryProducts(categorySlug: string, subc
   if (!category || !subcategory) return false;
   const products = await getActiveProductCategories();
   if (!products) return null;
-  return products.some((product) => matchesSubcategory(product.category, category, subcategory));
+  return products.some((product) => matchesSubcategory(product.category, category, subcategory, product.category_slug, product.subcategory_slug));
 }

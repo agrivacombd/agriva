@@ -10,6 +10,8 @@ const indexnowRoute = read("../app/[indexnowKey].txt/route.ts");
 const seoMigration = read("../supabase/legacy_unapplied_migrations/029_product_seo_schema.sql");
 const adminBootstrap = read("../supabase/migrations/20261022212109_028_admin_bootstrap_product_creation.sql");
 const productForm = read("../app/admin/products/page.tsx");
+const taxonomyForm = read("../components/admin/TaxonomyFields.tsx");
+const taxonomyMigration = read("../supabase/migrations/20261024001000_stable_marketplace_taxonomy.sql");
 const productPage = read("../app/marketplace/[productId]/page.tsx");
 const audit = read("../app/admin/seo/page.tsx");
 const feed = read("../app/api/merchant-center/route.ts");
@@ -31,6 +33,14 @@ for (const field of ["seo_title", "seo_description", "seo_keywords", "ProductIma
   assert.ok(productForm.includes(field), `current Super Admin product form should expose ${field}`);
 }
 assert.ok(productForm.includes("image_alt"), "product form should expose image alt text for SEO");
+assert.ok(productForm.includes("category_slug") && productForm.includes("subcategory_slug") && productForm.includes("admin_set_product_taxonomy"), "admin product create/update must persist stable taxonomy slugs");
+assert.ok(!productForm.includes('name="category"') && taxonomyForm.includes('name="category_slug"') && taxonomyForm.includes('name="subcategory_slug"'), "admin form must not accept free-text category values");
+assert.ok(taxonomyForm.includes("selectedCategory?.subcategories") && taxonomyForm.includes("setSubcategory(\"\")"), "subcategory selector must follow the selected category");
+assert.ok(taxonomyMigration.includes("create table if not exists public.product_subcategories") && taxonomyMigration.includes("products_category_subcategory_slug_fkey"), "database must enforce valid category/subcategory taxonomy relationships");
+assert.ok(taxonomyMigration.includes("admin_set_product_taxonomy") && taxonomyMigration.includes("public.is_admin()"), "taxonomy update RPC must be admin-only");
+assert.ok(taxonomyMigration.includes("set category_slug = s.category_slug") && taxonomyMigration.includes("subcategory_slug = s.slug"), "migration must backfill known legacy subcategory labels");
+assert.ok(sitemap.includes("category_slug,subcategory_slug") && categoryPage.includes("product.category_slug") && subcategoryPage.includes("product.subcategory_slug"), "marketplace landing pages and sitemap must prefer stable taxonomy slugs");
+
 assert.ok(migration.includes("public.is_admin()") && migration.includes("admin_audit_log"), "seed write RPC must be admin-only and audited");
 assert.ok(adminBootstrap.includes("AGRIVA_OWNER_EMAIL") && adminBootstrap.includes("is_admin()"), "first-admin bootstrap must be owner-restricted");
 assert.ok(audit.includes("Math.round(done / all.length * 100)"), "SEO completeness score should be calculated");

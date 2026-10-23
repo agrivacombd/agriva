@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import ProductImageOptimizer from "@/components/admin/ProductImageOptimizer";
+import TaxonomyFields from "@/components/admin/TaxonomyFields";
+import { getCategory, getProductTaxonomy, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 async function requireSuperAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -17,7 +19,11 @@ async function createProduct(formData: FormData) {
   "use server";
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim();
+  const categorySlug = String(formData.get("category_slug") ?? "").trim();
+  const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
+  const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
+  const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
+  const category = subcategoryEntry?.name ?? categoryEntry?.name ?? "";
   const imageUrl = String(formData.get("image_url") ?? "").trim();
   const imageAlt = String(formData.get("image_alt") ?? "").trim();
   const seoTitle = String(formData.get("seo_title") ?? "").trim();
@@ -34,7 +40,7 @@ async function createProduct(formData: FormData) {
     !name || name.length > 160 ||
     !Number.isFinite(price) || price < 0 || price > 9_999_999_999.99 ||
     !Number.isFinite(stock) || stock < 0 || stock > 9_999_999_999.99 ||
-    description.length > 5000 || category.length > 120 ||
+    description.length > 5000 || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) ||
     (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl))) ||
     brand.length > 120 || sku.length > 100 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || imageProcessing === "true" ||
     !["draft", "active"].includes(status)
@@ -49,6 +55,8 @@ async function createProduct(formData: FormData) {
     slug,
     description: description || null,
     category: category || null,
+    category_slug: categoryEntry?.slug ?? null,
+    subcategory_slug: subcategoryEntry?.slug ?? null,
     price,
     stock,
     status,
@@ -72,7 +80,10 @@ async function updateProduct(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const category = String(formData.get("category") ?? "").trim();
+  const categorySlug = String(formData.get("category_slug") ?? "").trim();
+  const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
+  const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
+  const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const status = String(formData.get("status") ?? "");
@@ -86,7 +97,7 @@ async function updateProduct(formData: FormData) {
   const imageProcessing = String(formData.get("image_processing") ?? "false");
   if (!productId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !["draft", "active", "paused", "sold_out"].includes(status) ||
-      description.length > 5000 || category.length > 120 || imageProcessing === "true" || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || brand.length > 120 || sku.length > 100 || (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl)))) {
+      description.length > 5000 || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || imageProcessing === "true" || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || brand.length > 120 || sku.length > 100 || (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl)))) {
     redirect("/admin/products?notice=invalid");
   }
   const { supabase, user } = await requireSuperAdmin();
@@ -97,8 +108,10 @@ async function updateProduct(formData: FormData) {
     p_product_id: productId, p_name: name, p_description: description || null,
     p_price: price, p_stock: stock, p_commission_percent: current.reseller_commission_percent, p_status: status,
   });
-  const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_category", {
-    p_product_id: productId, p_category: category || null,
+  const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_taxonomy", {
+    p_product_id: productId,
+    p_category_slug: categorySlug || null,
+    p_subcategory_slug: subcategorySlug || null,
   });
   const { error: seoError } = productError || categoryError ? { error: productError || categoryError } : await supabase.from("products").update({
     image_url: imageUrl || null, image_alt: imageAlt || null, seo_title: seoTitle || null,
@@ -113,12 +126,9 @@ async function updateProduct(formData: FormData) {
 export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
   const params = await searchParams;
   const { supabase } = await requireSuperAdmin();
-  const [{ data: products, error }, { data: categories }] = await Promise.all([
-    supabase.from("products")
-      .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,updated_at,image_url,image_alt,seo_title,seo_description,seo_keywords,brand,sku")
-      .order("updated_at", { ascending: false }).limit(100),
-    supabase.from("product_categories").select("name,is_active").order("sort_order").order("name"),
-  ]);
+  const { data: products, error } = await supabase.from("products")
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at,image_url,image_alt,seo_title,seo_description,seo_keywords,brand,sku")
+    .order("updated_at", { ascending: false }).limit(100);
   const notice = params?.notice;
   const noticeText: Record<string, string> = {
     created: "নতুন পণ্য সংরক্ষিত হয়েছে। Active নির্বাচন করলে পণ্যটি Marketplace-এ দেখা যাবে।",
@@ -145,7 +155,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" max="9999999999.99" step="0.01" required className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" max="9999999999.99" step="0.01" defaultValue="0" required className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
-          <label className="text-sm font-bold">ক্যাটাগরি<select name="category" defaultValue="" className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="">ক্যাটাগরি নেই</option>{(categories ?? []).filter(c => c.is_active).map(c => <option key={c.name} value={c.name}>{c.name}</option>)}</select></label>
+          <TaxonomyFields />
           <label className="text-sm font-bold">প্রকাশের অবস্থা<select name="status" defaultValue="draft" className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft — এখনই প্রকাশ নয়</option><option value="active">Active — Marketplace-এ প্রকাশ</option></select></label>
           <label className="text-sm font-bold">ব্র্যান্ড (ঐচ্ছিক)<input name="brand" maxLength={120} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">SKU / পণ্য কোড (ঐচ্ছিক)<input name="sku" maxLength={100} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
@@ -166,7 +176,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
-          <label className="text-sm font-bold">ক্যাটাগরি<select name="category" defaultValue={p.category ?? ""} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="">ক্যাটাগরি নেই</option>{(categories ?? []).map(c => <option key={c.name} value={c.name}>{c.name}{c.is_active ? "" : " (Inactive)"}</option>)}</select></label>
+          <TaxonomyFields categorySlug={p.category_slug ?? getProductTaxonomy(p.category)?.category.slug} subcategorySlug={p.subcategory_slug ?? getProductTaxonomy(p.category)?.subcategory?.slug} />
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">পরিবর্তন সংরক্ষণ</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>

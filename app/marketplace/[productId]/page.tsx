@@ -8,7 +8,7 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; image_alt?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; image_alt?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
 
 function isOptimizedProductImage(value: string) {
   try {
@@ -32,7 +32,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,price,stock,description,seo_title,seo_description,seo_keywords,image_url,image_alt,brand,sku";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,seo_title,seo_description,seo_keywords,image_url,image_alt,brand,sku";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
-  const taxonomy = getProductTaxonomy(product.category);
+  const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
