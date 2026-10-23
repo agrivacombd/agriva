@@ -40,7 +40,7 @@ async function createProduct(formData: FormData) {
   ) redirect("/admin/products?notice=invalid");
 
   const { supabase, user } = await requireSuperAdmin();
-  const slugBase = name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+  const slugBase = name.normalize("NFC").toLocaleLowerCase().split("").map((char) => /[a-z0-9]/i.test(char) || (char.charCodeAt(0) >= 0x0980 && char.charCodeAt(0) <= 0x09ff) ? char : "-").join("").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
   const slug = `${slugBase || "retail-product"}-${crypto.randomUUID().slice(0, 8)}`;
   const { error } = await supabase.from("products").insert({
     farmer_id: user.id,
