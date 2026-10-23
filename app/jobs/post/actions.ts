@@ -9,7 +9,7 @@ export async function submitJobPost(formData: FormData) {
   const db = await createSupabaseServerClient();
   const { data: { user } } = await db.auth.getUser();
   if (!user) redirect("/login?next=%2Fjobs%2Fpost");
-  const title=value(formData,"title",160), description=value(formData,"description",12000);
+  const title=value(formData,"title",160), description=value(formData,"description",12000), employerName=value(formData,"employer_name",160);
   const type=value(formData,"job_type",20), category=value(formData,"category_slug",40);
   const district=value(formData,"district",80), upazila=value(formData,"upazila",80);
   const starts=value(formData,"starts_at",40), compensation=value(formData,"compensation_type",20);
@@ -19,7 +19,7 @@ export async function submitJobPost(formData: FormData) {
   const workersRaw=value(formData,"workers_needed",8), workers=workersRaw?Number(workersRaw):null;
   const latRaw=value(formData,"latitude",30), lonRaw=value(formData,"longitude",30);
   const lat=latRaw?Number(latRaw):null, lon=lonRaw?Number(lonRaw):null;
-  if(title.length<8||description.length<40||!["one-time","part-time","full-time"].includes(type)||!district||!upazila||
+  if(employerName.length<2||title.length<8||description.length<40||!["one-time","part-time","full-time"].includes(type)||!district||!upazila||
     !["farm-labor","farm-management","machinery","livestock","agronomy","sales","processing","other"].includes(category)||
     !["daily","hourly","monthly","per-task","negotiable"].includes(compensation)||(type==="one-time"&&!starts)||
     (salaryMin!==null&&(!Number.isFinite(salaryMin)||salaryMin<0))||(salaryMax!==null&&(!Number.isFinite(salaryMax)||salaryMax<0))||
@@ -29,7 +29,7 @@ export async function submitJobPost(formData: FormData) {
   const slug=slugify(title)+"-"+crypto.randomUUID().slice(0,8);
   const deadline=value(formData,"application_deadline",40);
   const {data,error}=await db.from("job_posts").insert({
-    employer_id:user.id,title,slug,description,job_type:type,category_slug:category,district,upazila,
+    employer_id:user.id,employer_name:employerName,title,slug,description,job_type:type,category_slug:category,district,upazila,
     union_name:value(formData,"union_name",100)||null,address_hint:value(formData,"address_hint",250)||null,
     latitude:lat,longitude:lon,location_is_approximate:true,starts_at:starts?new Date(starts).toISOString():null,
     schedule_text:value(formData,"schedule_text",300)||null,compensation_type:compensation,salary_min:salaryMin,salary_max:salaryMax,
