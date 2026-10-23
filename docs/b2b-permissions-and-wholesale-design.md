@@ -185,3 +185,20 @@ Company sellers and wholesalers must be able to add products through a simple, l
 - Acceptance tests: default seller form remains simple; granted feature shows only allowed sections; revoked feature disappears immediately; seller cannot self-enable sections; hidden sections cannot bypass server validation; SEO schema/feed/sitemap never includes wholesale price.
   
 This is a design requirement, not an implemented permission system. Trusted Super Admin identity/source-of-truth and live schema compatibility remain prerequisites for executable migration and production rollout.
+
+## 10. Protected wholesale endpoint implementation status
+
+A server route now exists at `POST /api/b2b/wholesale-prices`. It requires a signed-in user, validates requested product IDs and quantities, calls only the dedicated `get_authorized_wholesale_prices` RPC, sets `private, no-store` response headers, and returns a generic unavailable response if the RPC errors or is absent. It never falls back to a direct products-table query.
+
+**Important: this is a fail-closed route shell, not a complete live B2B feature.** The referenced RPC does not yet exist in the audited live database, and the trusted Super Admin identity/grant schema is unresolved. Therefore requests cannot successfully return wholesale pricing until a reviewed migration/RPC implementation is created and explicitly approved. Do not deploy/enable wholesale pricing based on the route alone.
+
+The eventual RPC must:
+- derive the caller from `auth.uid()`; never accept a caller/user ID from request input;
+- require a current approved, non-suspended B2B business profile;
+- require an active explicit `marketplace.wholesale_prices.view` grant;
+- calculate the applicable tier server-side from product, quantity and seller-owned pricing records;
+- return only requested, active, approved products and only fields required by the buyer UI;
+- reject ambiguous/duplicate items and invalid quantities, use a locked `search_path`, revoke unintended execution grants, and audit privileged changes;
+- be tested against anonymous users, retail users, unverified businesses, revoked grants, suspended businesses, other sellers, and cache isolation.
+
+The route and static guard checks are committed on the review branch. Runtime tests, typecheck, lint, build, live RPC implementation, and end-to-end authorization tests remain pending.
