@@ -62,7 +62,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!Number.isInteger(quantity) || quantity < 1) return;
     setItems(current => current.map(item => item.id === id ? { ...item, quantity: Math.min(quantity, item.stock) } : item));
   }, []);
-  const removeItem = useCallback((id: string) => setItems(current => current.filter(item => item.id !== id), []);
+  const removeItem = useCallback((id: string) => setItems(current => current.filter(item => item.id !== id)), []);
   const clearCart = useCallback(() => setItems([]), []);
   const value = useMemo(() => ({
     items, itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
