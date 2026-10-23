@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 type FeedProduct = {
   id: string; slug: string | null; name: string; description: string | null;
   price: number | string | null; stock: number | null; status: string | null;
-  moderation_status: string | null; image_url: string | null; brand: string | null;
+  image_url: string | null; brand: string | null;
   sku: string | null; category: string | null; updated_at: string | null;
 };
 
@@ -23,8 +23,8 @@ export async function GET() {
   if (!url || !key) return new NextResponse("Product feed is not configured", { status: 503 });
   const supabase = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
   const { data, error } = await supabase.from("products")
-    .select("id,slug,name,description,price,stock,status,moderation_status,image_url,brand,sku,category,updated_at")
-    .eq("status", "active").eq("moderation_status", "approved").gt("stock", 0)
+    .select("id,slug,name,description,price,stock,status,image_url,brand,sku,category,updated_at")
+    .eq("status", "active").gt("stock", 0)
     .not("slug", "is", null).not("image_url", "is", null).limit(5000);
   if (error) return new NextResponse("Product feed temporarily unavailable", { status: 503 });
   const products = (data ?? []) as FeedProduct[];

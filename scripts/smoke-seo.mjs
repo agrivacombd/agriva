@@ -25,14 +25,17 @@ const categoryPage = read("../app/marketplace/category/[categorySlug]/page.tsx")
 const subcategoryPage = read("../app/marketplace/category/[categorySlug]/[subcategorySlug]/page.tsx");
 
 for (const field of ["crop_name", "seed_variety", "pack_size", "germination_rate", "sowing_season", "suitable_regions", "seed_expiry_date"]) {
-  assert.ok(migration.includes(field), `migration should define ${field}`);
-  assert.ok(productForm.includes(field), `admin form should expose ${field}`);
+  assert.ok(migration.includes(field), `legacy seed migration should define ${field}`);
 }
+for (const field of ["seo_title", "seo_description", "seo_keywords", "ProductImageOptimizer"]) {
+  assert.ok(productForm.includes(field), `current Super Admin product form should expose ${field}`);
+}
+assert.ok(productForm.includes("image_alt"), "product form should expose image alt text for SEO");
 assert.ok(migration.includes("public.is_admin()") && migration.includes("admin_audit_log"), "seed write RPC must be admin-only and audited");
 assert.ok(adminBootstrap.includes("AGRIVA_OWNER_EMAIL") && adminBootstrap.includes("is_admin()"), "first-admin bootstrap must be owner-restricted");
 assert.ok(audit.includes("Math.round(done / all.length * 100)"), "SEO completeness score should be calculated");
 
-assert.ok(feed.includes('.eq("status", "active")') && feed.includes('.eq("moderation_status", "approved")'), "feed must only include approved active products");
+assert.ok(feed.includes('.eq("status", "active")') && !feed.includes("moderation_status"), "feed must use the live active-product schema without absent moderation columns");
 assert.ok(feed.includes('.gt("stock", 0)') && feed.includes("image_url"), "feed must filter unavailable/unimaged products");
 assert.ok(feed.includes("function xml(") && feed.includes('replace(/&/g, "&amp;")'), "feed must XML-escape product data");
 assert.ok(feed.includes("p.image_url && /^https:") && feed.includes("Cache-Control"), "feed must validate HTTPS image URLs and set cache policy");

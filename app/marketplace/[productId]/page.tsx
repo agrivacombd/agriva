@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
@@ -7,7 +8,15 @@ import { getProductCategory } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; price: number | string | null; stock: number | null; description: string | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string | null; image_url?: string | null; image_alt?: string | null; brand?: string | null; sku?: string | null; crop_name?: string | null; seed_variety?: string | null; pack_size?: string | null; germination_rate?: number | null; sowing_season?: string | null; suitable_regions?: string | null; seed_expiry_date?: string | null; commission_percent?: number | null };
+
+function isOptimizedProductImage(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname.endsWith(".supabase.co")
+      && url.pathname.startsWith("/storage/v1/object/public/product-images/");
+  } catch { return false; }
+}
 
 function normalizeSlug(value: string) {
   try {
@@ -23,11 +32,11 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,price,stock,description,commission_percent,seo_title,seo_description,seo_keywords,image_url,brand,sku,crop_name,seed_variety,pack_size,germination_rate,sowing_season,suitable_regions,seed_expiry_date";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
+  const columns = "id,slug,name,category,price,stock,description,seo_title,seo_description,seo_keywords,image_url,image_alt,brand,sku";
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
-  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
+  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
 }
 
@@ -35,16 +44,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
-  const title = product.seo_title?.trim() || `${product.name} | কৃষি পণ্য | AGRIVA`;
+  const title = product.seo_title?.trim() || `${product.name} | কৃষি পণ্য বাংলাদেশ`;
   const description = product.seo_description?.trim() || (typeof product.description === "string" && product.description.trim()
     ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
     : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`);
   return {
-    title, description,
+    title: { absolute: title }, description,
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     keywords: [...(product.seo_keywords?.split(",").map((keyword) => keyword.trim()).filter(Boolean) ?? []), product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
-    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
+    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, width: 1200, height: 1200, alt: product.image_alt?.trim() || product.name }] } : {}) },
+    twitter: { card: "summary_large_image", title, description, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.image_alt?.trim() || product.name }] } : {}) },
   };
 }
 
@@ -71,7 +81,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "@type": "Product",
     name: product.name,
     ...(product.description ? { description: product.description } : {}),
-    ...(product.image_url ? { image: [product.image_url] } : {}),
+    ...(product.image_url ? { image: [{ "@type": "ImageObject", url: product.image_url, width: 1200, height: 1200, caption: product.image_alt?.trim() || product.name }] } : {}),
     ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
     ...(product.sku ? { sku: product.sku } : {}),
     ...(product.category ? { category: product.category } : {}),
@@ -100,7 +110,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link></>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-8 md:min-h-[420px]">{product.image_url ? <img src={product.image_url} alt={product.name} className="max-h-[380px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
+        <div className="flex aspect-square min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 sm:p-8 md:min-h-[420px]">{product.image_url ? <Image src={product.image_url} alt={product.image_alt?.trim() || product.name} width={1200} height={1200} sizes="(max-width: 768px) 100vw, 42vw" quality={88} priority unoptimized={!isOptimizedProductImage(product.image_url)} className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
