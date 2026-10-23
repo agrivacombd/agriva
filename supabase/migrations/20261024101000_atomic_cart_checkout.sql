@@ -82,6 +82,9 @@ begin
     where id = cart_item.product_id and status = 'active'
     for update;
     if not found then raise exception 'Product unavailable: %', cart_item.product_id; end if;
+    if cart_item.quantity > 100 then
+      raise exception 'Maximum quantity per product is 100';
+    end if;
     if product_row.stock < cart_item.quantity then
       raise exception 'Insufficient stock for product: %', cart_item.product_id;
     end if;
