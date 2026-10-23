@@ -54,17 +54,17 @@ alter table public.products
 
 -- Backfill only exact, known legacy category labels; unknown values remain untouched.
 update public.products p
+set category_slug = s.category_slug,
+    subcategory_slug = s.slug
+from public.product_subcategories s
+where p.category_slug is null
+  and lower(trim(p.category)) = lower(trim(s.name));
+
+update public.products p
 set category_slug = c.slug
 from public.product_categories c
 where p.category_slug is null
   and lower(trim(p.category)) = lower(trim(c.name));
-
-update public.products p
-set subcategory_slug = s.slug
-from public.product_subcategories s
-where p.category_slug = s.category_slug
-  and p.subcategory_slug is null
-  and lower(trim(p.category)) = lower(trim(s.name));
 
 alter table public.products
   drop constraint if exists products_category_slug_fkey,
