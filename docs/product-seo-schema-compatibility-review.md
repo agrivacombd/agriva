@@ -84,6 +84,20 @@ Findings and gates:
 - Product schema JSON-LD uses product price, stock, brand, SKU, seed attributes and canonical URL. Validate generated JSON-LD against a real staging row and ensure only approved, public products are indexed.
 - The admin form has separate validation paths for create/edit; test date validation, empty values, SKU duplicates, and partial RPC failure. Create/edit currently make multiple RPC calls, so a later RPC failure may leave the product partially updated; consider making these writes atomic in a single RPC before production use.
 
+
+## Additional read-only checks completed
+
+- `product_categories` exists with `id, name, slug, description, is_active, sort_order, created_at, updated_at`; both `name` and `slug` have unique constraints.
+- `admin_audit_log` exists with `id, admin_id, action, entity_type, entity_id, metadata, created_at`; `admin_id` references `profiles(id)` with `ON DELETE SET NULL`.
+- `admin_set_product_category(p_product_id uuid, p_category text)` exists, is SECURITY DEFINER, checks `auth.uid()` and `public.is_admin()`, updates `products.category`, and writes an audit row. Its category check currently tests category existence but does not require `is_active = true`; migration 029's new RPC does require active categories. Keep the behavior difference in mind and test it.
+- Live product RLS policies reported: `products_admin_read`, `products_farmer_delete`, `products_farmer_insert`, `products_farmer_update`, and `products_public_active`. `product_categories_public_read` and `audit_admin_read` also exist. Policy names alone do not prove safety; inspect each USING/WITH CHECK expression before changing policies.
+- Product constraints include nonnegative price/stock, commission 0–100, unique slug, and a farmer foreign key. The commission column is `reseller_commission_percent`, not `commission_percent`.
+- The live `is_admin()` and `admin_set_product_category` functions are SECURITY DEFINER. Their live function-level `proconfig` and execute grants still need a dedicated check; do not infer the configured search_path from the session setting.
+
+## Current decision: stop before a schema-changing fix
+
+The repository code expects `moderation_status` and `commission_percent`, while the live DB does not have them. There is no confirmed authoritative migration in the inspected branch that establishes these columns. Automatically adding them or removing the approval filter would invent business semantics and could accidentally expose unapproved products. Therefore, no app compatibility patch or migration should be applied until the intended moderation workflow and commission-column source are confirmed from the canonical schema/migration history.
+
 ## Recommended rollout
 
 1. Resolve the missing `moderation_status` and `commission_percent` schema/source mismatch first; determine the correct migration order from repository migration history rather than guessing.
