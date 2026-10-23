@@ -23,6 +23,9 @@ export async function POST(request: NextRequest) {
   const name = String(body.name ?? "").trim();
   const description = String(body.description ?? "").trim();
   const category = String(body.category ?? "").trim();
+  const seoTitle = String(body.seo_title ?? "").trim();
+  const seoDescription = String(body.seo_description ?? "").trim();
+  const seoKeywords = String(body.seo_keywords ?? "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
 
@@ -34,9 +37,26 @@ export async function POST(request: NextRequest) {
     !Number.isInteger(stock) ||
     stock < 0 ||
     description.length > 5000 ||
-    category.length > 120
+    category.length > 120 ||
+    seoTitle.length > 70 ||
+    seoDescription.length > 170 ||
+    seoKeywords.length > 500
   ) {
     return NextResponse.json({ error: "Please check the product details and try again." }, { status: 400 });
+  }
+
+  const seoRequested = Boolean(seoTitle || seoDescription || seoKeywords);
+  let seoStudioEnabled = false;
+  if (seoRequested) {
+    const { data: feature, error: featureError } = await supabase
+      .from("product_form_feature_settings")
+      .select("enabled")
+      .eq("feature_key", "seo_studio")
+      .maybeSingle();
+    if (featureError || feature?.enabled !== true) {
+      return NextResponse.json({ error: "SEO Studio is not enabled for seller products." }, { status: 403 });
+    }
+    seoStudioEnabled = true;
   }
 
   const slugBase = name
@@ -49,9 +69,7 @@ export async function POST(request: NextRequest) {
   // Keep this insert compatible with the currently verified products schema.
   // SEO/image fields are intentionally excluded until their migration is applied
   // to the confirmed target database.
-  const { data, error } = await supabase
-    .from("products")
-    .insert({
+  const productInsert: Record<string, string | number | null> = {
       farmer_id: user.id,
       name,
       slug,
@@ -60,7 +78,16 @@ export async function POST(request: NextRequest) {
       description: description || null,
       category: category || null,
       status: "draft",
-    })
+    };
+  if (seoStudioEnabled) {
+    productInsert.seo_title = seoTitle || null;
+    productInsert.seo_description = seoDescription || null;
+    productInsert.seo_keywords = seoKeywords || null;
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .insert(productInsert)
     .select("id,name,status")
     .single();
 
