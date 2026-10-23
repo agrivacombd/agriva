@@ -54,4 +54,4 @@ create policy "Super Admin deletes feature grants"
 drop policy if exists "Super Admin reads feature audit" on public.product_form_feature_audit;
 create policy "Super Admin reads feature audit"
   on public.product_form_feature_audit for select to authenticated
-  using ((select coalesce((auth.jwt()->'app_metadata'->>'agriva_super_admin') = 'true', false));
+  using ((select coalesce((auth.jwt()->'app_metadata'->>'agriva_super_admin') = 'true', false)));
