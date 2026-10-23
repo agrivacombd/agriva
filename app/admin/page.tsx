@@ -127,7 +127,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
       <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Super Admin Panel</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
-          <div className="flex flex-wrap items-center gap-3"><Link href="/admin/jobs" className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white">কৃষি চাকরি মডারেশন ↗</Link><div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
+          <div className="flex flex-wrap items-center gap-3"><Link href="/admin/jobs" className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white">কৃষি চাকরি মডারেশন ↗</Link><div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div></div>
         </div>
 
         {params?.notice && <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${params.notice.endsWith("_error") || params.notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[params.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</div>}
