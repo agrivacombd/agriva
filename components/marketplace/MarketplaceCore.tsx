@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import AddToCartButton from "@/components/marketplace/AddToCartButton";
-import { useCart } from "@/components/marketplace/CartProvider";
 
 export type MarketplaceProduct = {
   id: string;
@@ -22,7 +21,7 @@ const money = (value: number | string | null) =>
 export default function MarketplaceCore({ products, showCategories = true }: { products: MarketplaceProduct[]; showCategories?: boolean }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  const { itemCount } = useCart();
+
   const visible = useMemo(() => products.filter((product) => {
     const search = query.trim().toLocaleLowerCase();
     const matchesQuery = !search || [product.name, product.category, product.description]
