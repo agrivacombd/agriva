@@ -63,7 +63,7 @@ returns trigger
 language plpgsql
 security invoker
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 declare
   target_cart_id uuid;
   cart_status text;
@@ -79,7 +79,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists cart_items_require_active_cart on public.cart_items;
 create trigger cart_items_require_active_cart
