@@ -19,6 +19,10 @@ async function reviewLearningCorrection(formData: FormData) {
   const adminNote = String(formData.get("adminNote") ?? "").trim().slice(0, 2000);
   if (!reportId || !["approved", "rejected", "needs_info"].includes(status)) redirect("/admin?notice=correction_invalid");
   const { supabase, user } = await requireAdmin();
+  if (status === "approved") {
+    const { data: report, error: readError } = await supabase.from("learning_correction_reports").select("suggested_correction,source_url").eq("id", reportId).eq("status", "pending").maybeSingle();
+    if (readError || !report?.suggested_correction?.trim()) redirect("/admin?notice=correction_missing");
+  }
   const { error } = await supabase.from("learning_correction_reports").update({
     status,
     admin_note: adminNote || null,
@@ -91,6 +95,7 @@ const noticeText: Record<string, string> = {
   correction_reviewed: "সংশোধন রিপোর্টের রিভিউ স্ট্যাটাস আপডেট হয়েছে।",
   correction_error: "সংশোধন রিপোর্ট আপডেট হয়নি। migration ও database policy যাচাই করুন।",
   correction_invalid: "সংশোধন রিপোর্টের তথ্য সঠিক নয়।",
+  correction_missing: "লাইভ করার আগে প্রস্তাবিত সংশোধন লিখতে বলুন; তারপর Approve করুন।",
   payout_complete_error: "পেআউট সম্পন্ন হয়নি। ব্যালেন্স ও পেমেন্ট রেফারেন্স যাচাই করুন।",
   invalid_order: "অর্ডারের তথ্য সঠিক নয়।",
   invalid_commission: "কমিশনের তথ্য সঠিক নয়।",
