@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import ProductImageOptimizer from "@/components/admin/ProductImageOptimizer";
 
 async function requireSuperAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -18,6 +19,10 @@ async function createProduct(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim();
   const category = String(formData.get("category") ?? "").trim();
   const imageUrl = String(formData.get("image_url") ?? "").trim();
+  const imageAlt = String(formData.get("image_alt") ?? "").trim();
+  const seoTitle = String(formData.get("seo_title") ?? "").trim();
+  const seoDescription = String(formData.get("seo_description") ?? "").trim();
+  const seoKeywords = String(formData.get("seo_keywords") ?? "").trim();
   const brand = String(formData.get("brand") ?? "").trim();
   const sku = String(formData.get("sku") ?? "").trim();
   const price = Number(formData.get("price"));
@@ -30,7 +35,7 @@ async function createProduct(formData: FormData) {
     !Number.isFinite(stock) || stock < 0 || stock > 9_999_999_999.99 ||
     description.length > 5000 || category.length > 120 ||
     (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl))) ||
-    brand.length > 120 || sku.length > 100 ||
+    brand.length > 120 || sku.length > 100 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 ||
     !["draft", "active"].includes(status)
   ) redirect("/admin/products?notice=invalid");
 
@@ -47,6 +52,10 @@ async function createProduct(formData: FormData) {
     stock,
     status,
     image_url: imageUrl || null,
+    image_alt: imageAlt || null,
+    seo_title: seoTitle || null,
+    seo_description: seoDescription || null,
+    seo_keywords: seoKeywords || null,
     brand: brand || null,
     sku: sku || null,
   });
@@ -66,12 +75,19 @@ async function updateProduct(formData: FormData) {
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const status = String(formData.get("status") ?? "");
+  const imageUrl = String(formData.get("image_url") ?? "").trim();
+  const imageAlt = String(formData.get("image_alt") ?? "").trim();
+  const seoTitle = String(formData.get("seo_title") ?? "").trim();
+  const seoDescription = String(formData.get("seo_description") ?? "").trim();
+  const seoKeywords = String(formData.get("seo_keywords") ?? "").trim();
+  const brand = String(formData.get("brand") ?? "").trim();
+  const sku = String(formData.get("sku") ?? "").trim();
   if (!productId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !["draft", "active", "paused", "sold_out"].includes(status) ||
-      description.length > 5000 || category.length > 120) {
+      description.length > 5000 || category.length > 120 || imageAlt.length > 180 || seoTitle.length > 70 || seoDescription.length > 170 || seoKeywords.length > 500 || brand.length > 120 || sku.length > 100 || (imageUrl && (imageUrl.length > 2048 || !/^https:\/\//i.test(imageUrl)))) {
     redirect("/admin/products?notice=invalid");
   }
-  const { supabase } = await requireSuperAdmin();
+  const { supabase, user } = await requireSuperAdmin();
   const { data: current } = await supabase.from("products")
     .select("reseller_commission_percent").eq("id", productId).maybeSingle();
   if (!current) redirect("/admin/products?notice=update_error");
@@ -82,9 +98,14 @@ async function updateProduct(formData: FormData) {
   const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_category", {
     p_product_id: productId, p_category: category || null,
   });
+  const { error: seoError } = productError || categoryError ? { error: productError || categoryError } : await supabase.from("products").update({
+    image_url: imageUrl || null, image_alt: imageAlt || null, seo_title: seoTitle || null,
+    seo_description: seoDescription || null, seo_keywords: seoKeywords || null,
+    brand: brand || null, sku: sku || null,
+  }).eq("id", productId).eq("farmer_id", user.id);
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
-  redirect(productError || categoryError ? "/admin/products?notice=update_error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError || seoError ? "/admin/products?notice=update_error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
@@ -92,7 +113,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const { supabase } = await requireSuperAdmin();
   const [{ data: products, error }, { data: categories }] = await Promise.all([
     supabase.from("products")
-      .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,updated_at,image_url,brand,sku")
+      .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,updated_at,image_url,image_alt,seo_title,seo_description,seo_keywords,brand,sku")
       .order("updated_at", { ascending: false }).limit(100),
     supabase.from("product_categories").select("name,is_active").order("sort_order").order("name"),
   ]);
@@ -100,7 +121,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const noticeText: Record<string, string> = {
     created: "নতুন পণ্য সংরক্ষিত হয়েছে। Active নির্বাচন করলে পণ্যটি Marketplace-এ দেখা যাবে।",
     saved: "পণ্যের তথ্য আপডেট হয়েছে।",
-    invalid: "তথ্য যাচাই করুন। নাম, মূল্য, স্টক, স্ট্যাটাস ও HTTPS ছবির URL সঠিক হতে হবে।",
+    invalid: "তথ্য যাচাই করুন। SEO title ৭০, description ১৭০, alt text ১৮০ অক্ষরের মধ্যে রাখুন; ছবি HTTPS হতে হবে।",
     create_error: "পণ্য তৈরি হয়নি। SKU duplicate বা database permission/schema error আছে কি না যাচাই করুন।",
     update_error: "পণ্য আপডেট হয়নি। Database RPC ও permissions যাচাই করুন।",
   };
@@ -126,7 +147,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">প্রকাশের অবস্থা<select name="status" defaultValue="draft" className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft — এখনই প্রকাশ নয়</option><option value="active">Active — Marketplace-এ প্রকাশ</option></select></label>
           <label className="text-sm font-bold">ব্র্যান্ড (ঐচ্ছিক)<input name="brand" maxLength={120} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold">SKU / পণ্য কোড (ঐচ্ছিক)<input name="sku" maxLength={100} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
-          <label className="text-sm font-bold md:col-span-2 xl:col-span-3">পণ্যের ছবির HTTPS URL (ঐচ্ছিক)<input name="image_url" type="url" maxLength={2048} placeholder="https://..." className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <div className="md:col-span-2 xl:col-span-3"><ProductImageOptimizer suggestedAlt="" /></div>
+          <label className="text-sm font-bold">SEO title<input name="seo_title" maxLength={70} placeholder="পণ্যের নাম + প্রধান বৈশিষ্ট্য" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold md:col-span-2">SEO description<textarea name="seo_description" rows={2} maxLength={170} placeholder="পণ্যের বাস্তব উপকারিতা ও প্রাসঙ্গিক তথ্য" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold md:col-span-2 xl:col-span-3">SEO keywords (comma-separated, optional)<input name="seo_keywords" maxLength={500} placeholder="টমেটো বীজ, সবজি বীজ, কৃষি পণ্য বাংলাদেশ" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
           <div className="md:col-span-2 xl:col-span-3"><button className="rounded-xl bg-[#17452c] px-5 py-3 text-sm font-extrabold text-white">পণ্য সংরক্ষণ করুন</button></div>
         </form>
@@ -144,6 +168,12 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">পরিবর্তন সংরক্ষণ</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <div className="md:col-span-2 xl:col-span-3"><ProductImageOptimizer initialUrl={p.image_url} initialAlt={p.image_alt} suggestedAlt={p.name} /></div>
+          <label className="text-sm font-bold">SEO title<input name="seo_title" maxLength={70} defaultValue={p.seo_title ?? ""} placeholder="পণ্যের নাম + প্রধান বৈশিষ্ট্য" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold md:col-span-2">SEO description<textarea name="seo_description" rows={2} maxLength={170} defaultValue={p.seo_description ?? ""} placeholder="পণ্যের বাস্তব উপকারিতা ও প্রাসঙ্গিক তথ্য" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold md:col-span-2 xl:col-span-3">SEO keywords<input name="seo_keywords" maxLength={500} defaultValue={p.seo_keywords ?? ""} placeholder="প্রাসঙ্গিক keyword, কমা দিয়ে আলাদা" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold">Brand<input name="brand" maxLength={120} defaultValue={p.brand ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
+          <label className="text-sm font-bold">SKU<input name="sku" maxLength={100} defaultValue={p.sku ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" /></label>
         </div>
       </form>)}
       {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">নতুন Retail পণ্য যোগ করলে এখানে দেখা যাবে।</p></div>}</div>
