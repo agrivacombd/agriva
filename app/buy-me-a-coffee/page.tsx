@@ -17,6 +17,19 @@ export const metadata: Metadata = {
 };
 
 const coffeeUrl = process.env.NEXT_PUBLIC_BUY_ME_A_COFFEE_URL?.trim();
+const paymentMethods = [
+  { name: "bKash", account: process.env.NEXT_PUBLIC_SUPPORT_BKASH?.trim(), note: "Send Money / Payment" },
+  { name: "Nagad", account: process.env.NEXT_PUBLIC_SUPPORT_NAGAD?.trim(), note: "Send Money / Payment" },
+  { name: "Rocket", account: process.env.NEXT_PUBLIC_SUPPORT_ROCKET?.trim(), note: "Send Money" },
+];
+const bank = {
+  name: process.env.NEXT_PUBLIC_SUPPORT_BANK_NAME?.trim(),
+  holder: process.env.NEXT_PUBLIC_SUPPORT_BANK_HOLDER?.trim(),
+  account: process.env.NEXT_PUBLIC_SUPPORT_BANK_ACCOUNT?.trim(),
+  branch: process.env.NEXT_PUBLIC_SUPPORT_BANK_BRANCH?.trim(),
+  routing: process.env.NEXT_PUBLIC_SUPPORT_BANK_ROUTING?.trim(),
+};
+const hasPaymentDetails = paymentMethods.some((method) => method.account) || Boolean(bank.name && bank.account);
 
 const ways = [
   {
@@ -98,6 +111,44 @@ export default function BuyMeACoffeePage() {
               <div className="mt-5 flex items-center gap-3 border-t border-slate-100 pt-5 text-sm text-slate-500"><HeartHandshake size={20} className="shrink-0 text-emerald-700" /><span>কোনো চাপ নয়—আপনার আস্থা ও প্রতিক্রিয়াই গুরুত্বপূর্ণ।</span></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section id="payment-options" className="mx-auto max-w-6xl px-4 pb-14 sm:px-6">
+        <div className="rounded-[2rem] border border-emerald-200 bg-white p-6 shadow-sm sm:p-8">
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">আপনার সুবিধামতো সহায়তা</p>
+          <h2 className="mt-2 text-2xl font-black sm:text-3xl">বিকাশ, নগদ, রকেট বা ব্যাংক—যেটি আপনার সুবিধা</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">নিরাপদে এবং নিজের সুবিধামতো পদ্ধতি বেছে নিন। পাঠানোর আগে অ্যাকাউন্টের নাম ও নম্বর মিলিয়ে নিন; কোনো PIN, OTP বা পাসওয়ার্ড কাউকে দেবেন না।</p>
+          {hasPaymentDetails ? (
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {paymentMethods.filter((method) => method.account).map((method) => (
+                <div key={method.name} className="rounded-2xl border border-slate-200 bg-[#fbfcf7] p-5">
+                  <p className="text-sm font-bold text-slate-500">{method.note}</p>
+                  <h3 className="mt-1 text-xl font-black text-emerald-950">{method.name}</h3>
+                  <p className="mt-3 break-all font-mono text-lg font-bold tracking-wide text-slate-800">{method.account}</p>
+                  <button type="button" onClick={() => navigator.clipboard?.writeText(method.account!)} className="mt-4 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-50">নম্বর কপি করুন</button>
+                </div>
+              ))}
+              {bank.name && bank.account && (
+                <div className="rounded-2xl border border-slate-200 bg-[#fbfcf7] p-5 sm:col-span-2">
+                  <h3 className="text-xl font-black text-emerald-950">ব্যাংক ট্রান্সফার</h3>
+                  <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                    <div><dt className="text-slate-500">ব্যাংকের নাম</dt><dd className="font-bold text-slate-900">{bank.name}</dd></div>
+                    <div><dt className="text-slate-500">অ্যাকাউন্ট হোল্ডার</dt><dd className="font-bold text-slate-900">{bank.holder || "—"}</dd></div>
+                    <div><dt className="text-slate-500">অ্যাকাউন্ট নম্বর</dt><dd className="break-all font-mono font-bold text-slate-900">{bank.account}</dd></div>
+                    {bank.branch && <div><dt className="text-slate-500">শাখা</dt><dd className="font-bold text-slate-900">{bank.branch}</dd></div>}
+                    {bank.routing && <div><dt className="text-slate-500">রাউটিং নম্বর</dt><dd className="font-mono font-bold text-slate-900">{bank.routing}</dd></div>}
+                  </dl>
+                  <button type="button" onClick={() => navigator.clipboard?.writeText(bank.account!)} className="mt-4 rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-50">অ্যাকাউন্ট নম্বর কপি করুন</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-5 rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/60 p-5">
+              <p className="font-extrabold text-emerald-950">পেমেন্টের তথ্য এখনো যোগ করা হয়নি</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">ডিপ্লয়মেন্টের Environment Variables-এ bKash, Nagad, Rocket বা ব্যাংকের তথ্য যোগ করলে এখানে স্বয়ংক্রিয়ভাবে দেখাবে। নিরাপত্তার জন্য এখানে শুধু অনুদানের জন্য ব্যবহৃত পাবলিক অ্যাকাউন্টের তথ্য দিন।</p>
+            </div>
+          )}
         </div>
       </section>
 
