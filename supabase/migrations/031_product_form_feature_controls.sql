@@ -87,6 +87,11 @@ create policy "Authorized admins update product form feature settings"
     )
   );
 
+drop policy if exists "Admins can read their own feature grant" on public.admin_feature_permission_grants;
+create policy "Admins can read their own feature grant"
+  on public.admin_feature_permission_grants for select to authenticated
+  using (user_id = (select auth.uid()) and revoked_at is null);
+
 drop policy if exists "Super Admin manages feature grants" on public.admin_feature_permission_grants;
 create policy "Super Admin manages feature grants"
   on public.admin_feature_permission_grants for all to authenticated
