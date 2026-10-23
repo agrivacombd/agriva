@@ -169,3 +169,19 @@ This is a design document only. It does not apply migrations, change live permis
 - B2B price access must be implemented through a separate authenticated server-side response that checks both current business verification status and the explicit active `marketplace.wholesale_prices.view` permission. Do not reuse public product loaders, public caches, or SEO data loaders for this response.
 - Server authorization is required on every read and checkout; hiding a UI control is not access control. Checkout must revalidate approval and permission, calculate the eligible tier server-side, ignore client-submitted prices, and store the actual charged price in the order snapshot.
 - Add regression tests that fail if public product/store/SEO/feed/sitemap code starts querying or serializing wholesale fields. Do not enable indexing or launch B2B pricing until these tests and the live-schema compatibility checks pass.
+
+## 9. Super Admin-controlled seller product-form complexity
+
+Company sellers and wholesalers must be able to add products through a simple, low-friction form. SEO and advanced tools are optional for sellers and must not be forced into the default add-product flow.
+
+- Super Admin alone manages feature visibility policy by seller cohort/role/account and may grant or revoke a narrowly scoped capability such as `marketplace.product_fields.seo.manage`, `marketplace.product_fields.advanced.manage`, and `marketplace.product_fields.category_attributes.manage` for explicitly selected Admins or seller groups.
+- Super Admin may configure which form sections are visible to a seller cohort: essential product details, images, SEO Studio, schema/structured data, AI suggestions, seed/agriculture-specific fields, advanced inventory/pricing, and optional marketing fields.
+- Default company/wholesaler form should be simple: product name, category, description, retail price, stock/quantity, images, and only business-required fields. SEO, JSON-LD, AI recommendations and advanced options can be hidden or shown as optional sections by policy.
+- Hiding a section is a presentation preference, not permission to bypass validation. All required fields, price limits, ownership, category rules, publication approval and server-side authorization are enforced independently on server/RPC paths.
+- Super Admin configuration must be validated against an allowlist of section/field keys; no arbitrary component names, SQL, or executable configuration. Unknown keys fail closed to hidden.
+- Effective settings are calculated server-side from the authenticated actor, their approved account cohort, and explicit active grants. Do not trust a client-supplied role, cohort, or visibility map. A user cannot grant themselves features or alter another seller's settings.
+- Persist changes with actor, target scope, before/after values, timestamp and reason in the admin audit log. Revocation applies on the next request. Prevent last-Super-Admin lockout and require explicit confirmation for broad cohort-wide changes.
+- Seller-facing form visibility must not hide wholesale prices from public SEO controls: SEO output always uses retail `products.price` only, regardless of which fields a seller can see.
+- Acceptance tests: default seller form remains simple; granted feature shows only allowed sections; revoked feature disappears immediately; seller cannot self-enable sections; hidden sections cannot bypass server validation; SEO schema/feed/sitemap never includes wholesale price.
+  
+This is a design requirement, not an implemented permission system. Trusted Super Admin identity/source-of-truth and live schema compatibility remain prerequisites for executable migration and production rollout.
