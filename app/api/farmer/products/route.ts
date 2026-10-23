@@ -23,23 +23,33 @@ export async function POST(request: NextRequest) {
   const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody)
     ? parsedBody as Record<string, unknown>
     : {};
-  const name = String(body.name ?? "").trim();
-  const description = String(body.description ?? "").trim();
-  const category = String(body.category ?? "").trim();
-  const seoTitle = String(body.seo_title ?? "").trim();
-  const seoDescription = String(body.seo_description ?? "").trim();
-  const seoKeywords = String(body.seo_keywords ?? "").trim();
-  const price = Number(body.price);
-  const stock = Number(body.stock);
+
+  const optionalStringFields = [
+    body.category,
+    body.description,
+    body.seo_title,
+    body.seo_description,
+    body.seo_keywords,
+  ];
+  const stringsAreValid = typeof body.name === "string" &&
+    optionalStringFields.every((value) => value === undefined || value === null || typeof value === "string");
+
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const description = typeof body.description === "string" ? body.description.trim() : "";
+  const category = typeof body.category === "string" ? body.category.trim() : "";
+  const seoTitle = typeof body.seo_title === "string" ? body.seo_title.trim() : "";
+  const seoDescription = typeof body.seo_description === "string" ? body.seo_description.trim() : "";
+  const seoKeywords = typeof body.seo_keywords === "string" ? body.seo_keywords.trim() : "";
+  const price = typeof body.price === "number" ? body.price : Number.NaN;
+  const stock = typeof body.stock === "number" ? body.stock : Number.NaN;
 
   if (
+    !stringsAreValid ||
     !name ||
     name.length > 160 ||
-    body.price === undefined || body.price === null || body.price === "" ||
-    body.stock === undefined || body.stock === null || body.stock === "" ||
     !Number.isFinite(price) ||
     price < 0 ||
-    !Number.isInteger(stock) ||
+    !Number.isSafeInteger(stock) ||
     stock < 0 ||
     description.length > 5000 ||
     category.length > 120 ||
@@ -72,17 +82,17 @@ export async function POST(request: NextRequest) {
   const slug = `${slugBase || "product"}-${crypto.randomUUID().slice(0, 8)}`;
 
   // Optional SEO columns are written only when the server-side feature flag is enabled.
-  // Apply migration 20261023141000_product_seo_fields_compat.sql before enabling SEO Studio in production.
+  // Ensure the product SEO compatibility migration has been applied before enabling SEO Studio.
   const productInsert: Record<string, string | number | null> = {
-      farmer_id: user.id,
-      name,
-      slug,
-      price,
-      stock,
-      description: description || null,
-      category: category || null,
-      status: "draft",
-    };
+    farmer_id: user.id,
+    name,
+    slug,
+    price,
+    stock,
+    description: description || null,
+    category: category || null,
+    status: "draft",
+  };
   if (seoStudioEnabled) {
     productInsert.seo_title = seoTitle || null;
     productInsert.seo_description = seoDescription || null;
