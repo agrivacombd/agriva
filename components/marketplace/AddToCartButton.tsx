@@ -65,9 +65,12 @@ export default function AddToCartButton({ product, className = "" }: Props) {
         setMessage("কার্টের পণ্য যাচাই করা যায়নি। আবার চেষ্টা করুন।");
         return;
       }
-      const nextQuantity = Math.min(Number(existing?.quantity || 0) + 1, liveStock);
-      if (existing && Number(existing.quantity) >= liveStock) {
-        setMessage("কার্টে ইতিমধ্যে স্টকের সর্বোচ্চ পরিমাণ আছে।");
+      const maxQuantity = Math.min(liveStock, 100);
+      const nextQuantity = Math.min(Number(existing?.quantity || 0) + 1, maxQuantity);
+      if (existing && Number(existing.quantity) >= maxQuantity) {
+        setMessage(maxQuantity === 100 && liveStock > 100
+          ? "একটি পণ্যের জন্য সর্বোচ্চ ১০০টি অর্ডার করা যাবে।"
+          : "কার্টে ইতিমধ্যে স্টকের সর্বোচ্চ পরিমাণ আছে।");
         return;
       }
       const saved = existing
