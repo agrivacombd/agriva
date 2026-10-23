@@ -84,7 +84,6 @@ async function updateProduct(formData: FormData) {
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  const category = subcategoryEntry?.name ?? categoryEntry?.name ?? "";
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const status = String(formData.get("status") ?? "");
