@@ -50,9 +50,18 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    const message = error.message || "অর্ডার তৈরি করা যায়নি।";
-    const status = /Authentication required/i.test(message) ? 401 : 400;
-    return NextResponse.json({ error: message }, { status });
+    // Keep database internals out of the public API response; retain details in server logs.
+    console.error("[checkout/cart] Checkout RPC failed", { code: error.code, message: error.message });
+    if (/Authentication required/i.test(error.message)) {
+      return NextResponse.json({ error: "সেশন শেষ হয়েছে। আবার লগইন করুন।" }, { status: 401 });
+    }
+    if (/Insufficient stock|Product unavailable/i.test(error.message)) {
+      return NextResponse.json({ error: "কার্টের একটি পণ্যের স্টক বা availability বদলে গেছে। কার্ট যাচাই করে আবার চেষ্টা করুন।" }, { status: 409 });
+    }
+    if (/Cart is empty|Active cart not found/i.test(error.message)) {
+      return NextResponse.json({ error: "আপনার কার্ট খালি। আগে পণ্য যোগ করুন।" }, { status: 400 });
+    }
+    return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আপনার কার্ট যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
   }
   if (!checkout?.checkoutId) {
     return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।" }, { status: 400 });
