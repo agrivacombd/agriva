@@ -66,3 +66,18 @@ It also documents the intended RPC authorization contract and checkout changes. 
 ## Safety record
 
 No SQL was run. No live database/schema/permission/data was changed. No PR was merged and no production deployment was triggered.
+
+## Confirmed product requirement: seller-managed wholesale prices, buyer-gated visibility
+
+The product behavior requested for implementation is:
+
+- **Who can set wholesale prices:** the verified company owner or an explicitly authorized company representative may propose wholesale quantity tiers for products owned by that company/account. A representative's authority must be server-verified and scoped to the relevant company; an ordinary buyer account must not gain seller pricing rights merely because it is B2B-approved.
+- **Price-change approval:** adding or editing wholesale tiers is a product/pricing revision. It must follow the existing proposed product approval workflow; until approved, the currently approved wholesale tier remains effective. Deletion/deactivation also needs an auditable, permission-checked path.
+- **Who can see wholesale prices:** only a logged-in buyer whose business account is verified/approved **and** whose account has an explicit active Super Admin-granted wholesale-view permission. Eligible account types include entrepreneur, shopkeeper/retailer, and enterprise/business buyer; the account label alone never grants access.
+- **Everyone else:** anonymous visitors, regular retail customers, pending/rejected/suspended B2B accounts, and approved B2B accounts without the explicit permission see retail price only.
+- **No leakage:** wholesale prices/tier data must not appear in anonymous or unauthorized HTML, client bundles/state, API/RPC responses, cache keys or cached responses, CSV/export, search metadata, Product/Offer JSON-LD, Open Graph, sitemap, or public product feeds. Never fetch wholesale prices to the browser and hide them with CSS.
+- **Trusted checkout:** the database checkout transaction must re-check buyer verification and permission, product approval/publication, active tier, requested quantity/unit, and current effective dates; calculate the wholesale price server-side and snapshot the applied pricing mode/tier/price in the order. A revoked permission or suspended business account must not retain wholesale access on a later request. Existing orders retain their historical snapshot.
+- **Seller isolation:** company owner/representative may only manage prices for products the company is authorized to sell. A representative grant must be revocable and audited. Neither buyer verification nor wholesale-view permission grants product ownership, Admin rights, or approval authority.
+- **Super Admin only by default:** creating/revoking wholesale-view grants and verifying business accounts are Super Admin-only. Delegation to an Admin must be an explicit separate permission grant with audit trail; the live is_admin() helper is not sufficient.
+
+These rules are the product acceptance criteria for implementation and security tests, not a claim that the feature is already implemented. Quantity units/pack semantics and the trusted Super Admin identity remain blockers before final executable SQL.
