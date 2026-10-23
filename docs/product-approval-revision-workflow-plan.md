@@ -1,6 +1,6 @@
-# AGRIVA Product Approval Workflow — Staging-Safe Schema & Implementation Plan
+# AGRIVA Product Approval Workflow — Master Implementation Plan
 
-**Status:** Design proposal only. No migration, live database mutation, production deployment, or product data change has been performed.
+**Status:** Design proposal only. No migration, live database mutation, production deployment, PR merge, or product data change has been performed.
 
 ## 1. Confirmed constraints and existing compatibility risks
 
@@ -8,125 +8,164 @@
 - A live `moderation_status` column was not found in the audited schema, while `app/marketplace/[productId]/page.tsx` and `app/sitemap.ts` filter on `moderation_status = 'approved'`.
 - The admin product UI calls SEO/seed RPC signatures associated with migrations 029/030. These fields/functions were not present in the audited live schema.
 - Do not treat `status='active'` alone as proof of approval. Do not remove approval filters as a workaround.
-- Existing product updates should never overwrite the approved row before review. A pending edit must not change public content, price, stock, schema markup, or sitemap data.
+- Existing product updates must never overwrite the approved row before review. Pending edits must not change public content, price, stock, schema markup, images, or sitemap data.
 
-## 2. Recommended data model: immutable product revisions
+## 2. Product revision data model
 
-Prefer a separate `public.product_revisions` table over adding only a moderation column to `products`. This supports both new products and edits while keeping the currently approved product row untouched until an Admin approves the exact revision.
+Use a separate `public.product_revisions` table for new product submissions and edits. A new product's canonical `products` row is created only after approval; an edit stores a proposed snapshot while the existing approved row remains unchanged.
 
-### Proposed columns
+Proposed fields:
+- `id uuid primary key default gen_random_uuid()`
+- `product_id uuid null references public.products(id) on delete restrict` (null for new products)
+- `submitted_by uuid not null references public.profiles(id)`
+- `revision_number integer not null`
+- `proposed_data jsonb not null` (complete validated snapshot)
+- `status text not null check in ('pending','approved','rejected','withdrawn')`
+- `submitted_at timestamptz not null default now()`
+- `reviewed_by uuid null references public.profiles(id)`
+- `reviewed_at timestamptz null`
+- `rejection_reason text null`
+- `approved_product_id uuid null references public.products(id)`
+- `base_product_updated_at timestamptz null` (stale-edit protection)
+- `idempotency_key uuid not null` (prevents duplicate submission retries)
+- `created_at timestamptz not null default now()`
 
-| Column | Proposed type | Purpose |
-|---|---|---|
-| `id` | `uuid primary key default gen_random_uuid()` | Revision identifier |
-| `product_id` | `uuid null references public.products(id) on delete restrict` | Existing product for an edit; null for a new product awaiting approval |
-| `submitted_by` | `uuid not null references public.profiles(id)` | Authenticated submitter |
-| `revision_number` | `integer not null` | Monotonic revision number per existing product; new-product revisions begin at 1 |
-| `proposed_data` | `jsonb not null` | Complete, validated proposed product snapshot |
-| `status` | `text not null` with CHECK in `pending, approved, rejected, superseded` | Revision review lifecycle |
-| `submitted_at` | `timestamptz not null default now()` | Submission timestamp |
-| `reviewed_by` | `uuid null references public.profiles(id)` | Admin reviewer |
-| `reviewed_at` | `timestamptz null` | Review timestamp |
-| `rejection_reason` | `text null` | Actionable reason returned to submitter |
-| `approved_product_id` | `uuid null references public.products(id)` | Product row created/updated by approving a new-product revision |
-| `created_at` | `timestamptz not null default now()` | Auditability |
+Design constraints:
+- Submitted snapshots are immutable. Corrections create a new revision; do not rewrite a submitted snapshot.
+- Enforce at most one pending revision per existing product with a partial unique index. New-product submissions need a non-null idempotency key and a suitable uniqueness constraint; nullable product IDs alone cannot prevent duplicates.
+- Add indexes for review queue (`status, submitted_at`), product history (`product_id, revision_number`), and submitter (`submitted_by`).
+- Validate an explicit allowlist of fields and types server-side; reject unknown keys and protected fields such as owner, reviewer, status, moderation state, approval metadata, and arbitrary database columns.
+- Validate price/stock/commission ranges, category validity, slug/SKU uniqueness, text lengths, allowed URL schemes, image metadata, and category-specific requirements.
+- Do not store credentials, payment secrets, or unrelated personal data in revision snapshots.
 
-Implementation details:
-- Treat submitted revision snapshots as immutable. A correction creates a new revision rather than rewriting an existing submitted snapshot.
-- Enforce a single pending revision per existing product with a partial unique index on `product_id WHERE status='pending' AND product_id IS NOT NULL`. For new products (`product_id IS NULL`), use an explicit draft/session identifier or idempotency key and a separate uniqueness rule; do not rely on a nullable unique index to prevent duplicates.
-- Add appropriate indexes for `status, submitted_at`, `product_id, revision_number`, and `submitted_by`.
-- `proposed_data` must be validated against an allowlist of product fields in server-side RPC code. Never accept protected fields such as role, farmer ownership, moderation status, approval metadata, or arbitrary database columns from the client.
-- Prefer explicit typed RPC parameters or strict JSON-key/type allowlists; validate numeric price/stock/commission ranges, allowed product status, slug/SKU uniqueness, text lengths, URL scheme, and seed details. Reject unknown keys.
-- Store only data needed for a proposed product. Do not store payment secrets or private integration credentials in the snapshot.
+## 3. Revision lifecycle and approval rules
 
-### Why this design preserves the published revision
+1. New product: submit a pending revision; no public canonical product row before approval.
+2. Edit: create a pending revision; preserve the currently approved canonical row until approval.
+3. Concurrent pending edit: block a second pending revision for the same product. The owner may explicitly withdraw the pending revision with an audit event and submit a replacement. Never silently overwrite or supersede a revision under review.
+4. Approval: in one transaction, re-check reviewer authorization, pending status, target product/version, category and uniqueness constraints; create/update the canonical product; mark revision approved; record reviewer/time and audit event.
+5. Rejection: require a bounded, actionable reason; mark rejected and preserve the canonical product unchanged.
+6. Resubmission after rejection: create a new revision ID and preserve the rejected revision.
+7. Operational status remains distinct from approval. Approval must not activate a draft, paused, or sold-out product automatically.
+8. Stale review protection: compare `base_product_updated_at` or a version/hash at approval. If stale, block approval and require a fresh revision/review.
+9. Every content change requires review initially, including SEO metadata. Do not add low-risk bypasses until a field-level policy is separately reviewed.
+10. Admin edits use the same revision path by default. Any emergency bypass must be separately permissioned and audited.
+11. Use idempotency keys and transactional constraints so retry/double-click cannot create duplicate products or apply an approval twice.
 
-For an edit, the revision row stores the proposed values; the existing `products` row remains unchanged and continues serving public requests. Approval atomically applies the revision snapshot to the canonical `products` row and records review metadata. Rejection leaves the public row untouched. For a new product, the canonical product row is created only on approval. This is the selected policy.
+## 4. Authorization, RLS, and audit
 
-## 3. Lifecycle and state rules
+- An authenticated farmer/product owner may submit revisions for their own products. Admins may submit on behalf only through a permission-checked and audited path.
+- Ownership is checked server-side inside RPCs, not only in UI.
+- Enable RLS. Submitters can read their own revisions; Admin review queue and all review actions are admin-only. Anonymous users and unrelated users must never read pending proposed data.
+- Revoke direct lifecycle-field writes from client roles as appropriate; use narrow RPCs for submission, withdrawal, approval, and rejection.
+- Any `SECURITY DEFINER` RPC must lock `search_path`, schema-qualify objects, check `auth.uid()`, call explicit admin authorization for review actions, and grant execution only to intended roles.
+- Never trust client-supplied submitter, owner, reviewer, status, or approved product ID.
+- Audit submit, withdraw, approve, reject, and exceptional admin actions. Include revision/product IDs and avoid unnecessarily logging the full product payload.
+- Product write, revision transition, and audit event must commit or roll back together.
 
-1. **New product:** create a pending revision; no public product row is created before approval.
-2. **Edit an approved product:** create a pending revision linked to the existing product. Continue serving the old approved product row.
-3. **Pending edit (selected default):** block a second pending revision for the same product. Show the submitter the pending revision and its timestamp. If changes are needed, an authorized submitter may explicitly withdraw/cancel the pending revision (with audit history) and submit a new one; never silently overwrite or supersede a revision that an Admin may already be reviewing.
-4. **Approve:** in one database transaction, re-check reviewer authorization, ensure revision is still pending, validate current target state and uniqueness constraints, apply the snapshot to `products`, set revision status to approved, set reviewer/time, and write `admin_audit_log`.
-5. **Reject:** require a non-empty, bounded reason; mark the revision rejected with reviewer/time and audit log. Do not alter the canonical product row.
-6. **Resubmit after rejection:** create a new revision with a new ID; preserve the rejected revision for history.
-7. **Pause / sold out / unpublish:** keep operational `products.status` separate from review status. Approval never automatically changes a product to active if the submitted/approved operational status is paused, draft, or sold_out.
-8. **Stale review protection:** include the base product `updated_at` (or a version/hash) in the submitted snapshot. At approval, detect if the canonical product changed since submission and require a fresh review instead of overwriting newer data.
-9. **Admin edits:** use the same revision-and-approval path by default; if an emergency direct edit is required, define a separately permissioned and audited exception.
+## 5. Publication contract and SEO
 
-## 4. Authorization, RLS, and RPC boundaries
+Choose one durable approval source of truth (canonical approval marker/reference or dedicated publication record) and use it consistently. Public detail pages, listings, category pages, JSON-LD, Open Graph, and sitemap must only expose canonical product data that is approved and has `products.status='active'`. Never infer approval from a pending revision. Missing schema or query errors must fail closed and be logged/monitored, not silently bypassed.
 
-- Enable RLS on `product_revisions`.
-- Allow an authenticated product owner/farmer to submit and read their own product revisions, subject to verifying ownership server-side. Admins can submit revisions on behalf of a product only through an explicitly authorized, audited admin path. Do not expose proposed data to anonymous users or unrelated farmers/resellers.
-- Admin review queue and full revision data are admin-only.
-- Revoke direct `INSERT/UPDATE/DELETE` privileges on revision lifecycle fields from `anon` and ordinary `authenticated` clients as appropriate. Route state transitions through narrow RPCs.
-- Any `SECURITY DEFINER` RPC must use a locked `search_path`, schema-qualified object references, explicit `auth.uid()` checks, and an explicit `public.is_admin()` check for approve/reject. Grant execution only to intended roles; review existing grants rather than assuming defaults.
-- Do not trust a client-provided `reviewed_by`, status, submitter, product owner, or approved product ID.
-- Write audit entries for submit, approve, reject, supersede, and exceptional administrative actions. Audit records should identify revision ID and product ID and avoid logging sensitive payloads unnecessarily.
-- Keep each approval operation transactional so product update, revision state transition, and audit event cannot partially succeed.
+Only approved canonical values may feed Product/Offer JSON-LD. Pending title, price, stock, image, SKU, category, or agricultural claims must not leak into public HTML, metadata, search listings, or sitemap. Do not fabricate ratings, reviews, certifications, germination rates, yield, or other performance claims.
 
-## 5. Public read, SEO, and sitemap contract
+### SEO technical health checks
 
-Public product detail, category/listing queries, structured data, Open Graph metadata, and sitemap should all use the same publication contract:
-- canonical product exists in `products`;
-- `products.status = 'active'`;
-- there is a durable, authoritative approval state for that canonical product.
+- Validate canonical URLs, duplicate URLs, index/noindex and sitemap consistency.
+- Validate Product/Offer and BreadcrumbList structured data against the canonical approved snapshot.
+- Check image URL, alt text, broken links, and metadata completeness.
+- If a public slug changes, create a controlled 301 redirect from the previous slug, prevent redirect loops, and retain correct canonical tags.
+- Unpublish, pause, sold-out, and delete are distinct actions. Preserve URL and history where appropriate; remove non-public products from sitemap and ensure non-orderable states cannot be purchased.
+- Add Search Console/analytics integrations only through explicit configuration and permission review; never fabricate performance metrics.
+- SEO readiness score is advisory and not a ranking guarantee. Hard gates are valid product identity, ownership/category/status, non-negative price/stock, and required marketplace/category-policy fields. SEO title, meta description, keywords, FAQ, and alt-text recommendations are warnings unless explicitly required by policy.
 
-With the revision-table design, do not infer approval from the existence of a pending revision. The safest options are:
-1. add a canonical approval marker/approved revision reference to `products` as part of a reviewed migration; or
-2. maintain a dedicated publication record that points to the approved revision and is updated atomically on approval.
+## 6. Product form and category-aware fields
 
-Choose one source of truth and use it consistently in all public queries. Do not add a filter for an uncreated column and assume it works. If an approval query errors, fail closed (show no unverified products), while surfacing operational errors to logs/monitoring.
+Base fields should include product name, category, description, price, stock, status, SKU where applicable, brand/manufacturer where known, pack/unit size, cover image, image alt text, slug, SEO title, meta description, and language settings.
 
-The approved public snapshot alone should feed Product/Offer JSON-LD. Pending proposed title, price, image, SKU, or seed claims must never leak into metadata, schema, page HTML, search results, or sitemap. Do not fabricate reviews, ratings, certifications, or agricultural performance claims.
+Use category-specific fields instead of forcing one universal form:
+- Seeds: crop, variety, pack size, germination details only when seller-provided and supported, sowing season/regions when accurate, expiry/lot details when applicable.
+- Fertilizer/agro-inputs: composition, package size, and applicable registration/compliance details.
+- Tools/equipment: model, dimensions, material, warranty where applicable.
+- Other categories: category-specific specifications and requirements.
 
-## 6. Staging rollout plan (no production actions)
+Do not make irrelevant fields required. Policy/legal requirements must be configured by category and verified rather than assumed.
 
-### Phase A — read-only compatibility inventory
-- Confirm the exact deployed migration history and current live columns/RPC signatures in the intended Supabase project.
-- Resolve migration 029/030/031/032 prerequisites and the missing `moderation_status` / `commission_percent` references before changing application behavior.
-- Confirm current public product query paths and every place that reads or writes product rows.
-- Record baseline RLS, function grants, constraints, and sample query plans. Do not touch the other Supabase project.
+### Media lifecycle
 
-### Phase B — draft schema and RPC migration
-- Prepare a new, forward-only migration that creates revision storage, constraints/indexes, RLS policies, and narrowly granted submit/approve/reject RPCs.
-- Make the migration idempotency and ordering explicit; do not silently edit already-applied migration files.
-- Keep it as a reviewed file/PR only until explicit approval to apply it to a staging database.
+- Validate upload type, size, storage path, and access permissions.
+- Keep revision images separate from the current public image until approval.
+- On rejection/withdrawal, clean up orphaned staged files safely after a retention window; do not delete files referenced by an approved product.
+- Ensure image URLs used by public pages and structured data are stable and accessible.
 
-### Phase C — application changes
-- Replace direct writes from Product SEO Studio with “Save draft” / “Submit for review” revision RPCs.
-- Add Admin queue and revision comparison view; approval/rejection requires confirmation and rejection reason.
-- Ensure approval updates the canonical product row and review metadata atomically.
-- Keep public routes reading only canonical approved product data; preserve old public version during pending edits.
-- Revalidate marketplace detail/listing/category pages and sitemap after approval, not after a pending submission.
-- Use a separate staging environment and test data; never point staging UI at production credentials.
+## 7. Bilingual and AI SEO Studio
 
-### Phase D — tests and acceptance gates
+- Support Bangla and English product content; define whether localized pages have separate slugs and metadata.
+- Implement correct canonical/hreflang relationships only when both language variants genuinely exist and are indexable.
+- AI can suggest titles, descriptions, translations, FAQs, keywords, and alt text, but suggestions are drafts until reviewed.
+- Clearly distinguish seller-provided facts from generated text. Never invent certifications, ratings, reviews, germination rate, yield, safety claims, or agronomic performance.
+- Flag unsupported claims, duplicate content, keyword stuffing, translation uncertainty, and missing required facts.
+- Preserve the before/after diff for AI changes; never auto-publish AI-generated content.
+- Provide preview of Google-style snippets and social cards, with a note that search engines may rewrite snippets.
+
+## 8. SEO performance and operations dashboard
+
+- Track Search Console impressions, clicks, queries, landing pages, and CTR only when integration data is available.
+- Track page views and inquiry/order conversion using a consent-aware analytics approach and existing privacy requirements.
+- Show missing/invalid schema, broken images, sitemap/query failures, stale revisions, approval queue age, and RPC failures.
+- Mark unavailable data as unavailable; never display guessed metrics.
+- Add operational logs/alerts for failed public product queries and sitemap generation without logging secrets or full private revision payloads.
+
+## 9. Rollout plan — draft only
+
+### Phase A: read-only compatibility inventory
+- Confirm exact deployed migration history and current live columns/RPC signatures in the intended Supabase project.
+- Resolve migrations 029/030/031/032 prerequisites and missing `moderation_status` / `commission_percent` references before application changes.
+- Inventory every product read/write path, RLS policy, function grant, constraint, and query.
+- Confirm the correct Supabase project identity; do not touch another project.
+
+### Phase B: migration and RPC draft
+- Prepare a new forward-only migration for revision storage, indexes, constraints, RLS, and narrowly granted RPCs.
+- Do not silently edit already-applied migration files. Document migration ordering and rollback/recovery limitations.
+- Keep SQL as a review artifact until explicitly authorized for staging application.
+
+### Phase C: application draft
+- Replace direct writes with Save Draft / Submit for Review revision RPCs.
+- Add an Admin queue, revision comparison, rejection reason, and confirmation steps.
+- Keep public routes on the canonical approved snapshot only.
+- Revalidate product pages, listings, and sitemap only after approval or relevant public state change.
+- Ensure staging credentials and test data are isolated from production.
+
+### Phase D: tests and acceptance gates
 - New pending product is not public and is absent from sitemap.
-- Pending edit does not change the old public title, description, price, stock, image, JSON-LD, canonical URL, or sitemap timestamp.
-- Approval changes public content atomically and includes it in the sitemap.
-- Rejection preserves the old public content and records the reason.
-- A rejected revision can be resubmitted as a new revision.
-- Non-admin cannot approve/reject, set reviewer fields, or read another user's private revisions.
-- Duplicate SKU/slug and stale revision conflicts are handled without partial writes.
-- A product paused/sold_out remains non-orderable regardless of approval state.
-- RPC failure or missing schema fails closed; no sample/demo product is indexed as real inventory.
-- CI/lint/typecheck and migration tests pass; staging smoke tests verify queries and RLS.
+- Pending edit does not change old public name, description, price, stock, image, JSON-LD, canonical URL, or sitemap entry.
+- Approval updates canonical data atomically; rejection leaves it unchanged.
+- Withdrawal and resubmission preserve audit history.
+- Non-admin cannot approve/reject, set reviewer fields, or read another user's revisions.
+- Duplicate slug/SKU, idempotent retry, stale revision, and concurrent approval conflicts produce no partial writes.
+- Paused/sold-out products remain non-orderable regardless of approval.
+- Slug changes create safe redirects and no loops.
+- Revision image stays private until approval; rejection cleanup does not remove approved media.
+- Bilingual canonical/hreflang output is valid only for existing language variants.
+- AI-generated unsupported claims are flagged; no AI text publishes without review.
+- Schema/query failure fails closed and emits a useful operational signal.
+- CI, lint, typecheck, migration tests, RLS tests, and staging smoke tests pass.
 
-### Phase E — release decision
-- Review diff and test evidence; confirm staging project identity.
+### Phase E: release decision
+- Review code diff, migration plan, test evidence, backups, rollback/recovery plan, and staging project identity.
 - Obtain explicit authorization before applying any migration, changing real data, merging a PR, enabling online payments, or deploying production.
-- Production rollout, if separately approved later, should include a backup/rollback plan and monitoring for public-query errors.
+- Production rollout, if later approved, needs monitoring and a defined rollback/recovery plan.
 
-## 7. Open design decisions before implementation
+## 10. Implementation order
 
-1. Who may submit a product revision: farmer/owner, Admin only, or both?
-2. Should a new product's canonical row be created only at approval (recommended), or created as a non-public draft?
-3. Should a second edit while one is pending be blocked, or supersede the pending revision?
-4. Should SEO completeness be advisory or a hard submission gate? Do not treat a score as a Google ranking guarantee.
-5. Should any low-risk metadata edit avoid re-review? Default recommendation: no bypass until field-level policy is defined.
+1. Schema compatibility inventory and publication source-of-truth decision.
+2. Revision table/RPC draft, RLS, audit, idempotency, stale revision handling.
+3. Admin review queue and farmer revision submission UI.
+4. Public query/schema/sitemap contract and slug/media lifecycle.
+5. Category-aware fields and bilingual metadata.
+6. AI draft assistant and claim validation.
+7. SEO/performance dashboard and alerts.
 
 ## Explicit non-actions
 
-This document is a proposal only. No SQL migration was applied, no Supabase data or schema was changed, no PR was merged, and no production deployment was run.
+This plan is documentation and design only. No SQL migration was applied, no Supabase schema or data was changed, no PR was merged, and no production deployment was run.
