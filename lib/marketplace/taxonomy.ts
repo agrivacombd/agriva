@@ -80,7 +80,13 @@ export function matchesProductCategory(value: string | null, category: (typeof M
   return getProductCategory(value)?.slug === category.slug;
 }
 
-export function getProductTaxonomy(value: string | null) {
+export function getProductTaxonomy(value: string | null, categorySlug?: string | null, subcategorySlug?: string | null) {
+  if (categorySlug) {
+    const category = getCategory(categorySlug);
+    if (!category) return undefined;
+    const subcategory = subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
+    return { category, subcategory };
+  }
   const normalized = (value || "").normalize("NFKC").trim().toLocaleLowerCase();
   if (!normalized) return undefined;
 
@@ -106,7 +112,9 @@ export function matchesSubcategory(
   value: string | null,
   category: (typeof MARKETPLACE_CATEGORIES)[number],
   subcategory: (typeof MARKETPLACE_CATEGORIES)[number]["subcategories"][number],
+  categorySlug?: string | null,
+  subcategorySlug?: string | null,
 ) {
-  const taxonomy = getProductTaxonomy(value);
+  const taxonomy = getProductTaxonomy(value, categorySlug, subcategorySlug);
   return taxonomy?.category.slug === category.slug && taxonomy.subcategory?.slug === subcategory.slug;
 }
