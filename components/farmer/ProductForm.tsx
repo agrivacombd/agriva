@@ -88,11 +88,11 @@ export default function ProductForm({ seoStudioEnabled = false }: { seoStudioEna
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="product-price" className="text-sm font-bold">Retail price (৳)</label>
-          <input id="product-price" required type="number" min="0" step="0.01" value={form.price} onChange={(event) => set("price", event.target.value)} className={inputClass} />
+          <input id="product-price" required type="number" min="0" max="9999999999.99" step="0.01" value={form.price} onChange={(event) => set("price", event.target.value)} className={inputClass} />
         </div>
         <div>
           <label htmlFor="product-stock" className="text-sm font-bold">Stock quantity</label>
-          <input id="product-stock" required type="number" min="0" step="1" value={form.stock} onChange={(event) => set("stock", event.target.value)} className={inputClass} />
+          <input id="product-stock" required type="number" min="0" max="9999999999" step="1" value={form.stock} onChange={(event) => set("stock", event.target.value)} className={inputClass} />
         </div>
       </div>
 
