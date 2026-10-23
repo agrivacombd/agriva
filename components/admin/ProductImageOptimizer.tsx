@@ -5,8 +5,9 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Props = { initialUrl?: string | null; initialAlt?: string | null; suggestedAlt?: string; };
 
-const SIZE = 1200;
+const MAX_DIMENSION = 1200;
 const MAX_BYTES = 3 * 1024 * 1024;
+const MIN_QUALITY = 60;
 
 export default function ProductImageOptimizer({ initialUrl = "", initialAlt = "", suggestedAlt = "" }: Props) {
   const [imageUrl, setImageUrl] = useState(initialUrl || "");
@@ -24,22 +25,24 @@ export default function ProductImageOptimizer({ initialUrl = "", initialAlt = ""
       if (file.size > 15 * 1024 * 1024) throw new Error("মূল ছবি ১৫ MB-এর কম হতে হবে।");
       const bitmap = await createImageBitmap(file);
       const canvas = document.createElement("canvas");
-      canvas.width = SIZE;
-      canvas.height = SIZE;
+      const scale = Math.min(MAX_DIMENSION / Math.max(bitmap.width, bitmap.height), 1);
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("এই browser-এ image processing চালু করা যায়নি।");
-      ctx.fillStyle = "#f8fbf6";
-      ctx.fillRect(0, 0, SIZE, SIZE);
-      const scale = Math.min(SIZE / bitmap.width, SIZE / bitmap.height, 1);
-      const width = Math.round(bitmap.width * scale);
-      const height = Math.round(bitmap.height * scale);
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      ctx.drawImage(bitmap, Math.round((SIZE - width) / 2), Math.round((SIZE - height) / 2), width, height);
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       bitmap.close();
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", quality / 100));
-      if (!blob || blob.type !== "image/webp") throw new Error("এই browser WebP export সমর্থন করছে না। Chrome বা Safari-এর নতুন সংস্করণ ব্যবহার করুন।");
-      if (blob.size > MAX_BYTES) throw new Error("ছবিটি ৩ MB-এর বেশি হচ্ছে। Quality কমিয়ে আবার চেষ্টা করুন।");
+      let blob: Blob | null = null;
+      let appliedQuality = quality;
+      while (appliedQuality >= MIN_QUALITY) {
+        blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", appliedQuality / 100));
+        if (!blob || blob.type !== "image/webp") throw new Error("এই browser WebP export সমর্থন করছে না। Chrome বা Safari-এর নতুন সংস্করণ ব্যবহার করুন।");
+        if (blob.size <= MAX_BYTES) break;
+        appliedQuality -= 5;
+      }
+      if (!blob || blob.size > MAX_BYTES) throw new Error("৩ MB-এর মধ্যে আনা যায়নি। একটু ছোট resolution-এর ছবি আপলোড করুন।");
       const supabase = createSupabaseBrowserClient();
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error("লগইন সেশন পাওয়া যায়নি। আবার লগইন করুন।");
@@ -52,7 +55,7 @@ export default function ProductImageOptimizer({ initialUrl = "", initialAlt = ""
       if (uploadError) throw new Error(uploadError.message.includes("row-level security") ? "Super Admin অনুমতি refresh করতে logout করে আবার login করুন।" : uploadError.message);
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setImageUrl(data.publicUrl);
-      setMessage(`Optimized: 1200×1200 WebP · ${(blob.size / 1024).toFixed(0)} KB · quality ${quality}%`);
+      setMessage(`Optimized: ${canvas.width}×${canvas.height} WebP · ${(blob.size / 1024).toFixed(0)} KB · quality ${appliedQuality}%${appliedQuality < quality ? ` (ফাইল ছোট রাখতে quality ${quality}% থেকে কমানো হয়েছে)` : ""}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "ছবি optimize করা যায়নি।");
     } finally {
@@ -73,7 +76,7 @@ export default function ProductImageOptimizer({ initialUrl = "", initialAlt = ""
       </label>
       {busy && <span role="status" className="text-xs font-bold text-emerald-800">ছবি optimize ও upload হচ্ছে…</span>}
     </div>
-    <p className="mt-2 text-xs leading-5 text-slate-600">স্বয়ংক্রিয়ভাবে square 1200×1200 WebP-তে রূপান্তর হয়; ছবির অনুপাত না কেটে চারপাশে জায়গা রাখা হয়। ৩ MB সীমা ও quality control মোবাইল লোড দ্রুত রাখতে সাহায্য করে। Quality বদলালে নতুন quality প্রয়োগ করতে ছবিটি আবার বেছে নিন।</p>
+    <p className="mt-2 text-xs leading-5 text-slate-600">আপনি যে অনুপাত/সাইজে ছবি তৈরি করবেন, সেটি বজায় রেখেই সর্বোচ্চ 1200px লম্বা/চওড়া WebP হবে—ছবি crop বা stretch করা হবে না। ৩ MB ছাড়ালে quality স্বয়ংক্রিয়ভাবে কমবে (সর্বনিম্ন ৬০%); তাতেও বড় থাকলে ছোট resolution-এর ছবি দিন। Quality বদলালে নতুন quality প্রয়োগ করতে ছবিটি আবার বেছে নিন।</p>
     {imageUrl && <div className="mt-3 flex items-center gap-3"><img src={imageUrl} alt={alt || suggestedAlt || "Product image preview"} className="h-20 w-20 rounded-lg border bg-white object-contain" /><button type="button" onClick={() => { setImageUrl(""); setMessage("ছবির URL সরানো হয়েছে; সংরক্ষণ করলে পণ্য থেকে ছবিটি বাদ যাবে।"); }} className="text-xs font-bold text-red-700 underline">ছবি সরান</button></div>}
     <label className="mt-3 block text-sm font-bold">ছবির Alt text (SEO)
       <input name="image_alt" value={alt} onChange={(event) => setAlt(event.target.value)} maxLength={180} placeholder="যেমন: সবজি চাষের উচ্চমানের টমেটো বীজের প্যাকেট" className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 font-normal" />
