@@ -29,10 +29,9 @@ export default function AddToCartButton({ product, className = "" }: Props) {
       // Recheck live availability and price instead of trusting values rendered in the browser.
       const { data: liveProduct, error: productError } = await supabase
         .from("products")
-        .select("id,price,stock,status,moderation_status")
+        .select("id,price,stock,status")
         .eq("id", product.id)
         .eq("status", "active")
-        .eq("moderation_status", "approved")
         .maybeSingle();
       if (productError || !liveProduct) {
         setMessage("পণ্যটি এখন পাওয়া যাচ্ছে না। পেজটি রিফ্রেশ করে আবার চেষ্টা করুন।");
