@@ -30,15 +30,18 @@ export default function LearningCorrectionInbox() {
     setLoading(true);
     setError("");
     try {
-      const { data, error: queryError } = await supabase
-        .from("learning_correction_reports")
-        .select("id,content_title,content_slug,issue_type,reported_text,suggested_correction,source_url,reporter_name,reporter_email,status,admin_note,created_at")
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (queryError) throw queryError;
-      const rows = (data ?? []) as Report[];
+      const [reportsResult, pendingResult] = await Promise.all([
+        supabase.from("learning_correction_reports")
+          .select("id,content_title,content_slug,issue_type,reported_text,suggested_correction,source_url,reporter_name,reporter_email,status,admin_note,created_at")
+          .order("created_at", { ascending: false })
+          .limit(30),
+        supabase.from("learning_correction_reports").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+      if (reportsResult.error) throw reportsResult.error;
+      if (pendingResult.error) throw pendingResult.error;
+      const rows = (reportsResult.data ?? []) as Report[];
       setReports(rows);
-      setPendingCount(rows.filter(row => row.status === "pending").length);
+      setPendingCount(pendingResult.count ?? rows.filter(row => row.status === "pending").length);
     } catch {
       setError("Correction inbox লোড হয়নি। Admin access এবং Supabase policy যাচাই করুন।");
     } finally {
