@@ -16,6 +16,7 @@ export default function AdminNewProductPage() {
   const [farmerId, setFarmerId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
   const [commission, setCommission] = useState("10");
@@ -36,12 +37,18 @@ export default function AdminNewProductPage() {
   async function submit(e: FormEvent) {
     e.preventDefault(); setSaving(true); setMessage("");
     try {
+      if (!imageFile) throw new Error("পণ্যের ছবি নির্বাচন করুন");
+      const imageForm = new FormData();
+      imageForm.set("image", imageFile);
+      const imageResponse = await fetch("/api/admin/products/image", { method: "POST", body: imageForm });
+      const imageData = await imageResponse.json();
+      if (!imageResponse.ok) throw new Error(imageData.error || "ছবি আপলোড হয়নি");
       const res = await fetch("/api/admin/products", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ farmerId, name, description, price, stock, commission, categorySlug: category, subcategorySlug: subcategory }) });
+        body: JSON.stringify({ farmerId, name, description, price, stock, commission, categorySlug: category, subcategorySlug: subcategory, imageUrl: imageData.imageUrl }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "পণ্য যোগ করা যায়নি");
       setMessage("পণ্য যোগ হয়েছে এবং Admin review-এর জন্য pending রাখা হয়েছে।");
-      setName(""); setDescription(""); setPrice(""); setStock(""); setCommission("10"); setSubcategory("");
+      setName(""); setDescription(""); setPrice(""); setStock(""); setCommission("10"); setSubcategory(""); setImageFile(null);
     } catch (e) { setMessage(e instanceof Error ? e.message : "পণ্য যোগ করা যায়নি"); }
     finally { setSaving(false); }
   }
@@ -55,7 +62,7 @@ export default function AdminNewProductPage() {
       </header>
       <p className="mt-7 text-xs font-extrabold uppercase tracking-[.16em] text-[#a47b20]">Admin only · All marketplace categories</p>
       <h1 className="mt-2 text-3xl font-black">নতুন পণ্য যোগ করুন</h1>
-      <p className="mt-2 text-sm leading-6 text-[#637266]">সাইটের সক্রিয় মূল ক্যাটাগরি থেকে নির্বাচন করুন। নতুন পণ্য সরাসরি প্রকাশ হবে না—প্রথমে draft/pending review-তে থাকবে।</p>
+      <p className="mt-2 text-sm leading-6 text-[#637266]">সাইটের সক্রিয় মূল ক্যাটাগরি থেকে নির্বাচন করুন। ছবি ও তথ্য যাচাই করে সংরক্ষণ করুন। নতুন পণ্য সরাসরি প্রকাশ হবে না—প্রথমে draft review-তে থাকবে।</p>
       {loading ? <p className="mt-6 rounded-xl bg-white p-5">ক্যাটাগরি ও বিক্রেতার তথ্য লোড হচ্ছে…</p> : <form onSubmit={submit} className="mt-6 space-y-5 rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm sm:p-7">
         <label className="block text-sm font-bold">বিক্রেতা / Farmer <select required value={farmerId} onChange={e=>setFarmerId(e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-3 font-normal"><option value="">বিক্রেতা নির্বাচন করুন</option>{farmers.map(f=><option key={f.id} value={f.id}>{f.full_name || "নাম নেই"}{f.phone ? " · "+f.phone : ""}</option>)}</select></label>
         <label className="block text-sm font-bold">পণ্যের নাম <input required maxLength={160} value={name} onChange={e=>setName(e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-3 font-normal" placeholder="যেমন: BRRI ধানের বীজ"/></label>
@@ -66,6 +73,7 @@ export default function AdminNewProductPage() {
           <label className="block text-sm font-bold">স্টক <input required type="number" min="0" step="1" value={stock} onChange={e=>setStock(e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-3 font-normal"/></label>
           <label className="block text-sm font-bold">রিসেলার কমিশন (%) <input required type="number" min="0" max="100" step="0.01" value={commission} onChange={e=>setCommission(e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-3 font-normal"/></label>
         </div>
+        <label className="block text-sm font-bold">পণ্যের ছবি (JPG/PNG/WebP, সর্বোচ্চ ৫ MB) <input required type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setImageFile(e.target.files?.[0] ?? null)} className="mt-1.5 block w-full rounded-xl border px-3 py-3 font-normal"/></label>
         <label className="block text-sm font-bold">পণ্যের বিবরণ <textarea maxLength={10000} value={description} onChange={e=>setDescription(e.target.value)} className="mt-1.5 min-h-32 w-full rounded-xl border px-3 py-3 font-normal" placeholder="মান, জাত, প্যাকেটের ওজন, উৎপাদন/মেয়াদ বা ব্যবহারের তথ্য লিখুন"/></label>
         {message && <p role="status" className="rounded-xl border border-[#dfe8dc] bg-[#f7faf5] p-3 text-sm font-semibold">{message}</p>}
         <button disabled={saving || !farmers.length || !categories.length} className="w-full rounded-xl bg-[#173f2b] px-5 py-4 font-black text-white disabled:opacity-50">{saving ? "সংরক্ষণ হচ্ছে…" : "পণ্য যোগ করুন (Pending Review)"}</button>
