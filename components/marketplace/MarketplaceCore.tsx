@@ -32,7 +32,7 @@ export default function MarketplaceCore({ products, showCategories = true, categ
       ? product.category_slug === category
       : Boolean(selectedCategory && (product.category === selectedCategory.name || product.category === selectedCategory.slug)));
     return matchesQuery && matchesSelected;
-  }), [products, query, category]);
+  }), [products, query, category, categories]);
 
   return <div>
     <div className="grid gap-3 rounded-2xl border border-emerald-950/10 bg-white p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_220px] sm:p-4">
