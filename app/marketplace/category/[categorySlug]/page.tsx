@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function CategoryPage({ params }: Props) {
   const { categorySlug } = await params;
-  const category = getCategory(categorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
   if (!category) notFound();
   let products: MarketplaceProduct[] = [];
   try {
