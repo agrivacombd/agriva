@@ -95,7 +95,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
           const buyerName = addressLine(address.fullName ?? address.name) || "নাম দেওয়া নেই";
           const phone = addressLine(address.phone);
           const district = addressLine(address.district ?? address.city);
-          const fullAddress = [addressLine(address.address), addressLine(address.area), addressLine(address.upazila), addressLine(address.union), addressLine(address.village), addressLine(address.postalCode)].filter(Boolean).join(", ");
+          const fullAddress = [addressLine(address.division), district, addressLine(address.upazila), addressLine(address.unionOrArea ?? address.area ?? address.union), addressLine(address.villageRoadHouse ?? address.village ?? address.address), address.postalCode ? `পোস্ট কোড ${addressLine(address.postalCode)}` : ""].filter(Boolean).join(", ");
           const product = Array.isArray(o.products) ? o.products[0] : o.products;
           const status = o.status;
           return <article key={o.id} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
