@@ -4,6 +4,7 @@ import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } fr
 
 type SitemapArticle = { slug: string; updated_at: string | null };
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
+type SitemapJob = { slug: string; updated_at: string | null };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -11,16 +12,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let articles: SitemapArticle[] = [];
   let products: SitemapProduct[] = [];
+  let jobs: SitemapJob[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
   const now = new Date();
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [articleResult, productResult] = await Promise.all([
+    const [articleResult, productResult, jobsResult] = await Promise.all([
       supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article"),
       supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
+      supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
     ]);
     if (!articleResult.error && articleResult.data) articles = articleResult.data as SitemapArticle[];
+    if (!jobsResult.error && jobsResult.data) jobs = jobsResult.data as SitemapJob[];
     if (!productResult.error && productResult.data) {
       products = productResult.data as SitemapProduct[];
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
@@ -39,6 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/jobs`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/crop-disease`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/about-us`, changeFrequency: "monthly", priority: 0.4 },
@@ -55,6 +60,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+    ...jobs.map((job) => ({
+      url: `${base}/jobs/${job.slug}`,
+      lastModified: job.updated_at ? new Date(job.updated_at) : now,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
     })),
     ...articles.map((article) => ({
       url: `${base}/blog/${article.slug}`,
