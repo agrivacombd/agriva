@@ -35,7 +35,9 @@ assert.ok(sitemap.includes("categoryUrls") && sitemap.includes("product_categori
 assert.ok(marketplaceCore.includes("categories.map") && marketplaceCore.includes("product.category_slug === category"), "marketplace browse and filtering must use database taxonomy");
 assert.ok(productPage.includes("getMarketplaceProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumb must link to database-backed category and subcategory");
 assert.ok(!adminProducts.includes('name="category"'), "admin form must no longer write free-text category");
-assert.ok(adminSubcategoryMigration.includes("admin_save_product_subcategory") && adminSubcategoryMigration.includes("public.is_admin()") && adminSubcategoryMigration.includes("revoke all"), "subcategory mutation must be audited and admin-only");
+assert.ok(adminSubcategoryMigration.includes("admin_save_product_category") && adminSubcategoryMigration.includes("Cannot change a category slug"), "category writes must protect stable SEO slugs");
+assert.ok(adminSubcategoryMigration.includes("admin_save_product_subcategory") && adminSubcategoryMigration.includes("Cannot change a subcategory slug") && adminSubcategoryMigration.includes("public.is_admin()") && adminSubcategoryMigration.includes("revoke all"), "subcategory mutation must be audited, admin-only, and protect stable URLs");
+assert.ok(adminSubcategoryMigration.includes('create policy "Active product categories are readable"') && adminSubcategoryMigration.includes('create policy "Admins can read all product subcategories"'), "RLS must allow public active taxonomy reads and admin inactive-entry management");
 assert.ok(adminSubcategoryPage.includes("admin_save_product_subcategory") && adminSubcategoryPage.includes("is_active"), "admin can manage and deactivate subcategories");
 
 console.log("Category taxonomy and dynamic SEO smoke checks passed.");
