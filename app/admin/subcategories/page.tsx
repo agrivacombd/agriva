@@ -38,6 +38,9 @@ async function saveSubcategory(formData: FormData) {
   revalidatePath("/admin/categories");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
+  revalidatePath(`/marketplace/category/${categorySlug}`);
+  if (oldSlug) revalidatePath(`/marketplace/category/${categorySlug}/${oldSlug}`);
+  revalidatePath(`/marketplace/category/${categorySlug}/${slug}`);
   revalidatePath("/sitemap.xml");
   redirect(error ? "/admin/subcategories?notice=error" : "/admin/subcategories?notice=saved");
 }
