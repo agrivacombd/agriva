@@ -1,20 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 
 type Item = { product_id: string; quantity: number; unit_price: number; name: string };
-type Address = { name: string; phone: string; address: string; city: string; area: string };
+type Address = {
+  name: string; phone: string; division: string; district: string; upazila: string;
+  unionOrArea: string; villageRoadHouse: string; landmark: string; postalCode: string; deliveryInstructions: string;
+};
+
+const initialAddress: Address = {
+  name: "", phone: "", division: "", district: "", upazila: "",
+  unionOrArea: "", villageRoadHouse: "", landmark: "", postalCode: "", deliveryInstructions: "",
+};
+
+function normalizeBangladeshPhone(input: string): string | null {
+  const compact = input.trim().replace(/[\s()-]/g, "");
+  let digits = compact.replace(/^\+/, "");
+  if (digits.startsWith("00880")) digits = digits.slice(2);
+  if (digits.startsWith("8801") && /^8801[3-9]\d{8}$/.test(digits)) return `+ ${digits}`.replace(" ", "");
+  if (/^01[3-9]\d{8}$/.test(digits)) return `+88${digits}`;
+  if (/^1[3-9]\d{8}$/.test(digits)) return `+880${digits}`;
+  return null;
+}
 
 export default function Checkout() {
   const [items, setItems] = useState<Item[]>([]);
-  const [form, setForm] = useState<Address>({ name: "", phone: "", address: "", city: "", area: "" });
+  const [form, setForm] = useState<Address>(initialAddress);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [codEnabled, setCodEnabled] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmed, setConfirmed] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0), [items]);
 
   useEffect(() => {
     let active = true;
@@ -26,7 +46,6 @@ export default function Checkout() {
         setLoading(false);
         return;
       }
-
       const [{ data: settings }, { data: cart }] = await Promise.all([
         supabase.rpc("get_public_site_settings"),
         supabase.from("carts").select("id").eq("user_id", user.id).eq("status", "active").maybeSingle(),
@@ -39,9 +58,7 @@ export default function Checkout() {
         setLoading(false);
         return;
       }
-
-      const { data: rows, error } = await supabase
-        .from("cart_items").select("product_id,quantity,unit_price").eq("cart_id", cart.id);
+      const { data: rows, error } = await supabase.from("cart_items").select("product_id,quantity,unit_price").eq("cart_id", cart.id);
       if (!active) return;
       if (error) {
         setMessage("কার্ট লোড করা যায়নি। আবার চেষ্টা করুন।");
@@ -56,16 +73,16 @@ export default function Checkout() {
       const productMap = new Map((products || []).map(product => [product.id, product]));
       setItems((rows || []).map(row => {
         const product = productMap.get(row.product_id);
-        return {
-          ...row,
-          unit_price: Number(product?.price ?? row.unit_price),
-          name: product?.name || "পণ্য",
-        };
+        return { ...row, unit_price: Number(product?.price ?? row.unit_price), name: product?.name || "পণ্য" };
       }));
       setLoading(false);
     })();
     return () => { active = false; };
   }, []);
+
+  function setField<K extends keyof Address>(key: K, value: Address[K]) {
+    setForm(previous => ({ ...previous, [key]: value }));
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -74,26 +91,39 @@ export default function Checkout() {
       setMessage("Cash on Delivery বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।");
       return;
     }
+    const normalizedPhone = normalizeBangladeshPhone(form.phone);
+    if (!normalizedPhone) {
+      setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
+      const address = {
+        fullName: form.name.trim(),
+        phone: normalizedPhone,
+        division: form.division.trim(),
+        district: form.district.trim(),
+        upazila: form.upazila.trim(),
+        unionOrArea: form.unionOrArea.trim(),
+        villageRoadHouse: form.villageRoadHouse.trim(),
+        landmark: form.landmark.trim(),
+        postalCode: form.postalCode.trim(),
+        deliveryInstructions: form.deliveryInstructions.trim(),
+        // Keep a backward-compatible printable address for older order views.
+        address: [form.upazila, form.unionOrArea, form.villageRoadHouse].map(value => value.trim()).filter(Boolean).join(", "),
+      };
       const response = await fetch("/api/checkout/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shippingAddress: {
-            fullName: form.name,
-            phone: form.phone,
-            district: form.city,
-            address: [form.address, form.area].filter(Boolean).join(", "),
-          },
-        }),
+        body: JSON.stringify({ shippingAddress: address }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
       setConfirmed(true);
+      setOrderId(String(result.orderId ?? ""));
       setItems([]);
-      setMessage(`অর্ডার নিশ্চিত হয়েছে। অর্ডার নম্বর: ${result.orderId}। মোট: ৳${Number(result.total).toFixed(2)}।`);
+      setMessage(`অর্ডার নিশ্চিত হয়েছে। মোট ${Number(result.total).toLocaleString("bn-BD", { style: "currency", currency: "BDT" })}।`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -101,43 +131,56 @@ export default function Checkout() {
     }
   }
 
-  if (loading) return <main className="min-h-screen bg-[#f5f7f2] px-6 py-12"><div className="mx-auto max-w-3xl rounded-3xl bg-white p-8">চেকআউট লোড হচ্ছে…</div></main>;
+  if (loading) return <main className="min-h-screen bg-[#f5f7f2] px-4 py-10"><div className="mx-auto max-w-3xl rounded-3xl bg-white p-8">চেকআউট লোড হচ্ছে…</div></main>;
 
   return <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
     <div className="mx-auto max-w-3xl">
-      <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout</p>
-      <h1 className="mt-3 text-3xl font-black sm:text-4xl">ডেলিভারি ও পেমেন্ট</h1>
+      <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout · বাংলাদেশ</p>
+      <h1 className="mt-3 text-3xl font-black sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>
       {items.length > 0 && <section className="mt-6 rounded-2xl bg-white p-5">
-        <p className="font-bold">আপনার কার্টে {items.length} ধরনের পণ্য</p>
-        {items.map(item => <p key={item.product_id} className="mt-2 text-sm text-[#647468]">{item.name} × {item.quantity} · ৳{(item.unit_price * item.quantity).toFixed(2)}</p>)}
-        <p className="mt-4 border-t pt-3 font-black">পণ্যের মোট: ৳{items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0).toFixed(2)}</p>
+        <h2 className="font-bold">অর্ডার সারাংশ · {items.length} ধরনের পণ্য</h2>
+        {items.map(item => <p key={item.product_id} className="mt-2 flex justify-between gap-3 text-sm text-[#647468]"><span>{item.name} × {item.quantity}</span><span className="shrink-0">৳{(item.unit_price * item.quantity).toLocaleString("bn-BD")}</span></p>)}
+        <p className="mt-4 border-t pt-3 text-lg font-black">পণ্যের মোট: ৳{subtotal.toLocaleString("bn-BD", { maximumFractionDigits: 2 })}</p>
+        <p className="mt-1 text-xs text-[#647468]">ডেলিভারি চার্জ থাকলে নিশ্চিত করার আগে দেখানো হবে। বর্তমান checkout-এ চার্জ ০ টাকা হিসেবে গণনা করা হয়।</p>
       </section>}
-      {message && <div role="status" aria-live="polite" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}</div>}
-      {confirmed && <Link href="/marketplace" className="mt-5 inline-flex rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white">মার্কেটপ্লেসে ফিরে যান</Link>}
+      {message && <div role="status" aria-live="polite" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}{confirmed && orderId && <p className="mt-2 break-all">Checkout reference: {orderId}</p>}</div>}
+      {confirmed && <Link href="/orders" className="mt-5 inline-flex rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white">আমার অর্ডার দেখুন</Link>}
       {!confirmed && items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-5 shadow-sm sm:p-7">
-        <Field label="সম্পূর্ণ নাম" value={form.name} onChange={v => setForm({ ...form, name: v })} />
-        <Field label="মোবাইল নম্বর" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
-        <Field label="সম্পূর্ণ ঠিকানা" value={form.address} onChange={v => setForm({ ...form, address: v })} />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="জেলা" value={form.city} onChange={v => setForm({ ...form, city: v })} />
-          <Field label="এলাকা / উপজেলা" value={form.area} onChange={v => setForm({ ...form, area: v })} />
+        <h2 className="text-lg font-black">১. গ্রাহকের তথ্য</h2>
+        <Field label="প্রাপকের সম্পূর্ণ নাম *" value={form.name} onChange={v => setField("name", v)} autoComplete="name" />
+        <Field label="মোবাইল নম্বর *" value={form.phone} onChange={v => setField("phone", v)} placeholder="01XXXXXXXXX" type="tel" autoComplete="tel" />
+        <h2 className="pt-3 text-lg font-black">২. বাংলাদেশের ডেলিভারি ঠিকানা</h2>
+        <Field label="বিভাগ *" value={form.division} onChange={v => setField("division", v)} placeholder="যেমন: রাজশাহী" autoComplete="address-level1" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="জেলা *" value={form.district} onChange={v => setField("district", v)} placeholder="যেমন: নওগাঁ" autoComplete="address-level2" />
+          <Field label="উপজেলা / থানা *" value={form.upazila} onChange={v => setField("upazila", v)} placeholder="উপজেলা বা থানা" />
         </div>
-        <div className="rounded-2xl border p-4">
-          <b>ক্যাশ অন ডেলিভারি</b>
-          <p className="mt-1 text-sm text-[#647468]">{codEnabled ? "পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন।" : "সাইট অ্যাডমিন বর্তমানে Cash on Delivery বন্ধ রেখেছেন।"}</p>
+        <Field label="ইউনিয়ন / এলাকা / ওয়ার্ড *" value={form.unionOrArea} onChange={v => setField("unionOrArea", v)} />
+        <Field label="গ্রাম / রোড / বাড়ি / হোল্ডিং নম্বর *" value={form.villageRoadHouse} onChange={v => setField("villageRoadHouse", v)} autoComplete="street-address" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="নিকটস্থ পরিচিত স্থান (ঐচ্ছিক)" value={form.landmark} onChange={v => setField("landmark", v)} />
+          <Field label="পোস্ট কোড (ঐচ্ছিক)" value={form.postalCode} onChange={v => setField("postalCode", v)} />
+        </div>
+        <label className="block"><span className="text-sm font-bold">ডেলিভারির অতিরিক্ত নির্দেশনা (ঐচ্ছিক)</span><textarea value={form.deliveryInstructions} onChange={event => setField("deliveryInstructions", event.target.value)} maxLength={500} rows={3} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" placeholder="কখন ফোন করবেন, কীভাবে আসবেন ইত্যাদি" /></label>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <b>ক্যাশ অন ডেলিভারি (COD)</b>
+          <p className="mt-1 text-sm text-[#647468]">{codEnabled ? "পণ্য হাতে পেয়ে ডেলিভারি কর্মীকে টাকা দিন। অনলাইন পেমেন্ট এই মুহূর্তে চালু নেই।" : "সাইট অ্যাডমিন বর্তমানে Cash on Delivery বন্ধ রেখেছেন।"}</p>
         </div>
         <button type="submit" disabled={busy || !codEnabled} className="w-full rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">
-          {busy ? "একটি অর্ডার তৈরি হচ্ছে…" : "সব পণ্যের অর্ডার নিশ্চিত করুন"}
+          {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : "COD অর্ডার নিশ্চিত করুন"}
         </button>
+        <p className="text-xs leading-5 text-[#748074]">অর্ডার নিশ্চিত করলে স্টক ও মূল্য সার্ভার থেকে আবার যাচাই করা হবে। ভুল ঠিকানা থাকলে অর্ডার বাতিলের জন্য সাপোর্টে যোগাযোগ করুন।</p>
       </form>}
       {!items.length && !confirmed && <Link href="/cart" className="mt-5 inline-flex rounded-xl border border-[#17351f] px-5 py-3 font-bold">কার্টে ফিরে যান</Link>}
     </div>
   </main>;
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Field({ label, value, onChange, placeholder, type = "text", autoComplete }: {
+  label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; autoComplete?: string;
+}) {
   return <label className="block">
     <span className="text-sm font-bold">{label}</span>
-    <input required value={value} onChange={event => onChange(event.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" />
+    <input required value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} type={type} autoComplete={autoComplete} maxLength={200} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" />
   </label>;
 }
