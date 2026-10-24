@@ -36,7 +36,7 @@ begin
   if p_commission_percent is null or p_commission_percent < 0 or p_commission_percent > 100 then
     raise exception 'Commission must be between 0 and 100';
   end if;
-  if p_image_url is not null and p_image_url !~ '^https?://' then raise exception 'Invalid image URL'; end if;
+  if p_image_url is null or p_image_url !~ '^https://[^/]+/storage/v1/object/public/product-images/' then raise exception 'A valid product image is required'; end if;
   if p_category_slug is null or not exists(select 1 from public.product_categories where slug=p_category_slug and is_active) then
     raise exception 'Select an active category';
   end if;
@@ -66,4 +66,4 @@ begin
 end;
 $$;
 revoke all on function public.admin_create_product(uuid,text,text,numeric,numeric,numeric,text,text,text) from public, anon;
-grant execute on function public.admin_create_product(uuid,text,text,numeric,numeric,numeric,text,text) to authenticated;
+grant execute on function public.admin_create_product(uuid,text,text,numeric,numeric,numeric,text,text,text) to authenticated;
