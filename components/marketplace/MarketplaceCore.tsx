@@ -9,6 +9,8 @@ export type MarketplaceProduct = {
   name: string;
   slug: string;
   category: string | null;
+  category_slug?: string | null;
+  subcategory_slug?: string | null;
   description: string | null;
   price: number | string | null;
   stock: number | null;
