@@ -2,18 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceCategory } from "@/lib/marketplace/taxonomy-db";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string }> };
+export const dynamicParams = true;
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.map((category) => ({ categorySlug: category.slug }));
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
-  const category = getCategory(categorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
   if (!category) return { title: "ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableCategoryProducts(categorySlug);
   const title = `${category.name} | কৃষি পণ্য | AGRIVA`;
@@ -28,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function CategoryPage({ params }: Props) {
   const { categorySlug } = await params;
-  const category = getCategory(categorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
   if (!category) notFound();
   let products: MarketplaceProduct[] = [];
   try {
@@ -37,7 +39,7 @@ export default async function CategoryPage({ params }: Props) {
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
-  const isSamplePreview = products.length === 0;
+  const isSamplePreview = products.length === 0 && MARKETPLACE_CATEGORIES.some((item) => item.slug === category.slug);
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesProductCategory(product.category, category));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}`;

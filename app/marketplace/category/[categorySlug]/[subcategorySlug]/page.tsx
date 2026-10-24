@@ -2,20 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, getSubcategory, MARKETPLACE_CATEGORIES, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceCategory } from "@/lib/marketplace/taxonomy-db";
 import type { MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import MarketplaceCore from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableSubcategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string; subcategorySlug: string }> };
+export const dynamicParams = true;
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.flatMap((category) => category.subcategories.map((subcategory) => ({ categorySlug: category.slug, subcategorySlug: subcategory.slug })));
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug, subcategorySlug } = await params;
-  const category = getCategory(categorySlug);
-  const subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
   if (!category || !subcategory) return { title: "সাব-ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableSubcategoryProducts(categorySlug, subcategorySlug);
   const title = `${subcategory.name} | ${category.name} | AGRIVA`;
@@ -30,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function SubcategoryPage({ params }: Props) {
   const { categorySlug, subcategorySlug } = await params;
-  const category = getCategory(categorySlug);
-  const subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
   if (!category || !subcategory) notFound();
   let products: MarketplaceProduct[] = [];
   try {
@@ -40,7 +42,7 @@ export default async function SubcategoryPage({ params }: Props) {
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesSubcategory(product.category, category, subcategory, product.category_slug, product.subcategory_slug));
   } catch (error) { console.error("Marketplace subcategory load failed:", error); }
-  const isSamplePreview = products.length === 0;
+  const isSamplePreview = products.length === 0 && MARKETPLACE_CATEGORIES.some((item) => item.slug === category.slug && item.subcategories.some((sub) => sub.slug === subcategory.slug));
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesSubcategory(product.category, category, subcategory));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}/${subcategory.slug}`;
