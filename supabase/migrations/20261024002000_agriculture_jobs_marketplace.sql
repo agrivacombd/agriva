@@ -67,6 +67,8 @@ create index if not exists job_applications_candidate_idx on public.job_applicat
 
 alter table public.job_posts enable row level security;
 alter table public.job_applications enable row level security;
+-- Remove any broad default table grants before granting the minimum required privileges.
+revoke all on table public.job_posts, public.job_applications from anon, authenticated;
 
 drop policy if exists "Published jobs are publicly readable" on public.job_posts;
 create policy "Published jobs are publicly readable" on public.job_posts
