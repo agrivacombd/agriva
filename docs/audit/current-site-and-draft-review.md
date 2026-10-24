@@ -209,3 +209,8 @@ Before enabling online payments:
 - OWASP Multi-Tenant Security Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Multi_Tenant_Security_Cheat_Sheet.html
 - OWASP Authorization Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html
 - SSLCommerz developer docs: https://developer.sslcommerz.com/docs.html
+
+
+## Additional migration syntax finding
+
+A static scan of `supabase/migrations/013_inventory_commission_orders.sql` shows `CREATE POLICY IF NOT EXISTS`. The documented PostgreSQL `CREATE POLICY` syntax does not include `IF NOT EXISTS`. Treat this as a likely fresh-database migration failure until proven otherwise on a disposable database. Prefer an explicit `DROP POLICY IF EXISTS ...` followed by `CREATE POLICY ...`, or a guarded `DO` block that checks the catalog. Do not patch production directly; validate the full migration chain on a clean staging database first. Reference: https://www.postgresql.org/docs/current/sql-createpolicy.html
