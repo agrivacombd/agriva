@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, getSubcategory, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceCategory } from "@/lib/marketplace/taxonomy-db";
 
 type ProductCategoryRecord = { category: string | null; category_slug: string | null; subcategory_slug: string | null };
 
@@ -20,7 +21,7 @@ async function getActiveProductCategories(): Promise<ProductCategoryRecord[] | n
 }
 
 export async function hasIndexableCategoryProducts(categorySlug: string): Promise<boolean | null> {
-  const category = getCategory(categorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
   if (!category) return false;
   const products = await getActiveProductCategories();
   if (!products) return null;
@@ -28,8 +29,8 @@ export async function hasIndexableCategoryProducts(categorySlug: string): Promis
 }
 
 export async function hasIndexableSubcategoryProducts(categorySlug: string, subcategorySlug: string): Promise<boolean | null> {
-  const category = getCategory(categorySlug);
-  const subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
   if (!category || !subcategory) return false;
   const products = await getActiveProductCategories();
   if (!products) return null;
