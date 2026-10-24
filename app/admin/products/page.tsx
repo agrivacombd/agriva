@@ -81,7 +81,15 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         </div>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
       </form>)}
-      {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
+      {!products?.length && !error && <div className="rounded-2xl border border-dashed border-[#cbd9c8] bg-white p-8 text-center sm:p-12">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#edf4e9] text-2xl" aria-hidden="true">📦</div>
+        <p className="mt-4 text-lg font-black">এখনো কোনো বাস্তব পণ্য যোগ করা হয়নি</p>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#748074]">এই পেজে বর্তমানে পণ্যের তথ্য দেখা ও সম্পাদনা করা যায়। নতুন পণ্য বিক্রেতার (Farmer) অ্যাকাউন্ট থেকে যোগ করতে হবে; যোগ হলে সেটি এখানে দেখা যাবে। Sample preview products বাস্তব database পণ্য নয়।</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link href="/admin/users" className="rounded-xl border border-[#cbd9c8] px-4 py-3 text-sm font-bold text-[#17452c] hover:bg-[#f4f7f1]">বিক্রেতা অ্যাকাউন্ট দেখুন</Link>
+          <Link href="/admin" className="rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white hover:bg-[#123b27]">Admin Overview</Link>
+        </div>
+      </div>}</div>
     </div>
   </main>;
 }
