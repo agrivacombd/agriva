@@ -40,6 +40,13 @@ begin
       where category_slug = trim(p_category_slug) and slug = trim(p_old_slug)
       for update;
     if not found then raise exception 'Subcategory not found'; end if;
+    if trim(p_old_slug) <> trim(p_slug) and exists (
+      select 1 from public.products p
+      where p.category_slug = trim(p_category_slug)
+        and p.subcategory_slug = trim(p_old_slug)
+    ) then
+      raise exception 'Cannot change a subcategory slug after products have been assigned; create a new subcategory and remap products deliberately';
+    end if;
 
     update public.product_subcategories
       set slug = trim(p_slug),
