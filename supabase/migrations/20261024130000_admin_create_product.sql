@@ -30,13 +30,15 @@ begin
   if nullif(trim(p_name),'') is null or length(trim(p_name)) > 160 then
     raise exception 'Product name is required and must be 160 characters or fewer';
   end if;
-  if p_price is null or p_price < 0 or p_stock is null or p_stock < 0 then
-    raise exception 'Price and stock must be non-negative';
+  if p_price is null or p_price < 0 or p_stock is null or p_stock < 0 or p_stock <> trunc(p_stock) then
+    raise exception 'Price must be non-negative and stock must be a non-negative whole number';
   end if;
   if p_commission_percent is null or p_commission_percent < 0 or p_commission_percent > 100 then
     raise exception 'Commission must be between 0 and 100';
   end if;
-  if p_image_url is null or p_image_url !~ '^https://[^/]+/storage/v1/object/public/product-images/' then raise exception 'A valid product image is required'; end if;
+  if p_image_url is null or p_image_url !~ '^https://[^/]+/storage/v1/object/public/product-images/' then
+    raise exception 'A valid product image is required';
+  end if;
   if p_category_slug is null or not exists(select 1 from public.product_categories where slug=p_category_slug and is_active) then
     raise exception 'Select an active category';
   end if;
@@ -55,7 +57,8 @@ begin
   ) values (
     p_farmer_id,trim(p_name),generated_slug,nullif(trim(coalesce(p_description,'')),''),
     p_price,p_stock,p_commission_percent,category_name,p_category_slug,nullif(trim(coalesce(p_subcategory_slug,'')),''),
-    nullif(trim(coalesce(p_image_url,'')),''),'draft'
+    nullif(trim(coalesce(p_image_url,''),''),''),
+    'draft'
   ) returning * into result;
 
   insert into public.admin_audit_log(admin_id,action,entity_type,entity_id,metadata)
