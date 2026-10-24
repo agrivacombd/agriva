@@ -26,6 +26,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
+      - name: Category taxonomy SEO smoke test
+        run: node scripts/smoke-taxonomy.mjs
       - name: Production build
         run: npm run build
         env:

@@ -18,7 +18,7 @@ export default async function MarketplacePage() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,description,price,stock")
+      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
       .eq("status", "active").eq("moderation_status", "approved")
       .order("created_at", { ascending: false }).limit(120);
     if (!error && data) products = data as MarketplaceProduct[];

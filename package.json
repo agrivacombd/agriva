@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:smart-search": "node scripts/smoke-smart-search.mjs"
+    "test:smart-search": "node scripts/smoke-smart-search.mjs",
+    "test:taxonomy": "node scripts/smoke-taxonomy.mjs"
   },
   "dependencies": {
     "next": "14.2.31",

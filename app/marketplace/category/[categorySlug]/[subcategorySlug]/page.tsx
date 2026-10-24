@@ -6,6 +6,7 @@ import { getCategory, getSubcategory, MARKETPLACE_CATEGORIES, matchesSubcategory
 import type { MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import MarketplaceCore from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
+import { hasIndexableSubcategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string; subcategorySlug: string }> };
 export function generateStaticParams() {
@@ -16,10 +17,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   if (!category || !subcategory) return { title: "সাব-ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
+  const hasProducts = await hasIndexableSubcategoryProducts(categorySlug, subcategorySlug);
   const title = `${subcategory.name} | ${category.name} | AGRIVA`;
   const description = `${subcategory.name} ও ${category.name}-এর কৃষি পণ্য দেখুন AGRIVA Marketplace-এ।`;
   return {
     title, description,
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}/${subcategory.slug}` },
     keywords: [subcategory.name, category.name, "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
@@ -33,9 +36,9 @@ export default async function SubcategoryPage({ params }: Props) {
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select("id,name,slug,category,description,price,stock")
+    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
-    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesSubcategory(product.category, category, subcategory));
+    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesSubcategory(product.category, category, subcategory, product.category_slug, product.subcategory_slug));
   } catch (error) { console.error("Marketplace subcategory load failed:", error); }
   const isSamplePreview = products.length === 0;
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesSubcategory(product.category, category, subcategory));
