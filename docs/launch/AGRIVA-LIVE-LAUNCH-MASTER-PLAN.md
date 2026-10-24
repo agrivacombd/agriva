@@ -12,8 +12,8 @@ AGRIVA is ready for public launch only when the following end-to-end journeys wo
 2. Admin can safely manage users, roles, product categories, products, orders, settings, reports, seller verification, and moderation.
 3. An authorized seller can create, edit, submit, publish (if permitted), inventory-manage, and archive a product with images, category, price, unit, stock, and delivery details.
 4. A buyer can discover/search/filter products, view details, add to cart, complete checkout, see order status, and receive notifications.
-5. Order stock, payment status, commission, cancellation, refund, and audit history remain consistent under retries and errors.
-6. Any payment is marked paid only after server-side provider verification against the stored order, amount, currency, and transaction state.
+5. Order stock, COD collection state, commission, cancellation, returns/refunds (if supported), and audit history remain consistent under retries and errors.
+6. Online gateway payments are out of launch scope. The checkout must use Cash on Delivery (COD) only, clearly disclose COD terms, and must not present an online payment option as available.
 7. Role-based routes and server actions reject unauthorized access even when called directly; RLS and grants are tested.
 8. Mobile and desktop UX, accessibility basics, performance, error states, backups, monitoring, and rollback procedures are verified.
 9. Production secrets, email/SMS delivery, domain, analytics/monitoring, and legal/support content are configured.
@@ -72,13 +72,14 @@ AGRIVA is ready for public launch only when the following end-to-end journeys wo
 - Define cancellation, partial/full refund, out-of-stock, failed payment, and COD flows.
 - **Exit gate:** end-to-end buyer journey and concurrency/retry cases pass against staging.
 
-### Phase 6 — Payments, delivery, commissions, and notifications
-- Keep online payments disabled until provider sandbox and server-side callback/IPN verification are complete.
-- Verify transaction identifier, stored order ID, exact amount/currency, expected pending state, provider signature/status, idempotency, and safe retry behavior before marking paid.
-- Browser success redirects are not proof of payment. Reconcile provider events and order records.
-- Test COD separately. Test shipment/status updates, cancellation/refund, reseller attribution, commission calculation, payout approval, and immutable payment references.
-- Configure email/SMS/WhatsApp or other notifications only for channels with verified provider access and consent; failures must not corrupt orders.
-- **Exit gate:** payment sandbox reconciliation, webhook/IPN security, duplicate-event, failure, refund, and commission tests pass.
+### Phase 6 — COD order operations, delivery, commissions, and notifications
+- Cash on Delivery is the only launch payment method. Remove/disable online payment choices from UI and reject online-payment selections on the server.
+- Ensure COD is explicit in the order/payment model and order confirmation. Do not mark COD as collected/paid merely because an order was placed; define the exact delivery/collection transition and record who confirmed it.
+- Test duplicate submission, stock handling, cancellation, failed delivery, returns/refunds if supported, delivery status transitions, and reconciliation of COD collected versus delivered orders.
+- Test reseller attribution, commission calculation/reversal, payout approval, and immutable order/payment references.
+- Existing SSLCommerz routes must not be reachable as an alternate way to create or mark an order paid. Do not implement gateway reconciliation for this launch; any later online payments require a separately approved scope.
+- Configure notifications only for channels with verified provider access and consent; notification failures must not corrupt order state.
+- **Exit gate:** COD end-to-end tests, forged online-payment rejection, delivery/collection reconciliation, commission and role authorization tests pass.
 
 ### Phase 7 — User workspaces and AGRIVA value-adds
 - Farmer workspace: profile/farm information, durable farm diary, reminders, crop activity history, orders and seller inventory.
@@ -98,7 +99,7 @@ AGRIVA is ready for public launch only when the following end-to-end journeys wo
 
 ### Phase 9 — Release candidate and pilot
 - Deploy a release candidate to staging only; apply migrations only to staging first.
-- Run CI, lint, typecheck, unit/integration tests, production build, migration replay, RLS/role tests, payment sandbox, upload tests, end-to-end browser flows, accessibility smoke checks, and mobile testing.
+- Run CI, lint, typecheck, unit/integration tests, production build, migration replay, RLS/role tests, COD checkout, upload tests, end-to-end browser flows, accessibility smoke checks, and mobile testing.
 - Seed test users for each role and representative products/orders; test direct URL access and forged requests.
 - Conduct a limited pilot with test/approved users, record defects, fix and retest.
 - Prepare launch checklist, rollback steps, backup confirmation, support rota, and known-issues register.
@@ -107,14 +108,14 @@ AGRIVA is ready for public launch only when the following end-to-end journeys wo
 ### Phase 10 — Production launch and stabilization
 - Present release summary, migrations, risks, test evidence, rollback plan, and exact deployment target for explicit approval.
 - Only after approval: deploy the approved commit, run approved production migrations in sequence, verify health and critical smoke tests, and confirm domain/auth/payment callbacks.
-- Keep online payments disabled if provider verification or reconciliation is not fully ready.
+- Keep online payments remain out of scope; confirm COD-only checkout is enforced.
 - Monitor errors, login failures, product upload, checkout, payment callbacks, stock, and support reports closely after launch.
 - Roll back application or disable affected functionality if critical errors appear; database rollback must follow a tested, safe plan.
 - **Exit gate:** production smoke tests pass, business owner confirms, monitoring is stable, and handover/support documentation is complete.
 
 ## Priority labels
 - **P0 — Launch blocker:** auth bypass/role escalation, data exposure, broken migrations, unsafe payment confirmation, corrupt orders/stock, no rollback.
-- **P1 — Core launch:** admin users/roles, product upload/moderation, catalogue, checkout/order management, COD and/or fully verified payment path, support/contact.
+- **P1 — Core launch:** admin users/roles, product upload/moderation, catalogue, checkout/order management, COD-only checkout, support/contact.
 - **P2 — Important follow-up:** advanced analytics, enterprise bulk tools, expanded learning/AI features, richer notifications.
 - P2 features must not delay the core launch unless explicitly selected as a launch requirement; unfinished features must not be presented as functional.
 
@@ -123,7 +124,7 @@ For every role (anonymous, buyer, farmer/seller, reseller, student, agronomist, 
 - Allowed and denied routes/actions/API/database operations.
 - Authentication, expired session, logout, password recovery and identity verification.
 - Product read/write ownership, upload abuse, unpublished product visibility.
-- Order creation, duplicate submit, invalid price/stock, cancellation, payment failure/retry and refund.
+- Order creation, duplicate submit, invalid price/stock, cancellation, COD collection/delivery transitions, forged online-payment rejection, cancellation and return handling.
 - Responsive layouts, empty/error/loading states, and safe handling of malformed inputs.
 
 ## Operating rules
@@ -132,7 +133,7 @@ For every role (anonymous, buyer, farmer/seller, reseller, student, agronomist, 
 - Do not claim a feature is fixed or verified without test evidence.
 - Do not paste secrets into code, issues, logs, or chat.
 - No production DB change, production migration, PR merge, or production deployment without explicit user approval after the change/test summary.
-- External providers (SMTP, SMS, payment, domain) may require account access, verified sender/domain, costs, and user action; mark these as blockers rather than pretending they are configured.
+- External providers (SMTP, SMS, domain) may require account access, verified sender/domain, costs, and user action; mark these as blockers rather than pretending they are configured.
 
 ## First execution sequence
 1. Verify current main, all open PRs, CI, Vercel deployments, and current production configuration status (read-only).
