@@ -9,6 +9,11 @@ const selector = read("../components/admin/TaxonomyFields.tsx");
 const adminProducts = read("../app/admin/products/page.tsx");
 const adminSubcategoryPage = read("../app/admin/subcategories/page.tsx");
 const adminSubcategoryMigration = read("../supabase/migrations/20261024120000_admin_subcategory_management.sql");
+const adminCreateProduct = read("../supabase/migrations/20261024130000_admin_create_product.sql");
+const adminProductImageStorage = read("../supabase/migrations/20261024140000_admin_product_image_storage.sql");
+const adminNewProductPage = read("../app/admin/products/new/page.tsx");
+const adminProductApi = read("../app/api/admin/products/route.ts");
+const adminProductImageApi = read("../app/api/admin/products/image/route.ts");
 const categoryPage = read("../app/marketplace/category/[categorySlug]/page.tsx");
 const subcategoryPage = read("../app/marketplace/category/[categorySlug]/[subcategorySlug]/page.tsx");
 const indexability = read("../lib/marketplace/indexability.ts");
@@ -40,4 +45,11 @@ assert.ok(adminSubcategoryMigration.includes("admin_save_product_subcategory") &
 assert.ok(adminSubcategoryMigration.includes('create policy "Active product categories are readable"') && adminSubcategoryMigration.includes('create policy "Admins can read all product subcategories"'), "RLS must allow public active taxonomy reads and admin inactive-entry management");
 assert.ok(adminSubcategoryPage.includes("admin_save_product_subcategory") && adminSubcategoryPage.includes("is_active"), "admin can manage and deactivate subcategories");
 
-console.log("Category taxonomy and dynamic SEO smoke checks passed.");
+assert.ok(adminNewProductPage.includes('type="file"') && adminNewProductPage.includes("image/jpeg,image/png,image/webp") && adminNewProductPage.includes("/api/admin/products/image"), "admin product form must upload a supported product image");
+assert.ok(adminProductImageApi.includes("profile?.role !== \"admin\"") && adminProductImageApi.includes("MAX_IMAGE_BYTES") && adminProductImageApi.includes("ALLOWED_TYPES"), "image upload API must enforce admin access, type, and size limits");
+assert.ok(adminProductImageStorage.includes("Admins upload product images") && adminProductImageStorage.includes("public.is_admin()"), "product image storage writes must be admin-only");
+assert.ok(adminCreateProduct.includes("add column if not exists image_url text") && adminCreateProduct.includes("p_image_url text") && adminCreateProduct.includes("'draft'") && !adminCreateProduct.includes("moderation_status"), "product creation RPC must match schema and keep products unpublished");
+assert.ok(adminCreateProduct.includes("grant execute on function public.admin_create_product(uuid,text,text,numeric,numeric,numeric,text,text,text)"), "product creation RPC grant must match its nine-argument signature");
+assert.ok(adminProductApi.includes("Number.isInteger(stock)") && adminProductApi.includes("commission > 100") && adminProductApi.includes("!imageUrl") && adminProductApi.includes("p_image_url: imageUrl"), "product API must validate stock, commission, and required uploaded image");
+
+console.log("Category taxonomy, dynamic SEO, and admin product creation smoke checks passed.");
