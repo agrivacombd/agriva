@@ -214,3 +214,19 @@ Before enabling online payments:
 ## Additional migration syntax finding
 
 A static scan of `supabase/migrations/013_inventory_commission_orders.sql` shows `CREATE POLICY IF NOT EXISTS`. The documented PostgreSQL `CREATE POLICY` syntax does not include `IF NOT EXISTS`. Treat this as a likely fresh-database migration failure until proven otherwise on a disposable database. Prefer an explicit `DROP POLICY IF EXISTS ...` followed by `CREATE POLICY ...`, or a guarded `DO` block that checks the catalog. Do not patch production directly; validate the full migration chain on a clean staging database first. Reference: https://www.postgresql.org/docs/current/sql-createpolicy.html
+
+
+## Authentication UX finding and decision
+
+The inspected `app/login/page.tsx` uses `signInWithPassword({ email, password })` and only renders an email/password form. It does not currently offer a phone-number sign-in path in that page. The revised architecture therefore specifies:
+- Preserve email/password sign-in (Gmail is simply an email address; AGRIVA must never ask for a Google password).
+- Add phone-number SMS OTP as a second sign-in method after staging configuration of Supabase phone auth and an SMS provider.
+- Normalize phone numbers to E.164, defaulting the UI to Bangladesh +880 while supporting other countries where needed.
+- Avoid silent account duplication or automatic linking based only on an unverified email/phone. Link identities only through a verified flow.
+- Add rate limits, CAPTCHA, OTP cooldown/expiry, account recovery, and abuse monitoring. Phone-number/password alone is not the default recommendation because phone numbers can be recycled; if added later, require verification and stronger MFA/risk controls.
+- Keep provider configuration and SMS costs separate from code changes; do not claim phone login is live until the provider and authenticated end-to-end tests succeed.
+
+Official references:
+- https://supabase.com/docs/guides/auth/passwords
+- https://supabase.com/docs/guides/auth/phone-login
+- https://supabase.com/docs/guides/auth/auth-identity-linking
