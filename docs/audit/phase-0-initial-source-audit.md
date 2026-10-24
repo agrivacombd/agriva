@@ -29,9 +29,13 @@
 - The main-branch admin page header previously exposed navigation to the user dashboard but did not expose a logout action.
 - Draft PR #32 adds a server-side Supabase sign-out action and a visible logout button. It still needs CI and authenticated browser verification.
 
-### P1 — Production payment safety
-- Existing source and prior review identify payment callback/IPN verification as a launch gate. The source-only audit does not prove live provider configuration or successful reconciliation.
-- Keep online payments disabled until server-side validation binds the provider transaction to the stored order, exact amount/currency, expected state, and idempotent processing, with sandbox evidence.
+### P0 — SSLCommerz IPN must not be treated as release-ready
+- `app/api/payment/sslcommerz/ipn/route.ts` validates that the provider response says `VALID` and that `validated.tran_id` matches the supplied transaction ID.
+- The route does **not** compare the provider-validated amount and currency against the stored order's `total_amount` and expected currency.
+- It updates `marketplace_orders.status` to `paid`, rather than explicitly updating/checking the order's `payment_status` state. The update result is ignored.
+- The callback uses the cookie-based Supabase server client. Provider callbacks normally do not carry the buyer's authenticated browser session, so the update may be rejected by RLS; the code currently ignores that error while returning success.
+- Success redirect handlers only redirect based on request parameters; a browser redirect must never be proof that payment succeeded.
+- **Release decision:** keep online payment disabled until the order/payment state model, server-side amount/currency/order validation, callback authorization strategy, idempotency, error handling, and provider sandbox reconciliation are corrected and tested. Do not apply a privileged service key as a shortcut without a narrowly scoped and reviewed server-side design.
 
 ### P1 — Deployment and test evidence
 - CI workflow `.github/workflows/ci.yml` includes lint, TypeScript check, smoke checks and production build, but a clean migration replay, comprehensive role authorization matrix, real payment sandbox reconciliation and full authenticated browser E2E are not established by reading this workflow alone.
