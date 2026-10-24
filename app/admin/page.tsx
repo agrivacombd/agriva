@@ -12,6 +12,13 @@ async function requireAdmin() {
   return { supabase, user };
 }
 
+async function signOutAdmin() {
+  "use server";
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
+  redirect("/login");
+}
+
 async function updateOrderStatus(formData: FormData) {
   "use server";
   const orderId = String(formData.get("orderId") ?? "");
@@ -119,7 +126,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
       <aside className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-8">
           <div><Link href="/" className="text-2xl font-black tracking-tight">AGRIVA<span className="text-[#d9b85b]">.</span></Link><p className="mt-1 text-xs font-bold uppercase tracking-[.2em] text-emerald-100">Super Admin Console</p></div>
-          <div className="flex items-center gap-3 text-sm"><span className="rounded-full border border-white/20 px-3 py-1.5">Admin verified</span><Link href="/dashboard" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">User dashboard ↗</Link></div>
+          <div className="flex flex-wrap items-center gap-3 text-sm"><span className="rounded-full border border-white/20 px-3 py-1.5">Admin verified</span><Link href="/dashboard" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">User dashboard ↗</Link><form action={signOutAdmin}><button type="submit" className="rounded-xl border border-white/30 px-4 py-2 font-semibold transition hover:bg-white/15">লগআউট ↗</button></form></div>
         </div>
       </aside>
 
