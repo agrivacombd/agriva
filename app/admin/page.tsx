@@ -76,7 +76,8 @@ const noticeText: Record<string, string> = {
   invalid_payout: "পেআউটের তথ্য সঠিক নয়।",
 };
 
-export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
+export default async function AdminPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
+  const params = await searchParams;
   const { supabase, user } = await requireAdmin();
 
   const [
@@ -129,7 +130,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
         </div>
 
-        {searchParams?.notice && <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${searchParams.notice.endsWith("_error") || searchParams.notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[searchParams.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</div>}
+        {params?.notice && <div className={`mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${params.notice.endsWith("_error") || params.notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[params.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</div>}
 
         <section className="mt-7 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {cards.map(([label, value, icon]) => <div key={String(label)} className="rounded-2xl border border-[#e1e9de] bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><p className="text-sm font-semibold text-[#657467]">{label}</p><span className="rounded-xl bg-[#eaf3e8] px-2.5 py-1.5 text-xs font-black text-[#267044]">{icon}</span></div><p className="mt-4 text-3xl font-black tabular-nums">{value}</p></div>)}

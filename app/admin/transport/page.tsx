@@ -52,10 +52,11 @@ const noticeLabels: Record<string, string> = {
 
 type SearchParams = { notice?: string; status?: string };
 
-export default async function AdminTransportPage({ searchParams }: { searchParams?: SearchParams }) {
+export default async function AdminTransportPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
+  const params = await searchParams;
   const supabase = await requireAdmin();
-  const selectedStatus = ["pending", "verified", "rejected", "suspended", "all"].includes(searchParams?.status ?? "")
-    ? (searchParams?.status ?? "pending")
+  const selectedStatus = ["pending", "verified", "rejected", "suspended", "all"].includes(params?.status ?? "")
+    ? (params?.status ?? "pending")
     : "pending";
 
   let query = supabase
@@ -80,7 +81,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
         <h1 className="mt-2 text-3xl font-black sm:text-4xl">পরিবহন পার্টনার যাচাই</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">গাড়ির তথ্য, নিবন্ধন নম্বর ও যোগাযোগের তথ্য যাচাই করে আবেদন অনুমোদন, প্রত্যাখ্যান বা স্থগিত করুন। শুধু যাচাইকৃত পার্টনাররা ভাড়ার অফার দিতে পারবেন।</p>
 
-        {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border px-4 py-3 text-sm font-semibold ${searchParams.notice === "error" || searchParams.notice === "invalid" ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeLabels[searchParams.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
+        {params?.notice && <p role="status" className={`mt-5 rounded-xl border px-4 py-3 text-sm font-semibold ${params.notice === "error" || params.notice === "invalid" ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeLabels[params.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
 
         <nav className="mt-6 flex flex-wrap gap-2" aria-label="আবেদনের স্ট্যাটাস">
           {[

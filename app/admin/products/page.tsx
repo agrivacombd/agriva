@@ -45,7 +45,8 @@ async function saveProduct(formData: FormData) {
   redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
+export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
+  const params = await searchParams;
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
     .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at")
@@ -55,7 +56,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Catalogue management</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
       <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p>
-      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে।" : "আপডেট করা যায়নি। Migration 024 ও database schema যাচাই করুন।"}</p>}
+      {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{params.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : params.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে।" : "আপডেট করা যায়নি। Migration 024 ও database schema যাচাই করুন।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
       <div className="mt-6 grid gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
         <input type="hidden" name="productId" value={p.id}/>
