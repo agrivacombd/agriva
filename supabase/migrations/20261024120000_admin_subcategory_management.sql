@@ -1,3 +1,11 @@
+-- Public pages need to read active category labels/slugs; mutations remain RPC-only.
+alter table public.product_categories enable row level security;
+grant select on public.product_categories to anon, authenticated;
+drop policy if exists "Active product categories are readable" on public.product_categories;
+create policy "Active product categories are readable"
+  on public.product_categories for select to anon, authenticated
+  using (is_active = true);
+
 -- Admin-only subcategory management with validation and audit logging.
 create or replace function public.admin_save_product_subcategory(
   p_category_slug text,
