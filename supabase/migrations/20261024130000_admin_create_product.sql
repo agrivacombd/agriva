@@ -57,7 +57,7 @@ begin
   ) values (
     p_farmer_id,trim(p_name),generated_slug,nullif(trim(coalesce(p_description,'')),''),
     p_price,p_stock,p_commission_percent,category_name,p_category_slug,nullif(trim(coalesce(p_subcategory_slug,'')),''),
-    nullif(trim(coalesce(p_image_url,''),''),''),
+    nullif(trim(coalesce(p_image_url,'')),''),
     'draft'
   ) returning * into result;
 
