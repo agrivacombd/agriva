@@ -5,6 +5,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const value = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const slugify = (s: string) => s.normalize("NFKC").trim().toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 90);
+const toIsoOrInvalid = (raw: string): string | null | undefined => {
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
 export async function submitJobPost(formData: FormData) {
   const db = await createSupabaseServerClient();
   const { data: { user } } = await db.auth.getUser();
@@ -19,15 +24,18 @@ export async function submitJobPost(formData: FormData) {
   const workersRaw=value(formData,"workers_needed",8), workers=workersRaw?Number(workersRaw):null;
   const latRaw=value(formData,"latitude",30), lonRaw=value(formData,"longitude",30);
   const lat=latRaw?Number(latRaw):null, lon=lonRaw?Number(lonRaw):null;
+  const deadline=value(formData,"application_deadline",40);
+  const startsIso=toIsoOrInvalid(starts), deadlineIso=toIsoOrInvalid(deadline);
+  const experienceLevel=value(formData,"experience_level",20)||"any";
   if(employerName.length<2||title.length<8||description.length<40||!["one-time","part-time","full-time"].includes(type)||!district||!upazila||
     !["farm-labor","farm-management","machinery","livestock","agronomy","sales","processing","other"].includes(category)||
-    !["daily","hourly","monthly","per-task","negotiable"].includes(compensation)||(type==="one-time"&&!starts)||(startsIso===undefined)||(deadlineIso===undefined)||\n    !["any","entry","experienced","skilled"].includes(experienceLevel)||
+    !["daily","hourly","monthly","per-task","negotiable"].includes(compensation)||(type==="one-time"&&!starts)||(startsIso===undefined)||(deadlineIso===undefined)||
+    !["any","entry","experienced","skilled"].includes(experienceLevel)||
     (salaryMin!==null&&(!Number.isFinite(salaryMin)||salaryMin<0))||(salaryMax!==null&&(!Number.isFinite(salaryMax)||salaryMax<0))||
     (salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)||(workers!==null&&(!Number.isInteger(workers)||workers<1||workers>10000))||
     ((lat===null)!==(lon===null))||(lat!==null&&(!Number.isFinite(lat)||lat < -90||lat>90))||(lon!==null&&(!Number.isFinite(lon)||lon < -180||lon>180))||
     !["platform","phone","both"].includes(method)||(method!=="platform"&&phone.length<6)) redirect("/jobs/post?error=invalid");
   const slug=slugify(title)+"-"+crypto.randomUUID().slice(0,8);
-  const deadline=value(formData,"application_deadline",40);\n  const startsIso=toIsoOrInvalid(starts), deadlineIso=toIsoOrInvalid(deadline);\n  const experienceLevel=value(formData,"experience_level",20)||"any";
   const {data,error}=await db.from("job_posts").insert({
     employer_id:user.id,employer_name:employerName,title,slug,description,job_type:type,category_slug:category,district,upazila,
     union_name:value(formData,"union_name",100)||null,address_hint:value(formData,"address_hint",250)||null,
