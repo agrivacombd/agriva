@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
-import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceProductTaxonomy } from "@/lib/marketplace/taxonomy-db";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
@@ -52,7 +52,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
-  const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
+  const taxonomy = await getMarketplaceProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
