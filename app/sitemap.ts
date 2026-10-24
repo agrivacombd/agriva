@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
-import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
 type SitemapArticle = { slug: string; updated_at: string | null };
-type SitemapProduct = { slug: string; updated_at?: string | null };
+type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -11,15 +11,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let articles: SitemapArticle[] = [];
   let products: SitemapProduct[] = [];
+  let categoryUrls: MetadataRoute.Sitemap = [];
 
   if (url && key) {
     const supabase = createClient(url, key);
     const [articleResult, productResult] = await Promise.all([
       supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article"),
-      supabase.from("products").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
     ]);
     if (!articleResult.error && articleResult.data) articles = articleResult.data as SitemapArticle[];
-    if (!productResult.error && productResult.data) products = productResult.data as SitemapProduct[];
+    if (!productResult.error && productResult.data) {
+      products = productResult.data as SitemapProduct[];
+      categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
+        const categoryHasProducts = products.some((product) => matchesProductCategory(product.category ?? null, category, product.category_slug));
+        if (!categoryHasProducts) return [];
+        const urls: MetadataRoute.Sitemap = [{ url: `${base}/marketplace/category/${category.slug}`, lastModified: now, changeFrequency: "daily", priority: 0.8 }];
+        for (const subcategory of category.subcategories) {
+          const subcategoryHasProducts = products.some((product) => matchesSubcategory(product.category ?? null, category, subcategory, product.category_slug, product.subcategory_slug));
+          if (subcategoryHasProducts) urls.push({ url: `${base}/marketplace/category/${category.slug}/${subcategory.slug}`, lastModified: now, changeFrequency: "weekly", priority: 0.7 });
+        }
+        return urls;
+      });
+    }
   }
 
   const now = new Date();
@@ -32,18 +45,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/contact-us`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/privacy-policy`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/terms-of-service`, changeFrequency: "yearly", priority: 0.3 },
-    ...MARKETPLACE_CATEGORIES.map((category) => ({
-      url: `${base}/marketplace/category/${category.slug}`,
-      lastModified: now, changeFrequency: "daily" as const, priority: 0.8,
-    })),
-    ...MARKETPLACE_CATEGORIES.flatMap((category) => category.subcategories.map((subcategory) => ({
-      url: `${base}/marketplace/category/${category.slug}/${subcategory.slug}`,
-      lastModified: now, changeFrequency: "weekly" as const, priority: 0.7,
-    }))),
   ];
 
   return [
     ...staticUrls,
+    ...categoryUrls,
     ...products.map((product) => ({
       url: `${base}/marketplace/${product.slug}`,
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
