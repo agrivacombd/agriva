@@ -42,7 +42,7 @@ export default async function SubcategoryPage({ params }: Props) {
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesSubcategory(product.category, category, subcategory, product.category_slug, product.subcategory_slug));
   } catch (error) { console.error("Marketplace subcategory load failed:", error); }
-  const isSamplePreview = products.length === 0;
+  const isSamplePreview = products.length === 0 && MARKETPLACE_CATEGORIES.some((item) => item.slug === category.slug && item.subcategories.some((sub) => sub.slug === subcategory.slug));
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesSubcategory(product.category, category, subcategory));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}/${subcategory.slug}`;
