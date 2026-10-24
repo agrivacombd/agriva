@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
-import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -25,12 +24,18 @@ async function saveProduct(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   const categorySlug = String(formData.get("category_slug") ?? "").trim();
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
-  const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
-  const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug && Boolean(subcategorySlug))) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin();
+  if (categorySlug) {
+    const { data: category } = await supabase.from("product_categories").select("slug").eq("slug", categorySlug).eq("is_active", true).maybeSingle();
+    if (!category) redirect("/admin/products?notice=invalid");
+    if (subcategorySlug) {
+      const { data: subcategory } = await supabase.from("product_subcategories").select("slug").eq("category_slug", categorySlug).eq("slug", subcategorySlug).eq("is_active", true).maybeSingle();
+      if (!subcategory) redirect("/admin/products?notice=invalid");
+    }
+  }
   const { error: productError } = await supabase.rpc("admin_update_product", {
     p_product_id: productId, p_name: name, p_description: description || null,
     p_price: price, p_stock: stock, p_commission_percent: commission, p_status: status,
@@ -47,9 +52,9 @@ async function saveProduct(formData: FormData) {
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
-  const { data: products, error } = await supabase.from("products")
+  const [{ data: categories }, { data: subcategories }, { data: products, error }] = await Promise.all([\n    supabase.from("product_categories").select("name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),\n    supabase.from("product_subcategories").select("category_slug,name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),\n    supabase.from("products")
     .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at")
-    .order("updated_at", { ascending: false }).limit(100);
+    .order("updated_at", { ascending: false }).limit(100),\n  ]);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
@@ -65,7 +70,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category} />
+          <TaxonomyFields categories={(categories ?? []).map(c => ({ name: c.name, slug: c.slug }))} subcategories={(subcategories ?? []).map(s => ({ name: s.name, slug: s.slug, categorySlug: s.category_slug }))} categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category} />
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
