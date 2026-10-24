@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const categorySlug = String(body.categorySlug ?? "").trim();
   const imageUrl = String(body.imageUrl ?? "").trim();
   const subcategorySlug = String(body.subcategorySlug ?? "").trim() || null;
-  if (!farmerId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !categorySlug || description.length > 10000 || (imageUrl && (!/^https:\/\//i.test(imageUrl) || !imageUrl.includes("/storage/v1/object/public/product-images/")))) {
+  if (!farmerId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !categorySlug || !imageUrl || description.length > 10000 || (imageUrl && (!/^https:\/\//i.test(imageUrl) || !imageUrl.includes("/storage/v1/object/public/product-images/")))) {
     return NextResponse.json({ error: "সব তথ্য সঠিকভাবে দিন; কমিশন ০–১০০% হতে হবে" }, { status: 400 });
   }
   const { data, error } = await supabase.rpc("admin_create_product", {
