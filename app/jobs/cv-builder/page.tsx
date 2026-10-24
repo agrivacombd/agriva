@@ -87,7 +87,7 @@ export default function CVBuilderPage() {
         <article id="cv-preview" className="cv-paper min-h-[900px] overflow-hidden bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: isBn ? "Arial, sans-serif" : "Arial, sans-serif"}}>
           <header className="p-7 text-white sm:p-9" style={{background:selected.accent}}>
             <div className="flex items-start gap-4">
-              {cv.photoUrl.trim()&&<img src={cv.photoUrl} alt="" className="h-20 w-20 rounded-xl border-2 border-white/60 object-cover" />}
+              {/^https?:\/\//i.test(cv.photoUrl.trim())&&<img src={cv.photoUrl.trim()} alt="" className="h-20 w-20 rounded-xl border-2 border-white/60 object-cover" />}
               <div className="min-w-0"><h1 className="break-words text-2xl font-black sm:text-3xl">{cv.fullName || (isBn?"আপনার নাম":"Your Name")}</h1><p className="mt-2 text-sm font-semibold opacity-90">{cv.headline || (isBn?"পেশাগত পরিচিতি":"Professional headline")}</p><div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-90">{[cv.phone,cv.email,cv.address].filter(Boolean).map(v=><span key={v} className="break-words">{v}</span>)}</div></div>
             </div>
           </header>
