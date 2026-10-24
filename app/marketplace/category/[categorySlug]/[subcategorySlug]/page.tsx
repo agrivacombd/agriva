@@ -2,20 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, getSubcategory, MARKETPLACE_CATEGORIES, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceCategory } from "@/lib/marketplace/taxonomy-db";
 import type { MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import MarketplaceCore from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableSubcategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string; subcategorySlug: string }> };
+export const dynamicParams = true;
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.flatMap((category) => category.subcategories.map((subcategory) => ({ categorySlug: category.slug, subcategorySlug: subcategory.slug })));
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug, subcategorySlug } = await params;
-  const category = getCategory(categorySlug);
-  const subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
   if (!category || !subcategory) return { title: "সাব-ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableSubcategoryProducts(categorySlug, subcategorySlug);
   const title = `${subcategory.name} | ${category.name} | AGRIVA`;
