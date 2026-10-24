@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -160,6 +161,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
         </section>
 
         <section className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">AI Search Opportunities</h2><p className="mt-1 text-sm text-[#748074]">জনপ্রিয় search demand থেকে product ও content আইডিয়া</p></div><Link href="/admin/opportunities" className="rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">সব দেখুন ↗</Link></div><div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">{(opportunities.data ?? []).map(item=><div key={item.id} className="rounded-xl bg-[#f7faf5] p-4"><p className="font-bold">{item.keyword}</p><p className="mt-2 text-xs text-[#748074]">{item.search_count} searches · {item.opportunity_type}</p><p className="mt-1 text-xs font-semibold text-[#39724a]">{item.status}</p></div>)}{!opportunities.data?.length && <p className="text-sm text-[#748074]">এখনো search signal নেই।</p>}</div></section>
+        <LearningCorrectionInbox />
         <footer className="py-8 text-center text-xs text-[#879187]">AGRIVA Super Admin · Protected by server-side role checks and Supabase RPC authorization.</footer>
       </div>
     </main>
