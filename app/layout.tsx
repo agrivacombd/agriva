@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import PwaRegister from "./pwa-register";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -10,6 +11,17 @@ export const metadata: Metadata = {
   description:
     "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও রিসেলারদের জন্য AGRIVA—কৃষি পণ্য, স্মার্ট সার্চ, কৃষি তথ্য ও ডিজিটাল টুলস এক জায়গায়।",
   applicationName: "AGRIVA",
+  manifest: "/manifest.webmanifest",
+  themeColor: "#0b6b4f",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "AGRIVA",
+  },
+  icons: {
+    icon: [{ url: "/icons/agriva-icon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/icons/agriva-icon.svg", type: "image/svg+xml" }],
+  },
   openGraph: {
     type: "website",
     siteName: "AGRIVA",
@@ -27,7 +39,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="bn">
-      <body>{children}</body>
+      <body>
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }
