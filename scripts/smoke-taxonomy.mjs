@@ -50,6 +50,6 @@ assert.ok(adminProductImageApi.includes("profile?.role !== \"admin\"") && adminP
 assert.ok(adminProductImageStorage.includes("Admins upload product images") && adminProductImageStorage.includes("public.is_admin()"), "product image storage writes must be admin-only");
 assert.ok(adminCreateProduct.includes("add column if not exists image_url text") && adminCreateProduct.includes("p_image_url text") && adminCreateProduct.includes("'draft'") && !adminCreateProduct.includes("moderation_status"), "product creation RPC must match schema and keep products unpublished");
 assert.ok(adminCreateProduct.includes("grant execute on function public.admin_create_product(uuid,text,text,numeric,numeric,numeric,text,text,text)"), "product creation RPC grant must match its nine-argument signature");
-assert.ok(adminProductApi.includes("Number.isInteger(stock)") && adminProductApi.includes("commission > 100") && adminProductApi.includes("!imageUrl") && adminProductApi.includes("p_image_url: imageUrl"), "product API must validate stock, commission, and required uploaded image");
+assert.ok(adminProductApi.includes("Number.isInteger(stock)") && adminProductApi.includes("commission > 100") && adminProductApi.includes("!validImageUrl") && adminProductApi.includes("p_image_url: imageUrl"), "product API must validate stock, commission, and required uploaded image");
 
 console.log("Category taxonomy, dynamic SEO, and admin product creation smoke checks passed.");
