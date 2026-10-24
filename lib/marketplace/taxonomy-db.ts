@@ -66,6 +66,5 @@ export async function getMarketplaceProductTaxonomy(value: string | null, catego
   const category = await getMarketplaceCategory(categorySlug);
   if (!category) return undefined;
   const subcategory = subcategorySlug ? category.subcategories.find((item) => item.slug === subcategorySlug) : undefined;
-  if (subcategorySlug && !subcategory) return undefined;
   return { category, subcategory };
 }
