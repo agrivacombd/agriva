@@ -5,6 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
+import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string }> };
 export function generateStaticParams() {
@@ -14,10 +15,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
   const category = getCategory(categorySlug);
   if (!category) return { title: "ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
+  const hasProducts = await hasIndexableCategoryProducts(categorySlug);
   const title = `${category.name} | কৃষি পণ্য | AGRIVA`;
   const description = `${category.name} কিনুন ও পণ্যের তথ্য দেখুন AGRIVA Marketplace-এ। ${category.description}।`;
   return {
     title, description,
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}` },
     keywords: [category.name, `${category.name} বাংলাদেশ`, "কৃষি পণ্য", "AGRIVA Marketplace"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
@@ -30,9 +33,9 @@ export default async function CategoryPage({ params }: Props) {
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select("id,name,slug,category,description,price,stock")
+    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
-    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category));
+    if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
   const isSamplePreview = products.length === 0;
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesProductCategory(product.category, category));
