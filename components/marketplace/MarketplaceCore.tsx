@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
+
 
 export type MarketplaceProduct = {
   id: string;
@@ -19,26 +19,30 @@ export type MarketplaceProduct = {
 const money = (value: number | string | null) =>
   new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(Number(value || 0));
 
-export default function MarketplaceCore({ products, showCategories = true }: { products: MarketplaceProduct[]; showCategories?: boolean }) {
+type CategoryCard = { slug: string; name: string; description: string; icon: string };
+export default function MarketplaceCore({ products, showCategories = true, categories = [] }: { products: MarketplaceProduct[]; showCategories?: boolean; categories?: CategoryCard[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const visible = useMemo(() => products.filter((product) => {
     const search = query.trim().toLocaleLowerCase();
     const matchesQuery = !search || [product.name, product.category, product.description]
       .some((value) => (value || "").normalize("NFKC").toLocaleLowerCase().includes(search));
-    const matchesSelected = category === "all" || product.category === category;
+    const selectedCategory = categories.find((item) => item.slug === category);
+    const matchesSelected = category === "all" || (product.category_slug
+      ? product.category_slug === category
+      : Boolean(selectedCategory && (product.category === selectedCategory.name || product.category === selectedCategory.slug)));
     return matchesQuery && matchesSelected;
   }), [products, query, category]);
 
   return <div>
     <div className="grid gap-3 rounded-2xl border border-emerald-950/10 bg-white p-3 shadow-sm sm:grid-cols-[minmax(0,1fr)_220px] sm:p-4">
       <label className="block"><span className="sr-only">পণ্য খুঁজুন</span><span className="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 px-4 focus-within:border-emerald-700 focus-within:ring-4 focus-within:ring-emerald-700/10"><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="পণ্যের নাম বা ধরন লিখুন..." className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-slate-400" /></span></label>
-      <label className="block"><span className="sr-only">ক্যাটাগরি বাছুন</span><select value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-700/10"><option value="all">সব ক্যাটাগরি</option>{Array.from(new Set(products.map((product) => product.category).filter((value): value is string => Boolean(value)))).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+      <label className="block"><span className="sr-only">ক্যাটাগরি বাছুন</span><select value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold outline-none focus:border-emerald-700 focus:ring-4 focus:ring-emerald-700/10"><option value="all">সব ক্যাটাগরি</option>{categories.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select></label>
     </div>
 
     {showCategories && <section className="mt-8" aria-labelledby="marketplace-categories-heading">
       <div className="flex items-end justify-between gap-3"><div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Browse by category</p><h2 id="marketplace-categories-heading" className="mt-2 text-2xl font-black">ক্যাটাগরি অনুযায়ী পণ্য</h2></div></div>
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{MARKETPLACE_CATEGORIES.map((item) => <Link key={item.slug} href={`/marketplace/category/${item.slug}`} className="group rounded-2xl border border-emerald-950/10 bg-white p-4 transition hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-700"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">{item.icon}</span><h3 className="mt-3 text-sm font-extrabold group-hover:text-emerald-800">{item.name}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{item.description}</p></Link>)}</div>
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">{categories.map((item) => <Link key={item.slug} href={`/marketplace/category/${item.slug}`} className="group rounded-2xl border border-emerald-950/10 bg-white p-4 transition hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-700"><span className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">{item.icon}</span><h3 className="mt-3 text-sm font-extrabold group-hover:text-emerald-800">{item.name}</h3><p className="mt-1 text-xs leading-5 text-slate-500">{item.description}</p></Link>)}</div>
     </section>}
 
     <section className="mt-10" aria-labelledby="marketplace-products-heading">
