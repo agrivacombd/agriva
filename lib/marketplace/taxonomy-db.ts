@@ -24,14 +24,14 @@ export async function getMarketplaceCategories(): Promise<MarketplaceCategoryRec
       supabase.from("product_categories").select("slug,name,description,is_active,sort_order").eq("is_active", true).order("sort_order").order("name"),
       supabase.from("product_subcategories").select("category_slug,slug,name,description,is_active,sort_order").eq("is_active", true).order("sort_order").order("name"),
     ]);
-    if (categoryError || subcategoryError || !categories) return MARKETPLACE_CATEGORIES as unknown as MarketplaceCategoryRecord[];
+    if (categoryError || !categories) return MARKETPLACE_CATEGORIES as unknown as MarketplaceCategoryRecord[];
     return categories.map((category) => ({
       slug: category.slug,
       name: category.name,
       description: category.description ?? "",
       icon: fallbackIcon(category.slug),
       subcategories: (subcategories ?? [])
-        .filter((subcategory) => subcategory.category_slug === category.slug)
+         .filter((subcategory) => !subcategoryError && subcategory.category_slug === category.slug)
         .map((subcategory) => ({ slug: subcategory.slug, name: subcategory.name, description: subcategory.description ?? "" })),
     }));
   } catch {
@@ -48,7 +48,6 @@ export async function getMarketplaceCategory(slug: string): Promise<MarketplaceC
     if (!category) return undefined;
     const { data: subcategories, error: subcategoryError } = await supabase.from("product_subcategories")
       .select("slug,name,description").eq("category_slug", slug).eq("is_active", true).order("sort_order").order("name");
-    if (subcategoryError) return undefined;
     return {
       slug: category.slug,
       name: category.name,
