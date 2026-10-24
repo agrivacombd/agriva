@@ -5,11 +5,20 @@ function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
 }
 
+function normalizeBangladeshPhone(input: string): string | null {
+  let digits = input.trim().replace(/[\s()-]/g, "").replace(/^\+/, "");
+  if (digits.startsWith("00880")) digits = digits.slice(2);
+  if (/^8801[3-9]\d{8}$/.test(digits)) return `+${digits}`;
+  if (/^01[3-9]\d{8}$/.test(digits)) return `+88${digits}`;
+  if (/^1[3-9]\d{8}$/.test(digits)) return `+880${digits}`;
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
-    return NextResponse.json({ error: "লগইন করে অর্ডার করুন।" }, { status: 401 });
+    return NextResponse.json({ error: "অর্ডার করতে আগে লগইন করুন।" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => null);
@@ -18,18 +27,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "ডেলিভারির তথ্য সঠিক নয়।" }, { status: 400 });
   }
 
+  const phone = normalizeBangladeshPhone(cleanText(rawAddress.phone, 30));
+  if (!phone) {
+    return NextResponse.json({ error: "বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।" }, { status: 400 });
+  }
+
   const shippingAddress = {
     fullName: cleanText(rawAddress.fullName, 100),
-    phone: cleanText(rawAddress.phone, 20),
+    phone,
+    division: cleanText(rawAddress.division, 80),
     district: cleanText(rawAddress.district, 80),
-    address: cleanText(rawAddress.address, 500),
+    upazila: cleanText(rawAddress.upazila, 100),
+    unionOrArea: cleanText(rawAddress.unionOrArea, 120),
+    villageRoadHouse: cleanText(rawAddress.villageRoadHouse, 250),
+    landmark: cleanText(rawAddress.landmark, 200),
+    postalCode: cleanText(rawAddress.postalCode, 20),
+    deliveryInstructions: cleanText(rawAddress.deliveryInstructions, 500),
+    // Keep a legacy-compatible address string while preserving structured fields.
+    address: [
+      cleanText(rawAddress.division, 80),
+      cleanText(rawAddress.upazila, 100),
+      cleanText(rawAddress.unionOrArea, 120),
+      cleanText(rawAddress.villageRoadHouse, 250),
+    ].filter(Boolean).join(", "),
   };
-  if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.district || !shippingAddress.address) {
-    return NextResponse.json({ error: "নাম, মোবাইল নম্বর, জেলা ও সম্পূর্ণ ঠিকানা দিন।" }, { status: 400 });
-  }
-  const phoneDigits = shippingAddress.phone.replace(/[\s()-]/g, "");
-  if (!/^\+?\d{10,14}$/.test(phoneDigits)) {
-    return NextResponse.json({ error: "সঠিক মোবাইল নম্বর দিন।" }, { status: 400 });
+
+  if (!shippingAddress.fullName || !shippingAddress.division || !shippingAddress.district ||
+      !shippingAddress.upazila || !shippingAddress.unionOrArea || !shippingAddress.villageRoadHouse) {
+    return NextResponse.json({ error: "নাম, বিভাগ, জেলা, উপজেলা/থানা, ইউনিয়ন/এলাকা এবং সম্পূর্ণ ঠিকানা পূরণ করুন।" }, { status: 400 });
   }
 
   const { data: settings, error: settingsError } = await supabase.rpc("get_public_site_settings");
@@ -50,7 +75,6 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    // Keep database internals out of the public API response; retain details in server logs.
     console.error("[checkout/cart] Checkout RPC failed", { code: error.code, message: error.message });
     if (/Authentication required/i.test(error.message)) {
       return NextResponse.json({ error: "সেশন শেষ হয়েছে। আবার লগইন করুন।" }, { status: 401 });
@@ -64,8 +88,12 @@ export async function POST(request: NextRequest) {
     if (/Cart is empty|Active cart not found/i.test(error.message)) {
       return NextResponse.json({ error: "আপনার কার্ট খালি। আগে পণ্য যোগ করুন।" }, { status: 400 });
     }
+    if (/Complete shipping details are required/i.test(error.message)) {
+      return NextResponse.json({ error: "ডেলিভারির সব প্রয়োজনীয় তথ্য পূরণ করুন।" }, { status: 400 });
+    }
     return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আপনার কার্ট যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
   }
+
   if (!checkout?.checkoutId) {
     return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।" }, { status: 400 });
   }
