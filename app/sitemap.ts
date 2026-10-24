@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articles: SitemapArticle[] = [];
   let products: SitemapProduct[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
+  const now = new Date();
 
   if (url && key) {
     const supabase = createClient(url, key);
@@ -35,7 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const now = new Date();
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
