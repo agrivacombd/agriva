@@ -2,18 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
+import { getMarketplaceCategory } from "@/lib/marketplace/taxonomy-db";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
 type Props = { params: Promise<{ categorySlug: string }> };
+export const dynamicParams = true;
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.map((category) => ({ categorySlug: category.slug }));
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { categorySlug } = await params;
-  const category = getCategory(categorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
   if (!category) return { title: "ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableCategoryProducts(categorySlug);
   const title = `${category.name} | কৃষি পণ্য | AGRIVA`;
