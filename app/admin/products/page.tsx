@@ -52,9 +52,13 @@ async function saveProduct(formData: FormData) {
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
-  const [{ data: categories }, { data: subcategories }, { data: products, error }] = await Promise.all([\n    supabase.from("product_categories").select("name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),\n    supabase.from("product_subcategories").select("category_slug,name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),\n    supabase.from("products")
+  const [{ data: categories }, { data: subcategories }, { data: products, error }] = await Promise.all([
+    supabase.from("product_categories").select("name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),
+    supabase.from("product_subcategories").select("category_slug,name,slug,is_active").eq("is_active", true).order("sort_order").order("name"),
+    supabase.from("products")
     .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at")
-    .order("updated_at", { ascending: false }).limit(100),\n  ]);
+    .order("updated_at", { ascending: false }).limit(100),
+  ]);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
