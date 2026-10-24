@@ -112,8 +112,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
               </div>
               <div className="rounded-xl border border-[#e4ebe1] p-4">
                 <p className="text-sm font-extrabold">ডেলিভারি তথ্য</p><p className="mt-2 text-sm">{phone || "মোবাইল নম্বর নেই"}</p><p className="mt-1 text-sm font-semibold">{district || "জেলা দেওয়া নেই"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-[#647468]">{fullAddress || "সম্পূর্ণ ঠিকানা দেওয়া নেই"}</p>
-                {address.landmark && <p className="mt-2 text-xs text-[#647468]">ল্যান্ডমার্ক: {addressLine(address.landmark)}</p>}
-                {address.deliveryInstructions && <p className="mt-2 text-xs text-[#647468]">নির্দেশনা: {addressLine(address.deliveryInstructions)}</p>}
+                {addressLine(address.landmark) && <p className="mt-2 text-xs text-[#647468]">ল্যান্ডমার্ক: {addressLine(address.landmark)}</p>}
+                {addressLine(address.deliveryInstructions) && <p className="mt-2 text-xs text-[#647468]">নির্দেশনা: {addressLine(address.deliveryInstructions)}</p>}
               </div>
               <div className="rounded-xl border border-[#e4ebe1] p-4">
                 <p className="text-sm font-extrabold">ডেলিভারি অবস্থা</p>
