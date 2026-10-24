@@ -128,7 +128,7 @@ export default async function Home() {
               </div>
               <Link href="/ai" className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-3 text-xs leading-5 text-slate-600 transition hover:bg-emerald-50"><Bot size={17} className="shrink-0 text-emerald-700" /> বীজের পাশাপাশি ফসলের প্রশ্নও করুন <ArrowRight size={14} className="ml-auto shrink-0" /></Link>
             </div>
-            <div className="absolute -bottom-5 -left-2 hidden items-center gap-3 rounded-2xl border border-white bg-white px-4 py-3 shadow-xl sm:flex"><span className="grid h-10 w-10 place-items-center rounded-xl bg-lime-50 text-lime-700"><Droplets size={20} /></span><span><span className="block text-sm font-extrabold">সহজ কৃষি টুলস</span><span className="block text-xs text-slate-500">হিসাব করুন, পরিকল্পনা করুন</span></span></div>
+            
           </div>
         </div>
       </section>
