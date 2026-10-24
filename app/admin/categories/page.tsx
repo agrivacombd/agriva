@@ -27,6 +27,8 @@ async function saveCategory(formData: FormData) {
   });
   revalidatePath("/admin/categories");
   revalidatePath("/marketplace");
+  revalidatePath("/sitemap.xml");
+  revalidatePath(`/marketplace/category/${slug}`);
   redirect(error?"/admin/categories?notice=error":"/admin/categories?notice=saved");
 }
 
