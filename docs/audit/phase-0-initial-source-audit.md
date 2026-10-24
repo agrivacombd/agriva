@@ -29,16 +29,18 @@
 - The main-branch admin page header previously exposed navigation to the user dashboard but did not expose a logout action.
 - Draft PR #32 adds a server-side Supabase sign-out action and a visible logout button. It still needs CI and authenticated browser verification.
 
-### P0 — SSLCommerz IPN must not be treated as release-ready
+### P0 — COD-only launch: online gateway must stay out of scope
 - `app/api/payment/sslcommerz/ipn/route.ts` validates that the provider response says `VALID` and that `validated.tran_id` matches the supplied transaction ID.
 - The route does **not** compare the provider-validated amount and currency against the stored order's `total_amount` and expected currency.
 - It updates `marketplace_orders.status` to `paid`, rather than explicitly updating/checking the order's `payment_status` state. The update result is ignored.
 - The callback uses the cookie-based Supabase server client. Provider callbacks normally do not carry the buyer's authenticated browser session, so the update may be rejected by RLS; the code currently ignores that error while returning success.
 - Success redirect handlers only redirect based on request parameters; a browser redirect must never be proof that payment succeeded.
-- **Release decision:** keep online payment disabled until the order/payment state model, server-side amount/currency/order validation, callback authorization strategy, idempotency, error handling, and provider sandbox reconciliation are corrected and tested. Do not apply a privileged service key as a shortcut without a narrowly scoped and reviewed server-side design.
+- **User's launch decision:** online gateway payment is explicitly out of scope; launch with Cash on Delivery (COD) only.
+- Do not spend launch effort implementing SSLCommerz. Hide/disable online options and reject forged online-payment selections server-side. Ensure legacy gateway endpoints cannot mark an order paid or bypass the COD-only rule.
+- COD order placement must not automatically mean cash collected. Define delivery/collection transitions and reconcile delivered orders and COD amounts.
 
 ### P1 — Deployment and test evidence
-- CI workflow `.github/workflows/ci.yml` includes lint, TypeScript check, smoke checks and production build, but a clean migration replay, comprehensive role authorization matrix, real payment sandbox reconciliation and full authenticated browser E2E are not established by reading this workflow alone.
+- CI workflow `.github/workflows/ci.yml` includes lint, TypeScript check, smoke checks and production build, but a clean migration replay, comprehensive role authorization matrix, COD collection/delivery reconciliation and full authenticated browser E2E are not established by reading this workflow alone.
 - Recent preview checks have shown both Vercel and legacy Netlify activity. Confirm whether Netlify is still a required deployment target before removing or ignoring its check.
 - **Unknown:** current production database migration state, production auth/SMS/SMTP configuration, payment provider configuration, and end-to-end production health. These require read-only provider inspection or controlled staging tests.
 
@@ -52,7 +54,8 @@
 | Product/admin/marketplace modules | Source exists in repo | Must test complete workflows and permissions |
 | Migration replay | Unsupported policy syntax found in migration 013 | Launch blocker until corrected and tested |
 | Reproducible dependency install | No committed lockfile found | Launch blocker for reproducible builds |
-| Payment reconciliation | Not established by source review | Blocked pending sandbox proof |
+| Online gateway | User explicitly excluded from launch | Out of scope; must be disabled/rejected |
+| COD order/delivery reconciliation | Not established by source review | Required before launch |
 | Full role/security test matrix | Not established | Pending |
 | Production release readiness | Not established | Not approved |
 
@@ -61,7 +64,7 @@
 1. Review PR #34's SQL change and replay the entire migration chain in a disposable database.
 2. Create a dedicated dependency-baseline PR with a committed lockfile, current security audit, and passing CI.
 3. Verify PR #32's logout action through CI and authenticated staging/browser tests.
-4. Audit role enforcement, product upload/storage ownership, order transitions, and payment callback logic file-by-file.
+4. Audit role enforcement, product upload/storage ownership, order transitions, and COD order flow and legacy gateway exposure file-by-file.
 5. Inspect provider/deployment state read-only and label anything requiring credentials or owner action as blocked.
 6. Prepare a release candidate and ask for explicit production approval only after evidence is complete.
 
