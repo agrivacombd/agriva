@@ -21,20 +21,20 @@ export async function submitJobPost(formData: FormData) {
   const lat=latRaw?Number(latRaw):null, lon=lonRaw?Number(lonRaw):null;
   if(employerName.length<2||title.length<8||description.length<40||!["one-time","part-time","full-time"].includes(type)||!district||!upazila||
     !["farm-labor","farm-management","machinery","livestock","agronomy","sales","processing","other"].includes(category)||
-    !["daily","hourly","monthly","per-task","negotiable"].includes(compensation)||(type==="one-time"&&!starts)||
+    !["daily","hourly","monthly","per-task","negotiable"].includes(compensation)||(type==="one-time"&&!starts)||(startsIso===undefined)||(deadlineIso===undefined)||\n    !["any","entry","experienced","skilled"].includes(experienceLevel)||
     (salaryMin!==null&&(!Number.isFinite(salaryMin)||salaryMin<0))||(salaryMax!==null&&(!Number.isFinite(salaryMax)||salaryMax<0))||
     (salaryMin!==null&&salaryMax!==null&&salaryMax<salaryMin)||(workers!==null&&(!Number.isInteger(workers)||workers<1||workers>10000))||
     ((lat===null)!==(lon===null))||(lat!==null&&(!Number.isFinite(lat)||lat < -90||lat>90))||(lon!==null&&(!Number.isFinite(lon)||lon < -180||lon>180))||
     !["platform","phone","both"].includes(method)||(method!=="platform"&&phone.length<6)) redirect("/jobs/post?error=invalid");
   const slug=slugify(title)+"-"+crypto.randomUUID().slice(0,8);
-  const deadline=value(formData,"application_deadline",40);
+  const deadline=value(formData,"application_deadline",40);\n  const startsIso=toIsoOrInvalid(starts), deadlineIso=toIsoOrInvalid(deadline);\n  const experienceLevel=value(formData,"experience_level",20)||"any";
   const {data,error}=await db.from("job_posts").insert({
     employer_id:user.id,employer_name:employerName,title,slug,description,job_type:type,category_slug:category,district,upazila,
     union_name:value(formData,"union_name",100)||null,address_hint:value(formData,"address_hint",250)||null,
-    latitude:lat,longitude:lon,location_is_approximate:true,starts_at:starts?new Date(starts).toISOString():null,
+    latitude:lat,longitude:lon,location_is_approximate:true,starts_at:startsIso,
     schedule_text:value(formData,"schedule_text",300)||null,compensation_type:compensation,salary_min:salaryMin,salary_max:salaryMax,
-    workers_needed:workers,application_deadline:deadline?new Date(deadline).toISOString():null,
-    experience_level:value(formData,"experience_level",20)||"any",education_requirement:value(formData,"education_requirement",250)||null,
+    workers_needed:workers,application_deadline:deadlineIso,
+    experience_level:experienceLevel,education_requirement:value(formData,"education_requirement",250)||null,
     contact_method:method,contact_phone:phone||null,status:"pending"
   }).select("id").single();
   if(error||!data) redirect("/jobs/post?error=save");
