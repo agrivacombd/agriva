@@ -32,8 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function SubcategoryPage({ params }: Props) {
   const { categorySlug, subcategorySlug } = await params;
-  const category = getCategory(categorySlug);
-  const subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const category = await getMarketplaceCategory(categorySlug);
+  const subcategory = category?.subcategories.find((item) => item.slug === subcategorySlug);
   if (!category || !subcategory) notFound();
   let products: MarketplaceProduct[] = [];
   try {
