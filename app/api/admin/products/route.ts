@@ -15,15 +15,16 @@ export async function POST(request: NextRequest) {
   const stock = Number(body.stock);
   const commission = Number(body.commission);
   const categorySlug = String(body.categorySlug ?? "").trim();
+  const imageUrl = String(body.imageUrl ?? "").trim();
   const subcategorySlug = String(body.subcategorySlug ?? "").trim() || null;
-  if (!farmerId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !categorySlug || description.length > 10000) {
+  if (!farmerId || !name || name.length > 160 || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !categorySlug || description.length > 10000 || (imageUrl && (!/^https:\/\//i.test(imageUrl) || !imageUrl.includes("/storage/v1/object/public/product-images/")))) {
     return NextResponse.json({ error: "সব তথ্য সঠিকভাবে দিন; কমিশন ০–১০০% হতে হবে" }, { status: 400 });
   }
   const { data, error } = await supabase.rpc("admin_create_product", {
     p_farmer_id: farmerId, p_name: name, p_description: description || null,
     p_price: price, p_stock: stock, p_commission_percent: commission,
-    p_category_slug: categorySlug, p_subcategory_slug: subcategorySlug,
+    p_category_slug: categorySlug, p_subcategory_slug: subcategorySlug, p_image_url: imageUrl || null,
   });
   if (error) return NextResponse.json({ error: error.message.includes("Admin role required") ? "Admin access required" : "পণ্য যোগ করা যায়নি। বিক্রেতা, ক্যাটাগরি ও তথ্য যাচাই করুন।" }, { status: 400 });
-  return NextResponse.json({ product: { id: data.id, name: data.name, status: data.status, moderation_status: data.moderation_status } }, { status: 201 });
+  return NextResponse.json({ product: { id: data.id, name: data.name, status: data.status } }, { status: 201 });
 }
