@@ -27,6 +27,11 @@ drop policy if exists "Active product categories are readable" on public.product
 create policy "Active product categories are readable"
   on public.product_categories for select to anon, authenticated
   using (is_active = true);
+
+drop policy if exists "Admins can read all product subcategories" on public.product_subcategories;
+create policy "Admins can read all product subcategories"
+  on public.product_subcategories for select to authenticated
+  using (public.is_admin());
 drop policy if exists "Admins can read all product categories" on public.product_categories;
 create policy "Admins can read all product categories"
   on public.product_categories for select to authenticated
