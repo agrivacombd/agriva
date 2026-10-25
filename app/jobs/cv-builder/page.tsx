@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CVInsights from "@/components/jobs/CVInsights";
 import { useEffect, useMemo, useState } from "react";
 
 type CV = {
@@ -73,6 +74,7 @@ export default function CVBuilderPage() {
           <p className="mt-3 text-xs leading-5 text-slate-500">{labels.tip}</p>
           <div className="mt-4 flex flex-wrap gap-3"><button onClick={persist} className="rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white">{labels.save}</button>{saved&&<span role="status" className="self-center text-sm font-bold text-emerald-800">{labels.saved}</span>}</div>
         </div>
+        <CVInsights cv={cv} language={language} />
         <div className="rounded-2xl border border-emerald-950/5 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-black">{labels.design}</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">
             {templates.map(t=><button key={t.id} onClick={()=>{setTemplate(t.id);setSaved(false);}} className={"rounded-xl border p-4 text-left transition "+(template===t.id?"border-emerald-700 bg-emerald-50 ring-2 ring-emerald-100":"border-slate-200 hover:border-emerald-300")}><span className="mb-3 block h-2 rounded-full" style={{background:t.accent}}/><span className="block font-extrabold">{t.name}</span><span className="mt-1 block text-xs text-slate-500">{t.note}</span><span className="mt-3 block text-xs font-bold text-emerald-800">{template===t.id?"✓ Selected":"Choose design"}</span></button>)}
