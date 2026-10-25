@@ -4,7 +4,8 @@ import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } fr
 
 type SitemapArticle = { slug: string; updated_at: string | null; title: string; body_markdown: string | null };
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
-type SitemapJob = { slug: string; updated_at: string | null };\nconst isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+type SitemapJob = { slug: string; updated_at: string | null };
+const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
