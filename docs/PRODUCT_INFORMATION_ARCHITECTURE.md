@@ -233,3 +233,11 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - Current feature-branch build/checks must be green before merge. Production has not been deployed. Existing limitation: published content has no explicit unpublish/archive transition yet; that requires a deliberate status-model migration and UI workflow before editorial teams can unpublish articles.
 
 - Reviewer attribution is now assigned by the database workflow trigger: approval/rejection stamps `reviewed_by = auth.uid()` and `reviewed_at`; returning an item to draft/review clears reviewer attribution; publishing updates the timestamp while retaining the approver identity. Verified the deployed trigger function is `SECURITY INVOKER` and contains this behavior.
+
+
+## Next pre-production fix — unpublish published articles
+
+- Added an explicit `published → review` transition to the database workflow guard. The unpublish action is status-only: the trigger rejects attempts to change title, slug, body, or metadata in the same request; editing is allowed only after the article returns to review.
+- Added the “Unpublish & return to review” admin control for published articles.
+- Applied the trigger update to the linked Supabase project and committed the matching migration `20261025200000_allow_content_unpublish_to_review.sql` to the feature branch.
+- Runtime transition tests remain pending because the linked database has no valid content-opportunity fixture. Production is still not deployed.
