@@ -21,8 +21,8 @@ function renderMarkdown(source: string) {
       if (level === 3) return <h3 key={key} className={className}>{heading[2]}</h3>;
       return <h4 key={key} className={className}>{heading[2]}</h4>;
     }
-    if (/^[-*+]\\s+/.test(trimmed)) return <li key={key} className="ml-6 list-disc">{trimmed.replace(/^[-*+]\\s+/, "")}</li>;
-    if (/^\\d+[.)]\\s+/.test(trimmed)) return <li key={key} className="ml-6 list-decimal">{trimmed.replace(/^\\d+[.)]\\s+/, "")}</li>;
+    if (/^[-*+]\\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`• ${trimmed.replace(/^[-*+]\\s+/, "")}`}</p>;
+    if (/^\\d+[.)]\\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`${trimmed.match(/^\\d+/)?.[0]}. ${trimmed.replace(/^\\d+[.)]\\s+/, "")}`}</p>;
     if (trimmed.startsWith("> ")) return <blockquote key={key} className="border-l-4 border-[#d8e4d3] pl-4 italic">{trimmed.slice(2)}</blockquote>;
     if (trimmed.startsWith("---") || trimmed === "***") return <hr key={key} className="my-6 border-[#e4eadf]" />;
     return <p key={key} className="my-4 leading-8">{trimmed}</p>;
