@@ -169,6 +169,16 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - Re-run security and performance advisors after fixes; triage findings individually rather than blanket-revoking legitimate public marketplace/search operations.
 - Test signup, email confirmation, login/logout, profile edits, role changes, admin routes, content drafts, job applications and cross-user data access using separate test accounts before release.
 
+
+### Phase 3 — content workflow and admin access hardening
+
+- Added a server-rendered authorization gate to `/admin/content-drafts`: unauthenticated users are sent to login; non-admin users are sent to the dashboard. The client component is rendered only after the server checks the session and `profiles.role`.
+- Confirmed database RLS on `content_drafts` is admin-only for all operations. The draft creation RPC also checks the caller's admin role; do not treat its client-side invocation as authorization.
+- Extracted the existing drafts UI into a client component and added editable title, slug, meta title, meta description and Markdown article body.
+- Added save-draft, review, approve, reject and publish controls. Publishing is offered only for an approved draft and is blocked unless the title, URL slug and article body pass basic validation. Duplicate slug or database errors are surfaced rather than silently ignored.
+- The publish control writes `status = published`, which is the existing publication state used by public article routing; the article is not publicly available until the database update succeeds.
+- Remaining: add explicit reviewer attribution/revision history, robust preview rendering, source/citation validation, content sanitization review, slug collision preflight, and end-to-end tests with non-admin/admin accounts. Do not consider the workflow production-ready until preview build and CI pass.
+
 ## Implementation checklist
 
 - [x] Keep existing public URLs stable.
