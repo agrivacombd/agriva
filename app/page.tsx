@@ -44,7 +44,7 @@ const toolLinks = [
 
 export const metadata: Metadata = {
   title: "বীজ, কৃষি সেবা ও কৃষি কমিউনিটি",
-  description: "AGRIVA-তে বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের পরামর্শ নিন, কৃষক-শিক্ষার্থী-কৃষিবিদের সঙ্গে যুক্ত থাকুন এবং নিজের খামারের হিসাব রাখুন।",
+  description: "AGRIVA-তে কৃষি চাকরি খুঁজুন, বাংলা বা English CV তৈরি করুন, বীজ ও কৃষি উপকরণ দেখুন, ফসলের পরামর্শ নিন এবং খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়।",
   alternates: { canonical: "/" },
 };
 
@@ -70,6 +70,7 @@ export default async function Home() {
             <Link className="hover:text-[#0b6b4f]" href="/tools">কৃষি টুলস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
+            <Link className="hover:text-[#0b6b4f]" href="#career-tools">চাকরি ও CV</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link href="/login" className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#0b6b4f] hover:bg-emerald-50 sm:inline-flex">লগইন</Link>
@@ -260,6 +261,8 @@ export default async function Home() {
               <Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link>
               <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
               <Link href="/learn" className="hover:text-emerald-800">শিখুন</Link>
+              <Link href="/jobs" className="hover:text-emerald-800">কৃষি চাকরি</Link>
+              <Link href="/jobs/cv-builder" className="hover:text-emerald-800">CV Builder</Link>
               <Link href="/about-us" className="hover:text-emerald-800">About Us</Link>
               <Link href="/contact-us" className="hover:text-emerald-800">Contact Us</Link>
             </nav>
