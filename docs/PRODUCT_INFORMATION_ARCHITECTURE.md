@@ -241,3 +241,11 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - Added the “Unpublish & return to review” admin control for published articles.
 - Applied the trigger update to the linked Supabase project and committed the matching migration `20261025200000_allow_content_unpublish_to_review.sql` to the feature branch.
 - Ran a rollback-only database integration test using temporary content opportunity/draft rows: draft → review → approved → published → review succeeded; an attempt to change article content during unpublish was rejected. The transaction was rolled back and verification confirmed zero test rows remain. This validates the database trigger path, but browser/admin E2E testing is still pending. Production is still not deployed.
+
+
+## Content revision history — pre-production
+
+- Added `content_draft_revisions` with immutable JSON snapshots of the previous title, slug, metadata, Markdown body, status, reviewer attribution and timestamps before meaningful updates.
+- Revision capture is database-triggered, uses a pinned search path and SECURITY DEFINER only to insert the audit snapshot; direct client INSERT is revoked. Authenticated users may SELECT revisions only when the current profile role is admin.
+- Admin editor displays the newest 30 revisions and allows inspection of the stored snapshot. Revision records are removed with the parent draft by FK cascade; this is draft history, not a permanent legal-retention archive.
+- Migration applied to linked Supabase and committed to the feature branch. Runtime UI/E2E test and CI for this latest change remain pending. Production is not deployed.
