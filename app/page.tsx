@@ -224,6 +224,8 @@ export default async function Home() {
               <Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link>
               <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
               <Link href="/learn" className="hover:text-emerald-800">শিখুন</Link>
+              <Link href="/buy-me-a-coffee" className="hover:text-emerald-800">☕ AGRIVA-কে সহায়তা করুন</Link>
+              <Link href="/buy-me-a-coffee" className="hover:text-emerald-800">☕ AGRIVA-কে সহায়তা করুন</Link>
               <Link href="/about-us" className="hover:text-emerald-800">About Us</Link>
               <Link href="/contact-us" className="hover:text-emerald-800">Contact Us</Link>
             </nav>
