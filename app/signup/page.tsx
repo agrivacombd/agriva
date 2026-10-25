@@ -4,9 +4,12 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
+type SignupRole = "farmer" | "reseller";
+
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<SignupRole>("farmer");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const supabase = createSupabaseBrowserClient();
@@ -21,7 +24,10 @@ export default function SignupPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo },
+        options: {
+          emailRedirectTo,
+          data: { role },
+        },
       });
 
       setMessage(
@@ -44,6 +50,17 @@ export default function SignupPage() {
           <h1 className="mt-2 text-3xl font-bold text-slate-900">Create your account</h1>
           <p className="mt-2 text-sm text-slate-600">Join AGRIVA to explore agriculture tools and intelligence.</p>
         </div>
+        <label className="block space-y-2 text-sm font-medium text-slate-700">
+          I want to join as
+          <select
+            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3"
+            value={role}
+            onChange={(event) => setRole(event.target.value as SignupRole)}
+          >
+            <option value="farmer">Farmer</option>
+            <option value="reseller">Reseller</option>
+          </select>
+        </label>
         <label className="block space-y-2 text-sm font-medium text-slate-700">
           Email
           <input className="w-full rounded-xl border border-slate-300 px-4 py-3" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
