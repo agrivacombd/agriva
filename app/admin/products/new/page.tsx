@@ -58,7 +58,7 @@ async function createProduct(formData: FormData) {
     p_image_url: publicImage.publicUrl,
   });
 
-  if (createError) redirect("/admin/products/new?notice=create_error");
+  if (createError) {\n    await supabase.storage.from("product-images").remove([objectPath]);\n    redirect("/admin/products/new?notice=create_error");\n  }
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
