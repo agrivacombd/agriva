@@ -213,3 +213,11 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - This is intentionally a conservative renderer without inline Markdown links/emphasis support. Before production release, validate rendering against real article fixtures and consider a maintained Markdown parser with raw HTML disabled and URL protocols restricted.
 - CI/build status must be rechecked for commit `964ac45aedad19173784bab993c5217da01e88ba`; a previous successful build does not validate this new change.
 - Remaining release blockers: multi-role membership migration and compatibility audit; content status transitions/revision attribution; public route and RLS runtime tests; duplicate slug checks; production homepage/campaign decision; Netlify preview failure investigation.
+
+
+## Multi-role foundation (additive migration)
+
+- Added `public.user_role_memberships` with unique per-user role memberships, a constrained role vocabulary (farmer, seller/reseller, buyer, job seeker/worker, employer, expert/educator, transport provider, organization, admin), RLS enabled, own-membership read access, and admin-only membership management.
+- Migration `20261025180000_add_user_role_memberships.sql` is committed on the feature branch and was applied to the linked Supabase project as `add_user_role_memberships`. Verification confirmed RLS enabled and two policies present.
+- The current database returned zero existing profiles/memberships during verification, so there were no existing profile roles to backfill in that project at that moment.
+- This is a safe additive foundation, not a completed multi-role migration: legacy `profiles.role` remains for compatibility, signup/account settings and authorization checks have not yet been migrated to read/write memberships, and end-to-end role switching still requires implementation and tests.
