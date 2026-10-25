@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | AGRIVA",
   },
   description:
-    "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও রিসেলারদের জন্য AGRIVA—কৃষি পণ্য, স্মার্ট সার্চ, কৃষি তথ্য ও ডিজিটাল টুলস এক জায়গায়।",
+    "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য AGRIVA—কৃষি পণ্য, ফসল সহায়তা, কৃষি চাকরি, CV Builder ও ডিজিটাল টুলস এক জায়গায়।",
   applicationName: "AGRIVA",
   manifest: "/manifest.webmanifest",
   themeColor: "#0b6b4f",
@@ -41,12 +41,12 @@ export const metadata: Metadata = {
     locale: "bn_BD",
     url: siteUrl,
     title: "AGRIVA — কৃষি ও কৃষকের ডিজিটাল প্ল্যাটফর্ম",
-    description: "কৃষি পণ্য, স্মার্ট সার্চ ও কৃষি সহায়তা—এক জায়গায়।",
+    description: "কৃষি পণ্য, ফসল সহায়তা, কৃষি চাকরি ও CV Builder—এক জায়গায়।",
   },
   twitter: {
     card: "summary_large_image",
     title: "AGRIVA — কৃষি ও কৃষি উদ্যোক্তাদের ডিজিটাল প্ল্যাটফর্ম",
-    description: "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য ডিজিটাল প্ল্যাটফর্ম।",
+    description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য ডিজিটাল প্ল্যাটফর্ম।",
   },
 };
 

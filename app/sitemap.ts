@@ -2,9 +2,10 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
-type SitemapArticle = { slug: string; updated_at: string | null };
+type SitemapArticle = { slug: string; updated_at: string | null; title: string; body_markdown: string | null };
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
+const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -19,14 +20,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (url && key) {
     const supabase = createClient(url, key);
     const [articleResult, productResult, jobsResult] = await Promise.all([
-      supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article"),
+      supabase.from("content_drafts").select("slug,updated_at,title,body_markdown").eq("status", "published").eq("content_type", "article"),
       supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
     ]);
-    if (!articleResult.error && articleResult.data) articles = articleResult.data as SitemapArticle[];
-    if (!jobsResult.error && jobsResult.data) jobs = jobsResult.data as SitemapJob[];
+    if (!articleResult.error && articleResult.data) articles = (articleResult.data as SitemapArticle[]).filter((article) => isValidSlug(article.slug) && Boolean(article.title?.trim()) && Boolean(article.body_markdown?.trim()));
+    if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
     if (!productResult.error && productResult.data) {
-      products = productResult.data as SitemapProduct[];
+      products = (productResult.data as SitemapProduct[]).filter((product) => isValidSlug(product.slug));
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
         const categoryHasProducts = products.some((product) => matchesProductCategory(product.category ?? null, category, product.category_slug));
         if (!categoryHasProducts) return [];
@@ -43,7 +44,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/ai`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
     { url: `${base}/jobs`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
+    { url: `${base}/jobs/cv-builder`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
+    { url: `${base}/tools`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    { url: `${base}/learn`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/weather`, lastModified: now, changeFrequency: "daily", priority: 0.75 },
+    { url: `${base}/market-prices`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/crop-calendar`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
+    { url: `${base}/crop-choice`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/soil-fertilizer`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/sell-harvest`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/buyer-demands`, lastModified: now, changeFrequency: "daily", priority: 0.75 },
+    { url: `${base}/transport`, lastModified: now, changeFrequency: "weekly", priority: 0.65 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/crop-disease`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/about-us`, changeFrequency: "monthly", priority: 0.4 },
