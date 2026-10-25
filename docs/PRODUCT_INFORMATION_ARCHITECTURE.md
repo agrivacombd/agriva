@@ -205,3 +205,11 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - [ ] Verify all sitemap URLs return 200, have canonical tags, and contain meaningful content.
 - [ ] Test mobile and desktop navigation, keyboard access, and low-bandwidth behavior.
 - [ ] Check Search Console indexing, Core Web Vitals, real job/product data, and analytics after deployment.
+
+
+## QA follow-up — safe article rendering
+
+- Published article bodies now render a limited Markdown subset (headings, list lines, blockquotes, horizontal rules, paragraphs) as React text elements. Article body HTML is not injected, so raw HTML authored into a draft is displayed as text rather than executed.
+- This is intentionally a conservative renderer without inline Markdown links/emphasis support. Before production release, validate rendering against real article fixtures and consider a maintained Markdown parser with raw HTML disabled and URL protocols restricted.
+- CI/build status must be rechecked for commit `964ac45aedad19173784bab993c5217da01e88ba`; a previous successful build does not validate this new change.
+- Remaining release blockers: multi-role membership migration and compatibility audit; content status transitions/revision attribution; public route and RLS runtime tests; duplicate slug checks; production homepage/campaign decision; Netlify preview failure investigation.
