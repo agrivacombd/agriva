@@ -146,6 +146,29 @@ Model relationships explicitly rather than duplicating text across pages:
 
 Prefer a normalized source of truth, typed validation at API boundaries, and explicit server-side authorization. Add database migrations and tests before changing schema or enabling new role workflows. Do not make public pages depend on mock/demo inventory or unpublished data.
 
+
+## Phase 2 account and security audit — 2026-10-25
+
+### Confirmed account model
+- Authentication is email/password with email confirmation through `/auth/callback`; current sign-up page does not yet ask for role or purpose.
+- The current `profiles.role` enum is single-role (`farmer`, `reseller`, `admin`). This is not sufficient for the intended multi-role Super App.
+- New-user profile trigger permits `farmer` or `reseller` from signup metadata and defaults all other values to `farmer`; it does not grant `admin` through signup metadata.
+- Recommended target: one identity, one core profile, multiple explicit role memberships, with organization memberships only when needed. Do not replace the existing role model until the new model, authorization rules, migration/backfill and all dependent code are ready.
+
+### Security finding fixed
+- The initial audit found that authenticated users had table-level UPDATE privilege on `public.profiles` and the self-update RLS policy only constrained `id = auth.uid()`. That combination could allow a user to attempt changing their own `role` field.
+- Added migration `supabase/migrations/20261025170000_secure_profile_role_updates.sql` and applied the equivalent migration to the connected Supabase project.
+- The migration revokes table-level UPDATE from `PUBLIC`, `anon` and `authenticated`, then grants authenticated users column-level UPDATE only on `full_name` and `phone`.
+- Post-change privilege verification: authenticated table-level UPDATE = false; authenticated role-column UPDATE = false; authenticated full_name/phone UPDATE = true; anon role-column UPDATE = false.
+- Privileged role changes must continue through server-authorized admin functions. Do not add client-side role editing.
+
+### Remaining account/security work
+- Build role-based onboarding and a role-membership table with explicit constraints, server-side authorization and RLS; support multiple roles without duplicate accounts.
+- Add a server-side guard to the content-drafts admin route for a clear UX and defense in depth. Its current database RLS policy is admin-only, but the page itself is a client component without an obvious server authorization gate.
+- Review every exposed SECURITY DEFINER function against its intended audience. Supabase advisors report several functions callable by `anon` or `authenticated`; this is a warning requiring per-function review, not proof that each function is exploitable. Keep intentional public RPCs minimal and ensure privileged functions verify the caller inside the function.
+- Re-run security and performance advisors after fixes; triage findings individually rather than blanket-revoking legitimate public marketplace/search operations.
+- Test signup, email confirmation, login/logout, profile edits, role changes, admin routes, content drafts, job applications and cross-user data access using separate test accounts before release.
+
 ## Implementation checklist
 
 - [x] Keep existing public URLs stable.
@@ -155,6 +178,7 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - [x] Add page-level metadata/canonical for CV Builder.
 - [x] Add homepage Organization and WebSite structured data, including internal SearchAction.
 - [ ] Implement and test role-based onboarding with one identity and multiple permitted roles.
+- [x] Revoke self-service profile role updates and verify column privileges.
 - [ ] Implement server-enforced draft/review/publish lifecycle and audit trail across content types.
 - [x] Align robots rules with public pages and exclude search/private workspaces from crawling.
 - [ ] Verify the production homepage is the intended AGRIVA platform page (the live root has previously differed from the repository homepage).
