@@ -11,35 +11,31 @@ import {
 } from "lucide-react";
 
 const services = [
-  { icon: ShoppingBasket, title: "বীজ ও কৃষি উপকরণ", subtitle: "প্রয়োজনীয় পণ্য খুঁজুন", detail: "বীজ, জাত ও পণ্যের তথ্য দেখে কেনাকাটা শুরু করুন", href: "/marketplace", tone: "bg-lime-50 text-lime-800" },
-  { icon: BookOpen, title: "কৃষি শেখা ও গাইড", subtitle: "জ্ঞান বাড়ান প্রতিদিন", detail: "কৃষি বিষয়ক গাইড, পাঠ ও নিবন্ধ পড়ুন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
-  { icon: Briefcase, title: "কৃষি চাকরি", subtitle: "নিজের এলাকায় কাজ খুঁজুন", detail: "দৈনিক, মৌসুমি ও নিয়মিত কৃষি চাকরি খুঁজুন অথবা কর্মী নিয়োগ দিন", href: "/jobs", tone: "bg-blue-50 text-blue-800" },
-  { icon: FileText, title: "CV Builder", subtitle: "সহজে CV তৈরি ও PDF নিন", detail: "বাংলা বা English CV তৈরি করুন, ডিজাইন বেছে নিন এবং PDF ডাউনলোড করুন", href: "/jobs/cv-builder", tone: "bg-violet-50 text-violet-800" },
-  { icon: Bot, title: "AI কৃষি সহায়ক", subtitle: "প্রশ্ন করুন, করণীয় জানুন", detail: "ফসল, সার, রোগ ও চাষাবাদ নিয়ে AI সহায়তা", href: "/ai", tone: "bg-violet-50 text-violet-700" },
-  { icon: Leaf, title: "ফসলের রোগ শনাক্ত", subtitle: "সমস্যা বুঝে সমাধান নিন", detail: "ফসলের লক্ষণ নিয়ে সহায়তা পান", href: "/crop-disease", tone: "bg-rose-50 text-rose-700" },
-  { icon: CloudSun, title: "আবহাওয়া", subtitle: "পরিকল্পনা করুন আগেই", detail: "চাষাবাদের কাজে আবহাওয়ার তথ্য", href: "/weather", tone: "bg-sky-50 text-sky-700" },
-  { icon: TrendingUp, title: "বাজারদর", subtitle: "দাম জেনে সিদ্ধান্ত নিন", detail: "কৃষিপণ্যের বাজারদরের তথ্য দেখুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
-  { icon: Tractor, title: "আমার খামার", subtitle: "খামার ও ফসলের হিসাব", detail: "খামার, মৌসুম ও কাজের ডায়েরি রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
-  { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, সেচ ও উৎপাদন খরচের টুল", href: "/tools", tone: "bg-orange-50 text-orange-700" },
-  { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "একসঙ্গে তিনটি ফসলের খরচ, সম্ভাব্য আয় ও লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
-  { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে সার হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার দেওয়া মাত্রা থেকে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
-  { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "সরাসরি ক্রেতার কাছে", detail: "ফসলের ছবি, পরিমাণ ও দাম দিয়ে পোস্ট দিন; ক্রেতার সঙ্গে সরাসরি যোগাযোগ করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
-  { icon: Users, title: "ক্রেতার চাহিদা", subtitle: "চাহিদা দেখে ফসলের অফার দিন", detail: "ক্রেতা কী ফসল, কত পরিমাণ, কোথায় ও কবে চান তা দেখুন", href: "/buyer-demands", tone: "bg-emerald-50 text-emerald-800" },
-  { icon: Truck, title: "কৃষিপণ্য পরিবহন", subtitle: "গাড়ি খুঁজুন ও ভাড়া তুলনা করুন", detail: "ফসল পরিবহনের অনুরোধ দিন এবং পার্টনারদের ভাড়ার অফার নিন", href: "/transport", tone: "bg-sky-50 text-sky-800" },
+  { icon: Bot, title: "AI কৃষি সহায়ক", subtitle: "প্রশ্ন করুন, করণীয় জানুন", detail: "ফসল, সার, রোগ ও চাষাবাদ নিয়ে প্রাথমিক সহায়তা নিন", href: "/ai", tone: "bg-violet-50 text-violet-700" },
+  { icon: Leaf, title: "ফসলের রোগ শনাক্ত", subtitle: "সমস্যা বুঝে করণীয় জানুন", detail: "ফসলের লক্ষণ নিয়ে AI-সহায়তাপ্রাপ্ত প্রাথমিক বিশ্লেষণ নিন", href: "/crop-disease", tone: "bg-rose-50 text-rose-700" },
+  { icon: CloudSun, title: "কৃষি আবহাওয়া", subtitle: "আগে থেকে পরিকল্পনা করুন", detail: "নির্বাচিত এলাকার আবহাওয়া ও পূর্বাভাস দেখে কাজের পরিকল্পনা করুন", href: "/weather", tone: "bg-sky-50 text-sky-700" },
+  { icon: ShoppingBasket, title: "বীজ ও কৃষি উপকরণ", subtitle: "প্রয়োজনীয় পণ্য খুঁজুন", detail: "পণ্যের বিবরণ, বিক্রেতা ও প্রাপ্যতা যাচাই করে কেনাকাটা শুরু করুন", href: "/marketplace", tone: "bg-lime-50 text-lime-800" },
+  { icon: TrendingUp, title: "কৃষিপণ্যের বাজারদর", subtitle: "দাম যাচাই করে সিদ্ধান্ত নিন", detail: "সরকারি বাজারদরের উৎসে যান এবং বিক্রির পরিকল্পনা করুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
+  { icon: CalendarDays, title: "ফসল ক্যালেন্ডার", subtitle: "কাজের ধাপ মনে রাখুন", detail: "ফসলভিত্তিক কাজের চেকলিস্ট ও চাষের পরিকল্পনা সাজান", href: "/crop-calendar", tone: "bg-teal-50 text-teal-700" },
+  { icon: Tractor, title: "আমার খামার", subtitle: "জমি ও কাজের রেকর্ড", detail: "খামার, মৌসুম ও দৈনন্দিন কাজের রেকর্ড রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
+  { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, চাষের খরচ ও সম্ভাব্য লাভের হিসাব করুন", href: "/tools", tone: "bg-orange-50 text-orange-700" },
+  { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার সুপারিশ ধরে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
+  { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "নিজের খরচ ও দামের ভিত্তিতে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
+  { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "ক্রেতার কাছে অফার দিন", detail: "ফসলের পরিমাণ, দাম ও অবস্থান দিয়ে বিক্রির পোস্ট তৈরি করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
+  { icon: Users, title: "ক্রেতার চাহিদা", subtitle: "চাহিদা দেখে অফার দিন", detail: "ক্রেতার ফসল, পরিমাণ, এলাকা ও সময়ের চাহিদা দেখুন", href: "/buyer-demands", tone: "bg-emerald-50 text-emerald-800" },
+  { icon: Truck, title: "কৃষিপণ্য পরিবহন", subtitle: "পরিবহনের ব্যবস্থা করুন", detail: "ফসল পরিবহনের অনুরোধ দিন ও প্রাপ্ত ভাড়ার অফার তুলনা করুন", href: "/transport", tone: "bg-sky-50 text-sky-800" },
+  { icon: BookOpen, title: "কৃষি শেখা ও গাইড", subtitle: "ব্যবহারিক জ্ঞান বাড়ান", detail: "ফসল, মাটি ও সমন্বিত বালাই ব্যবস্থাপনা সম্পর্কে সহজ বাংলায় শিখুন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
 ];
 
 const toolLinks = [
+  { icon: Search, label: "স্মার্ট সার্চ", href: "/search" },
+  { icon: Leaf, label: "ফসলের রোগ সহায়তা", href: "/crop-disease" },
+  { icon: CloudSun, label: "আবহাওয়া", href: "/weather" },
+  { icon: ShoppingBasket, label: "কৃষি মার্কেটপ্লেস", href: "/marketplace" },
   { icon: Briefcase, label: "কৃষি চাকরি", href: "/jobs" },
   { icon: FileText, label: "CV তৈরি করুন", href: "/jobs/cv-builder" },
-  { icon: CalendarDays, label: "ফসল ক্যালেন্ডার", href: "/crop-calendar" },
-  { icon: Search, label: "স্মার্ট সার্চ", href: "/search" },
-  { icon: Store, label: "কৃষি ব্লগ", href: "/blog" },
-  { icon: MapPinned, label: "আমার ড্যাশবোর্ড", href: "/dashboard" },
-  { icon: TrendingUp, label: "ফসল বাছাই", href: "/crop-choice" },
-  { icon: Sprout, label: "মাটি ও সার পরিকল্পনা", href: "/soil-fertilizer" },
-  { icon: Wheat, label: "ফসল বিক্রি করুন", href: "/sell-harvest" },
-  { icon: Users, label: "ক্রেতার চাহিদা", href: "/buyer-demands" },
-  { icon: Truck, label: "কৃষিপণ্য পরিবহন", href: "/transport" },
+  { icon: Tractor, label: "আমার খামার", href: "/farms" },
+  { icon: Zap, label: "সব কৃষি টুলস", href: "/tools" },
 ];
 
 export const metadata: Metadata = {
@@ -96,7 +92,7 @@ export default async function Home() {
             </form>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="mr-1 font-semibold text-slate-500">জনপ্রিয়:</span>
-              {[{ label: "ফসল বিক্রি করুন", href: "/sell-harvest" }, { label: "ক্রেতার চাহিদা", href: "/buyer-demands" }].map(({ label, href }) => <Link key={label} href={href} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
+              {[{ label: "ফসলের রোগ", href: "/crop-disease" }, { label: "কৃষি বাজার", href: "/marketplace" }, { label: "কৃষি চাকরি", href: "/jobs" }].map(({ label, href }) => <Link key={label} href={href} className="rounded-full border border-[#dce5d8] bg-white/80 px-3 py-1.5 font-semibold text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900">{label}</Link>)}
             </div>
             <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -250,7 +246,7 @@ export default async function Home() {
 
       <nav aria-label="মোবাইল নেভিগেশন" className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-950/10 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(15,50,35,0.08)] backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
-          {[{ icon: Sprout, label: "হোম", href: "/" }, { icon: Search, label: "খুঁজুন", href: "/search" }, { icon: Tractor, label: "খামার", href: "/farms" }, { icon: ShoppingBasket, label: "বাজার", href: "/marketplace" }, { icon: Users, label: "শিখুন", href: "/learn" }].map(({ icon: Icon, label, href }) => <Link key={label} href={href} aria-label={label} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-800"><Icon size={19} /><span>{label}</span></Link>)}
+          {[{ icon: Sprout, label: "হোম", href: "/" }, { icon: Search, label: "খুঁজুন", href: "/search" }, { icon: Zap, label: "টুলস", href: "/tools" }, { icon: Briefcase, label: "চাকরি", href: "/jobs" }, { icon: ShoppingBasket, label: "বাজার", href: "/marketplace" }].map(({ icon: Icon, label, href }) => <Link key={label} href={href} aria-label={label} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-800"><Icon size={19} /><span>{label}</span></Link>)}
         </div>
       </nav>
       <footer className="border-t border-slate-200 bg-white">
