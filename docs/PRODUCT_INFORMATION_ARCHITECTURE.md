@@ -82,6 +82,70 @@ The homepage services grid is ordered by common, high-value farming tasks. Caree
 - Make language, data freshness, source, and AI limitations clear where relevant.
 - Keep forms short, preserve user input after validation errors, and make mobile keyboards appropriate to the field.
 
+
+## Account model and role-based onboarding
+
+Use one authentication system and one identity per person; do not force users to create separate logins for every role. After sign-up, ask what they want to do and allow a user to hold multiple roles where justified. A farmer may also sell produce, hire workers, or apply for jobs. Role switching must not create duplicate profiles or bypass permissions.
+
+Suggested onboarding choices:
+- Farmer / farm manager
+- Seller / agricultural input dealer
+- Buyer / wholesaler / processor
+- Job seeker / agricultural worker
+- Employer / farm or agribusiness
+- Agriculture expert / educator
+- Transport provider
+- Organization / cooperative (optional, with organization membership and invite flow)
+
+Implementation rules:
+- Keep authentication identity separate from public profile and role memberships.
+- Use server-validated role membership and database row-level security; never trust a role supplied only by a URL or client form.
+- Collect only the information needed for the selected journey, with progressive onboarding and the ability to skip non-essential fields.
+- Ask for organization details only when an organization role is selected; add organization owner/admin/member permissions only when the data model and policies are ready.
+- Let users edit profile visibility and contact preferences. Never expose private phone, email, CV, farm records, applications, or orders in public pages by default.
+- Do not add an administrator option to public sign-up. Admin access must be granted separately by an authorized process.
+- Use account type to personalize dashboards and recommendations, not to hide public pages from users who have another role.
+- Keep role-specific verification and trust badges explicit; never imply verification without a completed review.
+
+## Draft, review, publish, and revision workflow
+
+All editorial content and moderated user-generated listings need an explicit lifecycle. Use a shared state model where appropriate, while keeping domain-specific permissions separate.
+
+Suggested states:
+- Draft: private to author and authorized editors.
+- In review: submitted for editorial/moderation review; author edits are controlled and changes may require resubmission.
+- Changes requested: feedback is recorded and the author can revise.
+- Approved: reviewed and ready to publish, but not public until publication is explicitly triggered or a scheduled time is reached.
+- Published: public, canonical, internally linked, and eligible for sitemap only if the content type is indexable.
+- Unpublished / archived: no longer promoted publicly; remove from sitemap and choose 404, 410, or a relevant redirect based on whether a replacement exists.
+- Rejected: private with a recorded reason; not indexable.
+
+Required capabilities:
+- Autosave and explicit Save Draft.
+- Preview using the same typography/layout as the public page, with no accidental indexing.
+- Draft/review/publish permissions enforced on the server and in database policies.
+- Author, reviewer, publisher, timestamps, revision history, and moderation/audit trail.
+- Validation for required fields, slug uniqueness, metadata, image alt text, internal links, and content type before publishing.
+- Schedule/publish/unpublish only when a reliable scheduler and permissions exist; otherwise expose a clear manual workflow rather than a fake scheduling control.
+- A failed publish must preserve the draft and display an actionable error.
+- Publishing should invalidate relevant caches, update canonical/internal links, and update sitemap eligibility.
+- Job listings and products have their own expiry/availability rules; publishing an article must not make a job or product public by accident.
+- Public routes must fetch only approved/published content. RLS and server-side checks must protect draft records even if a user manually visits a URL.
+
+## Data and entity mapping
+
+Model relationships explicitly rather than duplicating text across pages:
+- User identity → profile → role memberships → organization memberships.
+- Product → seller → category/subcategory → availability/status → media → product detail URL.
+- Job → employer → location → job type → deadline/status → applications.
+- Article → author → reviewer → topic/category → related content → revision/publication status.
+- Farm → owner/member → fields/crops/seasons → tasks/records.
+- Buyer demand → buyer/organization → crop/specification/quantity/location/deadline.
+- Transport request → requester → pickup/drop-off → quote/status.
+- Every public entity should have a stable slug, lifecycle state, timestamps, and clear owner/permission rules where relevant.
+
+Prefer a normalized source of truth, typed validation at API boundaries, and explicit server-side authorization. Add database migrations and tests before changing schema or enabling new role workflows. Do not make public pages depend on mock/demo inventory or unpublished data.
+
 ## Implementation checklist
 
 - [x] Keep existing public URLs stable.
@@ -89,6 +153,9 @@ The homepage services grid is ordered by common, high-value farming tasks. Caree
 - [x] Add jobs and CV Builder to homepage quick access and mobile navigation.
 - [x] Add core public tool pages and CV Builder to the sitemap.
 - [x] Add page-level metadata/canonical for CV Builder.
+- [x] Add homepage Organization and WebSite structured data, including internal SearchAction.
+- [ ] Implement and test role-based onboarding with one identity and multiple permitted roles.
+- [ ] Implement server-enforced draft/review/publish lifecycle and audit trail across content types.
 - [x] Align robots rules with public pages and exclude search/private workspaces from crawling.
 - [ ] Verify the production homepage is the intended AGRIVA platform page (the live root has previously differed from the repository homepage).
 - [ ] Confirm that the product-detail route matches the sitemap's /marketplace/{product-slug} pattern.
