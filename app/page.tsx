@@ -38,10 +38,28 @@ const toolLinks = [
   { icon: Zap, label: "সব কৃষি টুলস", href: "/tools" },
 ];
 
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+
 export const metadata: Metadata = {
-  title: "বীজ, কৃষি সেবা ও কৃষি কমিউনিটি",
-  description: "AGRIVA-তে কৃষি চাকরি খুঁজুন, বাংলা বা English CV তৈরি করুন, বীজ ও কৃষি উপকরণ দেখুন, ফসলের পরামর্শ নিন এবং খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়।",
+  title: "কৃষি সেবা, বীজ, বাজারদর ও কৃষি টুলস",
+  description:
+    "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য AGRIVA—ফসলের সহায়তা, কৃষি পণ্য, বাজারদর, চাষের হিসাব, কৃষি চাকরি ও বাংলা-ইংরেজি CV Builder এক প্ল্যাটফর্মে।",
   alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "bn_BD",
+    siteName: "AGRIVA",
+    url: "/",
+    title: "AGRIVA — কৃষি সেবা, বীজ ও স্মার্ট কৃষি টুলস",
+    description:
+      "ফসলের সহায়তা, কৃষি পণ্য, বাজারদর, চাষের হিসাব ও কৃষি চাকরির দরকারি টুলস এক জায়গায়।",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AGRIVA — কৃষির ডিজিটাল প্ল্যাটফর্ম",
+    description:
+      "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য দরকারি কৃষি সেবা ও টুলস।",
+  },
 };
 
 export default async function Home() {
@@ -53,8 +71,49 @@ export default async function Home() {
   const homepageHeroTitle = settingValue("homepage_hero_title", "কৃষির প্রতিটি ধাপে আপনার পাশে AGRIVA.");
   const homepageHeroSubtitle = settingValue("homepage_hero_subtitle", "বীজ ও কৃষি উপকরণ খুঁজুন, ফসলের বিষয়ে সহায়তা নিন, নিজের খামারের হিসাব রাখুন—কৃষির প্রয়োজনীয় ডিজিটাল টুলস এক জায়গায়, সহজ বাংলায়।");
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: "AGRIVA",
+        url: siteUrl,
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteUrl}/agriva-logo.svg`,
+        },
+        description:
+          "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য কৃষি সেবা, পণ্য, তথ্য ও ডিজিটাল টুলসের প্ল্যাটফর্ম।",
+        telephone: "+8801717504028",
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: "AGRIVA",
+        inLanguage: "bn-BD",
+        publisher: { "@id": `${siteUrl}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#f8f8f1] pb-20 text-[#173629] selection:bg-emerald-200 selection:text-emerald-950 sm:pb-0">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
       {homepageNotice && <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-950">{homepageNotice}</div>}
       <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
