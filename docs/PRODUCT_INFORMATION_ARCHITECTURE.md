@@ -179,6 +179,15 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - The publish control writes `status = published`, which is the existing publication state used by public article routing; the article is not publicly available until the database update succeeds.
 - Remaining: add explicit reviewer attribution/revision history, robust preview rendering, source/citation validation, content sanitization review, slug collision preflight, and end-to-end tests with non-admin/admin accounts. Do not consider the workflow production-ready until preview build and CI pass.
 
+
+### Phase 4 — published content SEO and discoverability
+
+- Replaced the static empty-state-only blog landing page with a server-rendered list of published article records, safe slug filtering, canonical/Open Graph metadata, and an ItemList JSON-LD block. When no published articles exist, the page gives a helpful empty state and links to learning resources.
+- Article detail pages now validate slug format, query only rows with `status = published` and `content_type = article`, provide canonical/description/Open Graph/Twitter metadata, and return not-found for unpublished or missing content.
+- Added Article and BreadcrumbList JSON-LD, visible breadcrumb navigation, and a return link to the blog index.
+- Tightened sitemap output: article entries must have valid slugs, titles and non-empty bodies; product and job slugs must match the safe lowercase hyphenated format. Existing active/approved product and published/non-expired job filters remain in place.
+- These changes are committed to the feature branch. They are not yet verified on a successful preview build or production. Before release, check the actual route behavior, JSON-LD validation, slug uniqueness, published-content RLS and sitemap URLs against live data.
+
 ## Implementation checklist
 
 - [x] Keep existing public URLs stable.
