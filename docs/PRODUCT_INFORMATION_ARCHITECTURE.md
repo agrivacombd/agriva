@@ -157,7 +157,7 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 
 ### Security finding fixed
 - The initial audit found that authenticated users had table-level UPDATE privilege on `public.profiles` and the self-update RLS policy only constrained `id = auth.uid()`. That combination could allow a user to attempt changing their own `role` field.
-- Added migration `supabase/migrations/20261025170000_secure_profile_role_updates.sql` and applied the equivalent migration to the connected Supabase project.
+- Added migration `supabase/migrations/20261025164429_secure_profile_role_updates.sql` and applied the equivalent migration to the connected Supabase project.
 - The migration revokes table-level UPDATE from `PUBLIC`, `anon` and `authenticated`, then grants authenticated users column-level UPDATE only on `full_name` and `phone`.
 - Post-change privilege verification: authenticated table-level UPDATE = false; authenticated role-column UPDATE = false; authenticated full_name/phone UPDATE = true; anon role-column UPDATE = false.
 - Privileged role changes must continue through server-authorized admin functions. Do not add client-side role editing.
