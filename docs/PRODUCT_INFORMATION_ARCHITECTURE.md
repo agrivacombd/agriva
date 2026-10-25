@@ -221,3 +221,13 @@ Prefer a normalized source of truth, typed validation at API boundaries, and exp
 - Migration `20261025180000_add_user_role_memberships.sql` is committed on the feature branch and was applied to the linked Supabase project as `add_user_role_memberships`. Verification confirmed RLS enabled and two policies present.
 - The current database returned zero existing profiles/memberships during verification, so there were no existing profile roles to backfill in that project at that moment.
 - This is a safe additive foundation, not a completed multi-role migration: legacy `profiles.role` remains for compatibility, signup/account settings and authorization checks have not yet been migrated to read/write memberships, and end-to-end role switching still requires implementation and tests.
+
+
+## Pre-production issue fixed — content draft workflow
+
+- The admin content-drafts client previously instantiated `@supabase/supabase-js` directly, creating a separate client that did not reliably share the authenticated SSR cookie session. It now uses `createBrowserClient` from `@supabase/ssr` so browser operations can use the existing auth session.
+- Added database trigger `content_drafts_workflow_guard` via migration `20261025190000_enforce_content_draft_workflow.sql`. It rejects invalid status jumps, requires title/slug/body for approval and publication, prevents editing published content in-place, and updates `updated_at`.
+- Added unique partial index `content_drafts_article_slug_unique` so article slugs cannot collide, including between drafts and published articles.
+- Updated admin controls to match transitions: draft → review → approved → published; review can be rejected or returned to draft; approved can return to review; rejected can reopen as draft. Published content is locked from direct edits.
+- Applied the migration to the linked Supabase project. Verified the unique index exists, the trigger is installed, and the trigger function is SECURITY INVOKER. A safe end-to-end transition test is still pending because the linked database currently has no content-opportunity rows to create a valid test draft.
+- Current feature-branch build/checks must be green before merge. Production has not been deployed. Existing limitation: published content has no explicit unpublish/archive transition yet; that requires a deliberate status-model migration and UI workflow before editorial teams can unpublish articles.
