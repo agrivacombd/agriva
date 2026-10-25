@@ -15,18 +15,21 @@ export const metadata: Metadata = {
 
 export default async function MarketplacePage() {
   let products: MarketplaceProduct[] = [];
+  let catalogueError = false;
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
+      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
       .eq("status", "active").eq("moderation_status", "approved")
       .order("created_at", { ascending: false }).limit(120);
     if (!error && data) products = data as MarketplaceProduct[];
+    else catalogueError = true;
   } catch (error) {
     console.error("Marketplace catalogue load failed:", error);
+    catalogueError = true;
   }
 
-  const isSamplePreview = products.length === 0;
+  const isSamplePreview = products.length === 0 && !catalogueError;
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS;
 
   return <main className="min-h-screen overflow-hidden bg-[#f5f8f1] text-[#17351f]">
@@ -42,9 +45,10 @@ export default async function MarketplacePage() {
     </section>
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <div className="mb-7"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Find what you need</p><h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">কৃষি পণ্য খুঁজুন</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">ক্যাটাগরি বেছে নিন অথবা পণ্যের নাম লিখে খুঁজুন।</p></div>
+      {catalogueError && <div role="alert" className="mb-5 rounded-2xl border border-red-300 bg-red-50 p-4 text-sm text-red-900">লাইভ পণ্যের তালিকা এখন পড়া যাচ্ছে না। ডেমো পণ্যের বদলে database ও migration configuration যাচাই করুন।</div>}
       {isSamplePreview && <div role="status" className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Preview catalogue:</strong> Live approved products are not available right now, so example products are being shown for layout preview only. Confirm product availability and pricing before making a purchase.</div>}
       <MarketplaceCore products={products} />
-      {!products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p>}
+      {!products.length && !catalogueError && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p>}
     </section>
   </main>;
 }
