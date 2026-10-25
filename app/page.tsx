@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
-  ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
+  ChevronRight, CloudSun, Leaf, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
   Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart, Truck,
   Briefcase, FileText,
