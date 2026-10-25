@@ -8,11 +8,11 @@ export const revalidate = 300;
 // Render a deliberately small, safe Markdown subset as React elements. Content is
 // always emitted as text (never injected as HTML), so authored HTML cannot execute.
 function renderMarkdown(source: string) {
-  return source.split(/\\r?\\n/).map((line, index) => {
+  return source.split(/\r?\n/).map((line, index) => {
     const key = `line-${index}`;
     const trimmed = line.trim();
     if (!trimmed) return null;
-    const heading = /^(#{1,4})\\s+(.+)$/.exec(trimmed);
+    const heading = /^(#{1,4})\s+(.+)$/.exec(trimmed);
     if (heading) {
       const level = heading[1].length;
       const className = level === 1 ? "mt-8 text-3xl font-black" : level === 2 ? "mt-7 text-2xl font-bold" : level === 3 ? "mt-6 text-xl font-bold" : "mt-5 text-lg font-bold";
@@ -21,8 +21,8 @@ function renderMarkdown(source: string) {
       if (level === 3) return <h3 key={key} className={className}>{heading[2]}</h3>;
       return <h4 key={key} className={className}>{heading[2]}</h4>;
     }
-    if (/^[-*+]\\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`• ${trimmed.replace(/^[-*+]\\s+/, "")}`}</p>;
-    if (/^\\d+[.)]\\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`${trimmed.match(/^\\d+/)?.[0]}. ${trimmed.replace(/^\\d+[.)]\\s+/, "")}`}</p>;
+    if (/^[-*+]\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`• ${trimmed.replace(/^[-*+]\s+/, "")}`}</p>;
+    if (/^\d+[.)]\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`${trimmed.match(/^\d+/)?.[0]}. ${trimmed.replace(/^\d+[.)]\s+/, "")}`}</p>;
     if (trimmed.startsWith("> ")) return <blockquote key={key} className="border-l-4 border-[#d8e4d3] pl-4 italic">{trimmed.slice(2)}</blockquote>;
     if (trimmed.startsWith("---") || trimmed === "***") return <hr key={key} className="my-6 border-[#e4eadf]" />;
     return <p key={key} className="my-4 leading-8">{trimmed}</p>;
