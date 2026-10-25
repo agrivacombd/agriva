@@ -7,11 +7,14 @@ import {
   ChevronRight, CloudSun, Droplets, Leaf, MapPinned, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
   Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart, Truck,
+  Briefcase, FileText,
 } from "lucide-react";
 
 const services = [
   { icon: ShoppingBasket, title: "বীজ ও কৃষি উপকরণ", subtitle: "প্রয়োজনীয় পণ্য খুঁজুন", detail: "বীজ, জাত ও পণ্যের তথ্য দেখে কেনাকাটা শুরু করুন", href: "/marketplace", tone: "bg-lime-50 text-lime-800" },
   { icon: BookOpen, title: "কৃষি শেখা ও গাইড", subtitle: "জ্ঞান বাড়ান প্রতিদিন", detail: "কৃষি বিষয়ক গাইড, পাঠ ও নিবন্ধ পড়ুন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
+  { icon: Briefcase, title: "কৃষি চাকরি", subtitle: "নিজের এলাকায় কাজ খুঁজুন", detail: "দৈনিক, মৌসুমি ও নিয়মিত কৃষি চাকরি খুঁজুন অথবা কর্মী নিয়োগ দিন", href: "/jobs", tone: "bg-blue-50 text-blue-800" },
+  { icon: FileText, title: "CV Builder", subtitle: "সহজে CV তৈরি ও PDF নিন", detail: "বাংলা বা English CV তৈরি করুন, ডিজাইন বেছে নিন এবং PDF ডাউনলোড করুন", href: "/jobs/cv-builder", tone: "bg-violet-50 text-violet-800" },
   { icon: Bot, title: "AI কৃষি সহায়ক", subtitle: "প্রশ্ন করুন, করণীয় জানুন", detail: "ফসল, সার, রোগ ও চাষাবাদ নিয়ে AI সহায়তা", href: "/ai", tone: "bg-violet-50 text-violet-700" },
   { icon: Leaf, title: "ফসলের রোগ শনাক্ত", subtitle: "সমস্যা বুঝে সমাধান নিন", detail: "ফসলের লক্ষণ নিয়ে সহায়তা পান", href: "/crop-disease", tone: "bg-rose-50 text-rose-700" },
   { icon: CloudSun, title: "আবহাওয়া", subtitle: "পরিকল্পনা করুন আগেই", detail: "চাষাবাদের কাজে আবহাওয়ার তথ্য", href: "/weather", tone: "bg-sky-50 text-sky-700" },
@@ -26,6 +29,8 @@ const services = [
 ];
 
 const toolLinks = [
+  { icon: Briefcase, label: "কৃষি চাকরি", href: "/jobs" },
+  { icon: FileText, label: "CV তৈরি করুন", href: "/jobs/cv-builder" },
   { icon: CalendarDays, label: "ফসল ক্যালেন্ডার", href: "/crop-calendar" },
   { icon: Search, label: "স্মার্ট সার্চ", href: "/search" },
   { icon: Store, label: "কৃষি ব্লগ", href: "/blog" },
@@ -140,6 +145,40 @@ export default async function Home() {
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-h-52 flex-col rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-5 text-lg font-extrabold">{title}</h3><p className="mt-1 text-sm font-bold text-emerald-800">{subtitle}</p><p className="mt-2 text-sm leading-6 text-slate-500">{detail}</p></Link>)}
+        </div>
+      </section>
+
+      <section id="career-tools" className="border-y border-blue-100/80 bg-gradient-to-b from-[#f3f7ff] via-white to-[#f8f8f1] py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-800">AGRIVA CAREER TOOLS</p>
+              <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">কৃষি চাকরি খুঁজুন, নিজের CV তৈরি করুন</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-slate-600">কাজ খোঁজা থেকে আবেদন করার প্রস্তুতি—ক্যারিয়ারের প্রয়োজনীয় টুলস এক জায়গায়। মোবাইল বা কম্পিউটার থেকেই শুরু করুন।</p>
+            </div>
+            <Link href="/jobs" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-blue-900 hover:gap-3">সব চাকরি দেখুন <ArrowRight size={16} /></Link>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <Link href="/jobs" className="group flex min-h-56 flex-col rounded-3xl border border-blue-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-950/5 sm:p-7">
+              <div className="flex items-start justify-between gap-4">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-blue-800"><Briefcase size={27} /></span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-900">চাকরি ও নিয়োগ</span>
+              </div>
+              <h3 className="mt-5 text-xl font-black sm:text-2xl">কৃষি চাকরি ও কৃষিশ্রমিক খুঁজুন</h3>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">নিজের জেলা বা এলাকার দৈনিক, মৌসুমি, পার্ট-টাইম ও ফুল-টাইম কাজ খুঁজুন। প্রয়োজন হলে কর্মী নিয়োগের জন্যও চাকরি পোস্ট করুন।</p>
+              <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-extrabold text-blue-900">চাকরি খুঁজুন <ArrowRight size={16} className="transition group-hover:translate-x-1" /></span>
+            </Link>
+            <Link href="/jobs/cv-builder" className="group flex min-h-56 flex-col rounded-3xl border border-violet-100 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-violet-300 hover:shadow-xl hover:shadow-violet-950/5 sm:p-7">
+              <div className="flex items-start justify-between gap-4">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-violet-50 text-violet-800"><FileText size={27} /></span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-900">ফ্রি CV টুল</span>
+              </div>
+              <h3 className="mt-5 text-xl font-black sm:text-2xl">কয়েক ধাপে পেশাদার CV তৈরি করুন</h3>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">বাংলা বা English বেছে নিন, নিজের তথ্য যোগ করুন, পছন্দের template-এ preview দেখুন এবং PDF হিসেবে সেভ করুন।</p>
+              <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-extrabold text-violet-900">CV তৈরি শুরু করুন <ArrowRight size={16} className="transition group-hover:translate-x-1" /></span>
+            </Link>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-500">টিপস: CV Builder-এ তথ্য এই browser/device-এ সেভ হয়। শেয়ার করা ডিভাইসে ব্যক্তিগত তথ্য সেভ না রাখাই ভালো।</p>
         </div>
       </section>
 
