@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "AGRIVA — কৃষি ও কৃষকের ডিজিটাল প্ল্যাটফর্ম",
     short_name: "AGRIVA",
-    description: "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য কৃষি পণ্য, তথ্য ও ডিজিটাল টুলস।",
+    description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য কৃষি পণ্য, ফসল সহায়তা, চাকরি, CV Builder ও ডিজিটাল টুলস।",
     lang: "bn-BD",
     dir: "ltr",
     start_url: "/",
