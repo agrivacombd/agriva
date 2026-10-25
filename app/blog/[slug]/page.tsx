@@ -5,6 +5,30 @@ import { createClient } from "@supabase/supabase-js";
 
 export const revalidate = 300;
 
+// Render a deliberately small, safe Markdown subset as React elements. Content is
+// always emitted as text (never injected as HTML), so authored HTML cannot execute.
+function renderMarkdown(source: string) {
+  return source.split(/\\r?\\n/).map((line, index) => {
+    const key = `line-${index}`;
+    const trimmed = line.trim();
+    if (!trimmed) return null;
+    const heading = /^(#{1,4})\\s+(.+)$/.exec(trimmed);
+    if (heading) {
+      const level = heading[1].length;
+      const className = level === 1 ? "mt-8 text-3xl font-black" : level === 2 ? "mt-7 text-2xl font-bold" : level === 3 ? "mt-6 text-xl font-bold" : "mt-5 text-lg font-bold";
+      if (level === 1) return <h2 key={key} className={className}>{heading[2]}</h2>;
+      if (level === 2) return <h2 key={key} className={className}>{heading[2]}</h2>;
+      if (level === 3) return <h3 key={key} className={className}>{heading[2]}</h3>;
+      return <h4 key={key} className={className}>{heading[2]}</h4>;
+    }
+    if (/^[-*+]\\s+/.test(trimmed)) return <li key={key} className="ml-6 list-disc">{trimmed.replace(/^[-*+]\\s+/, "")}</li>;
+    if (/^\\d+[.)]\\s+/.test(trimmed)) return <li key={key} className="ml-6 list-decimal">{trimmed.replace(/^\\d+[.)]\\s+/, "")}</li>;
+    if (trimmed.startsWith("> ")) return <blockquote key={key} className="border-l-4 border-[#d8e4d3] pl-4 italic">{trimmed.slice(2)}</blockquote>;
+    if (trimmed.startsWith("---") || trimmed === "***") return <hr key={key} className="my-6 border-[#e4eadf]" />;
+    return <p key={key} className="my-4 leading-8">{trimmed}</p>;
+  });
+}
+
 type ArticleData = {
   title: string;
   slug: string;
@@ -86,7 +110,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       <p className="mt-6 text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Agriculture Guide</p>
       <h1 className="mt-4 text-3xl font-black md:text-5xl">{article.title}</h1>
       <p className="mt-4 text-sm text-[#647468]">বিষয়: {article.primary_keyword}</p>
-      <div className="prose prose-lg mt-10 max-w-none whitespace-pre-wrap break-words text-[#304936]">{article.body_markdown?.trim() || "এই নিবন্ধটি সম্পাদনা করা হচ্ছে।"}</div>
+      <div className="prose prose-lg mt-10 max-w-none break-words text-[#304936]">{article.body_markdown?.trim() ? renderMarkdown(article.body_markdown) : <p>এই নিবন্ধটি সম্পাদনা করা হচ্ছে।</p>}</div>
       <div className="mt-10 border-t border-[#e4eadf] pt-6"><Link href="/blog" className="font-bold text-[#17613c] hover:underline">← সব কৃষি গাইড দেখুন</Link></div>
     </article>
   </main>;
