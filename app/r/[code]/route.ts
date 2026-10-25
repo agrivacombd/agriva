@@ -5,9 +5,10 @@ type ReferralTarget = { product_id: string; expires_at: string };
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { code: string } },
+  { params }: { params: Promise<{ code: string }> },
 ) {
-  const code = params.code.trim().toUpperCase();
+  const { code: rawCode } = await params;
+  const code = rawCode.trim().toUpperCase();
   if (!/^R-[A-F0-9]{10}$/.test(code)) {
     return NextResponse.redirect(new URL("/marketplace?referral=invalid", request.url));
   }

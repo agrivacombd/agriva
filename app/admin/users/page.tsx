@@ -25,7 +25,8 @@ async function changeUserRole(formData: FormData) {
   redirect(error ? "/admin/users?notice=error" : "/admin/users?notice=saved");
 }
 
-export default async function AdminUsersPage({ searchParams }: { searchParams?: { notice?: string } }) {
+export default async function AdminUsersPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
+  const params = await searchParams;
   const { supabase } = await requireAdmin();
   const { data: users, error } = await supabase.from("profiles")
     .select("id,full_name,phone,role,created_at")
@@ -40,7 +41,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">User management</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
       <div className="mt-7"><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">People & access</p><h1 className="mt-2 text-3xl font-black">ব্যবহারকারী ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">ব্যবহারকারীর পরিচিতি দেখুন এবং Farmer/Reseller role পরিবর্তন করুন। নিরাপত্তার জন্য এই প্যানেল থেকে কাউকে Admin করা বা নিজের role পরিবর্তন করা যায় না।</p></div>
-      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{notice[searchParams.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
+      {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{notice[params.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">ব্যবহারকারী তালিকা পড়া যায়নি। Migration 024 প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
       <div className="mt-6 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><h2 className="text-lg font-black">সাম্প্রতিক ব্যবহারকারী</h2><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">{users?.length ?? 0} shown · max 100</span></div>
