@@ -114,3 +114,10 @@ No migration was executed; the PR remains Draft; no merge or deployment was perf
 - Updated `app/admin/orders/page.tsx` to retain the Supabase orders query error and show an explicit alert when loading fails, rather than silently rendering the same empty-state message used when there are genuinely no orders.
 - Added a source-level regression assertion to `scripts/smoke-admin-authorization.mjs` for this error-handling path.
 - This improves operator visibility but does not verify the underlying live admin read policy. Repository smoke script, lint, typecheck, and build still need execution in CI or a checkout.
+
+
+## Follow-up implementation — 2026-10-27 (orders empty-state correctness)
+
+- Corrected `app/admin/orders/page.tsx` so the “No orders yet” empty state is rendered only when the query succeeded and returned no rows. Query errors now show the failure alert without also claiming there are no orders.
+- Added a source-level regression assertion to `scripts/smoke-admin-authorization.mjs` for this distinction.
+- Re-fetched the changed files after the commits and verified the alert, error retention, and empty-state condition at source level. The smoke script itself has not been executed here.
