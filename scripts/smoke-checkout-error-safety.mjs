@@ -9,3 +9,8 @@ assert.match(route, /অর্ডার সম্পন্ন করা যা�
 assert.doesNotMatch(route, /NextResponse\.json\(\{ error: error\.message \}/, "raw database errors must not be returned to clients");
 
 console.log("Checkout error disclosure regression checks passed.");
+
+const checkout = readFileSync("app/checkout/page.tsx", "utf8");
+assert.match(checkout, /removeError.*cartSyncFailed/s, "successful order lines must be removed from the active cart immediately");
+assert.match(checkout, /Check your Orders page before retrying to avoid duplicate orders/, "interrupted checkout must warn about checking existing orders");
+assert.match(checkout, /Successful orders were removed from the cart/, "partial checkout must explain how successful lines were handled");
