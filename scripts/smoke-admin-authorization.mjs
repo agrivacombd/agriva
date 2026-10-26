@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const read = (path) => {
@@ -11,6 +11,28 @@ const layout = read("app/admin/layout.tsx");
 assert.match(layout, /supabase\.auth\.getUser\(\)/, "admin layout must verify the server-side session");
 assert.match(layout, /authError\s*\|\|\s*!user/, "admin layout must fail closed on auth errors");
 assert.match(layout, /profileError\s*\|\|\s*profile\?\.role\s*!==\s*"admin"/, "admin layout must fail closed on profile lookup errors and non-admin roles");
+
+const collectRouteHandlers = (directory) => {
+  if (!existsSync(directory)) return [];
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) return collectRouteHandlers(path);
+    return entry.isFile() && entry.name === "route.ts" ? [path] : [];
+  });
+};
+
+// Route Handlers do not inherit authorization from app/admin/layout.tsx.
+// Discover them dynamically so a newly added endpoint cannot silently escape
+// this regression test just because its path was not added to a fixed list.
+for (const path of [
+  ...collectRouteHandlers("app/api/admin"),
+  ...collectRouteHandlers("app/admin"),
+]) {
+  const source = read(path);
+  assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
+  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
+  assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+}
 
 for (const path of [
   "app/api/admin/article/generate/route.ts",
