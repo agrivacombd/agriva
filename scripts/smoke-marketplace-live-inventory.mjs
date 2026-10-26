@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+/**
+ * Ensure the live Marketplace never substitutes demo inventory for real data.
+ */
+import { readFileSync } from "node:fs";
+import { strict as assert } from "node:assert";
+
+const page = readFileSync("app/marketplace/page.tsx", "utf8");
+assert.match(page, /from\("products"\)/, "Marketplace must load real products from the database");
+assert.match(page, /moderation_status",\s*"approved"/, "Marketplace must show approved products only");
+assert.doesNotMatch(page, /MARKETPLACE_SAMPLE_PRODUCTS/, "Marketplace must not substitute sample inventory");
+assert.doesNotMatch(page, /Preview catalogue/, "Marketplace must not label demo products as live inventory");
+assert.match(page, /এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য/, "Marketplace must show an honest empty state when no products exist");
+
+console.log("Marketplace live-inventory regression checks passed.");

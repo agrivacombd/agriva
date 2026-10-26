@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +25,6 @@ export default async function MarketplacePage() {
     console.error("Marketplace catalogue load failed:", error);
   }
 
-  const isSamplePreview = products.length === 0;
-  if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS;
 
   return <main className="min-h-screen overflow-hidden bg-[#f5f8f1] text-[#17351f]">
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#24734a] text-white">
@@ -42,7 +39,6 @@ export default async function MarketplacePage() {
     </section>
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <div className="mb-7"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Find what you need</p><h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">কৃষি পণ্য খুঁজুন</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">ক্যাটাগরি বেছে নিন অথবা পণ্যের নাম লিখে খুঁজুন।</p></div>
-      {isSamplePreview && <div role="status" className="mb-5 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Preview catalogue:</strong> Live approved products are not available right now, so example products are being shown for layout preview only. Confirm product availability and pricing before making a purchase.</div>}
       <MarketplaceCore products={products} />
       {!products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p>}
     </section>
