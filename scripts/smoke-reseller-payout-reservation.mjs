@@ -26,3 +26,21 @@ assert.match(migration, /revoke all privileges on function public\.request_commi
 assert.match(migration, /grant execute on function public\.request_commission_payout\(numeric, text\) to authenticated, service_role/i);
 
 console.log("Reseller payout balance reservation regression checks passed.");
+
+const settlementPath = "supabase/migrations/20261027200000_fix_partial_commission_payout_settlement.sql";
+const settlement = readFileSync(settlementPath, "utf8");
+assert.match(settlement, /ADD COLUMN IF NOT EXISTS paid_amount numeric\(12,2\) NOT NULL DEFAULT 0/i,
+  "commission rows must track partial paid amounts");
+assert.match(settlement, /CHECK \(paid_amount >= 0 AND paid_amount <= amount\)/i,
+  "paid amounts must stay within commission bounds");
+assert.match(settlement, /sum\(rc\.amount - rc\.paid_amount\)/i,
+  "available balance must exclude already-paid portions");
+assert.match(settlement, /allocation := least\(c\.amount - c\.paid_amount, remaining\)/i,
+  "settlement must allocate partial commission amounts safely");
+assert.match(settlement, /p\.status <> 'approved'/i,
+  "payout settlement must require separate approval");
+assert.match(settlement, /Payout must be separately approved before payment/i);
+assert.match(settlement, /status = 'approved'[\s\S]*?paid_amount < amount/i,
+  "only outstanding approved commissions may be allocated");
+assert.match(settlement, /payment_reference = btrim\(p_payment_reference\)/i,
+  "settlement must record a normalized payment reference");
