@@ -20,7 +20,7 @@
 - Add tests for unauthenticated, ordinary-user, admin and profile-query-error cases.
 
 ## Limitations and safety
-This is a repository change, not proof of production schema, RLS or live role assignments. No migration, production write, merge or production deployment is included.
+This is a repository change, not proof of production behavior. No production migration, production write, merge or production deployment is included.
 
 ## Initial route audit — 2026-10-27
 
@@ -28,7 +28,7 @@ Static review of the current `main` branch found these concrete follow-up items.
 
 ### Findings to address before release
 
-1. **Admin guard consistency:** `app/admin/users/page.tsx`, `app/admin/settings/page.tsx`, `app/admin/products/page.tsx`, `app/admin/orders/page.tsx`, and `app/admin/reports/page.tsx) originally lacked explicit checks for auth/profile query errors. Those guards have since been hardened in this draft branch.
+1. **Admin guard consistency:** `app/admin/users/page.tsx`, `app/admin/settings/page.tsx`, `app/admin/products/page.tsx`, `app/admin/orders/page.tsx`, and `app/admin/reports/page.tsx` originally lacked explicit checks for auth/profile query errors. Those guards have since been hardened in this draft branch.
 2. **Server Action authorization:** pages with mutations must repeat authorization inside each Server Action (or call a server-only guard). A page-level guard alone is insufficient because actions can be invoked independently. Continue checking every mutation and RPC grant.
 3. **Client-rendered admin surface:** `app/admin/content-studio/page.tsx` is a client component. Its `/api/admin/content-brief` endpoint performs server-side auth and exact admin-role checks, and `app/admin/layout.tsx` provides a server-side page gate. Keep the API guard as the security boundary.
 4. **Publishing endpoint:** the content-draft publishing endpoint checks authentication and profile role server-side and fails closed on profile lookup error. Validate its status-transition logic, audit logging and database-side permissions before treating publishing as production-ready.
@@ -46,41 +46,43 @@ No production migration, production write, merge or deployment was performed for
 
 ## Follow-up implementation — 2026-10-27 (admin mutation audit)
 
-### Changes made
-
 - Updated local admin guards in `app/admin/transport/page.tsx`, `app/admin/harvest/page.tsx`, and `app/admin/jobs/page.tsx` to reject session/profile lookup errors and missing/non-admin profiles.
 - Extended `scripts/smoke-admin-authorization.mjs` with source assertions for fail-closed guards, transport/job moderation RPC usage, allowed job moderation statuses, and article review/generation regressions.
 - Confirmed from checked-in migrations that transport verification and job moderation have admin-only SECURITY DEFINER RPCs with role checks and restricted grants.
 
-### Findings that remain blockers
+## Moderation RPC validation — 2026-10-27
 
-- **Harvest moderation needs database-level verification before release.** `app/admin/harvest/page.tsx` currently performs a direct `harvest_listings` UPDATE for `moderation_status` and `moderation_note`. The migration inventory in this branch does not contain the table definition or an explicit admin moderation RPC/policy for this table. Inspect the actual deployed schema and add a reviewed least-privilege database mutation path if needed.
-- `app/api/admin/content-opportunities/route.ts` has an admin role guard and checks status transitions, but live RLS and audit requirements still need independent verification.
-- The source-based regression script is a guardrail; it does not prove runtime authorization or live database policy behavior.
+- Hardened `admin_set_transport_partner_verification` and `admin_moderate_job_post` so `NULL` status arguments are explicitly rejected.
+- Added source assertions for both null/unsupported-status checks. The jobs RPC records status transitions in `job_moderation_events`; transport verification stores reviewer/time/note on the partner record but does not create a separate event-history table in that migration.
 
-## Follow-up implementation — 2026-10-27 (moderation RPC validation)
-
-- Hardened `admin_set_transport_partner_verification` and `admin_moderate_job_post` so `NULL` status arguments are explicitly rejected. In SQL, `NULL NOT IN (...)` evaluates to unknown, so a plain `IF status NOT IN (...) ` does not enter the rejection branch.
-- Added source assertions for both null/unsupported-status checks. The jobs RPC records status transitions in `job_moderation_events`; transport verification stores reviewer/time/note on the partner record but does not create a separate event-history table in this migration.
-- **Harvest moderation remains blocked:** the page still performs a direct UPDATE to `harvest_listings`, while this branch's migration inventory does not define that table or its RLS/update policy. Verify the deployed table/policies and use a least-privilege admin RPC plus audit history if existing protections are insufficient. Do not invent a migration without authoritative schema.
-
-## Follow-up implementation — 2026-10-27 (admin read error states)
+## Admin read error states — 2026-10-27
 
 - Hardened local guards in `app/admin/categories/page.tsx`, `app/admin/opportunities/page.tsx`, and `app/admin/audit/page.tsx` to fail closed on session/profile query errors.
-- Updated `app/admin/orders/page.tsx` to distinguish a failed query from a genuinely empty order list; the empty state is suppressed on query failure.
-- Updated `app/admin/reports/page.tsx` to withhold aggregate metrics if any of its four source queries fails, with a Bengali explanation.
-- Updated `app/admin/opportunities/page.tsx` to surface its query failure and avoid showing “No search opportunities yet” when the data request fails. Added source assertions for this behavior in `scripts/smoke-admin-authorization.mjs`.
+- Updated `app/admin/orders/page.tsx` to distinguish a failed query from a genuinely empty order list.
+- Updated `app/admin/reports/page.tsx` to withhold aggregate metrics if any of its four source queries fails.
+- Updated `app/admin/opportunities/page.tsx` to surface its query failure and avoid a false empty-state message.
 
-## Harvest rejection reason — 2026-10-27
+## Production database read-only audit — 2026-10-27
 
-- Updated `moderateHarvest` to reject a `rejected` action unless a non-empty trimmed note (up to 500 characters) is supplied. The form label and invalid-request message now explain that rejection requires a reason.
-- Added source assertions to `scripts/smoke-admin-authorization.mjs` for both server-side validation and the UI hint.
-- This is application-level validation only. The direct `harvest_listings` update remains a release blocker until its deployed RLS/policy and audit path are verified.
+Read-only inspection of the connected Supabase project `agriva` (project ref `utytcoxpjnoanqffkqft`) confirmed that `public.harvest_listings` exists and RLS is enabled. Its current `guard_harvest_listing_moderation()` trigger resets `moderation_status` and `moderation_note` only when a non-admin changes the status. A non-admin changing only `moderation_note` does not enter that branch, so the old note can be replaced. This is a concrete production security bug.
 
-## Exact-head CI observation — 2026-10-27
+The live policy allows authenticated owners to update their own rows; table-level UPDATE grants are present. The trigger is therefore an important additional guard, and its note-only gap needs a migration. The same read-only audit confirmed `admin_audit_log` has the columns needed to record moderation changes.
 
-GitHub Actions run **40414314964** passed on prior exact head `c42d58623cf0580cc67bd4d59a7eed2d3093bd38`, including lint, TypeScript, configured regression scripts and production build. This result applies to that SHA only; subsequent commits require new exact-head CI verification.
+### Fix committed to this PR (not applied to production)
 
-The latest checked run **40414957469** was in progress (lint passed; TypeScript check was running) before the most recent harvest changes. The latest exact head must be checked again after these commits.
+- Added `supabase/migrations/20261027190000_harden_harvest_moderation.sql` to protect both moderation fields whenever either changes, unless the caller is an admin.
+- Added SECURITY DEFINER RPC `admin_moderate_harvest_listing`, which verifies the current admin profile, validates the status and note, rejects blank reasons for rejection, locks the target listing, performs the update, and records before/after moderation details in `admin_audit_log`.
+- Updated `app/admin/harvest/page.tsx` to call that RPC instead of directly updating the table.
+- Added source regression assertions for the RPC call, trigger note protection, audit write, and revoked PUBLIC/anon execution.
 
-Live Supabase access was unavailable in this session, so deployed RLS/grants remain unverified. The PR remains Draft. No migration was executed, and no merge or deployment was performed.
+The migration is committed to the PR branch only. It has **not** been applied to production. Verify its SQL against a disposable database or preview branch and review the resulting RLS/RPC behavior before release.
+
+## CI findings
+
+GitHub Actions run **40415279282** failed on exact head `676ccf586b1dcfbd6b4d2eb4124b9addd64b1d76`: lint and TypeScript passed, but `test:admin-authorization` failed because the article Markdown source assertion expected escaped newline characters while the implementation contains actual line breaks. The regression assertion has been corrected in a later commit; a fresh exact-head run is required to confirm it passes.
+
+Vercel has a ready preview deployment for earlier commit `5d52709794c8ddea2248f7812d8adf40e2c6c9bd`, not the latest branch head. A prior Vercel comment reported the free-plan deployment limit (more than 100 deployments per day). Do not promote the old preview or claim the current commit is deployed.
+
+Supabase Security Advisor also reports SECURITY DEFINER functions executable by `anon` or `authenticated`. Some are intentionally public tracking/attribution RPCs, while admin RPCs are expected to be callable by authenticated users only when the function itself verifies the admin role. Review each finding's function body and intended public contract before changing grants globally; blanket revocation could break signup, attribution, search, cart, or payment flows.
+
+The PR remains Draft. No production migration, merge, or deployment was performed.
