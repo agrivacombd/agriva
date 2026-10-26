@@ -37,7 +37,7 @@ begin
     raise exception 'Admin role required' using errcode = '42501';
   end if;
 
-  if p_status not in ('verified', 'rejected', 'suspended') then
+  if p_status is null or p_status not in ('verified', 'rejected', 'suspended') then
     raise exception 'Invalid verification status' using errcode = '22023';
   end if;
 
