@@ -28,6 +28,8 @@ jobs:
         run: node --check scripts/smoke-smart-search.mjs
       - name: Category taxonomy SEO smoke test
         run: node scripts/smoke-taxonomy.mjs
+      - name: Jobs application server-binding regression test
+        run: npm run test:job-application-security
       - name: Production build
         run: npm run build
         env:
