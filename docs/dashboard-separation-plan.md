@@ -99,3 +99,11 @@ No migration was executed; the PR remains Draft; no merge or deployment was perf
 - Extended `scripts/smoke-admin-authorization.mjs` to assert both database functions reject null and unsupported statuses. These are source-level regression assertions; the script has not been executed in a checked-out repository in this session.
 - Line-by-line source review confirms both functions check the caller's authenticated admin profile and restrict function execution to `authenticated` after revoking `PUBLIC` and `anon`. The jobs RPC also records each status transition in `job_moderation_events`; transport verification stores reviewer/time/note on the partner record, but does not create a separate event-history table in this migration.
 - **Harvest moderation remains blocked:** the page still performs a direct UPDATE to `harvest_listings`, while this branch's migration inventory does not define that table or its RLS/update policy. Do not invent a migration without the authoritative schema. Before release, verify the deployed table/policies and replace direct mutation with a least-privilege admin RPC plus audit history if the existing database design does not already provide equivalent protections.
+
+
+## Follow-up implementation — 2026-10-27 (remaining page guards)
+
+- Hardened the local guards in `app/admin/categories/page.tsx`, `app/admin/opportunities/page.tsx`, and `app/admin/audit/page.tsx`. Each now rejects both `auth.getUser()` errors and profile lookup errors, in addition to missing users and non-admin roles.
+- Extended `scripts/smoke-admin-authorization.mjs` to assert fail-closed behavior for all three pages.
+- The categories page's Server Action already calls its local admin guard; the opportunities mutation remains in the separately guarded `/api/admin/content-opportunities` route. The admin layout remains defense in depth, not a replacement for these local checks.
+- Static source checks only: this script has not been executed in a checked-out repository, and live database policies remain unverified.
