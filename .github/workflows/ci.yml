@@ -30,6 +30,8 @@ jobs:
         run: node scripts/smoke-taxonomy.mjs
       - name: Jobs application server-binding regression test
         run: npm run test:job-application-security
+      - name: Payment-event RPC grant regression test
+        run: npm run test:payment-event-grants
       - name: Production build
         run: npm run build
         env:
