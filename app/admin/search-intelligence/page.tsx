@@ -145,8 +145,8 @@ export default function SearchIntelligencePage() {
           </div>
           <p className="mt-4 rounded-2xl bg-[#f5f7f2] p-4 text-sm leading-6">Next step: open the editor to create a research brief for this topic. The brief should use real sources, and any missing search data must be marked unavailable rather than guessed.</p>
           <div className="mt-5 flex flex-wrap justify-end gap-2">
-            <button disabled={saving} onClick={() => void updateStatus(selected, "rejected")} className="rounded-xl border px-4 py-3 text-sm font-bold disabled:opacity-50">Reject</button>
-            <button disabled={saving} onClick={() => void updateStatus(selected, "review")} className="rounded-xl border px-4 py-3 text-sm font-bold disabled:opacity-50">Send to review</button>
+            {selected.status === "review" && <button disabled={saving} onClick={() => void updateStatus(selected, "rejected")} className="rounded-xl border px-4 py-3 text-sm font-bold disabled:opacity-50">Reject</button>}
+            {(selected.status === "open" || selected.status === "draft") && <button disabled={saving} onClick={() => void updateStatus(selected, "review")} className="rounded-xl border px-4 py-3 text-sm font-bold disabled:opacity-50">Send to review</button>}
             <Link href={`/admin/content-studio?keyword=${encodeURIComponent(selected.keyword)}`} className="rounded-xl bg-[#17351f] px-4 py-3 text-sm font-bold text-white">Create research brief</Link>
           </div>
         </section>
