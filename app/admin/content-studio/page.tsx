@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Brief = {
   title: string;
@@ -42,6 +42,19 @@ export default function ContentStudioPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [draftId, setDraftId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [savedDrafts, setSavedDrafts] = useState<Array<{ id: string; title: string; primary_keyword: string; body_markdown: string | null; meta_title: string | null; meta_description: string | null; outline: string[]; faq: string[]; search_intent: string }>>([]);
+
+  async function loadSavedDrafts() {
+    try {
+      const response = await fetch("/api/admin/content-drafts");
+      const data = await response.json();
+      if (response.ok) setSavedDrafts(data.drafts ?? []);
+    } catch { /* Draft loading is optional until the admin session is ready. */ }
+  }
+
+  useEffect(() => { void loadSavedDrafts(); }, []);
 
 
   const markdown = useMemo(() => {
@@ -90,6 +103,66 @@ export default function ContentStudioPage() {
     }
   }
 
+  async function saveDraft() {
+    if (!brief || !keyword.trim()) {
+      setError("Draft save করার আগে একটি content brief তৈরি করুন।");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch("/api/admin/content-drafts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...(draftId ? { id: draftId } : {}),
+          title: brief.title,
+          primaryKeyword: keyword.trim(),
+          searchIntent: intent,
+          outline: brief.outline,
+          faq: brief.faq,
+          bodyMarkdown: articleBody,
+          metaTitle: brief.seo.metaTitle,
+          metaDescription: brief.seo.metaDescription,
+          secondaryKeywords: brief.seo.keywords,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Draft save করা যায়নি।");
+      setDraftId(data.draft.id);
+      setNotice("Draft database-এ সংরক্ষিত হয়েছে। এটি publish করা হয়নি।");
+      await loadSavedDrafts();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Draft save করা যায়নি।");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function openSavedDraft(id: string) {
+    const draft = savedDrafts.find((item) => item.id === id);
+    if (!draft) return;
+    setDraftId(draft.id);
+    setKeyword(draft.primary_keyword);
+    setIntent(draft.search_intent);
+    setArticleBody(draft.body_markdown ?? "");
+    setBrief({
+      title: draft.title,
+      language: "Bengali",
+      audience: "farmers",
+      contentType: "how-to",
+      searchIntent: draft.search_intent,
+      angle: "",
+      outline: draft.outline ?? [],
+      faq: draft.faq ?? [],
+      researchChecklist: ["প্রকাশের আগে তথ্য ও সূত্র যাচাই করুন।"],
+      seo: { metaTitle: draft.meta_title ?? draft.title, metaDescription: draft.meta_description ?? "", keywords: [draft.primary_keyword] },
+      generatedWith: "template",
+    });
+    setNotice("Saved draft খোলা হয়েছে। সম্পাদনার পর আবার Save draft চাপুন।");
+  }
+
   async function copyMarkdown() {
     try {
       await navigator.clipboard.writeText(markdown);
@@ -111,6 +184,11 @@ export default function ContentStudioPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(280px,360px)_1fr]">
           <aside className="h-fit rounded-3xl border border-[#e4eadf] bg-white p-5 shadow-sm sm:p-6">
             <h2 className="text-xl font-black">Research brief</h2>
+            <label className="mt-4 block text-sm font-bold" htmlFor="saved-drafts">Saved drafts</label>
+            <select id="saved-drafts" value={draftId ?? ""} onChange={(event) => openSavedDraft(event.target.value)} className="mt-2 min-h-12 w-full rounded-xl border border-[#dce6d7] bg-white px-3">
+              <option value="">নতুন draft / select saved draft</option>
+              {savedDrafts.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            </select>
             <p className="mt-2 text-sm leading-6 text-[#647468]">একটি বিষয় দিয়ে শুরু করুন। প্রকৃত Search Console বা keyword metrics সংযুক্ত না থাকলে এখানে সেগুলো অনুমান করে দেখানো হবে না।</p>
             <label className="mt-5 block text-sm font-bold" htmlFor="keyword">মূল বিষয় / primary keyword</label>
             <input id="keyword" value={keyword} onChange={(event) => setKeyword(event.target.value)} maxLength={160} className="mt-2 min-h-12 w-full rounded-xl border border-[#dce6d7] bg-white px-4 outline-none focus:border-[#39754b]" placeholder="যেমন: ধানের পাতায় হলুদ দাগ" />
@@ -141,11 +219,11 @@ export default function ContentStudioPage() {
               </div>
 
               <div className="rounded-3xl border border-[#e4eadf] bg-white p-5 shadow-sm sm:p-7">
-                <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">Article editor</h2><p className="mt-1 text-sm text-[#647468]">নিজের যাচাইকৃত লেখা এখানে লিখুন বা সম্পাদনা করুন।</p></div><button onClick={() => void copyMarkdown()} className="min-h-10 rounded-xl border border-[#dce6d7] px-4 py-2 text-sm font-bold">Copy Markdown</button></div>
+                <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">Article editor</h2><p className="mt-1 text-sm text-[#647468]">নিজের যাচাইকৃত লেখা এখানে লিখুন বা সম্পাদনা করুন।</p></div><div className="flex flex-wrap gap-2"><button onClick={() => void saveDraft()} disabled={saving || !brief} className="min-h-10 rounded-xl bg-[#17351f] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{saving ? "Saving…" : "Save draft"}</button><button onClick={() => void copyMarkdown()} className="min-h-10 rounded-xl border border-[#dce6d7] px-4 py-2 text-sm font-bold">Copy Markdown</button></div></div>
                 <label htmlFor="article-body" className="mt-5 block text-sm font-bold">Article body (Markdown supported)</label>
                 <textarea id="article-body" value={articleBody} onChange={(event) => setArticleBody(event.target.value)} rows={22} className="mt-2 w-full rounded-2xl border border-[#dce6d7] p-4 font-mono text-sm leading-7 outline-none focus:border-[#39754b]" placeholder={"## ভূমিকা\n\nপাঠকের মূল প্রশ্নের সরাসরি উত্তর দিয়ে শুরু করুন।\n\n## ধাপে ধাপে করণীয়\n\nবিশ্বস্ত সূত্র দিয়ে প্রতিটি দাবি যাচাই করুন…"} />
                 <div className="mt-5 rounded-2xl bg-[#f5f7f2] p-4"><h3 className="font-black">SEO metadata</h3><p className="mt-3 text-sm"><b>Meta title:</b> {brief.seo.metaTitle}</p><p className="mt-2 text-sm leading-6"><b>Meta description:</b> {brief.seo.metaDescription}</p><p className="mt-2 break-words text-sm leading-6"><b>Related keywords:</b> {brief.seo.keywords.join(", ")}</p></div>
-                <p className="mt-4 text-xs leading-5 text-[#647468]">এই workspace-এ পরিবর্তনগুলো বর্তমানে browser state-এ থাকে। Copy Markdown করে নিরাপদে সংরক্ষণ করুন; database/CMS save এবং live publish এখনো যুক্ত নয়।</p>
+                <p className="mt-4 text-xs leading-5 text-[#647468]">Save draft চাপলে লেখা database-এ draft হিসেবে থাকবে। Publish workflow এখনো এই editor থেকে চালু নয়; Save করার পরও মানবীয় review প্রয়োজন।</p>
               </div>
             </>}
           </section>
