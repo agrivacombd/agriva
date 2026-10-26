@@ -29,6 +29,8 @@ export default function OrderTracking() {
       setPaymentNotice("পেমেন্ট গেটওয়ে থেকে ফিরে এসেছেন। পেমেন্ট এখনো যাচাই হচ্ছে—অর্ডারের Payment status দেখে নিশ্চিত হোন। শুধু redirect দেখে পেমেন্ট সফল ধরে নেবেন না।");
     } else if (returnedPayment === "failed") {
       setPaymentNotice("পেমেন্ট সম্পন্ন হয়নি বলে গেটওয়ে জানিয়েছে। নিচে অর্ডারের Payment status যাচাই করুন; ইতিমধ্যে টাকা কাটা হয়ে থাকলে আবার পেমেন্ট না করে সাপোর্টে যোগাযোগ করুন।");
+    } else if (returnedPayment === "cancelled") {
+      setPaymentNotice("আপনি পেমেন্ট প্রক্রিয়া বাতিল করেছেন। অর্ডারের Payment status যাচাই করুন; পেমেন্ট pending থাকলে পরে আবার চেষ্টা করতে পারবেন।");
     }
 
     (async () => {
