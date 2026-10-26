@@ -102,24 +102,8 @@ create policy "Signed-in users can request an exchange"
     )
   );
 
-drop policy if exists "Participants can update exchange requests" on public.green_exchange_requests;
-create policy "Participants can update exchange requests"
-  on public.green_exchange_requests for update to authenticated
-  using (
-    (select auth.uid()) = requester_id
-    or exists (
-      select 1 from public.green_exchange_listings l
-      where l.id = listing_id and l.owner_id = (select auth.uid())
-    )
-  )
-  with check (
-    (select auth.uid()) = requester_id
-    or exists (
-      select 1 from public.green_exchange_listings l
-      where l.id = listing_id and l.owner_id = (select auth.uid())
-    )
-  );
-
+-- Request status transitions are intentionally not directly writable by clients.
+-- Add a server-validated transition endpoint before granting UPDATE on requests.
 grant select on public.green_exchange_listings to anon, authenticated;
 grant insert, update, delete on public.green_exchange_listings to authenticated;
-grant select, insert, update on public.green_exchange_requests to authenticated;
+grant select, insert on public.green_exchange_requests to authenticated;
