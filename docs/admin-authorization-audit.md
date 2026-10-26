@@ -31,7 +31,7 @@ This is a baseline for review, not a substitute for inspecting every table polic
 
 - The Supabase Security Advisor reports five `SECURITY DEFINER` functions callable by `anon` and 28 callable by `authenticated`. Some may be intentionally public (for example, public settings/search/attribution); each function must be reviewed individually for grants, input bounds, data exposure, and authorization. Do not blanket-revoke all functions without checking product behavior.
 - The live `admin_set_user_role` function adds the selected role to `user_role_memberships` but does not remove stale membership rows. Before changing this, determine whether that table intentionally represents multiple simultaneous capabilities or mirrors `profiles.role`; then add a migration and tests matching the chosen model.
-- Order status transitions and commission/payout RPCs need a state-machine review, including who may transition each status and when commission can be approved.
+- Added PR-only migration `20261027193000_harden_marketplace_order_transitions.sql` to restrict order state transitions by buyer/seller/admin, reject invalid transitions, and avoid automatically restocking inventory on refunds. This is a proposed conservative policy and must be confirmed against the product's intended workflow in staging. Commission/payout RPCs still need a separate state-machine and balance review.
 - The harvest moderation hardening migration exists in the PR but has not been applied to production. Verify it in staging before release.
 - A passing CI build does not prove RLS behavior or live permissions; test with real role-specific sessions in staging.
 
@@ -42,6 +42,7 @@ This is a baseline for review, not a substitute for inspecting every table polic
 - [ ] Anonymous requests to privileged RPCs are denied; intended public RPCs expose no private data.
 - [ ] Ordinary users cannot call admin RPCs directly or alter roles/ownership fields.
 - [ ] Admin role changes are audited and cannot grant admin privileges.
+- [ ] Order state-machine migration is validated against the intended buyer/seller/admin workflow in staging.
 - [ ] Order/commission/payout state transitions pass positive and negative tests.
 - [ ] Harvest/job/transport moderation RPCs enforce status and note validation and create audit records.
 - [ ] Mobile, tablet, and desktop staging smoke tests are complete.
