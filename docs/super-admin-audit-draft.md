@@ -5,8 +5,7 @@
 ## Current implementation state
 
 - Command Center UI is proposed in draft PR #99: https://github.com/agrivacombd/agriva/pull/99
-- Latest observed PR #99 head: `fd137bc28a1a316bb1645b46d5e0435102014e24`
-- CI for that exact SHA: **success** (AGRIVA CI run 40409711290).
+- The earlier UI-only head `fd137bc28a1a316bb1645b46d5e0435102014e24` passed CI (run 40409711290), but later audit and CSV-fix commits changed the branch. CI for the current final head has **not yet been confirmed**; do not treat the earlier pass as final validation.
 - No merge, production deployment, database write, migration, role change, or publication was performed.
 - Existing admin routes are separate modules; the Command Center is a navigation/overview layer, not yet a unified CRUD system.
 
@@ -94,3 +93,37 @@ The following linked pages were present in the observed `main` tree: products, o
 - Next.js authentication and authorization: https://nextjs.org/docs/app/guides/authentication
 - Supabase Row Level Security: https://supabase.com/docs/guides/database/postgres/row-level-security
 - OWASP Logging Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+
+
+## Full site inventory — routes/tools that must not be omitted
+
+The repository tree also contains public and authenticated experiences beyond `/admin`. These must be included in the full access map and not silently treated as admin features:
+
+- **Core/public:** home, about/contact, privacy/terms, login/signup/auth callback, search, blog index/detail, learn index/detail, plant-disease/science learning, farms, buyer demands.
+- **Marketplace & commerce:** marketplace index/product/category/subcategory, buy, cart, checkout, orders, reseller referral redirect, reseller dashboard/earnings, farmer dashboard/orders/products, sell-harvest.
+- **Jobs & transport:** jobs index/detail, application, job posting, CV builder, transport page and booking workflow.
+- **Agriculture tools:** tools index plus AI farm assistant, AI search intelligence, crop calendar, crop choice simulator, crop disease assistant, crop market price, crop profit calculator, farm cost calculator, farm diary, farm weather, fertilizer calculator, harvest date, irrigation water, seed rate; also standalone crop calendar/disease, market prices, soil/fertilizer planner and weather routes.
+- **API endpoints:** admin article generation, content brief, content-draft generation, content-opportunities; public AI answer, crop disease, farmer products, health, search, checkout; SSLCommerz init/success/fail/cancel/IPN, payment webhook, reseller links, auth callback.
+- **Database migrations:** the repository contains migrations 001–027 and later timestamped migrations covering core schema, marketplace/order/payment, commissions/payouts, search/content drafts, admin RPCs/settings/categories, transport, learning corrections, jobs, role memberships, RLS/performance and payment/payout integrity. They are repository history, **not proof those migrations have been applied to the production Supabase project**.
+
+## Draft/live/tool completeness requirements
+
+For every content, product, job, harvest, category, learning and site-setting module, map each entity's actual lifecycle from database and UI: draft, pending review, approved, published/active, rejected, paused/unpublished, archived/deleted where supported. Verify which states public pages and sitemap/search APIs actually expose. The command center must link to draft queues and preview/revision history, not just live pages.
+
+For every agriculture tool, inventory: page route, component, API/dependency, data source, authentication requirement, input validation, error/empty state, mobile layout, analytics/privacy, and whether the result is persisted or only client-side. Tools are user-facing capabilities, not automatically admin-controlled modules; do not add privileged controls to them without a defined need and authorization model.
+
+For every route and Server Action, record: anonymous behavior, regular-user behavior, admin behavior, database/RPC permissions, writes/side effects, cache/revalidation behavior, audit event, input bounds, abuse/rate limits, and tests. Use an explicit matrix so no route is silently skipped.
+
+## Exhaustive audit checklist
+
+- [ ] Enumerate every route from the complete repository tree, including dynamic routes, route handlers, Server Actions, middleware, cron/background tasks, and external webhooks.
+- [ ] Enumerate all tables, views, RPC/functions, triggers, RLS policies, storage buckets, and environment-dependent integrations from migrations and read-only production metadata.
+- [ ] Compare migration files to the confirmed production Supabase project; never infer applied state from filenames.
+- [ ] Build an entity-by-entity live/draft/review/published state map and check public exposure.
+- [ ] Audit every agriculture tool and its upstream data/API, rate/cost controls, privacy, accessibility, and mobile behavior.
+- [ ] Check every Command Center link against an actual route or clearly marked external draft PR; label placeholder shortcuts honestly.
+- [ ] Validate each sensitive operation against anonymous, normal-user, and admin sessions; inspect RPC grants and RLS.
+- [ ] Verify payment callbacks/webhooks, idempotency, amount/order binding, replay handling and provider signature protocol.
+- [ ] Verify admin audit logging, role changes, payout/payment/settings operations, CSV export safety, and error redaction.
+- [ ] Run CI and tests against the exact final PR head; manually test mobile/desktop and all routes.
+- [ ] Keep the work draft-only until explicit approval; no merge/deploy/migration or production writes without permission.
