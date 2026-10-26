@@ -7,7 +7,7 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; commission_percent?: number | null; brand_name?: string | null; sku?: string | null; unit_label?: string | null; product_type?: string | null; crop_suitability?: string[] | null; composition?: string | null; usage_instructions?: string | null; safety_information?: string | null; origin_district?: string | null; packaging_details?: string | null; image_urls?: string[] | null; seo_title?: string | null; meta_description?: string | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -23,7 +23,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,commission_percent";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,commission_percent,brand_name,sku,unit_label,product_type,crop_suitability,composition,usage_instructions,safety_information,origin_district,packaging_details,image_urls,seo_title,meta_description";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -60,6 +60,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
     description: typeof product.description === "string" ? product.description : undefined,
+    image: product.image_urls?.length ? product.image_urls : undefined,
+    sku: product.sku || undefined,
+    brand: product.brand_name ? { "@type": "Brand", name: product.brand_name } : undefined,
     category: product.category || undefined,
     offers: { "@type": "Offer", priceCurrency: "BDT", price: Number(product.price), availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${base}${canonicalPath}` },
   };
@@ -68,11 +71,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link>{subcategory && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}</>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-8 md:min-h-[420px]"><div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div></div>
+        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 md:min-h-[420px]">{product.image_urls?.[0] ? <img src={product.image_urls[0]} alt={product.name} className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
-          {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}
+          {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}{product.brand_name && <p className="mt-2 text-xs text-slate-500">ব্র্যান্ড: {product.brand_name}</p>}{product.sku && <p className="mt-1 text-xs text-slate-500">SKU: {product.sku}</p>}{product.unit_label && <p className="mt-2 text-sm font-bold">প্যাক/একক: {product.unit_label}</p>}
+          {product.crop_suitability?.length ? <div className="mt-4"><h2 className="font-bold">কোন ফসলের জন্য</h2><p className="mt-1 text-sm text-slate-600">{product.crop_suitability.join(" · ")}</p></div> : null}
+          {product.composition && <div className="mt-4"><h2 className="font-bold">উপাদান</h2><p className="mt-1 whitespace-pre-line text-sm text-slate-600">{product.composition}</p></div>}
+          {product.usage_instructions && <div className="mt-4"><h2 className="font-bold">ব্যবহারবিধি</h2><p className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-600">{product.usage_instructions}</p></div>}
+          {product.safety_information && <div className="mt-4 rounded-xl bg-amber-50 p-3"><h2 className="font-bold text-amber-900">নিরাপত্তা ও সতর্কতা</h2><p className="mt-1 whitespace-pre-line text-sm leading-6 text-amber-900">{product.safety_information}</p></div>}
+          {product.origin_district && <p className="mt-3 text-sm text-slate-600">উৎপত্তি: {product.origin_district}</p>}{product.packaging_details && <p className="mt-2 text-sm text-slate-600">প্যাকেজিং: {product.packaging_details}</p>}
           {typeof product.description === "string" && product.description.trim() && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{product.description}</p>}
           <p className="mt-6 text-3xl font-black text-emerald-900">{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price || 0).toLocaleString("bn-BD")}</p>
           <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : `প্রাপ্য মজুত: ${Number(product.stock || 0).toLocaleString("bn-BD")}`}</p>
