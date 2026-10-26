@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (error || !data) {
-    await auth.supabase.from("content_opportunities").delete().eq("id", opportunity.id);
+    await auth.supabase.from("content_opportunities").update({ status: "rejected" }).eq("id", opportunity.id);
     return NextResponse.json({ error: "Unable to save article draft" }, { status: 500 });
   }
 
