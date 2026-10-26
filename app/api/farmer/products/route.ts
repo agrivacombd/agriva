@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
   if (!name || !Number.isFinite(price) || price < 0 || !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100) return NextResponse.json({ error: "Invalid product data" }, { status: 400 });
   const slug = `${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${crypto.randomUUID().slice(0, 8)}`;
   const { data, error } = await supabase.from("products").insert({ farmer_id: user.id, name, slug, price, stock, commission_percent: commission, description, status: "draft", moderation_status: "pending" }).select("id,name,moderation_status").single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    console.error("Farmer product creation failed", { code: error.code || "unknown" });
+    return NextResponse.json({ error: "পণ্য সংরক্ষণ করা যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
+  }
   return NextResponse.json({ product: data }, { status: 201 });
 }
