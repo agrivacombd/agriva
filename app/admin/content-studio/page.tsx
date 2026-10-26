@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 type Brief = {
   title: string;
@@ -31,7 +31,7 @@ const contentTypes = [
 ];
 
 export default function ContentStudioPage() {
-  const [keyword, setKeyword] = useState("");
+  const [keyword, setKeyword] = useState(() => typeof window === "undefined" ? "" : (new URLSearchParams(window.location.search).get("keyword") ?? "").slice(0, 160));
   const [language, setLanguage] = useState("Bengali");
   const [audience, setAudience] = useState("farmers");
   const [contentType, setContentType] = useState("how-to");
@@ -43,10 +43,6 @@ export default function ContentStudioPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  useEffect(() => {
-    const initialKeyword = new URLSearchParams(window.location.search).get("keyword");
-    if (initialKeyword) setKeyword(initialKeyword.slice(0, 160));
-  }, []);
 
   const markdown = useMemo(() => {
     if (!brief) return "";
