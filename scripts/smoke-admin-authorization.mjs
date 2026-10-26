@@ -41,6 +41,10 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const ordersPage = read("app/admin/orders/page.tsx");
+assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
+assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
+
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
 assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
 assert.ok(articleGenerator.includes("### ${keyword} কী?\n\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
