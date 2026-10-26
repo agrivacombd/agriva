@@ -18,6 +18,13 @@ type Opportunity = {
 
 const filters = ["all", "open", "draft", "review", "approved", "published", "rejected"] as const;
 type Filter = (typeof filters)[number];
+type SearchConsoleStatus = {
+  configured: boolean;
+  connectionState: string;
+  metricsAvailable: boolean;
+  missing: Array<{ key: string; label: string }>;
+  message: string;
+};
 
 function labelStatus(status: string) {
   const labels: Record<string, string> = {
@@ -39,6 +46,8 @@ export default function SearchIntelligencePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [searchConsole, setSearchConsole] = useState<SearchConsoleStatus | null>(null);
+  const [searchConsoleError, setSearchConsoleError] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,6 +66,20 @@ export default function SearchIntelligencePage() {
   }, [filter]);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/admin/search-console/status", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not check Search Console setup.");
+        if (active) setSearchConsole(data as SearchConsoleStatus);
+      })
+      .catch((err) => {
+        if (active) setSearchConsoleError(err instanceof Error ? err.message : "Could not check Search Console setup.");
+      });
+    return () => { active = false; };
+  }, []);
 
   const counts = useMemo(() => ({
     total: rows.length,
@@ -98,6 +121,37 @@ export default function SearchIntelligencePage() {
           </div>
           <Link href="/admin/content-studio" className="inline-flex min-h-11 items-center rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white">Open article editor</Link>
         </header>
+
+        <section className="mt-6 rounded-3xl border border-[#e4eadf] bg-white p-5 shadow-sm sm:p-6" aria-labelledby="gsc-status-title">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-[#b58b28]">External data connection</p>
+              <h2 id="gsc-status-title" className="mt-2 text-xl font-black">Google Search Console</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-[#647468]">
+                {searchConsoleError || searchConsole?.message || "Checking server-side OAuth configuration…"}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full px-3 py-2 text-xs font-bold ${searchConsole?.connectionState === "connected" ? "bg-emerald-50 text-emerald-900" : searchConsole?.configured ? "bg-amber-50 text-amber-900" : "bg-[#f5f7f2] text-[#647468]"}`}>
+                {searchConsole?.connectionState === "connected" ? "Google account connected" : searchConsole?.configured ? "Ready to connect" : "Not connected"}
+              </span>
+              {searchConsole?.configured && searchConsole.connectionState !== "connected" && (
+                <a href="/api/admin/search-console/connect" className="inline-flex min-h-10 items-center rounded-xl bg-[#17351f] px-4 py-2 text-sm font-bold text-white">
+                  Connect Google account
+                </a>
+              )}
+            </div>
+          </div>
+          {searchConsole && !searchConsole.configured && searchConsole.missing.length > 0 && (
+            <div className="mt-4">
+              <p className="text-sm font-bold">Missing server environment variables</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {searchConsole.missing.map((item) => <li key={item.key} className="rounded-lg border border-[#e4eadf] px-3 py-2 font-mono text-xs">{item.key}</li>)}
+              </ul>
+            </div>
+          )}
+          <p className="mt-4 text-xs leading-5 text-[#647468]">The connection stores the refresh token encrypted on the server. Property verification and live metrics sync are not implemented yet, so this page will not display Google analytics until those steps are completed. This status check never returns secrets or fabricated analytics.</p>
+        </section>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           <Stat label="Loaded opportunities" value={loading ? "…" : counts.total.toString()} />
