@@ -185,7 +185,7 @@ begin
   if v_admin is null or not exists(select 1 from public.profiles p where p.id=v_admin and p.role='admin') then
     raise exception 'admin access required' using errcode='42501';
   end if;
-  if p_status not in ('published','rejected','paused','filled') then
+  if p_status is null or p_status not in ('published','rejected','paused','filled') then
     raise exception 'invalid moderation status' using errcode='22023';
   end if;
   if p_note is not null and char_length(p_note)>1000 then

@@ -3,19 +3,50 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
   if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
 
   const body = await request.json().catch(() => null);
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
-  const opportunityId = body?.opportunityId || null;
-  if (!keyword) return NextResponse.json({ error: "Keyword is required" }, { status: 400 });
+  const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId : null;
+  if (!keyword || keyword.length > 160) {
+    return NextResponse.json({ error: "A keyword of 1–160 characters is required" }, { status: 400 });
+  }
 
   const title = `কৃষকের জন্য ${keyword}: কারণ, করণীয় ও প্রতিরোধের পূর্ণাঙ্গ গাইড`;
+  // Use actual whitespace matching and keep the generated slug URL-safe.
   const slug = keyword.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 70) || `agriva-${Date.now()}`;
-  const content = `## ${title}\n\nএই খসড়াটি AGRIVA user search demand থেকে তৈরি করা হয়েছে। প্রকাশের আগে বিষয়ভিত্তিক তথ্য, স্থানীয় কৃষি-পরামর্শ এবং প্রয়োজনীয় সূত্র যাচাই করুন।\n\n### ${keyword} কী?\n\nএই অংশে বিষয়টির সহজ সংজ্ঞা, কৃষকের জন্য গুরুত্ব এবং প্রাসঙ্গিক প্রেক্ষাপট ব্যাখ্যা করা হবে।\n\n### প্রধান কারণ ও লক্ষণ\n\nকৃষক কী কী লক্ষণ দেখতে পারেন, সম্ভাব্য কারণ কী এবং কোন তথ্য সংগ্রহ করলে সমস্যাটি ভালোভাবে বোঝা যায়—তা এখানে থাকবে।\n\n### করণীয়\n\nধাপে ধাপে বাস্তবসম্মত করণীয়, কখন বিশেষজ্ঞের পরামর্শ নিতে হবে এবং কী কী ভুল এড়িয়ে চলা উচিত তা এখানে থাকবে।\n\n### প্রতিরোধ\n\nআগামী মৌসুমে ঝুঁকি কমাতে ব্যবস্থাপনা, পর্যবেক্ষণ ও ভালো কৃষি-পদ্ধতি আলোচনা করা হবে।\n\n### FAQ\n\nকৃষকের সাধারণ প্রশ্নের সংক্ষিপ্ত উত্তর এখানে যোগ করা হবে।`;
+  const content = `## ${title}
+
+এই খসড়াটি AGRIVA user search demand থেকে তৈরি করা হয়েছে। প্রকাশের আগে বিষয়ভিত্তিক তথ্য, স্থানীয় কৃষি-পরামর্শ এবং প্রয়োজনীয় সূত্র যাচাই করুন।
+
+### ${keyword} কী?
+
+এই অংশে বিষয়টির সহজ সংজ্ঞা, কৃষকের জন্য গুরুত্ব এবং প্রাসঙ্গিক প্রেক্ষাপট ব্যাখ্যা করা হবে।
+
+### প্রধান কারণ ও লক্ষণ
+
+কৃষক কী কী লক্ষণ দেখতে পারেন, সম্ভাব্য কারণ কী এবং কোন তথ্য সংগ্রহ করলে সমস্যাটি ভালোভাবে বোঝা যায়—তা এখানে থাকবে।
+
+### করণীয়
+
+ধাপে ধাপে বাস্তবসম্মত করণীয়, কখন বিশেষজ্ঞের পরামর্শ নিতে হবে এবং কী কী ভুল এড়িয়ে চলা উচিত তা এখানে থাকবে।
+
+### প্রতিরোধ
+
+আগামী মৌসুমে ঝুঁকি কমাতে ব্যবস্থাপনা, পর্যবেক্ষণ ও ভালো কৃষি-পদ্ধতি আলোচনা করা হবে।
+
+### FAQ
+
+কৃষকের সাধারণ প্রশ্নের সংক্ষিপ্ত উত্তর এখানে যোগ করা হবে.`;
 
   const { data, error } = await supabase.from("article_drafts").insert({
     opportunity_id: opportunityId,
@@ -35,6 +66,6 @@ export async function POST(request: NextRequest) {
     created_by: user.id,
   }).select("id,title,slug,status").single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return NextResponse.json({ error: "Unable to create article draft" }, { status: 500 });
   return NextResponse.json({ article: data });
 }
