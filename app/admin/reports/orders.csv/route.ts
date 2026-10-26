@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function csvCell(value: unknown) {
-  const text = value == null ? "" : String(value);
+  let text = value == null ? "" : String(value);
+
+  // Quoting a CSV field does not prevent spreadsheet formula evaluation.
+  // Prefix potentially dangerous leading characters so exported text is inert
+  // when opened in common spreadsheet applications.
+  if (/^[\u0000-\u0020]*[=+\-@]/.test(text) || /^[\t\r]/.test(text)) {
+    text = `'${text}`;
+  }
+
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
@@ -10,7 +18,8 @@ export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
   if (profile?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { data, error } = await supabase.from("marketplace_orders")
