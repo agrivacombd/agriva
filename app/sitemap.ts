@@ -6,7 +6,7 @@ type SitemapArticle = { slug: string; updated_at: string | null; title: string; 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
-const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
+const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9\u0980-\u09ff]+(?:-[a-z0-9\u0980-\u09ff]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
