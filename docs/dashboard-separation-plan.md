@@ -70,3 +70,24 @@ The admin layout protects page rendering only. It does **not** replace independe
 ### Current CI observation
 
 At the time of this note, the GitHub Actions `quality` job for the original head `68bc544427a157bbc0ef1a2eccfd8db31e536ea5` was still in progress. The Vercel status for that head reported a deployment rate limit and Netlify preview was also still processing. These are not evidence that quality checks passed. All CI must be re-evaluated after the follow-up commits, against the new head SHA.
+
+
+## Follow-up implementation — 2026-10-27 (admin mutation audit)
+
+### Changes made
+
+- Updated the local admin guards in `app/admin/transport/page.tsx`, `app/admin/harvest/page.tsx`, and `app/admin/jobs/page.tsx` to reject both session lookup errors and profile lookup errors, as well as missing/non-admin profiles.
+- Extended `scripts/smoke-admin-authorization.mjs` with source assertions for these fail-closed guards, transport/job moderation RPC usage, allowed job moderation statuses, and article review/generation regressions.
+- Confirmed from the checked-in migrations that transport verification and job moderation have admin-only SECURITY DEFINER RPCs with role checks and restricted grants.
+
+### Findings that remain blockers
+
+- **Harvest moderation needs database-level verification before release.** `app/admin/harvest/page.tsx` currently performs a direct `harvest_listings` UPDATE for `moderation_status` and `moderation_note`. The migration inventory in this branch does not contain the table definition or an explicit admin moderation RPC/policy for this table. Do not assume the live RLS policy is correct; inspect the actual deployed schema and add a reviewed least-privilege database mutation path if needed.
+- `app/api/admin/content-opportunities/route.ts` uses an admin role guard and checks status transitions, but the corresponding live RLS and audit requirements still need independent verification.
+- These changes and assertions have been inspected at source level; the test script has **not** been run in a checked-out repository in this session.
+
+### Exact-head validation
+
+The current branch head after these commits must be used for CI verification. GitHub Actions returned no pull-request workflow runs for the latest checked head, and the only reported commit status was Vercel's build-rate-limit failure. Therefore lint, TypeScript, regression tests, and production build are not verified passing. Live Supabase project access was unavailable, so deployed policies and grants remain unverified.
+
+No migration was executed; the PR remains Draft; no merge or deployment was performed.
