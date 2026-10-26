@@ -5,6 +5,7 @@ import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } fr
 type SitemapArticle = { slug: string; updated_at: string | null; title: string; body_markdown: string | null };
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
+type SitemapExchangeListing = { slug: string; updated_at: string | null };
 const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -14,18 +15,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let articles: SitemapArticle[] = [];
   let products: SitemapProduct[] = [];
   let jobs: SitemapJob[] = [];
+  let exchangeListings: SitemapExchangeListing[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
   const now = new Date();
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [articleResult, productResult, jobsResult] = await Promise.all([
+    const [articleResult, productResult, jobsResult, exchangeResult] = await Promise.all([
       supabase.from("content_drafts").select("slug,updated_at,title,body_markdown").eq("status", "published").eq("content_type", "article"),
       supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
+      supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").limit(5000),
     ]);
     if (!articleResult.error && articleResult.data) articles = (articleResult.data as SitemapArticle[]).filter((article) => isValidSlug(article.slug) && Boolean(article.title?.trim()) && Boolean(article.body_markdown?.trim()));
     if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
+    if (!exchangeResult.error && exchangeResult.data) exchangeListings = (exchangeResult.data as SitemapExchangeListing[]).filter((listing) => isValidSlug(listing.slug));
     if (!productResult.error && productResult.data) {
       products = (productResult.data as SitemapProduct[]).filter((product) => isValidSlug(product.slug));
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
@@ -75,6 +79,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+    ...exchangeListings.map((listing) => ({
+      url: `${base}/green-exchange/${encodeURIComponent(listing.slug)}`,
+      lastModified: listing.updated_at ? new Date(listing.updated_at) : now,
+      changeFrequency: "weekly" as const,
+      priority: 0.65,
     })),
     ...jobs.map((job) => ({
       url: `${base}/jobs/${job.slug}`,
