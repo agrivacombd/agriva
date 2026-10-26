@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     seo_review_status: seoReady ? "ready" : "needs_review",
     moderation_status: "pending",
   };
-  const { data, error } = await auth.supabase.from("products").insert(values).select("id,name,slug,status,seo_review_status,moderation_status").single();
+  const { data, error } = await auth.supabase.rpc("admin_create_agri_product", { p_product: values });
   if (error) {
     return NextResponse.json({ error: error.code === "23505" ? "এই SKU বা slug আগে থেকেই আছে। আলাদা SKU/slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। Draft migration/schema ও required fields যাচাই করুন।" }, { status: 400 });
   }
