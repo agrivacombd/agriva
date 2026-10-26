@@ -3,15 +3,20 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
   if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
 
   const body = await request.json().catch(() => null);
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
   const opportunityId = body?.opportunityId || null;
   if (!keyword) return NextResponse.json({ error: "Keyword is required" }, { status: 400 });
+  if (keyword.length > 160) return NextResponse.json({ error: "Keyword must be 160 characters or fewer" }, { status: 400 });
+  if (opportunityId !== null && (typeof opportunityId !== "string" || opportunityId.length > 100)) {
+    return NextResponse.json({ error: "Invalid opportunityId" }, { status: 400 });
+  }
 
   const title = `কৃষকের জন্য ${keyword}: কারণ, করণীয় ও প্রতিরোধের পূর্ণাঙ্গ গাইড`;
   const slug = keyword.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 70) || `agriva-${Date.now()}`;
@@ -30,7 +35,7 @@ export async function POST(request: NextRequest) {
     secondary_keywords: ["agriculture", "farmer guide", "কৃষি", "কৃষকের পরামর্শ"],
     faq: [],
     competitor_notes: [],
-    ai_model: process.env.OPENAI_API_KEY ? "configured" : "template-fallback",
+    ai_model: "template-fallback",
     status: "draft",
     created_by: user.id,
   }).select("id,title,slug,status").single();
