@@ -64,5 +64,9 @@ assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "
 const jobsAdmin = read("app/admin/jobs/page.tsx");
 assert.ok(jobsAdmin.includes("admin_moderate_job_post"), "job status changes must use the admin-only RPC");
 assert.ok(jobsAdmin.includes('!["published", "rejected", "paused", "filled"].includes(status)'), "job moderation must allow only approved statuses");
+const transportMigration = read("supabase/migrations/20261022130000_admin_transport_partner_verification.sql");
+assert.ok(transportMigration.includes("p_status is null or p_status not in ('verified', 'rejected', 'suspended')"), "transport RPC must reject null and unsupported statuses");
+const jobsMigration = read("supabase/migrations/20261025110000_agriculture_jobs_marketplace.sql");
+assert.ok(jobsMigration.includes("p_status is null or p_status not in ('published','rejected','paused','filled')"), "job moderation RPC must reject null and unsupported statuses");
 
-console.log("Admin route, Server Action, and article-review regression checks passed.");
+console.log("Admin route, Server Action, article-review, and moderation-RPC regression checks passed.");
