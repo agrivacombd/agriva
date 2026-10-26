@@ -79,7 +79,7 @@ The migration is committed to the PR branch only. It has **not** been applied to
 
 ## CI findings
 
-GitHub Actions run **40415279282** failed on exact head `676ccf586b1dcfbd6b4d2eb4124b9addd64b1d76`: lint and TypeScript passed, but `test:admin-authorization` failed because the article Markdown source assertion expected escaped newline characters while the implementation contains actual line breaks. The regression assertion has been corrected in a later commit; a fresh exact-head run is required to confirm it passes.
+GitHub Actions run **40415279282** failed on exact head `676ccf586b1dcfbd6b4d2eb4124b9addd64b1d76`: lint and TypeScript passed, but `test:admin-authorization` failed because the article Markdown source assertion expected escaped newline characters while the implementation contains actual line breaks. The assertion was corrected. Run **40415980169** then passed on exact head `8b2df0b4f0b09454422ee405b8e19725de77e4fc`, including lint, TypeScript, all configured regression scripts and production build. Any later commit requires its own exact-head CI verification.
 
 Vercel has a ready preview deployment for earlier commit `5d52709794c8ddea2248f7812d8adf40e2c6c9bd`, not the latest branch head. A prior Vercel comment reported the free-plan deployment limit (more than 100 deployments per day). Do not promote the old preview or claim the current commit is deployed.
 
