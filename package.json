@@ -13,7 +13,8 @@
     "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs",
     "test:sslcommerz-payment": "node scripts/smoke-sslcommerz-payment.mjs",
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
-    "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs"
+    "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
+    "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
