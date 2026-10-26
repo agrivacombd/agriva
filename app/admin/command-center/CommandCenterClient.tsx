@@ -6,7 +6,7 @@ import { useState } from "react";
 const sections: { group: string; items: { title: string; desc: string; href: string; icon: string; draft?: boolean }[] }[] = [
   { group: "Marketplace", items: [
     { title: "পণ্য ব্যবস্থাপনা", desc: "Live পণ্য, draft, moderation ও taxonomy", href: "/admin/products", icon: "📦" },
-    { title: "Product SEO Studio", desc: "নতুন পণ্য, metadata, keyword ও কৃষি-তথ্য", href: "/admin/product-studio", icon: "🌱", draft: true },
+    { title: "Product SEO Studio (separate draft)", desc: "SEO upload workflow আলাদা Draft PR #98-এ; merge হওয়ার আগে route available নয়", href: "https://github.com/agrivacombd/agriva/pull/98", icon: "🌱", draft: true },
     { title: "অর্ডার ও fulfillment", desc: "অর্ডার, payment status ও delivery", href: "/admin/orders", icon: "🧾" },
     { title: "ক্যাটাগরি", desc: "Marketplace category ও subcategory", href: "/admin/categories", icon: "🗂️" },
     { title: "Harvest marketplace", desc: "ফসলের listing ও farmer supply", href: "/admin/harvest", icon: "🌾" },
