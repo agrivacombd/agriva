@@ -42,8 +42,8 @@ for (const path of [
 }
 
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
-assert.match(articleGenerator, /replace\\(\/\\\\s\+\/g, "-"/, "article slug generation must normalize actual whitespace");
-assert.match(articleGenerator, /### \\${keyword} কী\?\\n/, "article markdown must contain real line breaks rather than literal backslash-n sequences");
+assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
+assert.ok(articleGenerator.includes("### ${keyword} কী?\\n\\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
 
 const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.match(articleReview, /supabase\\.auth\\.getUser\\(\\)/, "article review page must verify the session");
