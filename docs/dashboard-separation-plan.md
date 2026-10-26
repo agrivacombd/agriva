@@ -121,3 +121,10 @@ No migration was executed; the PR remains Draft; no merge or deployment was perf
 - Corrected `app/admin/orders/page.tsx` so the “No orders yet” empty state is rendered only when the query succeeded and returned no rows. Query errors now show the failure alert without also claiming there are no orders.
 - Added a source-level regression assertion to `scripts/smoke-admin-authorization.mjs` for this distinction.
 - Re-fetched the changed files after the commits and verified the alert, error retention, and empty-state condition at source level. The smoke script itself has not been executed here.
+
+
+## Follow-up implementation — 2026-10-27 (incomplete admin report data)
+
+- Updated `app/admin/reports/page.tsx` to suppress the aggregate metric cards whenever any of its four source queries fails. The page already displayed a warning, but could still show partial totals/counts that looked complete; it now explains that metrics are withheld until all queries succeed.
+- Added source-level regression assertions in `scripts/smoke-admin-authorization.mjs` for the suppression condition and user-facing explanation.
+- GitHub Actions `AGRIVA CI` was observed running its `quality` job on the previously inspected commit; install was still in progress and lint/typecheck/security regressions/build had not started at that observation. This is not a passing result, and the exact latest branch head still needs confirmation against CI.
