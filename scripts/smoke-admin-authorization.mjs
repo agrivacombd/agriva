@@ -59,6 +59,16 @@ for (const path of [
   assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
 }
 
+for (const path of [
+  "app/admin/categories/page.tsx",
+  "app/admin/opportunities/page.tsx",
+  "app/admin/audit/page.tsx",
+]) {
+  const source = read(path);
+  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
+  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
+}
+
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
 const jobsAdmin = read("app/admin/jobs/page.tsx");
