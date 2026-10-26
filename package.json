@@ -10,7 +10,8 @@
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
     "test:job-application-security": "node scripts/smoke-job-application-security.mjs",
-    "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs"
+    "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs",
+    "test:payment-webhook": "node scripts/smoke-payment-webhook.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
