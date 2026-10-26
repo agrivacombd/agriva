@@ -9,8 +9,8 @@ const adminPage = readFileSync("app/admin/green-exchange/page.tsx", "utf8");
 
 assert.match(migration, /alter table public\.green_exchange_listings enable row level security/i);
 assert.match(migration, /alter table public\.green_exchange_requests enable row level security/i);
-assert.equal(migration.split("as $\nbegin").length - 1, 3, "SQL function bodies must use valid dollar quoting");
-assert.equal(migration.split("\n$;\n").length - 1, 3, "SQL function bodies must close dollar quotes");
+assert.equal(migration.split("as " + "$" + "\nbegin").length - 1, 3, "SQL function bodies must use valid dollar quoting");
+assert.equal(migration.split("\n" + "$" + ";\n").length - 1, 3, "SQL function bodies must close dollar quotes");
 assert.match(migration, /moderation_status = 'pending'/i, "new user listings must start pending");
 assert.match(migration, /revoke all on function public\.admin_moderate_green_exchange_listing\(uuid, text\) from public, anon/i);
 assert.match(migration, /where p\.id = auth\.uid\(\) and p\.role = 'admin'/i, "moderation RPC must verify trusted profile role");
