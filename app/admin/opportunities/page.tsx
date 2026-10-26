@@ -3,10 +3,10 @@ import { redirect } from "next/navigation";
 
 export default async function OpportunitiesPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") redirect("/dashboard");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/login");
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profileError || profile?.role !== "admin") redirect("/dashboard");
 
   const { data: opportunities } = await supabase.from("content_opportunities").select("*").order("search_count", { ascending: false }).limit(50);
 
