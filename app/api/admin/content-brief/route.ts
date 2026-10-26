@@ -3,17 +3,23 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
   if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
 
   const body = await request.json().catch(() => null);
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
   if (!keyword) return NextResponse.json({ error: "Keyword is required" }, { status: 400 });
+  if (keyword.length > 160) return NextResponse.json({ error: "Keyword must be 160 characters or fewer" }, { status: 400 });
 
-  const language = typeof body?.language === "string" ? body.language : "English";
+  const language = body?.language === "Bengali" ? "Bengali" : "English";
   const brief = {
     title: `Complete guide to ${keyword}`,
     language,
@@ -37,5 +43,7 @@ export async function POST(request: NextRequest) {
     },
   };
 
-  return NextResponse.json({ brief, generatedWith: process.env.OPENAI_API_KEY ? "ai-ready" : "template" });
+  // This endpoint currently builds a deterministic template; an API key alone
+  // does not mean that an AI provider was called.
+  return NextResponse.json({ brief, generatedWith: "template" });
 }
