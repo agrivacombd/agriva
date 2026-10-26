@@ -6,17 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs"
   },
   "dependencies": {
-    "next": "14.2.31",
+    "next": "16.4.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "lucide-react": "0.468.0",
     "@supabase/ssr": "0.5.2",
-    "@supabase/supabase-js": "2.57.4"
+    "@supabase/supabase-js": "2.57.4",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@types/node": "20.17.30",
@@ -26,7 +27,7 @@
     "tailwindcss": "3.4.17",
     "postcss": "8.5.3",
     "autoprefixer": "10.4.20",
-    "eslint": "8.57.1",
-    "eslint-config-next": "14.2.31"
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.4.3"
   }
 }
