@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
-    "test:taxonomy": "node scripts/smoke-taxonomy.mjs"
+    "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
+    "test:job-application-security": "node scripts/smoke-job-application-security.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
