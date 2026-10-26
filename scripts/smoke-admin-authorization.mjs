@@ -27,7 +27,10 @@ for (const path of [
 }
 
 for (const path of [
+  "app/admin/page.tsx",
+  "app/admin/products/page.tsx",
   "app/admin/categories/page.tsx",
+  "app/admin/transport/page.tsx",
   "app/admin/harvest/page.tsx",
   "app/admin/jobs/page.tsx",
   "app/admin/users/page.tsx",
