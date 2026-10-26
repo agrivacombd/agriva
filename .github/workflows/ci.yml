@@ -36,6 +36,8 @@ jobs:
         run: npm run test:sslcommerz-payment
       - name: Marketplace live-inventory regression test
         run: npm run test:marketplace-live-inventory
+      - name: Checkout error disclosure regression test
+        run: npm run test:checkout-error-safety
       - name: Production build
         run: npm run build
         env:
