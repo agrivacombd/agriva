@@ -35,6 +35,13 @@ Never expose any of these through a `NEXT_PUBLIC_*` variable, client component, 
 - Do not show metrics until OAuth succeeds and the first sync completes.
 - Keep all schema changes as a migration in the draft PR; do not apply migrations to production without explicit approval.
 
-## Current implementation state
+## Draft implementation state
 
-The admin-only readiness endpoint reports whether the required environment variables are present. It does not connect Google, read tokens, or fetch Search Console data. A complete OAuth callback and encrypted token persistence are still required.
+- Admin-only OAuth start and callback routes use a one-time, short-lived, HttpOnly state cookie.
+- The callback requests the read-only Search Console scope and stores the refresh token encrypted with AES-256-GCM. The server derives the 256-bit key from the server-only encryption secret using SHA-256; keep that secret stable or existing tokens will become unreadable.
+- The connection table migration is included in this draft branch only. It has not been applied to Supabase.
+- The admin UI can start the OAuth flow and reports whether a connection row exists.
+- Property listing/verification, token refresh, Search Analytics queries, sync persistence, and metrics display are not implemented yet. A successful OAuth connection alone does not mean analytics are available.
+- OAuth cannot be tested until the four server environment variables and exact Google OAuth redirect URI are configured. Do not add credentials to source control.
+
+Before production use, review the migration/RLS policy, run CI, test OAuth and token encryption in a non-production environment, implement property verification and metrics sync, and explicitly approve any production migration/deployment.
