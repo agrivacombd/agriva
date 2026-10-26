@@ -40,6 +40,8 @@ jobs:
         run: npm run test:checkout-error-safety
       - name: API role and error disclosure regression test
         run: npm run test:api-role-hardening
+      - name: Admin authorization regression test
+        run: npm run test:admin-authorization
       - name: Payment webhook hardening regression test
         run: npm run test:payment-webhook-hardening
       - name: Reseller payout balance reservation regression test
