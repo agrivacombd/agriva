@@ -25,3 +25,13 @@ assert.match(init, /order\.payment_status\s*!==\s*"pending"/, "init must reject 
 assert.match(init, /if\s*\(referenceError\)/, "init must check payment-reference write errors");
 
 console.log("SSLCommerz payment route regression checks passed.");
+
+const success = readFileSync("app/api/payment/sslcommerz/success/route.ts", "utf8");
+const failure = readFileSync("app/api/payment/sslcommerz/fail/route.ts", "utf8");
+const tracking = readFileSync("components/orders/OrderTracking.tsx", "utf8");
+assert.match(success, /payment", "pending"/, "browser success redirect must not claim verified payment");
+assert.match(success, /new URL\("\/orders"/, "success return must use the existing orders route");
+assert.match(success, /Only the validated IPN updates payment_status/, "only IPN may confirm payment");
+assert.match(failure, /new URL\("\/orders"/, "failure return must use the existing orders route");
+assert.match(tracking, /payment_status/, "order tracking must show database payment status");
+assert.match(tracking, /redirect দেখে পেমেন্ট সফল ধরে নেবেন না/, "order tracking must explain redirects are not proof of payment");
