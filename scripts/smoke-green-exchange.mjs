@@ -22,5 +22,7 @@ assert.match(board, /ব্যক্তিগত ফোন নম্বর ব�
 assert.match(page, /FAQPage/);
 assert.match(page, /canonical: "\/green-exchange"/);
 assert.match(sitemap, /\$\{base\}\/green-exchange/);
+assert.match(sitemap, /\\u0980-\\u09ff/, "Bengali listing slugs must be indexable");
+assert.match(sitemap, /exchangeListings\.map/);
 
 console.log("Green Exchange security and route smoke tests passed.");
