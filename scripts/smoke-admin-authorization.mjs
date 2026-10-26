@@ -107,4 +107,21 @@ assert.ok(transportMigration.includes("p_status is null or p_status not in ('ver
 const jobsMigration = read("supabase/migrations/20261025110000_agriculture_jobs_marketplace.sql");
 assert.ok(jobsMigration.includes("p_status is null or p_status not in ('published','rejected','paused','filled')"), "job moderation RPC must reject null and unsupported statuses");
 
+
+const superAdminPage = read("app/super-admin/page.tsx");
+const moduleDirectory = read("app/super-admin/AdminModuleDirectory.tsx");
+for (const route of [
+  "/admin", "/admin/products", "/admin/categories", "/admin/orders", "/admin/users",
+  "/admin/harvest", "/admin/transport", "/admin/jobs", "/admin/content-studio",
+  "/admin/content-drafts", "/admin/ai-content", "/admin/articles",
+  "/admin/search-intelligence", "/admin/opportunities", "/admin/reports",
+  "/admin/settings", "/admin/audit",
+]) {
+  assert.ok(superAdminPage.includes(route), `super admin directory must link to existing admin route ${route}`);
+}
+assert.ok(superAdminPage.includes('profileError || profile?.role !== "admin"'), "super admin hub must fail closed for non-admin users");
+assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must provide accessible module search");
+assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
+assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
+
 console.log("Admin route, Server Action, article-review, and moderation-RPC regression checks passed.");
