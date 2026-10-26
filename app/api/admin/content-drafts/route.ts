@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await auth.supabase
       .from("content_drafts")
-      .update(values)
+      .update({ ...values, slug: text(body.slug, 180) || existing.slug })
       .eq("id", id)
       .eq("created_by", auth.user.id)
       .eq("status", "draft")
