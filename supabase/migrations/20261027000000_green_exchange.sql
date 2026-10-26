@@ -107,3 +107,104 @@ create policy "Signed-in users can request an exchange"
 grant select on public.green_exchange_listings to anon, authenticated;
 grant insert, update, delete on public.green_exchange_listings to authenticated;
 grant select, insert on public.green_exchange_requests to authenticated;
+
+-- Keep timestamps consistent when a listing or request changes.
+create or replace function public.set_green_exchange_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  new.updated_at = now();
+  return new;
+end;
+$;
+
+drop trigger if exists green_exchange_listings_updated_at on public.green_exchange_listings;
+create trigger green_exchange_listings_updated_at
+before update on public.green_exchange_listings
+for each row execute function public.set_green_exchange_updated_at();
+
+drop trigger if exists green_exchange_requests_updated_at on public.green_exchange_requests;
+create trigger green_exchange_requests_updated_at
+before update on public.green_exchange_requests
+for each row execute function public.set_green_exchange_updated_at();
+
+-- Admin-only moderation endpoint; the role check comes from profiles, not editable user metadata.
+create or replace function public.admin_moderate_green_exchange_listing(
+  p_listing_id uuid,
+  p_moderation_status text
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if auth.uid() is null or not exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role = 'admin'
+  ) then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+
+  if p_moderation_status not in ('approved', 'rejected', 'pending') then
+    raise exception 'invalid moderation status' using errcode = '22023';
+  end if;
+
+  update public.green_exchange_listings
+  set moderation_status = p_moderation_status
+  where id = p_listing_id;
+
+  if not found then
+    raise exception 'listing not found' using errcode = 'P0002';
+  end if;
+end;
+$;
+
+revoke all on function public.admin_moderate_green_exchange_listing(uuid, text) from public, anon;
+grant execute on function public.admin_moderate_green_exchange_listing(uuid, text) to authenticated;
+
+-- Only the listing owner may respond to a request. Clients cannot change ownership,
+-- requester identity, listing ID, or status directly.
+create or replace function public.respond_green_exchange_request(
+  p_request_id uuid,
+  p_status text,
+  p_counter_message text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if auth.uid() is null then
+    raise exception 'authentication required' using errcode = '42501';
+  end if;
+
+  if p_status not in ('accepted', 'declined', 'countered') then
+    raise exception 'invalid request status' using errcode = '22023';
+  end if;
+
+  if p_status = 'countered' and (p_counter_message is null or char_length(p_counter_message) not between 10 and 1200) then
+    raise exception 'counter message must be 10 to 1200 characters' using errcode = '22023';
+  end if;
+
+  update public.green_exchange_requests r
+  set status = p_status,
+      counter_message = case when p_status = 'countered' then p_counter_message else null end
+  from public.green_exchange_listings l
+  where r.id = p_request_id
+    and l.id = r.listing_id
+    and l.owner_id = auth.uid()
+    and r.status = 'pending';
+
+  if not found then
+    raise exception 'request not found or already responded to' using errcode = 'P0002';
+  end if;
+end;
+$;
+
+revoke all on function public.respond_green_exchange_request(uuid, text, text) from public, anon;
+grant execute on function public.respond_green_exchange_request(uuid, text, text) to authenticated;
+
