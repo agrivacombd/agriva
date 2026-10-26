@@ -10,7 +10,8 @@
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
     "test:job-application-security": "node scripts/smoke-job-application-security.mjs",
-    "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs"
+    "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs",
+    "test:sslcommerz-payment": "node scripts/smoke-sslcommerz-payment.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
@@ -28,7 +29,7 @@
     "typescript": "5.7.3",
     "tailwindcss": "3.4.17",
     "postcss": "8.5.3",
-    "autoprefixer": "10.4.20",
+    "autoprefixer": "10.2.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.4.3"
   }
