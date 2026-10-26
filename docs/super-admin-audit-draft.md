@@ -57,8 +57,8 @@ Several admin actions call privileged RPCs, including `admin_update_product`, `a
 ### P1 — Confirm publishing semantics
 `POST /admin/content-drafts/publish` checks admin role and requires an approved draft, then changes the row status to `published`. Verify the public content query reads only published rows, the publication update is atomic, and audit logging records who published what. A status update is not sufficient if the public rendering pipeline uses a separate articles table or cache.
 
-### P2 — CSV spreadsheet formula injection hardening
-The orders CSV route quotes fields and escapes quote characters, but quoting alone does not neutralize spreadsheet formulas. Prefix dangerous text values beginning with `=`, `+`, `-`, `@`, tab, or carriage return (according to the chosen CSV consumer policy) before CSV serialization; add regression tests.
+### P2 — CSV spreadsheet formula injection hardening — mitigation added, tests still needed
+The orders CSV route now prefixes potentially dangerous leading formula/control characters before quoting and fails closed if the profile-role lookup errors. This is a defensive mitigation; add regression tests against leading whitespace, `=`, `+`, `-`, `@`, tab, and carriage return, and validate behavior in supported spreadsheet consumers.
 
 ### P2 — Standardize admin authorization/error handling
 Admin pages commonly check `auth.getUser()` and `profiles.role`, but some paths ignore profile-query errors while others fail closed. Standardize a shared server-only `requireAdmin` helper and use consistent 401/403/redirect behavior. Ensure every Server Action repeats authorization inside the action, not only in the page.
