@@ -15,7 +15,7 @@ export default function ProductStudioPage() {
     usageInstructions:"", safetyInformation:"", originDistrict:"", packagingDetails:"",
     cropSuitability:"", imageUrls:"", seoTitle:"", metaDescription:"", searchKeywords:"", hashtags:"", status:"draft",
   });
-  const [busy,setBusy]=useState(false); const [message,setMessage]=useState(""); const [saved,setSaved]=useState<{id:string;slug:string;status:string}|null>(null);
+  const [busy,setBusy]=useState(false); const [message,setMessage]=useState(""); const [saved,setSaved]=useState<{id:string;slug:string;status:string;seo_review_status?:string}|null>(null);
   const set=(key:string,value:string)=>setForm(prev=>({...prev,[key]:value}));
   const category=categories.find(x=>x.slug===form.categorySlug);
   const generatedSlug=useMemo(()=>slugifyProductName(form.name)||"your-product-name", [form.name]);
