@@ -25,7 +25,11 @@ async function moderateHarvest(formData: FormData) {
     redirect("/admin/harvest?notice=invalid");
   }
   const supabase = await requireAdmin();
-  const { error } = await supabase.from("harvest_listings").update({ moderation_status: action, moderation_note: note || null }).eq("id", id);
+  const { error } = await supabase.rpc("admin_moderate_harvest_listing", {
+    p_listing_id: id,
+    p_status: action,
+    p_note: note || null,
+  });
   revalidatePath("/admin/harvest");
   revalidatePath("/sell-harvest");
   redirect(error ? "/admin/harvest?notice=error" : "/admin/harvest?notice=saved");
