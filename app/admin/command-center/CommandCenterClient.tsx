@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const sections = [
+const sections: { group: string; items: { title: string; desc: string; href: string; icon: string; draft?: boolean }[] }[] = [
   { group: "Marketplace", items: [
     { title: "পণ্য ব্যবস্থাপনা", desc: "Live পণ্য, draft, moderation ও taxonomy", href: "/admin/products", icon: "📦" },
     { title: "Product SEO Studio", desc: "নতুন পণ্য, metadata, keyword ও কৃষি-তথ্য", href: "/admin/product-studio", icon: "🌱", draft: true },
@@ -44,7 +44,7 @@ export default function CommandCenterClient({ metrics, health }: { metrics: Metr
       <div className="mx-auto max-w-[1500px] px-4 py-5 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link href="/admin" className="flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/10 text-2xl">🌿</span><span><span className="block text-lg font-black tracking-wide">AGRIVA</span><span className="block text-xs text-emerald-100">SUPER ADMIN COMMAND CENTER</span></span></Link>
-          <div className="flex flex-wrap gap-2"><Link href="/" target="_blank" className="rounded-xl border border-white/20 px-3 py-2 text-sm font-bold hover:bg-white/10">Live site ↗</Link><Link href="/admin" className="rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-[#103b28]">Legacy dashboard</Link></div>
+          <div className="flex flex-wrap gap-2"><Link href="/" target="_blank" rel="noreferrer" className="rounded-xl border border-white/20 px-3 py-2 text-sm font-bold hover:bg-white/10">Live site ↗</Link><Link href="/admin" className="rounded-xl bg-white px-3 py-2 text-sm font-extrabold text-[#103b28]">Legacy dashboard</Link></div>
         </div>
         <div className="mt-8 grid gap-5 lg:grid-cols-[1.4fr_.6fr] lg:items-end">
           <div><p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-200">One control room · all workflows</p><h1 className="mt-2 text-3xl font-black sm:text-4xl lg:text-5xl">Site command center</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-emerald-50/85 sm:text-base">লাইভ সাইট, পণ্য, অর্ডার, কনটেন্ট, ব্যবহারকারী, SEO ও অপারেশন—এক জায়গা থেকে দেখুন। প্রতিটি module-এর নিজস্ব permission ও workflow বজায় থাকে।</p></div>
