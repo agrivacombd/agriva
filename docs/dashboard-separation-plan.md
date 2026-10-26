@@ -28,7 +28,7 @@ Static review of the current `main` branch found these concrete follow-up items.
 
 ### Findings to address before release
 
-1. **Admin guard consistency:** `app/admin/users/page.tsx`, `app/admin/settings/page.tsx`, `app/admin/products/page.tsx`, `app/admin/orders/page.tsx`, and `app/admin/reports/page.tsx` originally lacked explicit checks for auth/profile query errors. Those guards have since been hardened in this draft branch.
+1. **Admin guard consistency:** `app/admin/users/page.tsx`, `app/admin/settings/page.tsx`, `app/admin/products/page.tsx`, `app/admin/orders/page.tsx`, and `app/admin/reports/page.tsx) originally lacked explicit checks for auth/profile query errors. Those guards have since been hardened in this draft branch.
 2. **Server Action authorization:** pages with mutations must repeat authorization inside each Server Action (or call a server-only guard). A page-level guard alone is insufficient because actions can be invoked independently. Continue checking every mutation and RPC grant.
 3. **Client-rendered admin surface:** `app/admin/content-studio/page.tsx` is a client component. Its `/api/admin/content-brief` endpoint performs server-side auth and exact admin-role checks, and `app/admin/layout.tsx` provides a server-side page gate. Keep the API guard as the security boundary.
 4. **Publishing endpoint:** the content-draft publishing endpoint checks authentication and profile role server-side and fails closed on profile lookup error. Validate its status-transition logic, audit logging and database-side permissions before treating publishing as production-ready.
@@ -60,7 +60,7 @@ No production migration, production write, merge or deployment was performed for
 
 ## Follow-up implementation — 2026-10-27 (moderation RPC validation)
 
-- Hardened `admin_set_transport_partner_verification` and `admin_moderate_job_post` so `NULL` status arguments are explicitly rejected. In SQL, `NULL NOT IN (...)` evaluates to unknown, so a plain `IF status NOT IN (...)` does not enter the rejection branch.
+- Hardened `admin_set_transport_partner_verification` and `admin_moderate_job_post` so `NULL` status arguments are explicitly rejected. In SQL, `NULL NOT IN (...)` evaluates to unknown, so a plain `IF status NOT IN (...) ` does not enter the rejection branch.
 - Added source assertions for both null/unsupported-status checks. The jobs RPC records status transitions in `job_moderation_events`; transport verification stores reviewer/time/note on the partner record but does not create a separate event-history table in this migration.
 - **Harvest moderation remains blocked:** the page still performs a direct UPDATE to `harvest_listings`, while this branch's migration inventory does not define that table or its RLS/update policy. Verify the deployed table/policies and use a least-privilege admin RPC plus audit history if existing protections are insufficient. Do not invent a migration without authoritative schema.
 
@@ -71,8 +71,16 @@ No production migration, production write, merge or deployment was performed for
 - Updated `app/admin/reports/page.tsx` to withhold aggregate metrics if any of its four source queries fails, with a Bengali explanation.
 - Updated `app/admin/opportunities/page.tsx` to surface its query failure and avoid showing “No search opportunities yet” when the data request fails. Added source assertions for this behavior in `scripts/smoke-admin-authorization.mjs`.
 
+## Harvest rejection reason — 2026-10-27
+
+- Updated `moderateHarvest` to reject a `rejected` action unless a non-empty trimmed note (up to 500 characters) is supplied. The form label and invalid-request message now explain that rejection requires a reason.
+- Added source assertions to `scripts/smoke-admin-authorization.mjs` for both server-side validation and the UI hint.
+- This is application-level validation only. The direct `harvest_listings` update remains a release blocker until its deployed RLS/policy and audit path are verified.
+
 ## Exact-head CI observation — 2026-10-27
 
-GitHub Actions run **40414314964** for PR head `c42d58623cf0580cc67bd4d59a7eed2d3093bd38` completed successfully. Its `quality` job reported success for dependency install, lint, TypeScript, the admin authorization regression test and the other configured regression scripts, and production build. This result applies to that exact SHA only; subsequent commits changing opportunity error handling and its regression assertions require a new exact-head CI run.
+GitHub Actions run **40414314964** passed on prior exact head `c42d58623cf0580cc67bd4d59a7eed2d3093bd38`, including lint, TypeScript, configured regression scripts and production build. This result applies to that SHA only; subsequent commits require new exact-head CI verification.
+
+The latest checked run **40414957469** was in progress (lint passed; TypeScript check was running) before the most recent harvest changes. The latest exact head must be checked again after these commits.
 
 Live Supabase access was unavailable in this session, so deployed RLS/grants remain unverified. The PR remains Draft. No migration was executed, and no merge or deployment was performed.
