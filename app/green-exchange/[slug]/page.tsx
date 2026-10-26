@@ -72,18 +72,13 @@ export default async function GreenExchangeListingPage({ params }: PageProps) {
   const url = `${siteUrl}/green-exchange/${encodeURIComponent(listing.slug)}`;
   const schema = {
     "@context": "https://schema.org",
-    "@type": "Product",
+    "@type": "Article",
     name: listing.title,
     description: listing.description,
-    category: typeLabels[listing.exchange_type] ?? "গাছ বিনিময়",
+    articleSection: typeLabels[listing.exchange_type] ?? "গাছ বিনিময়",
+    inLanguage: "bn-BD",
     url,
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "BDT",
-      availability: "https://schema.org/InStock",
-      description: "বিনিময় বা উপহার; বিক্রয়মূল্য নয়",
-    },
+    datePublished: listing.created_at,
   };
 
   return (
