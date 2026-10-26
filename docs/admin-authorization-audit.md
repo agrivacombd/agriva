@@ -43,7 +43,7 @@ This is a baseline for review, not a substitute for inspecting every table polic
 - [ ] Ordinary users cannot call admin RPCs directly or alter roles/ownership fields.
 - [ ] Admin role changes are audited and cannot grant admin privileges.
 - [ ] Order state-machine migration is validated against the intended buyer/seller/admin workflow in staging.
-- [ ] Order/commission/payout state transitions pass positive and negative tests.
+- [ ] Order/commission/payout state transitions pass positive and negative tests, including partial commission allocations and explicit payout approval.
 - [ ] Harvest/job/transport moderation RPCs enforce status and note validation and create audit records.
 - [ ] Mobile, tablet, and desktop staging smoke tests are complete.
 - [ ] Database migrations and security advisor findings are reviewed in staging.
