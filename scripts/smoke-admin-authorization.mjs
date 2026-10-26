@@ -49,4 +49,20 @@ const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.match(articleReview, /supabase\\.auth\\.getUser\\(\\)/, "article review page must verify the session");
 assert.match(articleReview, /profileError \\|\\| profile\\?\\.role !== "admin"/, "article review page must fail closed for non-admin users");
 
+for (const path of [
+  "app/admin/transport/page.tsx",
+  "app/admin/harvest/page.tsx",
+  "app/admin/jobs/page.tsx",
+]) {
+  const source = read(path);
+  assert.match(source, /authError\\s*\\|\\|\\s*!user/, `${path} must fail closed on session lookup errors`);
+  assert.match(source, /profileError\\s*\\|\\|\\s*profile\\?\\.role\\s*!==\\s*"admin"/, `${path} must fail closed on profile lookup errors and non-admin roles`);
+}
+
+const transportAdmin = read("app/admin/transport/page.tsx");
+assert.match(transportAdmin, /admin_set_transport_partner_verification/, "transport status changes must use the admin-only RPC");
+const jobsAdmin = read("app/admin/jobs/page.tsx");
+assert.match(jobsAdmin, /admin_moderate_job_post/, "job status changes must use the admin-only RPC");
+assert.match(jobsAdmin, /\\["published", "rejected", "paused", "filled"\\]/, "job moderation must allow only approved statuses");
+
 console.log("Admin route, Server Action, and article-review regression checks passed.");
