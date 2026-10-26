@@ -55,6 +55,10 @@ assert.ok(opportunitiesPage.includes("error: opportunitiesError"), "admin opport
 assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page must surface query failures");
 assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
 
+const harvestPage = read("app/admin/harvest/page.tsx");
+assert.ok(harvestPage.includes('(action === "rejected" && !note)'), "harvest moderation must require a reason when rejecting a listing");
+assert.ok(harvestPage.includes("প্রত্যাখ্যান করলে আবশ্যক"), "harvest moderation UI must explain that rejection requires a reason");
+
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
 assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
 assert.ok(articleGenerator.includes("### ${keyword} কী?\\n\\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
