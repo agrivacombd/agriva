@@ -5,6 +5,7 @@ const migration = readFileSync("supabase/migrations/20261027000000_green_exchang
 const board = readFileSync("app/green-exchange/board/board-client.tsx", "utf8");
 const page = readFileSync("app/green-exchange/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
+const adminPage = readFileSync("app/admin/green-exchange/page.tsx", "utf8");
 
 assert.match(migration, /alter table public\.green_exchange_listings enable row level security/i);
 assert.match(migration, /alter table public\.green_exchange_requests enable row level security/i);
@@ -17,6 +18,9 @@ assert.match(migration, /r\.status = 'pending'/i, "responses must only transitio
 assert.match(board, /moderation_status", "approved"/);
 assert.match(board, /green_exchange_requests/);
 assert.match(board, /respond_green_exchange_request/);
+assert.match(adminPage, /admin_moderate_green_exchange_listing/);
+assert.match(adminPage, /profile\\?\\.role !== "admin"/);
+assert.match(adminPage, /moderation_status/);
 assert.match(board, /বিনিময়ের অনুরোধ দিন/);
 assert.match(board, /ব্যক্তিগত ফোন নম্বর বা বাড়ির ঠিকানা পোস্টে লিখবেন না/);
 assert.match(page, /FAQPage/);
