@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) redirect("/login");
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle();
@@ -12,7 +13,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen bg-[#f6f8f3] text-[#17351f]">
-      <header className="border-b border-black/5 bg-white/80 backdrop-blur"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4"><Link href="/" className="text-2xl font-black">AGRIVA<span className="text-[#b58b28]">.</span></Link><nav className="flex items-center gap-4 text-sm font-semibold"><Link href="/dashboard" className="text-[#1f7a45]">Dashboard</Link>{profile?.role === "admin" && <Link href="/admin">Admin</Link>}<span className="rounded-full bg-[#17351f] px-4 py-2 text-white">{name}</span></nav></div></header>
+      <header className="border-b border-black/5 bg-white/80 backdrop-blur"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4"><Link href="/" className="text-2xl font-black">AGRIVA<span className="text-[#b58b28]">.</span></Link><nav className="flex items-center gap-4 text-sm font-semibold"><Link href="/dashboard" className="text-[#1f7a45]">My Dashboard</Link><span className="rounded-full bg-[#17351f] px-4 py-2 text-white">{name}</span></nav></div></header>
       <section className="mx-auto max-w-7xl px-6 py-10">
         <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#b58b28]">AGRIVA intelligence</p>
         <h1 className="mt-2 text-4xl font-black tracking-tight md:text-5xl">Welcome, {name}.</h1>
