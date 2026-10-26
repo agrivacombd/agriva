@@ -116,10 +116,10 @@ export default function GreenExchangePage() {
             <h1 className="max-w-3xl text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">গাছ বিনিময় করুন, <span className="text-lime-200">সবুজ সম্পর্ক</span> গড়ে তুলুন</h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-emerald-50 sm:text-lg">আপনার বাড়তি চারা, কাটিং বা গাছ অন্য বাগানির সঙ্গে ভাগ করে নতুন গাছের সংগ্রহ গড়ুন। Green Exchange হলো গাছ ভাগাভাগি, স্থানীয়ভাবে বিনিময় এবং সচেতন বাগানচর্চার জন্য AGRIVA Green Living-এর একটি উদ্যোগ।</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a href="#how-it-works" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 font-bold text-emerald-950 shadow-sm transition hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-900">বিনিময়ের নিয়ম জানুন</a>
+              <Link href="/green-exchange/board" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 font-bold text-emerald-950 shadow-sm transition hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-900">বিনিময়ের পোস্ট দেখুন</Link><a href="#how-it-works" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/35 px-6 py-3 font-semibold text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">বিনিময়ের নিয়ম জানুন</a>
               <Link href="/green-living" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/35 px-6 py-3 font-semibold text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white">Green Living দেখুন</Link>
             </div>
-            <p className="mt-4 text-sm text-emerald-100">এই পেজে এখন বিনিময়ের নিয়ম ও প্রস্তুতির গাইড দেওয়া হয়েছে। সরাসরি পোস্ট, অনুরোধ ও বিনিময় ট্র্যাকিং চালুর জন্য পরবর্তী অ্যাপ ইন্টিগ্রেশন প্রয়োজন।</p>
+            <p className="mt-4 text-sm text-emerald-100">পোস্ট জমা দিতে লগইন প্রয়োজন। নতুন পোস্ট যাচাইয়ের পর পাবলিক তালিকায় দেখানো হবে।</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4" aria-label="Green Exchange examples">
             <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🪴</span><h2 className="mt-3 font-bold">ইনডোর প্ল্যান্ট</h2><p className="mt-1 text-sm leading-6 text-emerald-100">ঘরের গাছ ও ছোট টব</p></div>
