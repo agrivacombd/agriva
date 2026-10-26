@@ -29,14 +29,27 @@ export async function GET() {
   ];
   const missing = requirements.filter(({ key }) => !process.env[key]).map(({ key, label }) => ({ key, label }));
 
+  let connectionState: "not_connected" | "connected" = "not_connected";
+  if (missing.length === 0) {
+    const { data: connection, error: connectionError } = await supabase
+      .from("search_console_connections")
+      .select("id,connected_at,property_url")
+      .eq("connected_by", user.id)
+      .eq("provider", "google_search_console")
+      .maybeSingle();
+    if (!connectionError && connection) connectionState = "connected";
+  }
+
   return NextResponse.json({
     provider: "google_search_console",
     configured: missing.length === 0,
-    connectionState: "not_connected",
+    connectionState,
     missing,
     metricsAvailable: false,
     message: missing.length
       ? "OAuth setup is incomplete. No Google Search Console metrics are being fetched."
-      : "OAuth configuration is present. A secure account connection and successful sync are still required before metrics are available.",
+      : connectionState === "connected"
+        ? "Google authorization is stored encrypted. Property verification and metric sync are not implemented yet."
+        : "OAuth configuration is present. Connect an admin Google account before metrics can be fetched.",
   }, { headers: { "Cache-Control": "no-store" } });
 }
