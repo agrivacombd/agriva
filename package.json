@@ -15,7 +15,8 @@
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
     "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
-    "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs"
+    "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
+    "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
