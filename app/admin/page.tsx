@@ -124,7 +124,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
         </div>
       </aside>
 
-      <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+      <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8"><div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><div><p className="font-black text-emerald-950">Super Admin Command Center</p><p className="mt-1 text-sm text-emerald-800">সব admin module, live data connectivity ও draft workflow এক জায়গায়।</p></div><Link href="/admin/command-center" className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">Open Command Center →</Link></div>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Super Admin Panel</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
