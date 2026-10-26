@@ -17,7 +17,8 @@
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
     "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
     "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
-    "test:green-exchange-security": "node scripts/smoke-green-exchange.mjs"
+    "test:green-exchange-security": "node scripts/smoke-green-exchange.mjs",
+    "test:plant-market": "node scripts/smoke-plant-market.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
