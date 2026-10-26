@@ -11,7 +11,8 @@
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
     "test:job-application-security": "node scripts/smoke-job-application-security.mjs",
     "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs",
-    "test:sslcommerz-payment": "node scripts/smoke-sslcommerz-payment.mjs"
+    "test:sslcommerz-payment": "node scripts/smoke-sslcommerz-payment.mjs",
+    "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
