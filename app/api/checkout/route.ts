@@ -103,7 +103,14 @@ export async function POST(request: NextRequest) {
       })
     : await supabase.rpc("finalize_marketplace_cod_order", orderArgs);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) {
+    // Keep database/function details in server logs only; never expose internals to buyers.
+    console.error("Marketplace checkout RPC failed", { code: error.code || "unknown" });
+    return NextResponse.json(
+      { error: "অর্ডার সম্পন্ন করা যায়নি। পণ্য ও স্টকের তথ্য যাচাই করে আবার চেষ্টা করুন।" },
+      { status: 400 },
+    );
+  }
   if (!order) return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।" }, { status: 400 });
 
   return NextResponse.json({
