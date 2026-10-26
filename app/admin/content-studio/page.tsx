@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 type Brief = {
   title: string;
@@ -32,7 +31,6 @@ const contentTypes = [
 ];
 
 export default function ContentStudioPage() {
-  const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [language, setLanguage] = useState("Bengali");
   const [audience, setAudience] = useState("farmers");
@@ -46,9 +44,9 @@ export default function ContentStudioPage() {
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
-    const initialKeyword = searchParams.get("keyword");
+    const initialKeyword = new URLSearchParams(window.location.search).get("keyword");
     if (initialKeyword) setKeyword(initialKeyword.slice(0, 160));
-  }, [searchParams]);
+  }, []);
 
   const markdown = useMemo(() => {
     if (!brief) return "";
