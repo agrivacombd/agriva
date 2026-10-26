@@ -131,9 +131,16 @@ export default function SearchIntelligencePage() {
                 {searchConsoleError || searchConsole?.message || "Checking server-side OAuth configuration…"}
               </p>
             </div>
-            <span className={`rounded-full px-3 py-2 text-xs font-bold ${searchConsole?.configured ? "bg-amber-50 text-amber-900" : "bg-[#f5f7f2] text-[#647468]"}`}>
-              {searchConsole?.configured ? "OAuth config present" : "Not connected"}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`rounded-full px-3 py-2 text-xs font-bold ${searchConsole?.connectionState === "connected" ? "bg-emerald-50 text-emerald-900" : searchConsole?.configured ? "bg-amber-50 text-amber-900" : "bg-[#f5f7f2] text-[#647468]"}`}>
+                {searchConsole?.connectionState === "connected" ? "Google account connected" : searchConsole?.configured ? "Ready to connect" : "Not connected"}
+              </span>
+              {searchConsole?.configured && searchConsole.connectionState !== "connected" && (
+                <a href="/api/admin/search-console/connect" className="inline-flex min-h-10 items-center rounded-xl bg-[#17351f] px-4 py-2 text-sm font-bold text-white">
+                  Connect Google account
+                </a>
+              )}
+            </div>
           </div>
           {searchConsole && !searchConsole.configured && searchConsole.missing.length > 0 && (
             <div className="mt-4">
@@ -143,7 +150,7 @@ export default function SearchIntelligencePage() {
               </ul>
             </div>
           )}
-          <p className="mt-4 text-xs leading-5 text-[#647468]">No Google metrics are shown until an administrator completes OAuth and a real sync succeeds. This status check never returns secrets or fabricated analytics.</p>
+          <p className="mt-4 text-xs leading-5 text-[#647468]">The connection stores the refresh token encrypted on the server. Property verification and live metrics sync are not implemented yet, so this page will not display Google analytics until those steps are completed. This status check never returns secrets or fabricated analytics.</p>
         </section>
 
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
