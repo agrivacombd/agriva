@@ -44,3 +44,29 @@ Static review of the current `main` branch found these concrete follow-up items.
 - Re-run CI against the exact PR head and record actual results here.
 
 No production migration, production write, merge or deployment was performed for this audit.
+
+
+## Follow-up implementation — 2026-10-27
+
+### Changes made on this draft branch
+
+- Added `app/admin/layout.tsx` as a defense-in-depth server-side gate for every page under `/admin`, including client-rendered admin screens. It verifies the session with `auth.getUser()`, checks `profiles.role`, and redirects on authentication/profile lookup errors or a non-admin role.
+- Hardened `app/api/admin/article/generate/route.ts` to fail closed on authentication and profile lookup errors, bound the keyword length, and avoid returning raw database error messages.
+- Hardened `app/api/admin/content-drafts/generate/route.ts` to fail closed on authentication/profile lookup errors and avoid returning raw database error messages. It now reports a failure if the related opportunity status update fails instead of silently ignoring it.
+- Added `scripts/smoke-admin-authorization.mjs`, wired it to `npm run test:admin-authorization`, and added the check to CI.
+
+### Important scope boundary
+
+The admin layout protects page rendering only. It does **not** replace independent authorization inside API Route Handlers, Server Actions, RPCs, or database policies. Existing page-local guards and action-local guards remain in place; the new static regression check is a guardrail, not a substitute for reviewing every action and endpoint. The check is intentionally source-based and does not prove runtime authorization or live database policy behavior.
+
+### Remaining release blockers
+
+1. Run the new authorization regression script plus the full CI workflow against the latest exact PR head; confirm lint, TypeScript, all existing security regression scripts, and production build pass.
+2. Complete a line-by-line audit of all admin Server Actions, API handlers, CSV/export endpoints, and privileged RPCs. Confirm profile lookup errors return a deny response and no route leaks raw database/provider errors.
+3. Review every exposed Supabase table, view, storage bucket, and RPC against the actual deployed schema. Confirm RLS is enabled where required, ownership predicates prevent IDOR, UPDATE policies include both `USING` and `WITH CHECK`, and privileged functions have least-privilege grants/search paths.
+4. Run tests with unauthenticated, ordinary user, admin, profile-query failure, cross-user record IDs, and direct API/Server Action invocation. Verify a normal user cannot read or mutate another user's farm, crop, order, listing, application, profile, or private data.
+5. Verify live schema and policies read-only against the intended Supabase project, then obtain explicit release approval. Do not run migrations, merge, or deploy as part of this draft audit.
+
+### Current CI observation
+
+At the time of this note, the GitHub Actions `quality` job for the original head `68bc544427a157bbc0ef1a2eccfd8db31e536ea5` was still in progress. The Vercel status for that head reported a deployment rate limit and Netlify preview was also still processing. These are not evidence that quality checks passed. All CI must be re-evaluated after the follow-up commits, against the new head SHA.
