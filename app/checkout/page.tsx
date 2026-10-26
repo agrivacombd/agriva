@@ -57,6 +57,7 @@ export default function Checkout() {
     setBusy(true);
     setMessage("");
     const placed: string[] = [];
+    const placedProductIds = new Set<string>();
     const failed: string[] = [];
     const cartSyncFailed: string[] = [];
 
@@ -84,6 +85,7 @@ export default function Checkout() {
         }
 
         placed.push(result.orderId);
+        placedProductIds.add(item.product_id);
         // Remove each successfully ordered cart line immediately, so a later item
         // failing does not leave already-purchased items in the active cart.
         const { error: removeError } = await supabase.from("cart_items").delete()
@@ -91,10 +93,7 @@ export default function Checkout() {
         if (removeError) cartSyncFailed.push(item.name || item.product_id);
       }
 
-      if (placed.length) {
-        const placedProductIds = new Set(items
-          .filter((item) => placed.some((_, index) => index >= 0) && !failed.includes(item.name || item.product_id))
-          .map((item) => item.product_id));
+      if (placedProductIds.size) {
         // Only remove lines whose order was successfully created from the current UI.
         setItems((current) => current.filter((item) => !placedProductIds.has(item.product_id)));
       }
