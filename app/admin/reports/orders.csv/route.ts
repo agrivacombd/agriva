@@ -8,9 +8,10 @@ function csvCell(value: unknown) {
 
 export async function GET(request: Request) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.redirect(new URL("/login", request.url));
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.redirect(new URL("/login", request.url));
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
   if (profile?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { data, error } = await supabase.from("marketplace_orders")
