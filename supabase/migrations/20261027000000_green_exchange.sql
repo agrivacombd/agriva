@@ -113,12 +113,12 @@ create or replace function public.set_green_exchange_updated_at()
 returns trigger
 language plpgsql
 set search_path = ''
-as $
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists green_exchange_listings_updated_at on public.green_exchange_listings;
 create trigger green_exchange_listings_updated_at
@@ -139,7 +139,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if auth.uid() is null or not exists (
     select 1 from public.profiles p
@@ -160,7 +160,7 @@ begin
     raise exception 'listing not found' using errcode = 'P0002';
   end if;
 end;
-$;
+$$;
 
 revoke all on function public.admin_moderate_green_exchange_listing(uuid, text) from public, anon;
 grant execute on function public.admin_moderate_green_exchange_listing(uuid, text) to authenticated;
@@ -176,7 +176,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $$
 begin
   if auth.uid() is null then
     raise exception 'authentication required' using errcode = '42501';
@@ -203,7 +203,7 @@ begin
     raise exception 'request not found or already responded to' using errcode = 'P0002';
   end if;
 end;
-$;
+$$;
 
 revoke all on function public.respond_green_exchange_request(uuid, text, text) from public, anon;
 grant execute on function public.respond_green_exchange_request(uuid, text, text) to authenticated;
