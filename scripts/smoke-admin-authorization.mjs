@@ -41,4 +41,12 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
-console.log("Admin route and Server Action authorization regression checks passed.");
+const articleGenerator = read("app/api/admin/article/generate/route.ts");
+assert.match(articleGenerator, /replace\\(\/\\\\s\+\/g, "-"/, "article slug generation must normalize actual whitespace");
+assert.match(articleGenerator, /### \\${keyword} কী\?\\n/, "article markdown must contain real line breaks rather than literal backslash-n sequences");
+
+const articleReview = read("app/admin/articles/[id]/page.tsx");
+assert.match(articleReview, /supabase\\.auth\\.getUser\\(\\)/, "article review page must verify the session");
+assert.match(articleReview, /profileError \\|\\| profile\\?\\.role !== "admin"/, "article review page must fail closed for non-admin users");
+
+console.log("Admin route, Server Action, and article-review regression checks passed.");
