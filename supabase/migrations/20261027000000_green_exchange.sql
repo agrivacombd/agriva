@@ -68,8 +68,8 @@ create policy "Owners can create exchange listings"
 drop policy if exists "Owners can update own exchange listings" on public.green_exchange_listings;
 create policy "Owners can update own exchange listings"
   on public.green_exchange_listings for update to authenticated
-  using ((select auth.uid()) = owner_id)
-  with check ((select auth.uid()) = owner_id);
+  using ((select auth.uid()) = owner_id and moderation_status = 'pending')
+  with check ((select auth.uid()) = owner_id and moderation_status = 'pending');
 
 drop policy if exists "Owners can delete own exchange listings" on public.green_exchange_listings;
 create policy "Owners can delete own exchange listings"
