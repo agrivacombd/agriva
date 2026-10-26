@@ -11,6 +11,7 @@ export default function robots(): MetadataRoute.Robots {
           "/",
           "/blog",
           "/marketplace",
+          "/plant-market",
           "/tools",
           "/jobs",
           "/jobs/cv-builder",
