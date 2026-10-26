@@ -50,9 +50,14 @@ assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must ret
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
 
+const opportunitiesPage = read("app/admin/opportunities/page.tsx");
+assert.ok(opportunitiesPage.includes("error: opportunitiesError"), "admin opportunities page must retain query errors");
+assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page must surface query failures");
+assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
+
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
 assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
-assert.ok(articleGenerator.includes("### ${keyword} কী?\n\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
+assert.ok(articleGenerator.includes("### ${keyword} কী?\\n\\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
 
 const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
