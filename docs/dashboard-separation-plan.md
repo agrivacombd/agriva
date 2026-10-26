@@ -107,3 +107,10 @@ No migration was executed; the PR remains Draft; no merge or deployment was perf
 - Extended `scripts/smoke-admin-authorization.mjs` to assert fail-closed behavior for all three pages.
 - The categories page's Server Action already calls its local admin guard; the opportunities mutation remains in the separately guarded `/api/admin/content-opportunities` route. The admin layout remains defense in depth, not a replacement for these local checks.
 - Static source checks only: this script has not been executed in a checked-out repository, and live database policies remain unverified.
+
+
+## Follow-up implementation — 2026-10-27 (orders read-error visibility)
+
+- Updated `app/admin/orders/page.tsx` to retain the Supabase orders query error and show an explicit alert when loading fails, rather than silently rendering the same empty-state message used when there are genuinely no orders.
+- Added a source-level regression assertion to `scripts/smoke-admin-authorization.mjs` for this error-handling path.
+- This improves operator visibility but does not verify the underlying live admin read policy. Repository smoke script, lint, typecheck, and build still need execution in CI or a checkout.
