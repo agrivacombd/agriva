@@ -58,10 +58,17 @@ assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.len
 const harvestPage = read("app/admin/harvest/page.tsx");
 assert.ok(harvestPage.includes('(action === "rejected" && !note)'), "harvest moderation must require a reason when rejecting a listing");
 assert.ok(harvestPage.includes("প্রত্যাখ্যান করলে আবশ্যক"), "harvest moderation UI must explain that rejection requires a reason");
+assert.ok(harvestPage.includes('supabase.rpc("admin_moderate_harvest_listing"'), "harvest moderation must use the audited admin-only RPC");
+assert.ok(!harvestPage.includes('.from("harvest_listings").update('), "harvest moderation must not directly update the table from the page");
+const harvestMigration = read("supabase/migrations/20261027190000_harden_harvest_moderation.sql");
+assert.ok(harvestMigration.includes("NEW.moderation_note IS DISTINCT FROM OLD.moderation_note"), "harvest trigger must prevent non-admin moderation-note changes");
+assert.ok(harvestMigration.includes("admin_moderate_harvest_listing"), "harvest moderation must provide an admin-only RPC");
+assert.ok(harvestMigration.includes("INSERT INTO public.admin_audit_log"), "harvest moderation RPC must write an audit record");
+assert.ok(harvestMigration.includes("REVOKE ALL ON FUNCTION public.admin_moderate_harvest_listing(uuid, text, text) FROM PUBLIC, anon"), "harvest moderation RPC must revoke public and anonymous execution");
 
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
 assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
-assert.ok(articleGenerator.includes("### ${keyword} কী?\\n\\n"), "article markdown must contain real line breaks rather than literal backslash-n sequences");
+assert.ok(/### \$\{keyword\} কী\?\n\n/.test(articleGenerator), "article markdown must contain real line breaks rather than literal backslash-n sequences");
 
 const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
