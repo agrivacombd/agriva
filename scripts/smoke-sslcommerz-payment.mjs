@@ -35,3 +35,8 @@ assert.match(success, /Only the validated IPN updates payment_status/, "only IPN
 assert.match(failure, /new URL\("\/orders"/, "failure return must use the existing orders route");
 assert.match(tracking, /payment_status/, "order tracking must show database payment status");
 assert.match(tracking, /redirect দেখে পেমেন্ট সফল ধরে নেবেন না/, "order tracking must explain redirects are not proof of payment");
+
+const cancel = readFileSync("app/api/payment/sslcommerz/cancel/route.ts", "utf8");
+assert.match(cancel, /new URL\("\/orders"/, "cancel return must use the existing orders route");
+assert.match(cancel, /payment", "cancelled"/, "cancel return must clearly indicate cancellation");
+assert.match(tracking, /returnedPayment === "cancelled"/, "orders page must explain cancelled payment returns");
