@@ -22,6 +22,7 @@ const copy = {
     noAccount: "AGRIVA-তে নতুন?",
     signup: "অ্যাকাউন্ট তৈরি করুন",
     home: "হোমপেজ",
+    forgot: "পাসওয়ার্ড ভুলে গেছেন?",
     error: "লগইন করা যায়নি। ইমেইল ও পাসওয়ার্ড যাচাই করে আবার চেষ্টা করুন।",
     failed: "সংযোগে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।",
     show: "পাসওয়ার্ড দেখান",
@@ -42,6 +43,7 @@ const copy = {
     noAccount: "New to AGRIVA?",
     signup: "Create an account",
     home: "Home",
+    forgot: "Forgot password?",
     error: "Sign-in failed. Check your email and password, then try again.",
     failed: "A connection issue occurred. Please try again shortly.",
     show: "Show password",
@@ -126,6 +128,7 @@ function LoginForm() {
                   <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? t.hide : t.show} className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-[#126b4f]">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                 </span>
               </label>
+              <div className="-mt-2 flex justify-end"><Link href="/forgot-password" className="text-sm font-semibold text-[#167453] underline underline-offset-4">{t.forgot}</Link></div>
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}</button>
               {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{message}</p>}
             </form>
