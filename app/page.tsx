@@ -125,6 +125,7 @@ export default async function Home() {
             <Link className="hover:text-[#0b6b4f]" href="/tools">কৃষি টুলস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
+            <Link className="hover:text-[#0b6b4f]" href="/blog">কৃষি ব্লগ</Link>
             <Link className="hover:text-[#0b6b4f]" href="#career-tools">চাকরি ও CV</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -300,11 +301,13 @@ export default async function Home() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { icon: Sprout, title: "আমি কৃষক", description: "বীজ, ফসলের রোগ, আবহাওয়া ও জমির হিসাব", href: "/farms", tone: "bg-lime-50 text-lime-800" },
-              { icon: GraduationCap, title: "আমি শিক্ষার্থী", description: "কৃষি গাইড, শেখা ও জ্ঞান ভাগাভাগি", href: "/learn", tone: "bg-indigo-50 text-indigo-800" },
-              { icon: Stethoscope, title: "আমি কৃষিবিদ", description: "কৃষি প্রশ্ন ও বিশেষজ্ঞ জ্ঞান খুঁজুন", href: "/ai", tone: "bg-teal-50 text-teal-800" },
-              { icon: Store, title: "আমি ডিলার / উদ্যোক্তা", description: "পণ্য, ক্রেতা ও মার্কেটপ্লেস", href: "/marketplace", tone: "bg-orange-50 text-orange-800" },
-            ].map(({ icon: Icon, title, description, href, tone }) => <Link key={title} href={href} className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg">
+              { icon: Sprout, title: "আমি কৃষক", description: "খামার, ফসলের রোগ, আবহাওয়া ও লাভ-লোকসানের হিসাব", href: "/farms", tone: "bg-lime-50 text-lime-800" },
+              { icon: ShoppingCart, title: "আমি ক্রেতা", description: "কৃষিপণ্য, বীজ ও গাছ খুঁজুন; কেনার আগে তথ্য দেখুন", href: "/marketplace", tone: "bg-blue-50 text-blue-800" },
+              { icon: Store, title: "আমি বিক্রেতা / রিসেলার", description: "পণ্য, কমিশন ও বিক্রির সুযোগ সম্পর্কে জানুন", href: "/dashboard", tone: "bg-orange-50 text-orange-800" },
+              { icon: Truck, title: "আমি পরিবহন সেবাদাতা", description: "কৃষিপণ্য পরিবহন ও ডেলিভারির সুযোগ খুঁজুন", href: "/transport", tone: "bg-sky-50 text-sky-800" },
+              { icon: GraduationCap, title: "আমি শিক্ষার্থী / চাকরিপ্রার্থী", description: "কৃষি শেখা, চাকরি খোঁজা ও CV তৈরি", href: "/jobs", tone: "bg-indigo-50 text-indigo-800" },
+              { icon: Stethoscope, title: "আমি কৃষিবিদ / পরামর্শদাতা", description: "কৃষি জ্ঞান, গাইড ও প্রশ্নের প্রাথমিক সহায়তা", href: "/learn", tone: "bg-teal-50 text-teal-800" },
+            ].map(({ icon: Icon, title, description, href, tone }) => <Link key={title} href={href} className="group rounded-2xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
               <span className={`grid h-11 w-11 place-items-center rounded-xl ${tone}`}><Icon size={22} /></span>
               <h3 className="mt-4 font-extrabold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
               <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">শুরু করুন <ArrowRight size={14} className="transition group-hover:translate-x-1" /></span>
@@ -325,6 +328,33 @@ export default async function Home() {
               {toolLinks.map(({ icon: Icon, label, href }) => <Link key={href} href={href} className="group flex items-center gap-3 rounded-2xl border border-slate-100 p-4 transition hover:border-emerald-200 hover:bg-emerald-50/50"><span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><Icon size={20} /></span><span className="flex-1 text-sm font-bold">{label}</span><ChevronRight size={17} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></Link>)}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="agri-blog-title" className="border-y border-emerald-100 bg-[#f3f7ef] py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">AGRIVA KNOWLEDGE & STORIES</p>
+              <h2 id="agri-blog-title" className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">কৃষি ব্লগ, ব্যবহারিক গাইড ও নতুন ধারণা</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-slate-600">মৌসুমি কাজ, ফসলের যত্ন, বাজার বুঝে সিদ্ধান্ত এবং কৃষি প্রযুক্তি সম্পর্কে সহজ ভাষায় পড়ুন।</p>
+            </div>
+            <Link href="/blog" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব ব্লগ পড়ুন <ArrowRight size={16} /></Link>
+          </div>
+          <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { icon: CloudSun, label: "মৌসুমি পরিকল্পনা", title: "আবহাওয়া দেখে কৃষিকাজের পরিকল্পনা", text: "বপন, সেচ ও ফসল কাটার আগে পূর্বাভাস এবং স্থানীয় পরামর্শ মিলিয়ে সিদ্ধান্ত নিন।", href: "/weather", tone: "bg-sky-50 text-sky-800" },
+              { icon: Leaf, label: "ফসলের যত্ন", title: "রোগের লক্ষণ দেখলে আগে কী করবেন", text: "লক্ষণ নথিবদ্ধ করুন, আক্রান্ত অংশ পর্যবেক্ষণ করুন এবং নিশ্চিত না হয়ে রাসায়নিক প্রয়োগ করবেন না।", href: "/crop-disease", tone: "bg-rose-50 text-rose-800" },
+              { icon: TrendingUp, label: "ব্যবসা ও বাজার", title: "খরচ ও বাজারদর মিলিয়ে হিসাব করুন", text: "ইনপুট খরচ, পরিবহন, সম্ভাব্য বিক্রয়মূল্য ও ঝুঁকি ধরে লাভের হিসাব সাজান।", href: "/tools", tone: "bg-amber-50 text-amber-800" },
+            ].map(({ icon: Icon, label, title, text, href, tone }) => <Link key={title} href={href} className="group flex h-full flex-col rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+              <span className={`grid h-11 w-11 place-items-center rounded-xl ${tone}`}><Icon size={22} /></span>
+              <span className="mt-4 text-xs font-bold text-emerald-800">{label}</span>
+              <h3 className="mt-2 text-lg font-extrabold">{title}</h3>
+              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600">{text}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">আরও জানুন <ArrowRight size={14} className="transition group-hover:translate-x-1" /></span>
+            </Link>)}
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-500">কৃষি-সংক্রান্ত সিদ্ধান্তে স্থানীয় আবহাওয়া, ফসলের জাত এবং প্রয়োজনে কৃষি কর্মকর্তার পরামর্শ মিলিয়ে নিন।</p>
         </div>
       </section>
 
