@@ -109,6 +109,62 @@ drop trigger if exists garden_care_tasks_updated_at on public.garden_care_tasks;
 create trigger garden_care_tasks_updated_at before update on public.garden_care_tasks
 for each row execute function public.set_green_living_updated_at();
 
+
+-- Completion is confirmed by both participants; do not count one-sided claims as a completed handover.
+alter table public.green_exchange_requests
+  add column if not exists owner_completed_at timestamptz,
+  add column if not exists requester_completed_at timestamptz,
+  add column if not exists completed_at timestamptz;
+
+create or replace function public.confirm_green_exchange_completion(p_request_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $
+declare
+  v_requester_id uuid;
+  v_owner_id uuid;
+  v_status text;
+  v_owner_completed_at timestamptz;
+  v_requester_completed_at timestamptz;
+begin
+  if auth.uid() is null then
+    raise exception 'authentication required' using errcode = '42501';
+  end if;
+
+  select r.requester_id, l.owner_id, r.status, r.owner_completed_at, r.requester_completed_at
+    into v_requester_id, v_owner_id, v_status, v_owner_completed_at, v_requester_completed_at
+  from public.green_exchange_requests r
+  join public.green_exchange_listings l on l.id = r.listing_id
+  where r.id = p_request_id
+  for update of r;
+
+  if not found or auth.uid() not in (v_requester_id, v_owner_id) then
+    raise exception 'request not found or not a participant' using errcode = '42501';
+  end if;
+  if v_status not in ('accepted', 'completed') then
+    raise exception 'only accepted requests can be completed' using errcode = '22023';
+  end if;
+
+  if auth.uid() = v_owner_id then
+    v_owner_completed_at := coalesce(v_owner_completed_at, now());
+  else
+    v_requester_completed_at := coalesce(v_requester_completed_at, now());
+  end if;
+
+  update public.green_exchange_requests
+  set owner_completed_at = v_owner_completed_at,
+      requester_completed_at = v_requester_completed_at,
+      status = case when v_owner_completed_at is not null and v_requester_completed_at is not null then 'completed' else 'accepted' end,
+      completed_at = case when v_owner_completed_at is not null and v_requester_completed_at is not null then coalesce(completed_at, now()) else null end
+  where id = p_request_id;
+end;
+$;
+
+revoke all on function public.confirm_green_exchange_completion(uuid) from public, anon;
+grant execute on function public.confirm_green_exchange_completion(uuid) to authenticated;
+
 -- Return only aggregate, non-identifying public metrics. Never expose member or seller details.
 create or replace function public.get_green_impact_metrics()
 returns table (
