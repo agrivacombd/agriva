@@ -54,7 +54,9 @@ export const metadata: Metadata = {
   title: "কৃষি ব্লগ ও প্রবন্ধ",
   description: "বাংলাদেশের কৃষি, ফসল চাষ, মাটির স্বাস্থ্য, রোগবালাই ও কৃষি প্রযুক্তি নিয়ে AGRIVA ব্লগের লেখা পড়ুন।",
   alternates: { canonical: "/articles" },
+  twitter: { card: "summary_large_image", title: "AGRIVA Blog | কৃষি বিষয়ক লেখা ও অভিজ্ঞতা", description: "কৃষি, ফসল চাষ, মাটির স্বাস্থ্য ও কৃষি প্রযুক্তি নিয়ে সহজ বাংলায় লেখা।" },
   openGraph: {
+    siteName: "AGRIVA",
     title: "AGRIVA Blog | কৃষি বিষয়ক লেখা ও অভিজ্ঞতা",
     description: "কৃষি, ফসল চাষ, মাটির স্বাস্থ্য ও কৃষি প্রযুক্তি নিয়ে সহজ বাংলায় লেখা।",
     url: "/articles",
@@ -64,10 +66,21 @@ export const metadata: Metadata = {
 };
 
 export default function ArticlesPage() {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const listingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "AGRIVA Blog | কৃষি বিষয়ক লেখা ও অভিজ্ঞতা",
+    description: "বাংলাদেশের কৃষি, ফসল চাষ, মাটির স্বাস্থ্য, রোগবালাই ও কৃষি প্রযুক্তি নিয়ে AGRIVA ব্লগের লেখা পড়ুন।",
+    url: `${siteUrl}/articles`,
+    inLanguage: "bn-BD",
+    isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
+    mainEntity: { "@type": "ItemList", itemListElement: articles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/articles/${article.slug}` })) },
+  };
   const categories = ["সব লেখা", "ফসল চাষ", "মাটির স্বাস্থ্য", "রোগবালাই", "সবজি"];
 
   return (
-    <main className="min-h-screen bg-[#f6f8f3] text-[#183a27]">
+    <main className="min-h-screen bg-[#f6f8f3] text-[#183a27]">\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd).replace(/</g, "\\\\u003c") }} />
       <header className="bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#28734b] text-white">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <Link href="/" className="text-sm font-bold text-emerald-100 hover:text-white">← AGRIVA হোম</Link>
