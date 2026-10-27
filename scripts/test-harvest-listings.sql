@@ -86,6 +86,7 @@ INSERT INTO public.profiles (id, role) VALUES
 \i supabase/migrations/20261027210000_create_harvest_listings.sql
 \i supabase/migrations/20261027210500_harden_harvest_moderation.sql
 
+SET LOCAL ROLE authenticated;
 DO $test$
 DECLARE
   listing_id uuid;
@@ -139,8 +140,6 @@ BEGIN
 END
 $test$;
 
--- The owner may change availability, but cannot publish or edit moderation fields.
-SET LOCAL ROLE authenticated;
 DO $owner$
 DECLARE
   listing_id uuid;
