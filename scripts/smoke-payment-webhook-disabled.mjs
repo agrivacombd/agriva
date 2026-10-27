@@ -4,6 +4,7 @@ import { strict as assert } from "node:assert";
 
 const route = readFileSync("app/api/payments/webhook/route.ts", "utf8");
 
+assert.match(route, /export async function POST\(\)/, "POST handler must remain defined");
 assert.match(route, /status:\s*503/, "unverified payment webhook must fail closed");
 assert.match(route, /Online payment webhooks are not enabled/, "response must explain the endpoint is disabled");
 assert.doesNotMatch(route, /record_payment_event/, "disabled endpoint must not write payment events");
