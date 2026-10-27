@@ -18,7 +18,7 @@ assert.match(migration, /constraint garden_plants_id_owner_key unique \(id, owne
 assert.match(migration, /foreign key \(plant_id, owner_id\)/i, "garden tasks/logs must bind child records to the plant owner");
 assert.match(migration, /create or replace function public\.get_green_impact_metrics\(\)/i);
 assert.match(migration, /owner_completed_at timestamptz/i);
-assert.match(migration, /create or replace function public\.confirm_green_exchange_completion\(uuid\)/i);
+assert.match(migration, /create or replace function public\.confirm_green_exchange_completion\\(p_request_id uuid\\)/i);
 assert.match(migration, /revoke all on function public\.confirm_green_exchange_completion\(uuid\) from public, anon/i);
 assert.match(migration, /v_owner_completed_at is not null and v_requester_completed_at is not null/i, "exchange completion must be confirmed by both participants");
 assert.match(readFileSync("app/green-exchange/board/board-client.tsx", "utf8"), /confirm_green_exchange_completion/);
