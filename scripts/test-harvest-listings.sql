@@ -44,6 +44,7 @@ CREATE TABLE public.admin_audit_log (
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+GRANT SELECT ON public.admin_audit_log TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean
