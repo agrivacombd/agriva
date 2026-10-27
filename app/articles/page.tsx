@@ -81,7 +81,7 @@ export default function ArticlesPage() {
 
   return (
     <main className="min-h-screen bg-[#f6f8f3] text-[#183a27]">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd).replace(/</g, "\\\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listingJsonLd).replace(/</g, "\\u003c") }} />
       <header className="bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#28734b] text-white">
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <Link href="/" className="text-sm font-bold text-emerald-100 hover:text-white">← AGRIVA হোম</Link>
