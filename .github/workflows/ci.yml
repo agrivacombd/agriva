@@ -54,6 +54,8 @@ jobs:
         run: npm run test:attribution-resolution-permissions
       - name: Public RPC input validation regression test
         run: npm run test:public-rpc-input-hardening
+      - name: Role-based signup and dashboard regression test
+        run: npm run test:role-based-auth
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
       - name: Green Exchange security and route regression test
