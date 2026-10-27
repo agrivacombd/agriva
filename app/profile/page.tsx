@@ -20,6 +20,7 @@ const roles = [
 export default function ProfilePage() {
   const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [selected, setSelected] = useState<string[]>([]);
+  const [primaryRole, setPrimaryRole] = useState<string>("farmer");
   const [busy, setBusy] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -35,9 +36,14 @@ export default function ProfilePage() {
           window.location.href = "/login?next=/profile";
           return;
         }
-        const { data, error: rolesError } = await supabase.from("user_role_memberships").select("role").eq("user_id", user.id);
+        const [{ data: profile }, { data, error: rolesError }] = await Promise.all([
+          supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
+          supabase.from("user_role_memberships").select("role").eq("user_id", user.id),
+        ]);
+        const trustedPrimaryRole = profile?.role && roles.some((candidate) => candidate.id === profile.role) ? profile.role : "farmer";
+        if (active) setPrimaryRole(trustedPrimaryRole);
         if (rolesError) throw rolesError;
-        if (active) setSelected((data ?? []).map((item) => item.role).filter((role) => roles.some((candidate) => candidate.id === role)));
+        if (active) setSelected(Array.from(new Set([trustedPrimaryRole, ...(data ?? []).map((item) => item.role).filter((role) => roles.some((candidate) => candidate.id === role))])));
       } catch {
         if (active) {
           setError(true);
@@ -51,7 +57,7 @@ export default function ProfilePage() {
   }, [language]);
 
   function toggle(role: string) {
-    setSelected((current) => current.includes(role) ? current.filter((item) => item !== role) : [...current, role]);
+    if (role === primaryRole) return;\n    setSelected((current) => current.includes(role) ? current.filter((item) => item !== role) : [...current, role]);
     setMessage("");
   }
 
@@ -95,7 +101,7 @@ export default function ProfilePage() {
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {roles.map((role) => {
                 const active = selected.includes(role.id);
-                return <button type="button" key={role.id} aria-pressed={active} onClick={() => toggle(role.id)} className={`flex min-h-28 items-start gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-4 focus:ring-[#167453]/15 ${active ? "border-[#167453] bg-[#eef7ef]" : "border-slate-200 hover:border-[#a8c9aa]"}`}>
+                return <button type="button" key={role.id} aria-pressed={active} aria-disabled={role.id === primaryRole} onClick={() => toggle(role.id)} className={`flex min-h-28 items-start gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-4 focus:ring-[#167453]/15 ${active ? "border-[#167453] bg-[#eef7ef]" : "border-slate-200 hover:border-[#a8c9aa]"}`}>
                   <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${active ? "border-[#167453] bg-[#167453] text-white" : "border-slate-300"}`}>{active && <Check size={15} />}</span>
                   <span><span className="block font-bold">{language === "bn" ? role.bn : role.en}</span><span className="mt-1 block text-xs leading-5 text-slate-500">{role.description}</span></span>
                 </button>;
