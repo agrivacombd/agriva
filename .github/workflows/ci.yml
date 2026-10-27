@@ -52,6 +52,8 @@ jobs:
         run: npm run test:attribution-rpc-output
       - name: Attribution resolution permissions regression test
         run: npm run test:attribution-resolution-permissions
+      - name: Public RPC input validation regression test
+        run: npm run test:public-rpc-input-hardening
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
       - name: Green Exchange security and route regression test

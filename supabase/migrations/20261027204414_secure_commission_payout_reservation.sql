@@ -1,5 +1,4 @@
 -- Serialize reseller payout requests and make settlement exact, auditable, and approval-gated.
--- Forward-only, additive migration. No existing payout/commission rows are rewritten.
 ALTER TABLE public.reseller_commissions
   ADD COLUMN IF NOT EXISTS paid_amount numeric(12,2) NOT NULL DEFAULT 0;
 
@@ -41,7 +40,6 @@ BEGIN
     RAISE EXCEPTION 'Invalid payout method' USING ERRCODE = '22023';
   END IF;
 
-  -- A single row lock serializes balance checks for all requests by this reseller.
   SELECT id INTO locked_profile
   FROM public.profiles
   WHERE id = uid
@@ -70,7 +68,6 @@ BEGIN
   INSERT INTO public.commission_payouts(reseller_id, amount, payment_method)
   VALUES (uid, p_amount, btrim(p_method))
   RETURNING * INTO p;
-
   RETURN p;
 END;
 $$;
@@ -105,7 +102,6 @@ BEGIN
       USING ERRCODE = '55000';
   END IF;
 
-  -- Serialize separate payout settlements for the same reseller.
   SELECT id INTO locked_profile
   FROM public.profiles
   WHERE id = p.reseller_id
@@ -145,7 +141,6 @@ BEGIN
       payment_reference = btrim(p_payment_reference)
   WHERE id = p.id
   RETURNING * INTO p;
-
   RETURN p;
 END;
 $$;
