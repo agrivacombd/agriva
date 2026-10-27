@@ -18,7 +18,8 @@
     "test:admin-authorization": "node scripts/smoke-admin-authorization.mjs",
     "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
     "test:payment-webhook-disabled": "node scripts/smoke-payment-webhook-disabled.mjs",
-    "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs"
+    "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
+    "test:attribution-rpc-output": "node scripts/smoke-attribution-rpc-output.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
