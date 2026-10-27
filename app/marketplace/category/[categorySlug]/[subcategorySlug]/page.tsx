@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   if (!category || !subcategory) return { title: "সাব-ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableSubcategoryProducts(categorySlug, subcategorySlug);
-  const title = `${subcategory.name} | ${category.name} | AGRIVA`;
+  const title = `${subcategory.name} | ${category.name}`;
   const description = `${subcategory.name} ও ${category.name}-এর কৃষি পণ্য দেখুন AGRIVA Marketplace-এ।`;
   return {
     title, description,
