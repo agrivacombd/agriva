@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import MobileDashboardNav from "@/components/MobileDashboardNav";
 
 type SearchResult = {
   intent: string;
@@ -65,7 +66,7 @@ export default function SearchPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f3] px-4 py-12 text-[#17351f] sm:px-6 sm:py-16">
+    <main className="min-h-screen bg-[#f6f8f3] px-4 py-12 pb-28 text-[#17351f] sm:px-6 sm:py-16 md:pb-16">
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" className="font-black text-[#17351f]">AGRIVA</Link>
@@ -114,6 +115,7 @@ export default function SearchPage() {
           </section>
         )}
       </div>
+      <MobileDashboardNav active="search" />
     </main>
   );
 }
