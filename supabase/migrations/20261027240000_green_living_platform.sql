@@ -13,7 +13,8 @@ create table if not exists public.garden_plants (
   notes text check (notes is null or char_length(notes) <= 2000),
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint garden_plants_id_owner_key unique (id, owner_id)
 );
 
 create index if not exists garden_plants_owner_active_idx
@@ -35,8 +36,7 @@ create table if not exists public.garden_care_tasks (
     references public.garden_plants(id, owner_id) on delete cascade
 );
 
--- Composite key supports the ownership-safe foreign key above.
-create unique index if not exists garden_plants_id_owner_uidx on public.garden_plants (id, owner_id);
+-- Composite unique constraint above supports ownership-safe child references.
 create index if not exists garden_care_tasks_due_idx
   on public.garden_care_tasks (owner_id, due_on, completed_at);
 
