@@ -104,9 +104,9 @@ BEGIN
     AND role NOT IN (
       SELECT p.role::text FROM public.profiles p WHERE p.id = v_user_id
     )
-    AND role = ANY(v_allowed);
+    ;
 
-  FOREACH v_role IN ARRAY (SELECT array_agg(DISTINCT requested) FROM unnest(p_roles) AS requested)
+  FOREACH v_role IN ARRAY (SELECT array_agg(DISTINCT item.role) FROM unnest(p_roles) AS item(role))
   LOOP
     INSERT INTO public.user_role_memberships (user_id, role)
     VALUES (v_user_id, v_role)
