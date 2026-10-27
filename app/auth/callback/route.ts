@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+function safeNextPath(value: string | null) {
+  return value && value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")
+    ? value
+    : "/dashboard";
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
@@ -15,5 +21,5 @@ export async function GET(request: Request) {
   );
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
-  return NextResponse.redirect(new URL(error ? "/login?error=auth_callback" : "/dashboard", url.origin));
+  return NextResponse.redirect(new URL(error ? "/login?error=auth_callback" : safeNextPath(url.searchParams.get("next")), url.origin));
 }
