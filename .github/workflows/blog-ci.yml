@@ -1,0 +1,55 @@
+name: AGRIVA Blog CI
+
+on:
+  pull_request:
+    branches:
+      - feat/agriva-multirole-flow
+    paths:
+      - "app/articles/**"
+      - "app/robots.ts"
+      - "app/sitemap.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/blog-ci.yml"
+  push:
+    branches:
+      - feat/agriva-blog-articles
+    paths:
+      - "app/articles/**"
+      - "app/robots.ts"
+      - "app/sitemap.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - ".github/workflows/blog-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agriva-blog-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: ESLint
+        run: npx eslint "app/articles/**/*.tsx" "app/robots.ts" "app/sitemap.ts"
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key

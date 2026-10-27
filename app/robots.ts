@@ -16,6 +16,7 @@ export default function robots(): MetadataRoute.Robots {
           "/jobs",
           "/jobs/cv-builder",
           "/learn",
+          "/articles",
           "/green-living",
           "/green-exchange",
           "/impact",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
+import MobileDashboardNav from "@/components/MobileDashboardNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -25,8 +26,7 @@ export default async function MarketplacePage() {
     console.error("Marketplace catalogue load failed:", error);
   }
 
-
-  return <main className="min-h-screen overflow-hidden bg-[#f5f8f1] text-[#17351f]">
+  return <main className="min-h-screen overflow-hidden bg-[#f5f8f1] pb-28 text-[#17351f] md:pb-0">
     <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#24734a] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 -z-10 h-80 w-80 rounded-full border-[48px] border-white/10" />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -42,5 +42,6 @@ export default async function MarketplacePage() {
       <MarketplaceCore products={products} />
       {!products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p>}
     </section>
+    <MobileDashboardNav active="marketplace" />
   </main>;
 }
