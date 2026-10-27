@@ -1,0 +1,48 @@
+name: Product moderation PostgreSQL integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*guard_product_insert_status.sql"
+      - "scripts/test-product-insert-moderation.sql"
+      - ".github/workflows/product-moderation-postgres.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*guard_product_insert_status.sql"
+      - "scripts/test-product-insert-moderation.sql"
+      - ".github/workflows/product-moderation-postgres.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-trigger-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Test product moderation trigger against PostgreSQL
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test-product-insert-moderation.sql
