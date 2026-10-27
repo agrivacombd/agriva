@@ -67,7 +67,7 @@ export const metadata: Metadata = {
 };
 
 export default function ArticlesPage() {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const listingJsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
