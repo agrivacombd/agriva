@@ -80,7 +80,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const article: Article | undefined = articles.find((item) => item.slug === slug);
   if (!article) notFound();
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const articleUrl = `${siteUrl}/articles/${article.slug}`;
   const articleJsonLd = {
     "@context": "https://schema.org",
