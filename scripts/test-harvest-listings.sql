@@ -105,7 +105,7 @@ BEGIN
   ) VALUES (
     auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
     30, 'Naogaon', '01700000000', false,
-    ARRAY['https://example.invalid/harvest.jpg'], 'available', 'approved', 'client-forged'
+    ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/test.jpg'], 'available', 'approved', 'client-forged'
   ) RETURNING id, moderation_status, moderation_note, contact_phone
   INTO listing_id, listing_status, listing_note, listing_phone;
 
