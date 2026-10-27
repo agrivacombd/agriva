@@ -27,6 +27,7 @@ const commonLinks = [
   { label: "মার্কেটপ্লেস", href: "/marketplace", icon: "🛒", description: "পণ্য ও কৃষি উপকরণ দেখুন" },
   { label: "আবহাওয়া", href: "/weather", icon: "🌦️", description: "কাজের আগে আবহাওয়া দেখুন" },
   { label: "শেখার কেন্দ্র", href: "/learn", icon: "🎓", description: "গাইড ও শিক্ষামূলক কনটেন্ট" },
+  { label: "Green Impact", href: "/impact", icon: "🌱", description: "যাচাইযোগ্য সবুজ কার্যক্রমের প্রভাব দেখুন" },
   { label: "চাকরি", href: "/jobs", icon: "💼", description: "কৃষি খাতের কাজের সুযোগ" },
   { label: "প্রোফাইল সেটিংস", href: "/profile", icon: "⚙️", description: "আপনার তথ্য ও পছন্দ আপডেট করুন" },
 ];
