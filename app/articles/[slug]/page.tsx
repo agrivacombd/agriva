@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ReadingProgress, ShareArticle } from "../article-reading-tools";
 
 const articles = [
   {
@@ -107,6 +108,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">
+      <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <article className="mx-auto max-w-3xl">
@@ -123,9 +125,16 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
         </header>
 
+        <nav aria-label="এই লেখার বিষয়বস্তু" className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-7">
+          <h2 className="text-base font-black text-slate-900">এই লেখায় যা থাকছে</h2>
+          <ol className="mt-3 list-inside list-decimal space-y-2 text-sm leading-6 text-emerald-800">
+            {article.sections.map(([heading], index) => <li key={heading}><a className="font-semibold hover:underline" href={`#section-${index + 1}`}>{heading}</a></li>)}
+          </ol>
+        </nav>
+
         <div className="mt-6 space-y-5 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9">
           {article.sections.map(([heading, body], index) => (
-            <section key={heading} className={index ? "border-t border-slate-100 pt-5" : ""}>
+            <section id={`section-${index + 1}`} key={heading} className={index ? "scroll-mt-6 border-t border-slate-100 pt-5" : "scroll-mt-6"}>
               <h2 className="text-xl font-black text-slate-900">{index + 1}. {heading}</h2>
               <p className="mt-3 text-sm leading-8 text-slate-700 sm:text-base">{body}</p>
             </section>
@@ -133,7 +142,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <aside className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">এই লেখা সাধারণ শিক্ষামূলক তথ্যের জন্য। ফসল, মাটি, জাত ও এলাকার পরিস্থিতি অনুযায়ী সিদ্ধান্ত নিতে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
         </div>
 
-        <div className="mt-7 flex flex-wrap gap-3">
+        <div className="mt-7 flex flex-wrap items-start gap-3">
+          <ShareArticle title={article.title} />
           <Link href="/articles" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-900">← সব লেখা</Link>
           <Link href="/learn" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">কৃষি শেখার কেন্দ্র →</Link>
         </div>
