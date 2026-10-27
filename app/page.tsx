@@ -194,6 +194,38 @@ export default async function Home() {
         </div>
       </section>
 
+      <section id="green-living" aria-labelledby="green-living-title" className="border-y border-emerald-100 bg-gradient-to-br from-[#eff7e9] via-white to-[#f4f8e9] py-14 sm:py-16 lg:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-12">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3.5 py-2 text-xs font-black tracking-wide text-emerald-800"><Sprout size={15} /> AGRIVA GREEN LIVING</span>
+              <h2 id="green-living-title" className="mt-4 max-w-xl text-3xl font-black leading-tight tracking-tight text-[#173629] sm:text-4xl lg:text-5xl">আরও সবুজ জীবন, একসাথে গড়ি</h2>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">গাছ ও বাগানের জন্য আলাদা একটি জায়গা—গাছ কিনুন, গাছ বিনিময় করুন, নিজের গাছের যত্নের রেকর্ড রাখুন এবং AGRIVA কমিউনিটির সবুজ উদ্যোগের প্রভাব দেখুন।</p>
+              <Link href="/green-living" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-emerald-900/10 transition hover:-translate-y-0.5 hover:bg-[#07543e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">Green Living ঘুরে দেখুন <ArrowRight size={17} /></Link>
+              <p className="mt-3 text-xs leading-5 text-slate-500">মোবাইল ও ডেস্কটপে সহজে ব্যবহার করুন। ব্যক্তিগত গার্ডেনের তথ্য শুধু আপনার অ্যাকাউন্টের জন্য।</p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+              <Link href="/plant-market" className="group flex min-h-40 items-start gap-4 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-lime-50 text-lime-800"><Leaf size={24} /></span>
+                <span className="min-w-0 flex-1"><span className="block text-base font-extrabold text-[#173629]">Trusted Plant Marketplace</span><span className="mt-1 block text-sm leading-6 text-slate-600">গাছ, চারা ও বাগানের পণ্য খুঁজুন।</span><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">গাছ দেখুন <ChevronRight size={16} className="transition group-hover:translate-x-1" /></span></span>
+              </Link>
+              <Link href="/green-exchange" className="group flex min-h-40 items-start gap-4 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><Users size={24} /></span>
+                <span className="min-w-0 flex-1"><span className="block text-base font-extrabold text-[#173629]">Tree Exchange 2.0</span><span className="mt-1 block text-sm leading-6 text-slate-600">কমিউনিটির সঙ্গে গাছ বিনিময় করুন।</span><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">বিনিময় বোর্ড <ChevronRight size={16} className="transition group-hover:translate-x-1" /></span></span>
+              </Link>
+              <Link href="/garden" className="group flex min-h-40 items-start gap-4 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-teal-50 text-teal-800"><Sprout size={24} /></span>
+                <span className="min-w-0 flex-1"><span className="block text-base font-extrabold text-[#173629]">Personal Garden</span><span className="mt-1 block text-sm leading-6 text-slate-600">গাছের তালিকা ও যত্নের কাজ গুছিয়ে রাখুন।</span><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">আমার গার্ডেন <ChevronRight size={16} className="transition group-hover:translate-x-1" /></span></span>
+              </Link>
+              <Link href="/impact" className="group flex min-h-40 items-start gap-4 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-50 text-amber-800"><TrendingUp size={24} /></span>
+                <span className="min-w-0 flex-1"><span className="block text-base font-extrabold text-[#173629]">Impact & Trust</span><span className="mt-1 block text-sm leading-6 text-slate-600">সম্পন্ন বিনিময় ও যাচাইযোগ্য প্রভাব দেখুন।</span><span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800">প্রভাব দেখুন <ChevronRight size={16} className="transition group-hover:translate-x-1" /></span></span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
