@@ -21,7 +21,9 @@
     "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
     "test:attribution-rpc-output": "node scripts/smoke-attribution-rpc-output.mjs",
     "test:attribution-resolution-permissions": "node scripts/smoke-attribution-resolution-permissions.mjs",
-    "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs"
+    "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs",
+    "test:green-exchange-security": "node scripts/smoke-green-exchange.mjs",
+    "test:plant-market": "node scripts/smoke-plant-market.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

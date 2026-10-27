@@ -54,6 +54,10 @@ jobs:
         run: npm run test:attribution-resolution-permissions
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
+      - name: Green Exchange security and route regression test
+        run: npm run test:green-exchange-security
+      - name: Plant Market live inventory and SEO regression test
+        run: npm run test:plant-market
       - name: Production build
         run: npm run build
         env:
