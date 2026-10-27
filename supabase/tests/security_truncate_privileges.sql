@@ -1,4 +1,4 @@
--- Run after applying 20261025120000_revoke_client_truncate_privileges.sql.
+-- Run after applying 20261027230000_revoke_client_truncate_privileges.sql.
 -- Safe regression assertion: checks privileges only; performs no writes.
 DO $$
 BEGIN
