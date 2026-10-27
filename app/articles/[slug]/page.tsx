@@ -106,7 +106,9 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   };
 
   return (
-    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\\\u003c") }} />\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\\\u003c") }} />
+    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\\\u003c") }} />
       <article className="mx-auto max-w-3xl">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
           <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/articles" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
