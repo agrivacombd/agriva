@@ -86,8 +86,8 @@ INSERT INTO public.profiles (id, role) VALUES
   ('10000000-0000-0000-0000-000000000001', 'farmer'),
   ('10000000-0000-0000-0000-000000000002', 'admin');
 
-\i supabase/migrations/20261027210000_create_harvest_listings.sql
-\i supabase/migrations/20261027210500_harden_harvest_moderation.sql
+\i supabase/migrations/20261027210922_create_harvest_listings.sql
+\i supabase/migrations/20261027210933_harden_harvest_moderation.sql
 
 SET LOCAL ROLE authenticated;
 DO $test$
