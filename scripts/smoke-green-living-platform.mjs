@@ -40,7 +40,7 @@ assert.match(impactPage, /No inflated impact claims|যাচাইযোগ্�
 assert.match(sitemap, /\$\{base\}\/impact/, "public impact page must be in the sitemap");
 assert.match(robots, /"\/impact"/, "public impact page must be crawlable");
 assert.match(robots, /"\/garden"/, "private garden must be excluded from crawling");
-assert.match(dashboard, /href="\/garden"/, "dashboard must expose Personal Garden");
-assert.match(dashboard, /href="\/impact"/, "dashboard must expose Green Impact");
+assert.match(dashboard, /href: "\/garden"/, "dashboard must expose Personal Garden");
+assert.match(dashboard, /href: "\/impact"/, "dashboard must expose Green Impact");
 
 console.log("Green Living platform schema, privacy, and SEO smoke tests passed.");
