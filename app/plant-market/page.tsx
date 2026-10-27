@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Plant Market বাংলাদেশ | গাছ, চারা ও বাগান সামগ্রী – AGRIVA",
+  title: "Plant Market বাংলাদেশ | গাছ, চারা ও বাগান সামগ্রী",
   description: "ঘরের গাছ, ফল ও ফুলের চারা, বীজ, টব, মাটি ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন AGRIVA Plant Market-এ। শুধু বাস্তব, সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।",
   alternates: { canonical: "/plant-market" },
   keywords: ["Plant Market Bangladesh", "গাছের চারা", "ফুলের গাছ", "ফলের চারা", "বাগানের টব", "গাছের বীজ", "indoor plants Bangladesh"],
@@ -59,16 +59,27 @@ export default async function PlantMarketPage() {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const itemListSchema = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "AGRIVA Plant Market — গাছ, চারা ও বাগান সামগ্রী",
-    url: `${base}/plant-market`,
-    numberOfItems: products.length,
-    itemListElement: products.slice(0, 50).map((product, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      name: product.name,
-      url: `${base}/marketplace/${encodeURIComponent(product.slug)}`,
-    })),
+    "@graph": [
+      {
+        "@type": "ItemList",
+        name: "AGRIVA Plant Market — গাছ, চারা ও বাগান সামগ্রী",
+        url: `${base}/plant-market`,
+        numberOfItems: products.length,
+        itemListElement: products.slice(0, 50).map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: product.name,
+          url: `${base}/marketplace/${encodeURIComponent(product.slug)}`,
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "AGRIVA", item: base },
+          { "@type": "ListItem", position: 2, name: "Plant Market", item: `${base}/plant-market` },
+        ],
+      },
+    ],
   };
 
   return (
