@@ -1,6 +1,19 @@
 -- Persist multiple self-selected AGRIVA roles without granting privileged access.
 -- Role membership is the source of truth for dashboard personalization; profiles.role
 -- remains a legacy compatibility field and is not forced into every new user's roles.
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS selected_roles text[] NOT NULL DEFAULT ARRAY['farmer']::text[];
+
+ALTER TABLE public.profiles
+  DROP CONSTRAINT IF EXISTS profiles_selected_roles_allowed;
+
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_selected_roles_allowed
+  CHECK (
+    cardinality(selected_roles) BETWEEN 1 AND 9
+    AND selected_roles <@ ARRAY['farmer', 'buyer', 'seller', 'transport', 'job_seeker', 'employer', 'student', 'agriculturist', 'rooftop_gardener']::text[]
+  );
+
 ALTER TABLE public.user_role_memberships
   DROP CONSTRAINT IF EXISTS user_role_memberships_role_check;
 
@@ -22,6 +35,7 @@ DECLARE
   v_role public.user_role;
   v_selected_role text;
   v_roles jsonb;
+  v_selected_roles text[];
 BEGIN
   -- Keep the legacy profile field non-privileged. It is not used as a role grant.
   v_role := CASE
@@ -30,22 +44,31 @@ BEGIN
     ELSE 'farmer'::public.user_role
   END;
 
-  INSERT INTO public.profiles (id, full_name, phone, role)
-  VALUES (
-    NEW.id,
-    coalesce(nullif(btrim(NEW.raw_user_meta_data ->> 'full_name'), ''), ''),
-    nullif(btrim(NEW.raw_user_meta_data ->> 'phone'), ''),
-    v_role
-  )
-  ON CONFLICT (id) DO NOTHING;
-
-  -- Only explicitly selected, allow-listed roles become memberships.
   v_roles := CASE
     WHEN jsonb_typeof(NEW.raw_user_meta_data -> 'selected_roles') = 'array'
       THEN NEW.raw_user_meta_data -> 'selected_roles'
     ELSE '[]'::jsonb
   END;
 
+  SELECT coalesce(array_agg(DISTINCT value), ARRAY['farmer']::text[])
+    INTO v_selected_roles
+  FROM jsonb_array_elements_text(v_roles) AS item(value)
+  WHERE value IN (
+    'farmer', 'buyer', 'seller', 'transport', 'job_seeker',
+    'employer', 'student', 'agriculturist', 'rooftop_gardener'
+  );
+
+  INSERT INTO public.profiles (id, full_name, phone, role, selected_roles)
+  VALUES (
+    NEW.id,
+    coalesce(nullif(btrim(NEW.raw_user_meta_data ->> 'full_name'), ''), ''),
+    nullif(btrim(NEW.raw_user_meta_data ->> 'phone'), ''),
+    v_role,
+    v_selected_roles
+  )
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Only explicitly selected, allow-listed roles become memberships.
   FOR v_selected_role IN
     SELECT DISTINCT value
     FROM jsonb_array_elements_text(v_roles) AS item(value)
@@ -106,6 +129,10 @@ BEGIN
   DELETE FROM public.user_role_memberships
   WHERE user_id = v_user_id
     AND role <> 'admin';
+
+  UPDATE public.profiles
+  SET selected_roles = ARRAY(SELECT DISTINCT requested.role FROM unnest(p_roles) AS requested(role))
+  WHERE id = v_user_id;
 
   FOREACH v_role IN ARRAY (
     SELECT array_agg(DISTINCT item.role)
