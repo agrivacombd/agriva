@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
-const migrationPath = "supabase/migrations/20261028190000_secure_commission_payout_reservation.sql";
+const migrationPath = "supabase/migrations/20261027204414_secure_commission_payout_reservation.sql";
 const migration = readFileSync(migrationPath, "utf8");
 
 assert.match(migration, /ADD COLUMN IF NOT EXISTS paid_amount numeric\(12,2\) NOT NULL DEFAULT 0/i,
