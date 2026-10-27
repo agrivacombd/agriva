@@ -6,7 +6,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 const pageUrl = `${siteUrl}/impact`;
 
 export const metadata: Metadata = {
-  title: "AGRIVA Green Impact | গাছ বিনিময় ও সবুজ কমিউনিটির অগ্রগতি",
+  title: "Green Impact: গাছ বিনিময় ও সবুজ কমিউনিটির অগ্রগতি",
   description: "AGRIVA Green Impact Dashboard-এ অনুমোদিত Green Exchange listing, সক্রিয় plant-market পণ্য ও সম্পন্ন বিনিময়ের বাস্তব aggregate তথ্য দেখুন।",
   alternates: { canonical: "/impact" },
   keywords: ["AGRIVA Green Impact", "গাছ বিনিময়", "plant market Bangladesh", "green community Bangladesh", "সustainable gardening"],
@@ -27,6 +27,10 @@ const pageSchema = {
   description: "AGRIVA Green Living platform-এর aggregate activity dashboard.",
   isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
   about: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+  breadcrumb: { "@type": "BreadcrumbList", itemListElement: [
+    { "@type": "ListItem", position: 1, name: "AGRIVA", item: siteUrl },
+    { "@type": "ListItem", position: 2, name: "Green Impact", item: pageUrl },
+  ] },
 };
 
 function MetricCard({ value, label, description }: { value: number | null; label: string; description: string }) {
