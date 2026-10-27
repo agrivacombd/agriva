@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const migration = readFileSync("supabase/migrations/20261027182446_green_living_platform.sql", "utf8");
+const indexesMigration = readFileSync("supabase/migrations/20261027182720_green_living_fk_indexes.sql", "utf8");
 const gardenPage = readFileSync("app/garden/page.tsx", "utf8");
 const gardenClient = readFileSync("app/garden/GardenClient.tsx", "utf8");
 const impactPage = readFileSync("app/impact/page.tsx", "utf8");
@@ -16,6 +17,7 @@ for (const table of ["garden_plants", "garden_care_tasks", "garden_activity_logs
 }
 assert.match(migration, /constraint garden_plants_id_owner_key unique \(id, owner_id\)/i, "ownership-safe child foreign keys need a composite unique key");
 assert.match(migration, /foreign key \(plant_id, owner_id\)/i, "garden tasks/logs must bind child records to the plant owner");
+assert.match(indexesMigration, /garden_activity_logs_plant_owner_idx/i, "composite activity-log foreign key must be indexed");
 assert.match(migration, /create or replace function public\.get_green_impact_metrics\(\)/i);
 assert.match(migration, /owner_completed_at timestamptz/i);
 assert.match(migration, /create or replace function public\.confirm_green_exchange_completion\(p_request_id uuid\)/i);
