@@ -24,7 +24,8 @@
     "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs",
     "test:green-exchange-security": "node scripts/smoke-green-exchange.mjs",
     "test:plant-market": "node scripts/smoke-plant-market.mjs",
-    "test:green-living-platform": "node scripts/smoke-green-living-platform.mjs"
+    "test:green-living-platform": "node scripts/smoke-green-living-platform.mjs",
+    "test:product-insert-moderation": "node scripts/smoke-product-insert-moderation.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
