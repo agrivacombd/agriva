@@ -5,7 +5,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 const pageUrl = `${siteUrl}/green-exchange`;
 
 export const metadata: Metadata = {
-  title: "গাছ বিনিময় বাংলাদেশ | Green Exchange – AGRIVA",
+  title: "গাছ বিনিময় বাংলাদেশ | Green Exchange",
   description:
     "বাংলাদেশের শখের বাগানিদের জন্য গাছ, চারা, কাটিং ও বীজ বিনিময়ের Green Exchange ধারণা জানুন। নিরাপদ বিনিময়, স্থানীয় বাগানি ও গাছ ভাগাভাগির ব্যবহারিক নির্দেশনা।",
   alternates: { canonical: "/green-exchange" },
