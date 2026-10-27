@@ -1,17 +1,23 @@
-name: Product moderation PostgreSQL integration
+name: Product and harvest moderation PostgreSQL integration
 
 on:
   pull_request:
     branches: [main]
     paths:
       - "supabase/migrations/*guard_product_insert_status.sql"
+      - "supabase/migrations/*create_harvest_listings.sql"
+      - "supabase/migrations/*harden_harvest_moderation.sql"
       - "scripts/test-product-insert-moderation.sql"
+      - "scripts/test-harvest-listings.sql"
       - ".github/workflows/product-moderation-postgres.yml"
   push:
     branches: [main]
     paths:
       - "supabase/migrations/*guard_product_insert_status.sql"
+      - "supabase/migrations/*create_harvest_listings.sql"
+      - "supabase/migrations/*harden_harvest_moderation.sql"
       - "scripts/test-product-insert-moderation.sql"
+      - "scripts/test-harvest-listings.sql"
       - ".github/workflows/product-moderation-postgres.yml"
 
 permissions:
@@ -46,3 +52,11 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: postgres
         run: psql -v ON_ERROR_STOP=1 -f scripts/test-product-insert-moderation.sql
+      - name: Test harvest listing RLS, privacy, upload ownership and moderation
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test-harvest-listings.sql
