@@ -57,11 +57,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
+  const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
     description: typeof product.description === "string" ? product.description : undefined,
     category: product.category || undefined,
-    offers: { "@type": "Offer", priceCurrency: "BDT", price: Number(product.price), availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${base}${canonicalPath}` },
+    ...(hasRealPrice ? {
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "BDT",
+        price: Number(product.price),
+        availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        url: `${base}${canonicalPath}`,
+      },
+    } : {}),
   };
   return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
