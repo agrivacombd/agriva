@@ -1,5 +1,6 @@
 -- Persist multiple self-selected AGRIVA roles without granting privileged access.
--- Role membership remains separate from the legacy primary profile role.
+-- Role membership is the source of truth for dashboard personalization; profiles.role
+-- remains a legacy compatibility field and is not forced into every new user's roles.
 ALTER TABLE public.user_role_memberships
   DROP CONSTRAINT IF EXISTS user_role_memberships_role_check;
 
@@ -22,7 +23,7 @@ DECLARE
   v_selected_role text;
   v_roles jsonb;
 BEGIN
-  -- Client metadata may choose only non-privileged profile roles.
+  -- Keep the legacy profile field non-privileged. It is not used as a role grant.
   v_role := CASE
     WHEN (NEW.raw_user_meta_data ->> 'role') IN ('farmer', 'reseller')
       THEN (NEW.raw_user_meta_data ->> 'role')::public.user_role
@@ -32,20 +33,13 @@ BEGIN
   INSERT INTO public.profiles (id, full_name, phone, role)
   VALUES (
     NEW.id,
-    coalesce(NEW.raw_user_meta_data ->> 'full_name', ''),
-    coalesce(NEW.raw_user_meta_data ->> 'phone', ''),
+    coalesce(nullif(btrim(NEW.raw_user_meta_data ->> 'full_name'), ''), ''),
+    nullif(btrim(NEW.raw_user_meta_data ->> 'phone'), ''),
     v_role
   )
   ON CONFLICT (id) DO NOTHING;
 
-  -- Preserve the server-controlled primary role membership.
-  INSERT INTO public.user_role_memberships (user_id, role)
-  SELECT p.id, p.role::text
-  FROM public.profiles p
-  WHERE p.id = NEW.id
-  ON CONFLICT (user_id, role) DO NOTHING;
-
-  -- Validate and save only known non-admin selections from signup metadata.
+  -- Only explicitly selected, allow-listed roles become memberships.
   v_roles := CASE
     WHEN jsonb_typeof(NEW.raw_user_meta_data -> 'selected_roles') = 'array'
       THEN NEW.raw_user_meta_data -> 'selected_roles'
@@ -65,12 +59,20 @@ BEGIN
     ON CONFLICT (user_id, role) DO NOTHING;
   END LOOP;
 
+  -- Preserve compatibility for signup paths that do not submit role selections.
+  IF NOT EXISTS (
+    SELECT 1 FROM public.user_role_memberships WHERE user_id = NEW.id
+  ) THEN
+    INSERT INTO public.user_role_memberships (user_id, role)
+    VALUES (NEW.id, 'farmer')
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END IF;
+
   RETURN NEW;
 END;
 $function$;
 
-
--- Allow signed-in users to manage only their own non-privileged role selections.
+-- Users may update only their own non-admin role selections.
 CREATE OR REPLACE FUNCTION public.update_my_role_memberships(p_roles text[])
 RETURNS void
 LANGUAGE plpgsql
@@ -93,20 +95,22 @@ BEGIN
     RAISE EXCEPTION 'Select between one and nine roles';
   END IF;
 
-  IF EXISTS (SELECT 1 FROM unnest(p_roles) AS requested(role) WHERE NOT (requested.role = ANY(v_allowed))) THEN
+  IF EXISTS (
+    SELECT 1 FROM unnest(p_roles) AS requested(role)
+    WHERE NOT (requested.role = ANY(v_allowed))
+  ) THEN
     RAISE EXCEPTION 'One or more roles are not allowed';
   END IF;
 
-  -- Keep the trusted primary role and any admin membership untouched.
+  -- Admin memberships are managed only by trusted administrators.
   DELETE FROM public.user_role_memberships
   WHERE user_id = v_user_id
-    AND role <> ALL(ARRAY['admin']::text[])
-    AND role NOT IN (
-      SELECT p.role::text FROM public.profiles p WHERE p.id = v_user_id
-    )
-    ;
+    AND role <> 'admin';
 
-  FOREACH v_role IN ARRAY (SELECT array_agg(DISTINCT item.role) FROM unnest(p_roles) AS item(role))
+  FOREACH v_role IN ARRAY (
+    SELECT array_agg(DISTINCT item.role)
+    FROM unnest(p_roles) AS item(role)
+  )
   LOOP
     INSERT INTO public.user_role_memberships (user_id, role)
     VALUES (v_user_id, v_role)
