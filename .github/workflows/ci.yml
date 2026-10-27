@@ -44,6 +44,8 @@ jobs:
         run: npm run test:admin-authorization
       - name: Payment webhook hardening regression test
         run: npm run test:payment-webhook-hardening
+      - name: Disabled generic payment webhook regression test
+        run: npm run test:payment-webhook-disabled
       - name: Reseller payout balance reservation regression test
         run: npm run test:reseller-payout-reservation
       - name: Production build
