@@ -87,9 +87,19 @@ export default function ProfilePage() {
       if (saveError) throw saveError;
       setError(false);
       setMessage(language === "bn" ? "আপনার ভূমিকা সফলভাবে আপডেট হয়েছে।" : "Your roles have been updated.");
-    } catch {
+    } catch (cause: unknown) {
+      // Keep the full error in the browser console for diagnosis; show only the
+      // stable Supabase/Postgres error code in the UI (never expose DB details).
+      console.error("Profile role update failed", cause);
+      const errorCode =
+        typeof cause === "object" && cause !== null && "code" in cause &&
+        typeof (cause as { code?: unknown }).code === "string"
+          ? (cause as { code: string }).code
+          : "UNKNOWN";
       setError(true);
-      setMessage(language === "bn" ? "ভূমিকা আপডেট করা যায়নি। প্রয়োজনীয় database migration প্রয়োগ করা হয়েছে কি না যাচাই করুন।" : "Could not update roles. Check that the required database migration has been applied.");
+      setMessage(language === "bn"
+        ? `ভূমিকা আপডেট করা যায়নি (ত্রুটি কোড: ${errorCode})। বিস্তারিত জানতে browser console দেখুন।`
+        : `Could not update roles (error code: ${errorCode}). Check the browser console for details.`);
     } finally {
       setSaving(false);
     }
