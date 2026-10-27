@@ -1,5 +1,3 @@
-"use server";
-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -88,7 +86,7 @@ export default async function NewAdminProductPage({ searchParams }: {
         <h1 className="mt-7 text-3xl font-black">নতুন পণ্য যোগ করুন</h1>
         <p className="mt-2 text-sm leading-6 text-[#637266]">বাস্তব পণ্যের সঠিক মূল্য, স্টক ও তথ্য দিন। নিরাপত্তার জন্য নতুন পণ্য Draft হিসেবে তৈরি হবে; যাচাই করে আলাদাভাবে Active করুন।</p>
         {notice && <p role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-800">
-          {notice === "invalid" ? "তথ্য যাচাই করুন। মূল্য শূন্যের বেশি, স্টক শূন্য বা বেশি এবং ছবি URL HTTPS হতে হবে।" : "পণ্য তৈরি হয়নি। Database migration ও admin permission যাচাই করুন।"}
+          {notice === "invalid" ? "তথ্য যাচাই করুন। মূল্য শূন্যের বেশি, স্টক শূন্য বা বেশি এবং ছবি URL HTTPS হতে হবে।" : "পণ্য তৈরি হয়নি। Database migration ও admin permission যাচাই করুন."}
         </p>}
         <form action={createProduct} className="mt-6 grid gap-5 rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm sm:p-7">
           <label className="text-sm font-bold">পণ্যের নাম *
