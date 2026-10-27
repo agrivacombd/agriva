@@ -15,8 +15,13 @@
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
     "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
+    "test:admin-authorization": "node scripts/smoke-admin-authorization.mjs",
     "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
+    "test:payment-webhook-disabled": "node scripts/smoke-payment-webhook-disabled.mjs",
     "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
+    "test:attribution-rpc-output": "node scripts/smoke-attribution-rpc-output.mjs",
+    "test:attribution-resolution-permissions": "node scripts/smoke-attribution-resolution-permissions.mjs",
+    "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs",
     "test:green-exchange-security": "node scripts/smoke-green-exchange.mjs",
     "test:plant-market": "node scripts/smoke-plant-market.mjs"
   },
@@ -35,7 +40,7 @@
     "@types/react-dom": "18.3.5",
     "typescript": "5.7.3",
     "tailwindcss": "3.4.17",
-    "postcss": "8.5.3",
+    "postcss": "8.5.32",
     "autoprefixer": "10.4.20",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.4.3"
