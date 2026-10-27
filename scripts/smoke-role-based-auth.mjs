@@ -45,6 +45,8 @@ assert.match(dashboard, /from\("profiles"\)\.select\("full_name, role"\)/);
 assert.match(dashboard, /user_role_memberships/);
 assert.match(dashboard, /\n  transport: \{ bn: "পরিবহন সেবাদাতা"/, "dashboard must render the signup transport role");
 assert.match(profile, /update_my_role_memberships/);
+assert.match(profile, /Profile role update failed/, "role-save failures should be diagnosable in browser console");
+assert.match(profile, /error code: \\?\$\{errorCode\}/, "role-save UI should expose only a stable error code");
 assert.match(multiRoleMigration, /selected_roles/);
 assert.match(multiRoleMigration, /update_my_role_memberships/);
 assert.match(multiRoleMigration, /role <> 'admin'/, "original migration preserves admin membership");
