@@ -1,5 +1,23 @@
 -- Restore the production schema required by the live Sell My Harvest UI.
 -- This is a forward-only addition; Production currently has no harvest listing rows.
+CREATE OR REPLACE FUNCTION public.harvest_listing_image_urls_valid(p_urls text[])
+RETURNS boolean
+LANGUAGE sql
+IMMUTABLE
+SET search_path = pg_catalog
+AS $$
+  SELECT p_urls IS NOT NULL
+    AND cardinality(p_urls) BETWEEN 1 AND 5
+    AND NOT EXISTS (
+      SELECT 1
+      FROM unnest(p_urls) AS item(url)
+      WHERE item.url IS NULL
+        OR item.url !~ '^https://[^/]+/storage/v1/object/public/harvest-images/[^[:space:]]+$'
+    );
+$$;
+REVOKE ALL ON FUNCTION public.harvest_listing_image_urls_valid(text[]) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.harvest_listing_image_urls_valid(text[]) TO authenticated, service_role;
+
 CREATE TABLE IF NOT EXISTS public.harvest_listings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -19,10 +37,9 @@ CREATE TABLE IF NOT EXISTS public.harvest_listings (
   minimum_order numeric(12,2) CHECK (minimum_order IS NULL OR minimum_order > 0),
   negotiable boolean NOT NULL DEFAULT true,
   transport_available boolean NOT NULL DEFAULT false,
-  contact_phone text,
+  contact_phone text CHECK (contact_phone IS NULL OR char_length(contact_phone) <= 25),
   contact_phone_public boolean NOT NULL DEFAULT false,
-  image_urls text[] NOT NULL DEFAULT '{}'
-    CHECK (cardinality(image_urls) BETWEEN 1 AND 5 AND array_position(image_urls, NULL) IS NULL),
+  image_urls text[] NOT NULL CHECK (public.harvest_listing_image_urls_valid(image_urls)),
   status text NOT NULL DEFAULT 'available'
     CHECK (status IN ('available', 'sold_out', 'paused')),
   moderation_status text NOT NULL DEFAULT 'pending'
