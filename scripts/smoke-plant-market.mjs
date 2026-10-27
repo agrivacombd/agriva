@@ -8,7 +8,8 @@ const robots = readFileSync("app/robots.ts", "utf8");
 
 assert.match(page, /from\("products"\)/, "Plant Market must use real product inventory");
 assert.match(page, /\.eq\("status", "active"\)/, "only active products should appear");
-assert.match(page, /\.eq\("moderation_status", "approved"\)/, "only approved products should appear");
+assert.match(page, /\.eq\("status", "active"\)/, "only publicly active products should appear");
+assert.doesNotMatch(page, /moderation_status|category_slug|subcategory_slug/, "queries must match the deployed products schema");
 assert.match(page, /filter\(isPlantProduct\)/, "Plant Market must filter plant and gardening products");
 assert.match(page, /এখনো কোনো গাছ বা বাগান-সম্পর্কিত পণ্য/, "empty catalogue must be explained honestly");
 assert.match(page, /\/green-exchange\/board/, "empty state should link to Green Exchange");

@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Plant Market বাংলাদেশ | গাছ, চারা ও বাগান সামগ্রী – AGRIVA",
+  title: "Plant Market বাংলাদেশ | গাছ, চারা ও বাগান সামগ্রী",
   description: "ঘরের গাছ, ফল ও ফুলের চারা, বীজ, টব, মাটি ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন AGRIVA Plant Market-এ। শুধু বাস্তব, সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।",
   alternates: { canonical: "/plant-market" },
   keywords: ["Plant Market Bangladesh", "গাছের চারা", "ফুলের গাছ", "ফলের চারা", "বাগানের টব", "গাছের বীজ", "indoor plants Bangladesh"],
@@ -39,9 +39,8 @@ export default async function PlantMarketPage() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
+      .select("id,name,slug,category,description,price,stock")
       .eq("status", "active")
-      .eq("moderation_status", "approved")
       .order("created_at", { ascending: false })
       .limit(500);
 
@@ -56,8 +55,35 @@ export default async function PlantMarketPage() {
     console.error("Plant Market catalogue load failed:", error);
   }
 
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "ItemList",
+        name: "AGRIVA Plant Market — গাছ, চারা ও বাগান সামগ্রী",
+        url: `${base}/plant-market`,
+        numberOfItems: products.length,
+        itemListElement: products.slice(0, 50).map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: product.name,
+          url: `${base}/marketplace/${encodeURIComponent(product.slug)}`,
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "AGRIVA", item: base },
+          { "@type": "ListItem", position: 2, name: "Plant Market", item: `${base}/plant-market` },
+        ],
+      },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema).replace(/</g, "\\u003c") }} />
       <section className="relative overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#34784b] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full border-[48px] border-white/10" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -95,10 +121,10 @@ export default async function PlantMarketPage() {
             </div>
           </div>
         )}
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ঘর ও বারান্দার গাছ</h3><p className="mt-2 text-sm leading-6 text-slate-600">ইনডোর গাছ, ফুলের চারা এবং ছোট জায়গার বাগানের উপকরণ খুঁজুন।</p></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ছাদবাগান ও ফলের চারা</h3><p className="mt-2 text-sm leading-6 text-slate-600">আপনার জায়গা, আলো ও যত্নের সামর্থ্য অনুযায়ী পণ্য বেছে নিন।</p></article>
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">গাছ বিনিময়</h3><p className="mt-2 text-sm leading-6 text-slate-600">কেনার পাশাপাশি অনুমোদিত Green Exchange পোস্টে বিনিময়ের প্রস্তাব দিতে পারেন।</p></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">গাছ বিনিময়</h3><p className="mt-2 text-sm leading-6 text-slate-600">কেনার পাশাপাশি অনুমোদিত Green Exchange পোস্টে বিনিময়ের প্রস্তাব দিতে পারেন।</p></article><article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">নিজের Garden</h3><p className="mt-2 text-sm leading-6 text-slate-600">কেনা গাছের যত্নের কাজ ও নির্ধারিত তারিখ Personal Garden-এ রাখুন।</p><Link href="/garden" className="mt-3 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Garden খুলুন</Link></article><article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">Green Impact</h3><p className="mt-2 text-sm leading-6 text-slate-600">অনুমোদিত listing ও সম্পন্ন বিনিময়ের aggregate হিসাব দেখুন।</p><Link href="/impact" className="mt-3 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact দেখুন</Link></article>
         </div>
       </section>
     </main>

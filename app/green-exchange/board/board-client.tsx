@@ -13,6 +13,8 @@ type ExchangeRequest = {
   status: "pending" | "accepted" | "declined" | "countered" | "cancelled" | "completed";
   counter_message: string | null;
   created_at: string;
+  owner_completed_at?: string | null;
+  requester_completed_at?: string | null;
   green_exchange_listings?: { title: string; owner_id: string } | null;
 };
 
@@ -47,6 +49,7 @@ const slugify = (value: string) =>
 export default function GreenExchangeBoard() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<ExchangeRequest[]>([]);
+  const [outgoingRequests, setOutgoingRequests] = useState<ExchangeRequest[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [district, setDistrict] = useState("");
@@ -79,17 +82,24 @@ export default function GreenExchangeBoard() {
       : Promise.resolve({ data: [] as Listing[], error: null });
     const requestsQuery = currentUser
       ? supabase.from("green_exchange_requests")
-          .select("id,listing_id,requester_id,message,offered_item,status,counter_message,created_at,green_exchange_listings!inner(title,owner_id)")
+          .select("id,listing_id,requester_id,message,offered_item,status,counter_message,created_at,owner_completed_at,requester_completed_at,green_exchange_listings!inner(title,owner_id)")
           .eq("green_exchange_listings.owner_id", currentUser)
           .order("created_at", { ascending: false }).limit(50)
       : Promise.resolve({ data: [] as ExchangeRequest[], error: null });
-    const [publicResult, ownResult, requestsResult] = await Promise.all([publicQuery, ownQuery, requestsQuery]);
+    const outgoingQuery = currentUser
+      ? supabase.from("green_exchange_requests")
+          .select("id,listing_id,requester_id,message,offered_item,status,counter_message,created_at,owner_completed_at,requester_completed_at,green_exchange_listings!inner(title,owner_id)")
+          .eq("requester_id", currentUser)
+          .order("created_at", { ascending: false }).limit(50)
+      : Promise.resolve({ data: [] as ExchangeRequest[], error: null });
+    const [publicResult, ownResult, requestsResult, outgoingResult] = await Promise.all([publicQuery, ownQuery, requestsQuery, outgoingQuery]);
     const combined = new Map<string, Listing>();
     for (const item of [...(publicResult.data ?? []), ...(ownResult.data ?? [])] as Listing[]) combined.set(item.id, item);
     setListings([...combined.values()]);
     setIncomingRequests((requestsResult.data ?? []) as unknown as ExchangeRequest[]);
+    setOutgoingRequests((outgoingResult.data ?? []) as unknown as ExchangeRequest[]);
     if (publicResult.error || ownResult.error) setMessage("লিস্টিং লোড করা যায়নি। ডেটাবেস মাইগ্রেশন ও অ্যাক্সেস সেটিংস যাচাই করুন।");
-    if (requestsResult.error && requestsResult.error.code !== "42P01" && requestsResult.error.code !== "PGRST205") {
+    if ((requestsResult.error || outgoingResult.error) && (requestsResult.error?.code ?? outgoingResult.error?.code) !== "42P01" && (requestsResult.error?.code ?? outgoingResult.error?.code) !== "PGRST205") {
       setMessage("আপনার পাওয়া বিনিময়ের অনুরোধ লোড করা যায়নি।");
     }
     setLoading(false);
@@ -193,6 +203,22 @@ export default function GreenExchangeBoard() {
     await load();
   }
 
+  async function confirmCompletion(requestId: string) {
+    setMessage("");
+    const { data } = await supabase.auth.getUser();
+    if (!data.user) {
+      setMessage("বিনিময় সম্পন্ন নিশ্চিত করতে লগইন করুন।");
+      return;
+    }
+    const { error } = await supabase.rpc("confirm_green_exchange_completion", { p_request_id: requestId });
+    if (error) {
+      setMessage("সম্পন্ন নিশ্চিত করা যায়নি। দুজনের সম্মতি এবং migration status যাচাই করুন।");
+      return;
+    }
+    setMessage("আপনার confirmation সংরক্ষিত হয়েছে। দুজনই নিশ্চিত করলে বিনিময়টি সম্পন্ন হিসেবে গণনা হবে।");
+    await load();
+  }
+
   const visible = listings.filter((item) => {
     const text = [item.title, item.plant_name, item.description, item.wanted_items ?? "", item.area, item.district ?? ""].join(" ").toLowerCase();
     return text.includes(query.toLowerCase()) && (!district || (item.district ?? "").toLowerCase().includes(district.toLowerCase()));
@@ -223,7 +249,10 @@ export default function GreenExchangeBoard() {
           <label className="grid gap-1 text-sm font-semibold">গাছের অবস্থা<select value={form.condition} onChange={e => setForm({...form,condition:e.target.value})} className="rounded-lg border border-slate-300 px-3 py-2.5 font-normal"><option value="healthy">সুস্থ</option><option value="needs_attention">যত্ন প্রয়োজন</option><option value="unknown">নিশ্চিত নই</option></select></label>
           <div className="sm:col-span-2"><button disabled={saving} className="min-h-11 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-700 disabled:opacity-60">{saving ? "জমা হচ্ছে…" : "বিনিময়ের পোস্ট জমা দিন"}</button></div>
         </form>}
-        {userId && incomingRequests.length > 0 && <section className="mb-8"><div className="mb-4 flex items-end justify-between gap-3"><h2 className="text-2xl font-extrabold">আপনার পোস্টে পাওয়া অনুরোধ</h2><span className="text-sm text-slate-500">{incomingRequests.filter(r => r.status === "pending").length}টি অপেক্ষমাণ</span></div><div className="grid gap-4 md:grid-cols-2">{incomingRequests.map(request => <article key={request.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm"><p className="text-xs font-bold text-emerald-800">{request.green_exchange_listings?.title ?? "আপনার বিনিময়ের পোস্ট"}</p><h3 className="mt-2 font-bold">প্রস্তাব: {request.offered_item}</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-slate-600">{request.message}</p><p className="mt-3 text-xs text-slate-500">অবস্থা: {({pending:"অপেক্ষমাণ",accepted:"গৃহীত",declined:"প্রত্যাখ্যাত",countered:"পাল্টা প্রস্তাব",cancelled:"বাতিল",completed:"সম্পন্ন"} as Record<ExchangeRequest["status"],string>)[request.status]}</p>{request.status === "pending" && <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => void respondToRequest(request.id,"accepted")} className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">গ্রহণ করুন</button><button type="button" onClick={() => void respondToRequest(request.id,"declined")} className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">প্রত্যাখ্যান</button></div>}</article>)}</div></section>}
+        {userId && (incomingRequests.length > 0 || outgoingRequests.length > 0) && <section className="mb-8 space-y-6">
+          {incomingRequests.length > 0 && <div><div className="mb-4 flex items-end justify-between gap-3"><h2 className="text-2xl font-extrabold">আপনার পোস্টে পাওয়া অনুরোধ</h2><span className="text-sm text-slate-500">{incomingRequests.filter(r => r.status === "pending").length}টি অপেক্ষমাণ</span></div><div className="grid gap-4 md:grid-cols-2">{incomingRequests.map(request => <article key={request.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm"><p className="text-xs font-bold text-emerald-800">{request.green_exchange_listings?.title ?? "আপনার বিনিময়ের পোস্ট"}</p><h3 className="mt-2 font-bold">প্রস্তাব: {request.offered_item}</h3><p className="mt-2 whitespace-pre-line text-sm leading-7 text-slate-600">{request.message}</p><p className="mt-3 text-xs text-slate-500">অবস্থা: {({pending:"অপেক্ষমাণ",accepted:"গৃহীত",declined:"প্রত্যাখ্যাত",countered:"পাল্টা প্রস্তাব",cancelled:"বাতিল",completed:"সম্পন্ন"} as Record<ExchangeRequest["status"],string>)[request.status]}</p>{request.status === "pending" && <div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={() => void respondToRequest(request.id,"accepted")} className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">গ্রহণ করুন</button><button type="button" onClick={() => void respondToRequest(request.id,"declined")} className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">প্রত্যাখ্যান</button></div>}{request.status === "accepted" && !request.owner_completed_at && <button type="button" onClick={() => void confirmCompletion(request.id)} className="mt-4 min-h-10 rounded-lg border border-emerald-800 px-4 py-2 text-sm font-bold text-emerald-900">বিনিময় সম্পন্ন নিশ্চিত করুন</button>}{request.status === "accepted" && request.owner_completed_at && <p className="mt-3 text-sm text-emerald-800">আপনার confirmation দেওয়া হয়েছে; অপর পক্ষের confirmation-এর অপেক্ষায়।</p>}</article>)}</div></div>}
+          {outgoingRequests.length > 0 && <div><h2 className="mb-4 text-2xl font-extrabold">আপনার পাঠানো অনুরোধ</h2><div className="grid gap-4 md:grid-cols-2">{outgoingRequests.map(request => <article key={request.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm"><p className="text-xs font-bold text-emerald-800">{request.green_exchange_listings?.title ?? "গাছ বিনিময়ের পোস্ট"}</p><h3 className="mt-2 font-bold">আপনার প্রস্তাব: {request.offered_item}</h3><p className="mt-3 text-sm text-slate-600">অবস্থা: {({pending:"অপেক্ষমাণ",accepted:"গৃহীত",declined:"প্রত্যাখ্যাত",countered:"পাল্টা প্রস্তাব",cancelled:"বাতিল",completed:"সম্পন্ন"} as Record<ExchangeRequest["status"],string>)[request.status]}</p>{request.status === "accepted" && !request.requester_completed_at && <button type="button" onClick={() => void confirmCompletion(request.id)} className="mt-4 min-h-10 rounded-lg border border-emerald-800 px-4 py-2 text-sm font-bold text-emerald-900">বিনিময় সম্পন্ন নিশ্চিত করুন</button>}{request.status === "accepted" && request.requester_completed_at && <p className="mt-3 text-sm text-emerald-800">আপনার confirmation দেওয়া হয়েছে; পোস্টের মালিকের confirmation-এর অপেক্ষায়।</p>}{request.status === "completed" && <p className="mt-3 text-sm font-bold text-emerald-800">দুই পক্ষই বিনিময় সম্পন্ন নিশ্চিত করেছেন।</p>}</article>)}</div></div>}
+        </section>}
         <div className="grid gap-3 rounded-2xl border border-emerald-100 bg-white p-4 sm:grid-cols-2">
           <label className="grid gap-1 text-sm font-semibold">গাছ বা পোস্ট খুঁজুন<input value={query} onChange={e => setQuery(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2.5 font-normal" placeholder="গাছের নাম, বিবরণ…" /></label>
           <label className="grid gap-1 text-sm font-semibold">জেলা দিয়ে ফিল্টার<input value={district} onChange={e => setDistrict(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2.5 font-normal" placeholder="জেলার নাম" /></label>

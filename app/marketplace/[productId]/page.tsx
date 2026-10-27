@@ -23,8 +23,8 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,commission_percent";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
+  const columns = "id,slug,name,category,price,stock,description";
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
   const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
-  const title = `${product.name} | কৃষি পণ্য | AGRIVA`;
+  const title = `${product.name} | কৃষি পণ্য`;
   const description = typeof product.description === "string" && product.description.trim()
     ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
     : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`;
@@ -57,11 +57,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
+  const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
     description: typeof product.description === "string" ? product.description : undefined,
     category: product.category || undefined,
-    offers: { "@type": "Offer", priceCurrency: "BDT", price: Number(product.price), availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock", url: `${base}${canonicalPath}` },
+    ...(hasRealPrice ? {
+      offers: {
+        "@type": "Offer",
+        priceCurrency: "BDT",
+        price: Number(product.price),
+        availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        url: `${base}${canonicalPath}`,
+      },
+    } : {}),
   };
   return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />

@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = getCategory(categorySlug);
   if (!category) return { title: "ক্যাটাগরি পাওয়া যায়নি", robots: { index: false, follow: false } };
   const hasProducts = await hasIndexableCategoryProducts(categorySlug);
-  const title = `${category.name} | কৃষি পণ্য | AGRIVA`;
+  const title = `${category.name} | কৃষি পণ্য`;
   const description = `${category.name} কিনুন ও পণ্যের তথ্য দেখুন AGRIVA Marketplace-এ। ${category.description}।`;
   return {
     title, description,
@@ -33,8 +33,8 @@ export default async function CategoryPage({ params }: Props) {
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
-      .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
+    const { data, error } = await supabase.from("products").select("id,name,slug,category,description,price,stock")
+      .eq("status", "active").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
   const isSamplePreview = products.length === 0;

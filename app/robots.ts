@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           "/learn",
           "/green-living",
           "/green-exchange",
+          "/impact",
           "/weather",
           "/market-prices",
           "/crop-calendar",
@@ -31,6 +32,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/admin/",
           "/dashboard/",
+          "/garden",
           "/api/",
           "/auth/",
           "/orders",

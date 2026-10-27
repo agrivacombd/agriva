@@ -5,7 +5,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 const pageUrl = `${siteUrl}/green-exchange`;
 
 export const metadata: Metadata = {
-  title: "গাছ বিনিময় বাংলাদেশ | Green Exchange – AGRIVA",
+  title: "গাছ বিনিময় বাংলাদেশ | Green Exchange",
   description:
     "বাংলাদেশের শখের বাগানিদের জন্য গাছ, চারা, কাটিং ও বীজ বিনিময়ের Green Exchange ধারণা জানুন। নিরাপদ বিনিময়, স্থানীয় বাগানি ও গাছ ভাগাভাগির ব্যবহারিক নির্দেশনা।",
   alternates: { canonical: "/green-exchange" },
@@ -159,7 +159,7 @@ export default function GreenExchangePage() {
         <div className="mt-10 rounded-3xl bg-emerald-950 p-6 text-white sm:p-8">
           <h2 className="text-xl font-bold sm:text-2xl">আপনার বাগান থেকেই শুরু হোক ভাগাভাগি</h2>
           <p className="mt-3 max-w-2xl leading-7 text-emerald-100">আপনার গাছের যত্ন, ইনডোর প্ল্যান্ট ও ছাদবাগানের জন্য আরও বাংলা গাইড দেখুন।</p>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row"><Link href="/green-living" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-lime-300 px-5 py-3 font-bold text-emerald-950 hover:bg-lime-200">Green Living গাইড</Link><Link href="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 px-5 py-3 font-semibold hover:bg-white/10">AGRIVA Marketplace</Link></div>
+          <div className="mt-5 flex flex-col gap-3 sm:flex-row"><Link href="/green-living" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-lime-300 px-5 py-3 font-bold text-emerald-950 hover:bg-lime-200">Green Living গাইড</Link><Link href="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 px-5 py-3 font-semibold hover:bg-white/10">AGRIVA Marketplace</Link><Link href="/impact" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 px-5 py-3 font-semibold hover:bg-white/10">Green Impact</Link></div>
         </div>
       </section>
 

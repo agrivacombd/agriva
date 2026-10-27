@@ -143,6 +143,12 @@ export default function GreenLivingPage() {
           <p className="relative mt-4 text-xs leading-6 text-emerald-100">বাংলাদেশের গরম, বর্ষা, আলো ও ছোট জায়গার বাস্তবতা মাথায় রেখে শেখার জন্য তৈরি।</p>
         </header>
 
+        <section aria-labelledby="green-living-tools" className="mt-8 grid gap-4 sm:grid-cols-3">
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🪴</p><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌱</p><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌍</p><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
+        </section>
+
         <section aria-labelledby="why-green-living" className="mt-10">
           <div className="max-w-2xl">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-800">শখ থেকে অভ্যাস</p>
