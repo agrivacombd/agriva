@@ -18,7 +18,7 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
-$;
+$$;
 GRANT USAGE ON SCHEMA auth TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION auth.uid() TO PUBLIC;
 
