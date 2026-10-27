@@ -56,8 +56,24 @@ export default async function PlantMarketPage() {
     console.error("Plant Market catalogue load failed:", error);
   }
 
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "AGRIVA Plant Market — গাছ, চারা ও বাগান সামগ্রী",
+    url: `${base}/plant-market`,
+    numberOfItems: products.length,
+    itemListElement: products.slice(0, 50).map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: product.name,
+      url: `${base}/marketplace/${encodeURIComponent(product.slug)}`,
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema).replace(/</g, "\\u003c") }} />
       <section className="relative overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#34784b] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full border-[48px] border-white/10" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
