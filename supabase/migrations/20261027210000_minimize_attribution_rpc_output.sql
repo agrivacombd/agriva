@@ -11,7 +11,7 @@ create function public.record_attribution_session(
 returns void
 language plpgsql
 security definer
-set search_path = public
+set search_path = pg_catalog, public, pg_temp
 as $$
 declare
   r public.reseller_links;
