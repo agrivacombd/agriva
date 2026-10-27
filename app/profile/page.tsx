@@ -43,8 +43,16 @@ export default function ProfilePage() {
         const membershipRoles = (data ?? [])
           .map((item) => item.role)
           .filter((role) => roles.some((candidate) => candidate.id === role));
-        const legacyRole = profile?.role && roles.some((candidate) => candidate.id === profile.role)
-          ? profile.role
+        const legacyRoleAliases: Record<string, string> = {
+          reseller: "seller",
+          transport_provider: "transport",
+          agronomist: "agriculturist",
+          gardener: "rooftop_gardener",
+        };
+        const rawLegacyRole = typeof profile?.role === "string" ? profile.role : "farmer";
+        const normalizedLegacyRole = legacyRoleAliases[rawLegacyRole] ?? rawLegacyRole;
+        const legacyRole = roles.some((candidate) => candidate.id === normalizedLegacyRole)
+          ? normalizedLegacyRole
           : "farmer";
         if (active) setSelected(Array.from(new Set(membershipRoles.length ? membershipRoles : [legacyRole])));
       } catch {
