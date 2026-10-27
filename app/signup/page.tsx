@@ -217,7 +217,7 @@ export default function SignupPage() {
 
             <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-slate-600">
               <input type="checkbox" className="mt-1 h-4 w-4 accent-[#167453]" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} />
-              <span>{language === "bn" ? <>আমি AGRIVA-র <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms">শর্তাবলি</Link> ও <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy">গোপনীয়তা নীতি</Link>-তে সম্মত।</> : <>I agree to AGRIVA's <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms">Terms</Link> and <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy">Privacy Policy</Link>.</>}</span>
+              <span>{language === "bn" ? <>আমি AGRIVA-র <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms-of-service">শর্তাবলি</Link> ও <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy-policy">গোপনীয়তা নীতি</Link>-তে সম্মত।</> : <>I agree to AGRIVA's <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms-of-service">Terms</Link> and <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy-policy">Privacy Policy</Link>.</>}</span>
             </label>
             <p className="text-xs leading-5 text-slate-500">{t.privacy}</p>
 
