@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
-const migrationPath = "supabase/migrations/20261027180000_reserve_reseller_payout_balance.sql";
+const migrationPath = "supabase/migrations/20261026233419_reserve_reseller_payout_balance.sql";
 const migration = readFileSync(migrationPath, "utf8");
 
 assert.match(migration, /request_commission_payout\(p_amount numeric, p_method text\)/i);
@@ -27,7 +27,7 @@ assert.match(migration, /grant execute on function public\.request_commission_pa
 
 console.log("Reseller payout balance reservation regression checks passed.");
 
-const settlementPath = "supabase/migrations/20261027200000_fix_partial_commission_payout_settlement.sql";
+const settlementPath = "supabase/migrations/20261026233518_fix_partial_commission_payout_settlement.sql";
 const settlement = readFileSync(settlementPath, "utf8");
 assert.match(settlement, /ADD COLUMN IF NOT EXISTS paid_amount numeric\(12,2\) NOT NULL DEFAULT 0/i,
   "commission rows must track partial paid amounts");
