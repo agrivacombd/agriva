@@ -104,7 +104,6 @@ SET search_path TO 'pg_catalog', 'public', 'pg_temp'
 AS $function$
 DECLARE
   v_user_id uuid := auth.uid();
-  v_role text;
   v_allowed text[] := ARRAY[
     'farmer', 'buyer', 'seller', 'transport', 'job_seeker',
     'employer', 'student', 'agriculturist', 'rooftop_gardener'
@@ -134,15 +133,10 @@ BEGIN
   SET selected_roles = ARRAY(SELECT DISTINCT requested.role FROM unnest(p_roles) AS requested(role))
   WHERE id = v_user_id;
 
-  FOREACH v_role IN ARRAY (
-    SELECT array_agg(DISTINCT item.role)
-    FROM unnest(p_roles) AS item(role)
-  )
-  LOOP
-    INSERT INTO public.user_role_memberships (user_id, role)
-    VALUES (v_user_id, v_role)
-    ON CONFLICT (user_id, role) DO NOTHING;
-  END LOOP;
+  INSERT INTO public.user_role_memberships (user_id, role)
+  SELECT v_user_id, requested.role
+  FROM (SELECT DISTINCT role FROM unnest(p_roles) AS item(role)) AS requested
+  ON CONFLICT (user_id, role) DO NOTHING;
 END;
 $function$;
 
