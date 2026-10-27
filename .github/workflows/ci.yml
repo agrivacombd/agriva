@@ -40,10 +40,20 @@ jobs:
         run: npm run test:checkout-error-safety
       - name: API role and error disclosure regression test
         run: npm run test:api-role-hardening
+      - name: Admin authorization regression test
+        run: npm run test:admin-authorization
       - name: Payment webhook hardening regression test
         run: npm run test:payment-webhook-hardening
+      - name: Disabled generic payment webhook regression test
+        run: npm run test:payment-webhook-disabled
       - name: Reseller payout balance reservation regression test
         run: npm run test:reseller-payout-reservation
+      - name: Public attribution RPC output regression test
+        run: npm run test:attribution-rpc-output
+      - name: Attribution resolution permissions regression test
+        run: npm run test:attribution-resolution-permissions
+      - name: Client TRUNCATE privilege regression test
+        run: npm run test:truncate-privileges
       - name: Green Exchange security and route regression test
         run: npm run test:green-exchange-security
       - name: Plant Market live inventory and SEO regression test
