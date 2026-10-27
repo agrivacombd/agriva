@@ -46,6 +46,8 @@ jobs:
         run: npm run test:payment-webhook-hardening
       - name: Reseller payout balance reservation regression test
         run: npm run test:reseller-payout-reservation
+      - name: Client TRUNCATE privilege regression test
+        run: npm run test:truncate-privileges
       - name: Production build
         run: npm run build
         env:
