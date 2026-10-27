@@ -121,7 +121,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $confirm_green_exchange_completion$
 declare
   v_requester_id uuid;
   v_owner_id uuid;
@@ -160,7 +160,7 @@ begin
       completed_at = case when v_owner_completed_at is not null and v_requester_completed_at is not null then coalesce(completed_at, now()) else null end
   where id = p_request_id;
 end;
-$;
+$confirm_green_exchange_completion$;
 
 revoke all on function public.confirm_green_exchange_completion(uuid) from public, anon;
 grant execute on function public.confirm_green_exchange_completion(uuid) to authenticated;
