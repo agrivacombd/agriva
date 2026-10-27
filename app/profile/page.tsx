@@ -56,10 +56,18 @@ export default function ProfilePage() {
           ? normalizedLegacyRole
           : "farmer";
         if (active) setSelected(Array.from(new Set(membershipRoles.length ? membershipRoles : [legacyRole])));
-      } catch {
+      } catch (cause: unknown) {
+        console.error("Profile role load failed", cause);
+        const errorCode =
+          typeof cause === "object" && cause !== null && "code" in cause &&
+          typeof (cause as { code?: unknown }).code === "string"
+            ? (cause as { code: string }).code
+            : "UNKNOWN";
         if (active) {
           setError(true);
-          setMessage(language === "bn" ? "ভূমিকা লোড করা যায়নি। আবার চেষ্টা করুন।" : "Could not load your roles. Please try again.");
+          setMessage(language === "bn"
+            ? `ভূমিকা লোড করা যায়নি (ত্রুটি কোড: ${errorCode})। বিস্তারিত জানতে browser console দেখুন।`
+            : `Could not load your roles (error code: ${errorCode}). Check the browser console for details.`);
         }
       } finally {
         if (active) setBusy(false);
