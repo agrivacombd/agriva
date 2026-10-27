@@ -42,6 +42,7 @@ assert.match(profilePrivilegeMigration, /REVOKE UPDATE \(id, full_name, phone, r
 assert.match(profilePrivilegeMigration, /GRANT UPDATE \(full_name, phone\) ON TABLE public\.profiles TO authenticated/i);
 assert.match(dashboard, /from\("profiles"\)\.select\("full_name, role"\)/);
 assert.match(dashboard, /user_role_memberships/);
+assert.match(dashboard, /\n  transport: \{ bn: "পরিবহন সেবাদাতা"/, "dashboard must render the signup transport role");
 assert.match(profile, /update_my_role_memberships/);
 assert.match(multiRoleMigration, /selected_roles/);
 assert.match(multiRoleMigration, /update_my_role_memberships/);
