@@ -185,7 +185,7 @@ as $$
     (select count(*) from public.green_exchange_listings l
       where l.status = 'active' and l.moderation_status = 'approved'),
     (select count(*) from public.products p
-      where p.status = 'active' and p.moderation_status = 'approved'
+      where p.status = 'active'
       and (
         lower(coalesce(p.name, '')) ~ '(plant|tree|seed|seedling|sapling|flower|orchid|cactus|succulent|nursery|গাছ|চারা|বীজ|ফুল|টব|মাটি|কম্পোস্ট)'
         or lower(coalesce(p.category, '')) ~ '(plant|tree|seed|garden|nursery|গাছ|চারা|বীজ|ফুল|বাগান)'
