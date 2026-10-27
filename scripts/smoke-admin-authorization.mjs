@@ -91,7 +91,7 @@ assert.ok(orderMigration.includes("p_status = 'cancelled' AND v_old_status IN ('
 assert.ok(orderMigration.includes("A refund does not"), "refund must not automatically restock inventory");
 assert.ok(orderMigration.includes("REVOKE ALL ON FUNCTION public.set_marketplace_order_status(uuid, text) FROM PUBLIC, anon"), "order status RPC must not be executable by anonymous users");
 
-const harvestMigration = read("supabase/migrations/20261027210500_harden_harvest_moderation.sql");
+const harvestMigration = read("supabase/migrations/20261027210933_harden_harvest_moderation.sql");
 assert.ok(harvestMigration.includes("NEW.moderation_note IS DISTINCT FROM OLD.moderation_note"), "harvest trigger must prevent non-admin moderation-note changes");
 assert.ok(harvestMigration.includes("admin_moderate_harvest_listing"), "harvest moderation must provide an admin-only RPC");
 assert.ok(harvestMigration.includes("INSERT INTO public.admin_audit_log"), "harvest moderation RPC must write an audit record");
