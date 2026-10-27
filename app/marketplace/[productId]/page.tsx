@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
-  const title = `${product.name} | কৃষি পণ্য | AGRIVA`;
+  const title = `${product.name} | কৃষি পণ্য`;
   const description = typeof product.description === "string" && product.description.trim()
     ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
     : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`;
