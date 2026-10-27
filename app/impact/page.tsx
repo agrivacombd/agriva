@@ -7,7 +7,7 @@ const pageUrl = `${siteUrl}/impact`;
 
 export const metadata: Metadata = {
   title: "Green Impact: গাছ বিনিময় ও সবুজ কমিউনিটির অগ্রগতি",
-  description: "AGRIVA Green Impact Dashboard-এ অনুমোদিত Green Exchange listing, সক্রিয় plant-market পণ্য ও সম্পন্ন বিনিময়ের বাস্তব aggregate তথ্য দেখুন।",
+  description: "AGRIVA Green Impact Dashboard-এ অনুমোদিত Green Exchange listing, সক্রিয় Plant Market পণ্য ও সম্পন্ন বিনিময়ের বাস্তব aggregate তথ্য দেখুন।",
   alternates: { canonical: "/impact" },
   keywords: ["AGRIVA Green Impact", "গাছ বিনিময়", "plant market Bangladesh", "green community Bangladesh", "সustainable gardening"],
   openGraph: {
@@ -93,7 +93,7 @@ export default async function GreenImpactPage() {
           <div className="max-w-3xl"><h2 id="impact-metrics" className="text-2xl font-black sm:text-3xl">Platform activity snapshot</h2><p className="mt-2 text-sm leading-7 text-slate-600 sm:text-base">ডেটাবেসে থাকা বর্তমান activity থেকে গণনা করা হয়েছে। তথ্য লোড করা না গেলে শূন্য দেখানোর বদলে অনুপলব্ধ হিসেবে দেখানো হবে।</p></div>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <MetricCard value={metrics?.approved_exchange_listings ?? null} label="অনুমোদিত Green Exchange listing" description="বর্তমানে সক্রিয় ও moderation-এ অনুমোদিত বিনিময়ের পোস্ট। এটি সম্পন্ন বিনিময়ের সংখ্যা নয়।" />
-            <MetricCard value={metrics?.active_marketplace_products ?? null} label="সক্রিয় Plant Market পণ্য" description="নাম বা category অনুযায়ী গাছ, চারা ও বাগান-সম্পর্কিত অনুমোদিত পণ্য।" />
+            <MetricCard value={metrics?.active_marketplace_products ?? null} label="সক্রিয় Plant Market পণ্য" description="public catalogue-এ সক্রিয় গাছ, চারা ও বাগান-সম্পর্কিত পণ্য।" />
             <MetricCard value={metrics?.completed_exchange_requests ?? null} label="সম্পন্ন বিনিময়" description="যে exchange request-গুলোর status completed হিসেবে সংরক্ষিত হয়েছে।" />
           </div>
           {!metrics && <p role="status" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">Impact metrics এখন পাওয়া যাচ্ছে না। Platform administrator-এর migration ও database function deployment যাচাই করা প্রয়োজন।</p>}
@@ -104,7 +104,7 @@ export default async function GreenImpactPage() {
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="font-black">No inflated impact claims</h2><p className="mt-2 text-sm leading-6 text-slate-600">যাচাইযোগ্য planting record ছাড়া গাছ লাগানো, CO₂ কমানো বা পরিবেশগত সাশ্রয়ের সংখ্যা দাবি করা হয় না।</p></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h2 className="font-black">Help the community grow</h2><p className="mt-2 text-sm leading-6 text-slate-600">সুস্থ গাছের তথ্য দিন, স্পষ্ট শর্তে বিনিময় করুন এবং marketplace listing সঠিক ও আপডেট রাখুন।</p></article>
         </section>
-        <p className="mt-6 text-xs leading-5 text-slate-500">Metric definitions: approved exchange listings = active + approved; active plant-market products = active + approved plant/garden-related catalogue records; completed exchanges = requests explicitly marked completed. These metrics do not independently verify real-world handovers.</p>
+        <p className="mt-6 text-xs leading-5 text-slate-500">Metric definitions: approved exchange listings = active + approved; active plant-market products = active plant/garden-related catalogue records; completed exchanges = requests explicitly marked completed. These metrics do not independently verify real-world handovers.</p>
       </section>
     </main>
   );
