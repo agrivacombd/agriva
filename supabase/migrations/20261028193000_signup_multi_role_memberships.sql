@@ -68,3 +68,53 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
+
+
+-- Allow signed-in users to manage only their own non-privileged role selections.
+CREATE OR REPLACE FUNCTION public.update_my_role_memberships(p_roles text[])
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+AS $function$
+DECLARE
+  v_user_id uuid := auth.uid();
+  v_role text;
+  v_allowed text[] := ARRAY[
+    'farmer', 'buyer', 'seller', 'transport', 'job_seeker',
+    'employer', 'student', 'agriculturist', 'rooftop_gardener'
+  ]::text[];
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required';
+  END IF;
+
+  IF p_roles IS NULL OR cardinality(p_roles) < 1 OR cardinality(p_roles) > 9 THEN
+    RAISE EXCEPTION 'Select between one and nine roles';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM unnest(p_roles) AS requested(role) WHERE NOT (requested.role = ANY(v_allowed))) THEN
+    RAISE EXCEPTION 'One or more roles are not allowed';
+  END IF;
+
+  -- Keep the trusted primary role and any admin membership untouched.
+  DELETE FROM public.user_role_memberships
+  WHERE user_id = v_user_id
+    AND role <> ALL(ARRAY['admin']::text[])
+    AND role NOT IN (
+      SELECT p.role::text FROM public.profiles p WHERE p.id = v_user_id
+    )
+    AND role = ANY(v_allowed);
+
+  FOREACH v_role IN ARRAY (SELECT array_agg(DISTINCT requested) FROM unnest(p_roles) AS requested)
+  LOOP
+    INSERT INTO public.user_role_memberships (user_id, role)
+    VALUES (v_user_id, v_role)
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END LOOP;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.update_my_role_memberships(text[]) FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.update_my_role_memberships(text[]) FROM anon;
+GRANT EXECUTE ON FUNCTION public.update_my_role_memberships(text[]) TO authenticated;
