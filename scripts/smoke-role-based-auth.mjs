@@ -14,6 +14,7 @@ const dashboard = read("app/dashboard/page.tsx");
 const callback = read("app/auth/callback/route.ts");
 const enumMigration = read("supabase/migrations/20261027210000_expand_public_user_roles.sql");
 const triggerMigration = read("supabase/migrations/20261027210100_secure_signup_role_assignment.sql");
+const profilePrivilegeMigration = read("supabase/migrations/20261027210200_restrict_profile_update_columns.sql");
 
 for (const role of ["farmer", "buyer", "seller", "transport_provider", "student", "agronomist", "gardener", "reseller"]) {
   assert.match(signup, new RegExp('id: "' + role + '"'), "signup should offer " + role);
@@ -33,6 +34,9 @@ assert.match(enumMigration, /ADD VALUE IF NOT EXISTS 'agronomist'/);
 assert.match(triggerMigration, /requested_role IN \([\s\S]*?'agronomist'[\s\S]*?'reseller'[\s\S]*?\)/);
 assert.doesNotMatch(triggerMigration, /'admin'\s*\)/, "public signup must not grant admin");
 assert.match(triggerMigration, /ELSE\s+safe_role := 'farmer'/);
+assert.match(profilePrivilegeMigration, /REVOKE UPDATE ON TABLE public\.profiles FROM PUBLIC, anon, authenticated/i);
+assert.match(profilePrivilegeMigration, /REVOKE UPDATE \(id, full_name, phone, role, created_at, updated_at\)/i);
+assert.match(profilePrivilegeMigration, /GRANT UPDATE \(full_name, phone\) ON TABLE public\.profiles TO authenticated/i);
 assert.match(dashboard, /from\("profiles"\)\.select\("full_name, role"\)/);
 assert.match(dashboard, /Object\.prototype\.hasOwnProperty\.call\(roleInfo, profileRole\)/);
 
