@@ -71,7 +71,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: article.title,
     description: article.intro,
     alternates: { canonical: `/articles/${article.slug}` },
-    openGraph: { title: article.title, description: article.intro, type: "article", locale: "bn_BD" },
+    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/articles/${article.slug}`, type: "article", locale: "bn_BD" },
+    twitter: { card: "summary_large_image", title: article.title, description: article.intro },
   };
 }
 
@@ -79,9 +80,33 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const article: Article | undefined = articles.find((item) => item.slug === slug);
   if (!article) notFound();
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const articleUrl = `${siteUrl}/articles/${article.slug}`;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.intro,
+    url: articleUrl,
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    author: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    publisher: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    articleSection: article.category,
+    inLanguage: "bn-BD",
+    isAccessibleForFree: true,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "হোম", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "AGRIVA Blog", item: `${siteUrl}/articles` },
+      { "@type": "ListItem", position: 3, name: article.title, item: articleUrl },
+    ],
+  };
 
   return (
-    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">
+    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\\\u003c") }} />\n      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\\\u003c") }} />
       <article className="mx-auto max-w-3xl">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
           <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/articles" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
