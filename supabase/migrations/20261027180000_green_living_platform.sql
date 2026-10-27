@@ -39,6 +39,8 @@ create table if not exists public.garden_care_tasks (
 -- Composite unique constraint above supports ownership-safe child references.
 create index if not exists garden_care_tasks_due_idx
   on public.garden_care_tasks (owner_id, due_on, completed_at);
+create index if not exists garden_care_tasks_plant_owner_idx
+  on public.garden_care_tasks (plant_id, owner_id);
 
 create table if not exists public.garden_activity_logs (
   id uuid primary key default gen_random_uuid(),
@@ -55,6 +57,8 @@ create table if not exists public.garden_activity_logs (
 
 create index if not exists garden_activity_logs_plant_time_idx
   on public.garden_activity_logs (plant_id, happened_at desc);
+create index if not exists garden_activity_logs_owner_time_idx
+  on public.garden_activity_logs (owner_id, happened_at desc);
 
 alter table public.garden_plants enable row level security;
 alter table public.garden_care_tasks enable row level security;
