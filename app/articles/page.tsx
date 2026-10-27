@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ArticlesBrowser from "./articles-browser";
 
 type Article = {
   slug: string;
@@ -77,7 +78,6 @@ export default function ArticlesPage() {
     isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
     mainEntity: { "@type": "ItemList", itemListElement: articles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/articles/${article.slug}` })) },
   };
-  const categories = ["সব লেখা", "ফসল চাষ", "মাটির স্বাস্থ্য", "রোগবালাই", "সবজি"];
 
   return (
     <main className="min-h-screen bg-[#f6f8f3] text-[#183a27]">
@@ -100,23 +100,7 @@ export default function ArticlesPage() {
           <p className="text-sm font-semibold text-slate-500">{articles.length}টি লেখা</p>
         </div>
 
-        <div aria-label="লেখার ক্যাটাগরি" className="mt-6 flex flex-wrap gap-2">
-          {categories.map((category, index) => <span key={category} className={index === 0 ? "rounded-full bg-emerald-800 px-4 py-2 text-sm font-bold text-white" : "rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-900"}>{category}</span>)}
-        </div>
-
-        <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-2">
-          {articles.map((article) => (
-            <article key={article.slug} className="group flex flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-              <div aria-hidden="true" className="flex min-h-36 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-6xl">{article.emoji}</div>
-              <div className="flex flex-1 flex-col p-5 sm:p-6">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-emerald-800"><span className="rounded-full bg-emerald-50 px-3 py-1">{article.category}</span><span className="text-slate-400">·</span><span className="text-slate-500">{article.readTime} পড়া</span></div>
-                <h3 className="mt-4 text-xl font-black leading-snug text-slate-900">{article.title}</h3>
-                <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{article.excerpt}</p>
-                <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4"><span className="text-xs font-medium text-slate-500">{article.date}</span><Link href={`/articles/${article.slug}`} className="text-sm font-extrabold text-emerald-800 group-hover:underline">লেখাটি পড়ুন →</Link></div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <ArticlesBrowser articles={articles} />
         <aside className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">মাটি, জাত, মৌসুম ও এলাকার আবহাওয়া অনুযায়ী কৃষি পরামর্শ ভিন্ন হতে পারে। নির্দিষ্ট সিদ্ধান্তের আগে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
       </section>
     </main>
