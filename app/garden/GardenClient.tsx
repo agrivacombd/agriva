@@ -60,7 +60,7 @@ export default function GardenClient() {
     const [plantResult, taskResult] = await Promise.all([
       supabase.from("garden_plants").select("id,plant_name,nickname,plant_type,location_label,notes,created_at")
         .eq("is_active", true).order("created_at", { ascending: false }).limit(100),
-      supabase.from("garden_care_tasks").select("id,plant_id,title,task_type,due_on,completed_at,garden_plants(plant_name)")
+      supabase.from("garden_care_tasks").select("id,plant_id,title,task_type,due_on,completed_at,garden_plants!garden_care_tasks_owner_plant_fk(plant_name)")
         .order("due_on", { ascending: true }).limit(100),
     ]);
     if (plantResult.error || taskResult.error) {
