@@ -20,6 +20,7 @@
     "test:payment-webhook-disabled": "node scripts/smoke-payment-webhook-disabled.mjs",
     "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
     "test:attribution-rpc-output": "node scripts/smoke-attribution-rpc-output.mjs",
+    "test:attribution-resolution-permissions": "node scripts/smoke-attribution-resolution-permissions.mjs",
     "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs"
   },
   "dependencies": {
