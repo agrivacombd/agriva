@@ -1,6 +1,15 @@
 \set ON_ERROR_STOP on
 BEGIN;
 
+-- Match the Supabase API roles referenced by the production migration.
+DO $roles$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
+END
+$roles$;
+
 -- Minimal, isolated fixture for exercising the real trigger in PostgreSQL.
 CREATE SCHEMA IF NOT EXISTS auth;
 
@@ -33,14 +42,12 @@ DECLARE
   product_id bigint;
   denied boolean := false;
 BEGIN
-  -- Authenticated non-admin can create a draft.
   PERFORM set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
   PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
   INSERT INTO public.products (farmer_id, status)
   VALUES ('10000000-0000-0000-0000-000000000001', 'draft')
   RETURNING id INTO product_id;
 
-  -- Authenticated non-admin cannot publish on INSERT.
   BEGIN
     INSERT INTO public.products (farmer_id, status)
     VALUES ('10000000-0000-0000-0000-000000000001', 'active');
@@ -51,7 +58,6 @@ BEGIN
     RAISE EXCEPTION 'FAIL: non-admin INSERT with active status was allowed';
   END IF;
 
-  -- Authenticated non-admin cannot change moderation status on UPDATE.
   denied := false;
   BEGIN
     UPDATE public.products SET status = 'active' WHERE id = product_id;
@@ -62,12 +68,10 @@ BEGIN
     RAISE EXCEPTION 'FAIL: non-admin UPDATE of moderation status was allowed';
   END IF;
 
-  -- Admin can publish a product.
   PERFORM set_config('request.jwt.claim.role', 'admin', true);
   INSERT INTO public.products (farmer_id, status)
   VALUES ('10000000-0000-0000-0000-000000000002', 'active');
 
-  -- Preserve the existing trusted server/service-role path (no auth.uid()).
   PERFORM set_config('request.jwt.claim.sub', '', true);
   PERFORM set_config('request.jwt.claim.role', 'service_role', true);
   INSERT INTO public.products (farmer_id, status)
