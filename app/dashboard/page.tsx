@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import MobileDashboardNav from "@/components/MobileDashboardNav";
 
 type Role = "farmer" | "buyer" | "seller" | "reseller" | "transport" | "transport_provider" | "job_seeker" | "worker" | "employer" | "student" | "educator" | "expert" | "agriculturist" | "rooftop_gardener" | "organization" | "admin";
 
@@ -107,22 +108,7 @@ export default async function DashboardPage() {
         <footer className="mt-10 border-t border-[#e0e8dd] py-6 text-center text-xs text-[#718174]">AGRIVA • কৃষি, বাজার, জ্ঞান ও কাজ—একসাথে।</footer>
       </section>
 
-      <nav aria-label="মোবাইল নেভিগেশন" className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e2e9df] bg-white/95 px-2 pt-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] shadow-[0_-8px_24px_rgba(23,59,45,0.08)] backdrop-blur md:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-4 gap-1">
-          <Link href="/dashboard" aria-current="page" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl bg-[#eaf4eb] px-1 text-xs font-bold text-[#126b4f]">
-            <span aria-hidden="true" className="text-lg">🏠</span><span>ড্যাশবোর্ড</span>
-          </Link>
-          <Link href="/search" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-xs font-semibold text-[#617467] transition hover:bg-[#f2f7f0] hover:text-[#126b4f]">
-            <span aria-hidden="true" className="text-lg">✨</span><span>AI সহায়তা</span>
-          </Link>
-          <Link href="/marketplace" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-xs font-semibold text-[#617467] transition hover:bg-[#f2f7f0] hover:text-[#126b4f]">
-            <span aria-hidden="true" className="text-lg">🛒</span><span>মার্কেটপ্লেস</span>
-          </Link>
-          <Link href="/profile" className="flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 text-xs font-semibold text-[#617467] transition hover:bg-[#f2f7f0] hover:text-[#126b4f]">
-            <span aria-hidden="true" className="text-lg">👤</span><span>প্রোফাইল</span>
-          </Link>
-        </div>
-      </nav>
+      <MobileDashboardNav active="dashboard" />
     </main>
   );
 }
