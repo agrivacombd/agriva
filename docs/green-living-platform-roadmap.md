@@ -7,7 +7,7 @@ Treat Plant Market, Green Exchange, Personal Garden, and Green Impact as one Gre
 ## Current implementation in this change
 
 - Personal Garden: authenticated user-owned plant list and care-task planner. Plant and task records are protected with Supabase RLS. Dates are in-app planning only; do not describe them as push/email reminders until a notification pipeline is implemented.
-- Green Impact: public aggregate metrics for active/approved Green Exchange listings, active/approved plant-related marketplace products, and requests explicitly marked completed. An aggregate-only RPC avoids exposing IDs, user details, addresses, or private messages. A missing RPC shows unavailable, never a fabricated zero.
+- Green Impact: public aggregate metrics for active/approved Green Exchange listings, active plant-related marketplace products, and requests explicitly marked completed. An aggregate-only RPC avoids exposing IDs, user details, addresses, or private messages. A missing RPC shows unavailable, never a fabricated zero.
 - Navigation: links between Green Living, Plant Market, Green Exchange, Personal Garden, and Green Impact; dashboard quick access.
 - SEO: public /impact is canonical and in sitemap/robots; /garden requires authentication, is noindex, and is disallowed in robots. Sitemap must never include personal garden records.
 - CI: smoke tests cover RLS, ownership-safe references, aggregate-only metrics, robots/sitemap rules, and dashboard entry points.
@@ -41,7 +41,7 @@ Treat Plant Market, Green Exchange, Personal Garden, and Green Impact as one Gre
 - Make notifications opt-in, deduplicated, and easy to disable. Do not claim notifications work until the delivery worker/provider is configured and monitored.
 
 ### P2 — Impact & Trust dashboard
-- Separate counts into precise definitions: active approved exchange listings, active approved plant-related catalogue items, completed exchange requests, verified sellers (only after a real verification program), and participant-confirmed handovers (only after implementing confirmation).
+- Separate counts into precise definitions: active approved exchange listings, active plant-related catalogue items, completed exchange requests, verified sellers (only after a real verification program), and participant-confirmed handovers (only after implementing confirmation).
 - Add a date range and trend chart only when events/history are stored; current counts alone cannot produce trustworthy historical trends.
 - If claiming trees planted, survival rates, plastic saved, or CO₂ avoided, collect auditable evidence and document the methodology first. Do not derive environmental impact from listings or exchanges alone.
 - Keep public metrics aggregate-only; rate-limit the endpoint and monitor usage.
