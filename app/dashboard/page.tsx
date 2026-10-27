@@ -2,13 +2,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-type Role = "farmer" | "buyer" | "seller" | "reseller" | "transport_provider" | "job_seeker" | "worker" | "employer" | "student" | "educator" | "expert" | "agriculturist" | "rooftop_gardener" | "organization" | "admin";
+type Role = "farmer" | "buyer" | "seller" | "reseller" | "transport" | "transport_provider" | "job_seeker" | "worker" | "employer" | "student" | "educator" | "expert" | "agriculturist" | "rooftop_gardener" | "organization" | "admin";
 
 const roleInfo: Record<Role, { bn: string; en: string; description: string; links: { label: string; href: string; icon: string }[] }> = {
   farmer: { bn: "কৃষক", en: "Farmer", description: "খামার, ফসল ও মাঠের কাজ এক জায়গায় পরিচালনা করুন।", links: [{ label: "আমার খামার", href: "/farms", icon: "🌾" }, { label: "ফসলের রোগ শনাক্ত", href: "/crop-disease", icon: "🔬" }, { label: "ফসল বিক্রি করুন", href: "/sell-harvest", icon: "🧺" }, { label: "আবহাওয়া", href: "/weather", icon: "🌦️" }] },
   buyer: { bn: "ক্রেতা", en: "Buyer", description: "কৃষিপণ্য খুঁজুন এবং আপনার চাহিদা প্রকাশ করুন।", links: [{ label: "মার্কেটপ্লেস", href: "/marketplace", icon: "🛒" }, { label: "ক্রেতার চাহিদা", href: "/buyer-demands", icon: "📋" }, { label: "ফসল খুঁজুন", href: "/sell-harvest", icon: "🌽" }] },
   seller: { bn: "বিক্রেতা / ডিলার", en: "Seller / Dealer", description: "কৃষি উপকরণ ও পণ্য গ্রাহকদের কাছে পৌঁছে দিন।", links: [{ label: "মার্কেটপ্লেস", href: "/marketplace", icon: "🏪" }, { label: "পণ্য যোগ করুন", href: "/farmer/products/new", icon: "➕" }, { label: "অর্ডার দেখুন", href: "/dashboard/farmer/orders", icon: "📦" }] },
   reseller: { bn: "রিসেলার", en: "Reseller", description: "আপনার রেফারেল ও বিক্রয় কার্যক্রম পরিচালনা করুন।", links: [{ label: "রিসেলার ড্যাশবোর্ড", href: "/reseller/dashboard", icon: "📈" }, { label: "মার্কেটপ্লেস", href: "/marketplace", icon: "🛒" }] },
+  transport: { bn: "পরিবহন সেবাদাতা", en: "Transport provider", description: "কৃষিপণ্য পরিবহনের সুযোগ ও বুকিং পরিচালনা করুন।", links: [{ label: "পরিবহন বুকিং", href: "/transport", icon: "🚚" }] },
   transport_provider: { bn: "পরিবহন সেবাদাতা", en: "Transport provider", description: "কৃষিপণ্য পরিবহনের সুযোগ ও বুকিং পরিচালনা করুন।", links: [{ label: "পরিবহন বুকিং", href: "/transport", icon: "🚚" }] },
   job_seeker: { bn: "চাকরিপ্রার্থী", en: "Job seeker", description: "কৃষি খাতের চাকরি খুঁজুন এবং নিজের প্রোফাইল প্রস্তুত করুন।", links: [{ label: "চাকরির সুযোগ", href: "/jobs", icon: "💼" }, { label: "CV তৈরি করুন", href: "/jobs/cv-builder", icon: "📄" }] },
   worker: { bn: "কৃষিশ্রমিক", en: "Agricultural worker", description: "কৃষি খাতে কাজের সুযোগ খুঁজুন।", links: [{ label: "চাকরির সুযোগ", href: "/jobs", icon: "🧑‍🌾" }] },
@@ -89,7 +90,7 @@ export default async function DashboardPage() {
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {roleCards.map(({ role, info }) => (
               <article key={role} className="rounded-2xl border border-[#e1e9df] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                <div className="flex items-start justify-between gap-3"><div><span className="inline-flex rounded-xl bg-[#edf5eb] px-3 py-2 text-lg"> {role === "farmer" ? "🌾" : role === "buyer" ? "🛒" : role === "seller" || role === "reseller" ? "🏪" : role === "transport_provider" ? "🚚" : role === "job_seeker" || role === "worker" || role === "employer" ? "💼" : role === "student" || role === "educator" ? "🎓" : role === "rooftop_gardener" ? "🪴" : role === "admin" ? "🛡️" : "📘"} </span><h3 className="mt-3 text-lg font-extrabold">{info.bn}</h3></div><span className="rounded-full bg-[#eaf4eb] px-2.5 py-1 text-xs font-bold text-[#26734d]">সক্রিয়</span></div>
+                <div className="flex items-start justify-between gap-3"><div><span className="inline-flex rounded-xl bg-[#edf5eb] px-3 py-2 text-lg"> {role === "farmer" ? "🌾" : role === "buyer" ? "🛒" : role === "seller" || role === "reseller" ? "🏪" : (role === "transport_provider" || role === "transport") ? "🚚" : role === "job_seeker" || role === "worker" || role === "employer" ? "💼" : role === "student" || role === "educator" ? "🎓" : role === "rooftop_gardener" ? "🪴" : role === "admin" ? "🛡️" : "📘"} </span><h3 className="mt-3 text-lg font-extrabold">{info.bn}</h3></div><span className="rounded-full bg-[#eaf4eb] px-2.5 py-1 text-xs font-bold text-[#26734d]">সক্রিয়</span></div>
                 <p className="mt-2 min-h-12 text-sm leading-6 text-[#647568]">{info.description}</p>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">{info.links.map((item) => <Link key={item.href + item.label} href={item.href} className="rounded-xl border border-[#e6ece3] bg-[#fbfcfa] px-3 py-3 text-sm font-bold transition hover:border-[#a8c9aa] hover:bg-[#f0f7ee]">{item.icon} <span className="ml-1">{item.label}</span></Link>)}</div>
               </article>
