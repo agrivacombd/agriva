@@ -17,6 +17,11 @@ for (const table of ["garden_plants", "garden_care_tasks", "garden_activity_logs
 assert.match(migration, /constraint garden_plants_id_owner_key unique \(id, owner_id\)/i, "ownership-safe child foreign keys need a composite unique key");
 assert.match(migration, /foreign key \(plant_id, owner_id\)/i, "garden tasks/logs must bind child records to the plant owner");
 assert.match(migration, /create or replace function public\.get_green_impact_metrics\(\)/i);
+assert.match(migration, /owner_completed_at timestamptz/i);
+assert.match(migration, /create or replace function public\.confirm_green_exchange_completion\(uuid\)/i);
+assert.match(migration, /revoke all on function public\.confirm_green_exchange_completion\(uuid\) from public, anon/i);
+assert.match(migration, /v_owner_completed_at is not null and v_requester_completed_at is not null/i, "exchange completion must be confirmed by both participants");
+assert.match(readFileSync("app/green-exchange/board/board-client.tsx", "utf8"), /confirm_green_exchange_completion/);
 assert.match(migration, /security definer[\s\S]*set search_path = ''/i, "aggregate RPC must have a safe search path");
 assert.match(migration, /revoke all on function public\.get_green_impact_metrics\(\) from public/i);
 assert.match(migration, /grant execute on function public\.get_green_impact_metrics\(\) to anon, authenticated/i);
