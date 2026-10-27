@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
-const path = "supabase/migrations/20261028193000_validate_public_rpc_inputs.sql";
+const path = "supabase/migrations/20261027205058_validate_public_rpc_inputs.sql";
 const migration = readFileSync(path, "utf8");
 
 assert.match(migration, /record_attribution_session\([\s\S]*?p_days integer DEFAULT 15/i);
