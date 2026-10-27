@@ -50,6 +50,8 @@ jobs:
         run: npm run test:reseller-payout-reservation
       - name: Public attribution RPC output regression test
         run: npm run test:attribution-rpc-output
+      - name: Attribution resolution permissions regression test
+        run: npm run test:attribution-resolution-permissions
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
       - name: Production build
