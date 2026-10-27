@@ -12,9 +12,9 @@ const signup = read("app/signup/page.tsx");
 const login = read("app/login/page.tsx");
 const dashboard = read("app/dashboard/page.tsx");
 const callback = read("app/auth/callback/route.ts");
-const enumMigration = read("supabase/migrations/20261027210000_expand_public_user_roles.sql");
-const triggerMigration = read("supabase/migrations/20261027210100_secure_signup_role_assignment.sql");
-const profilePrivilegeMigration = read("supabase/migrations/20261027210200_restrict_profile_update_columns.sql");
+const enumMigration = read("supabase/migrations/20261027212516_expand_public_user_roles.sql");
+const triggerMigration = read("supabase/migrations/20261027212523_secure_signup_role_assignment.sql");
+const profilePrivilegeMigration = read("supabase/migrations/20261027212454_restrict_profile_update_columns.sql");
 
 for (const role of ["farmer", "buyer", "seller", "transport_provider", "student", "agronomist", "gardener", "reseller"]) {
   assert.match(signup, new RegExp('id: "' + role + '"'), "signup should offer " + role);
