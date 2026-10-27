@@ -17,7 +17,8 @@
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
     "test:admin-authorization": "node scripts/smoke-admin-authorization.mjs",
     "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
-    "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs"
+    "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
+    "test:truncate-privileges": "node scripts/smoke-truncate-privileges.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
