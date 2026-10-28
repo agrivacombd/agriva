@@ -24,7 +24,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
 
   const supabase = await createSupabaseServerClient();
   const columns = "id,slug,name,category,price,stock,description";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
   const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         "@type": "Offer",
         priceCurrency: "BDT",
         price: Number(product.price),
-        availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        ...(product.stock !== null && product.stock !== undefined ? { availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" } : {}),
         url: `${base}${canonicalPath}`,
       },
     } : {}),
@@ -83,8 +83,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
           {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}
           {typeof product.description === "string" && product.description.trim() && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{product.description}</p>}
-          <p className="mt-6 text-3xl font-black text-emerald-900">{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price || 0).toLocaleString("bn-BD")}</p>
-          <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : `প্রাপ্য মজুত: ${Number(product.stock || 0).toLocaleString("bn-BD")}`}</p>
+          <p className="mt-6 text-3xl font-black text-emerald-900">{product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price)) ? <>{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price).toLocaleString("bn-BD")}</> : "মূল্য উল্লেখ নেই"}</p>
+          <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : product.stock !== null && product.stock !== undefined ? `প্রাপ্য মজুত: ${Number(product.stock).toLocaleString("bn-BD")}` : "মজুতের তথ্য নেই"}</p>
           <div className="mt-6">{product.id.startsWith("sample-") ? <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p> : <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />}</div>
           <p className="mt-4 text-xs leading-5 text-slate-500">মূল্য ও মজুত পরিবর্তিত হতে পারে। অর্ডার নিশ্চিত করার আগে checkout-এ তথ্য যাচাই করুন।</p>
         </div>
