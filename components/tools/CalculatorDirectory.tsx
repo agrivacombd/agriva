@@ -43,6 +43,26 @@ const tools = [
     bnKeywords: "ফসল ক্যালেন্ডার, চাষের কাজের তালিকা",
     enKeywords: "crop calendar, farming task checklist",
   },
+  {
+    href: "soil-fertilizer",
+    icon: "🧫",
+    bnTitle: "মাটি ও সার পরিকল্পনা",
+    enTitle: "Soil and Fertilizer Planner",
+    bnDescription: "মাটি পরীক্ষা বা স্থানীয় সুপারিশের পুষ্টি উপাদানের হার দিয়ে জমির হিসাব করুন।",
+    enDescription: "Estimate field nutrient quantities using soil-test results or local recommendations.",
+    bnKeywords: "মাটি পরীক্ষা, সার পরিকল্পনা",
+    enKeywords: "soil fertilizer planner, NPK calculator",
+  },
+  {
+    href: "crop-choice",
+    icon: "🌾",
+    bnTitle: "ফসল বাছাই ও লাভ তুলনা",
+    enTitle: "Crop Choice and Profit Comparison",
+    bnDescription: "নিজের খরচ, ফলন ও বিক্রয়মূল্য দিয়ে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন।",
+    enDescription: "Compare estimated costs, yield, revenue and profit across three crops.",
+    bnKeywords: "ফসল বাছাই, ফসলের লাভ তুলনা",
+    enKeywords: "crop choice calculator, crop profit comparison",
+  },
 ];
 
 export default function CalculatorDirectory({ locale }: { locale: Locale }) {
