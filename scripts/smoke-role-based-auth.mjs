@@ -18,6 +18,7 @@ const triggerMigration = read("supabase/migrations/20261027212523_secure_signup_
 const profilePrivilegeMigration = read("supabase/migrations/20261027212454_restrict_profile_update_columns.sql");
 const multiRoleMigration = read("supabase/migrations/20261028193000_signup_multi_role_memberships.sql");
 const roleMembershipFix = read("supabase/migrations/20261028220000_preserve_non_self_service_role_memberships.sql");
+const permissionCatalogue = read("lib/auth/permissions.ts");
 
 for (const role of ["farmer", "buyer", "seller", "transport", "job_seeker", "employer", "student", "agriculturist", "rooftop_gardener"]) {
   assert.match(signup, new RegExp('id: "' + role + '"'), "signup should offer " + role);
@@ -53,5 +54,15 @@ assert.match(multiRoleMigration, /role <> 'admin'/, "original migration preserve
 assert.match(roleMembershipFix, /role = ANY\(v_allowed\)/, "role updates should replace only self-service memberships");
 assert.doesNotMatch(roleMembershipFix, /role <> 'admin'/, "role updates must not delete every non-admin membership");
 assert.doesNotMatch(multiRoleMigration, /'admin',\s*'buyer'/, "admin must not be in the self-service allow-list");
+
+
+assert.match(permissionCatalogue, /export type AgrivaPermission/);
+assert.match(permissionCatalogue, /getPermissionsForRoles/);
+assert.match(permissionCatalogue, /hasPermission/);
+assert.match(permissionCatalogue, /if \(!isAgrivaKnownRole\(role\)\) continue/, "unknown roles must receive no capabilities");
+assert.match(permissionCatalogue, /seller: sellerCatalog/);
+assert.match(permissionCatalogue, /product_moderator: \[\.\.\.ownAccount, "catalog\.moderate"/);
+assert.match(permissionCatalogue, /finance_manager: \[\.\.\.ownAccount, "finance\.read_scoped", "payout\.review", "payout\.approve"/);
+assert.match(permissionCatalogue, /This module is deliberately pure/);
 
 console.log("Role-based auth and dashboard regression checks passed.");
