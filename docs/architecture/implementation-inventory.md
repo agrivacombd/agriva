@@ -110,7 +110,7 @@ At the baseline commit, the repository tree contains:
 - [x] Harden payment initialization with provider timeout, HTTPS/SSLCommerz host validation, and conditional update confirmation; add static regression assertions.
 - [ ] Add payment-init rate limiting and validate concurrent initialization in the SSLCommerz sandbox.
 - [ ] Audit remaining server-action role coverage.
-- [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.\n- [x] Migrate the audit workspace to the shared `audit.read` capability and add a static regression assertion; verify audit-table RLS parity on staging.\n- [ ] Migrate remaining legacy-guarded admin workspaces only after matching each page/action with its least-privilege capability and database RPC/RLS boundary.
+- [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.\n- [x] Migrate the audit workspace to the shared `audit.read` capability; add additive read-only audit RLS parity migration and static regression assertions.\n- [ ] Validate audit role isolation for legacy profile-admin, admin-membership, super-admin-membership, and ordinary user accounts on staging.\n- [ ] Migrate remaining legacy-guarded admin workspaces only after matching each page/action with its least-privilege capability and database RPC/RLS boundary.
 - [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
 - [ ] Reconcile all signup/dashboard role choices against the canonical role model.
