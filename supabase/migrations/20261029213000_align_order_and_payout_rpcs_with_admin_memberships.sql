@@ -28,6 +28,23 @@ BEGIN
     v_updated_definition := replace(v_definition, 'public.is_admin()', 'public.has_platform_admin_access()');
     v_updated_definition := replace(v_updated_definition, 'is_admin()', 'public.has_platform_admin_access()');
 
+    -- Some legacy RPCs inline the profiles.role check instead of calling is_admin().
+    v_updated_definition := replace(
+      v_updated_definition,
+      'SELECT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id=v_uid AND p.role=''admin''::public.user_role) INTO v_is_admin;',
+      'SELECT public.has_platform_admin_access() INTO v_is_admin;'
+    );
+    v_updated_definition := replace(
+      v_updated_definition,
+      'IF v_admin IS NULL OR NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = v_admin AND p.role = ''admin''::public.user_role) THEN',
+      'IF v_admin IS NULL OR NOT public.has_platform_admin_access() THEN'
+    );
+    v_updated_definition := replace(
+      v_updated_definition,
+      'if v_admin is null or not exists(select 1 from public.profiles p where p.id=v_admin and p.role=''admin'') then',
+      'if v_admin is null or not public.has_platform_admin_access() then'
+    );
+
     IF v_updated_definition IS DISTINCT FROM v_definition THEN
       EXECUTE v_updated_definition;
     END IF;
