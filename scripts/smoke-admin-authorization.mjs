@@ -63,6 +63,13 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const adminDashboard = read("app/admin/page.tsx");
+assert.ok(adminDashboard.includes('from("content_drafts")'), "Super Admin dashboard must include persisted SEO content drafts");
+assert.ok(adminDashboard.includes('from("article_drafts")'), "Super Admin dashboard must include the legacy article draft queue");
+assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashboard must surface recent SEO content drafts");
+assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
+assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
+
 const reportsPage = read("app/admin/reports/page.tsx");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
