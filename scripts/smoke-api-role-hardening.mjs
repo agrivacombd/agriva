@@ -11,6 +11,14 @@ assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "
 assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
+assert.match(publicAiRoute, /question\.length > 2000/, "public AI endpoint must bound prompt length");
+assert.match(cropDiseaseRoute, /supabase\.auth\.getUser\(\)/, "crop-disease history and uploads must require a verified session");
+assert.match(cropDiseaseRoute, /\.eq\("user_id", user\.id\)/, "crop-disease history must be scoped to the authenticated user");
+assert.match(cropDiseaseRoute, /user\.id \+ "\/" \+ crypto\.randomUUID\(\)/, "crop photo paths must be rooted in authenticated user ID");
+assert.match(cropDiseaseMigration, /using \(\(select auth\.uid\(\)\) = user_id\)/, "crop diagnosis rows must be owner-readable");
+assert.match(cropDiseaseMigration, /with check \(\(select auth\.uid\(\)\) = user_id\)/, "crop diagnosis inserts must be owner-bound");
+assert.match(cropDiseaseMigration, /bucket_id = 'crop-disease-photos'[\s\S]*?storage\.foldername\(name\)/, "crop photo Storage policies must enforce owner-folder access");
+assert.match(cropDiseaseMigration, /values \('crop-disease-photos', 'crop-disease-photos', false/, "crop photos must use a private Storage bucket");
 
 const farmer = readFileSync("app/api/farmer/products/route.ts", "utf8");
 const sellerDashboard = readFileSync("app/seller/page.tsx", "utf8");
