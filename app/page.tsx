@@ -35,7 +35,7 @@ const toolLinks = [
   { icon: Briefcase, label: "কৃষি চাকরি", href: "/jobs" },
   { icon: FileText, label: "CV তৈরি করুন", href: "/jobs/cv-builder" },
   { icon: Tractor, label: "আমার খামার", href: "/farms" },
-  { icon: Zap, label: "সব কৃষি টুলস", href: "/tools" },
+  { icon: Zap, label: "কৃষি ক্যালকুলেটর", href: "/tools" },
 ];
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -122,7 +122,7 @@ export default async function Home() {
           </Link>
           <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
             <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
-            <Link className="hover:text-[#0b6b4f]" href="/tools">কৃষি টুলস</Link>
+            <Link className="hover:text-[#0b6b4f]" href="/krishi-calculator">কৃষি ক্যালকুলেটর</Link>
             <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
             <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
             <Link className="hover:text-[#0b6b4f]" href="/blog">কৃষি ব্লগ</Link>
@@ -230,7 +230,7 @@ export default async function Home() {
       <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
-          <Link href="/tools" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
+          <Link href="/krishi-calculator" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-h-52 flex-col rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-5 text-lg font-extrabold">{title}</h3><p className="mt-1 text-sm font-bold text-emerald-800">{subtitle}</p><p className="mt-2 text-sm leading-6 text-slate-500">{detail}</p></Link>)}
