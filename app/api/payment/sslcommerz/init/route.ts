@@ -41,15 +41,34 @@ export async function POST(request: NextRequest) {
   let response: Response;
   let data: any;
   try {
-    response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form, cache: "no-store" });
+    response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: form, cache: "no-store", signal: AbortSignal.timeout(15_000) });
     data = await response.json().catch(() => null);
   } catch {
     return NextResponse.json({ error: "Payment gateway unavailable" }, { status: 502 });
   }
-  if (!response.ok || !data?.GatewayPageURL) return NextResponse.json({ error: "Unable to initialize payment" }, { status: 502 });
+  if (!response.ok || typeof data?.GatewayPageURL !== "string") {
+    return NextResponse.json({ error: "Unable to initialize payment" }, { status: 502 });
+  }
 
-  const { error: referenceError } = await supabase.from("marketplace_orders").update({ payment_reference: tranId })
-    .eq("id", order.id).eq("buyer_id", user.id).eq("payment_method", "online").eq("payment_status", "pending").eq("status", "pending");
+  let gatewayUrl: URL;
+  try {
+    gatewayUrl = new URL(data.GatewayPageURL);
+  } catch {
+    return NextResponse.json({ error: "Invalid payment gateway response" }, { status: 502 });
+  }
+  if (gatewayUrl.protocol !== "https:" ||
+      !(gatewayUrl.hostname === "sslcommerz.com" || gatewayUrl.hostname.endsWith(".sslcommerz.com"))) {
+    return NextResponse.json({ error: "Invalid payment gateway response" }, { status: 502 });
+  }
+
+  // Compare-and-set the payment reference only while the order remains payable.
+  // Re-read the returned row so a concurrent status change cannot still yield a gateway URL.
+  const { data: referencedOrder, error: referenceError } = await supabase.from("marketplace_orders")
+    .update({ payment_reference: tranId })
+    .eq("id", order.id).eq("buyer_id", user.id).eq("payment_method", "online")
+    .eq("payment_status", "pending").eq("status", "pending")
+    .select("id").maybeSingle();
   if (referenceError) return NextResponse.json({ error: "Unable to save payment reference" }, { status: 500 });
-  return NextResponse.json({ gatewayUrl: data.GatewayPageURL });
+  if (!referencedOrder) return NextResponse.json({ error: "Order is no longer payable" }, { status: 409 });
+  return NextResponse.json({ gatewayUrl: gatewayUrl.toString() });
 }
