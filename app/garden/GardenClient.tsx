@@ -2,7 +2,12 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+// Use the same @supabase/ssr browser client as login so the session cookie is
+// shared with the server-side Garden route and middleware.
+const supabase = createSupabaseBrowserClient();
+
 
 type Plant = {
   id: string;
