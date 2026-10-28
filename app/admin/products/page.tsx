@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
-  return supabase;
+  const auth = await authorizePermission("roles.assign_scoped");
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login");
+    redirect("/dashboard");
+  }
+  return auth.supabase;
 }
 
 async function saveProduct(formData: FormData) {
