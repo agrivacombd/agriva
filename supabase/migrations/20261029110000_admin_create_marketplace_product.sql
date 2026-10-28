@@ -41,7 +41,7 @@ begin
     raise exception 'Category or subcategory does not exist or is inactive';
   end if;
 
-  product_slug := left(trim(both '-' from regexp_replace(lower(trim(p_name)), '[^a-z0-9]+', '-', 'g')), 90)
+  product_slug := coalesce(nullif(left(trim(both '-' from regexp_replace(lower(trim(p_name)), '[^a-z0-9]+', '-', 'g')), 90), ''), 'product')
     || '-' || substr(replace(gen_random_uuid()::text, '-', ''), 1, 8);
 
   insert into public.products (
