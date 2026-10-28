@@ -67,6 +67,8 @@ const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
 assert.ok(searchIntelligencePage.includes('from("content_opportunities")'), "search intelligence must use persisted canonical opportunities, not in-memory seed data");
 assert.ok(searchIntelligencePage.includes('rpc("create_content_draft_from_opportunity"'), "creating an opportunity draft must use the database-backed workflow");
 assert.ok(searchIntelligencePage.includes("async function requireAdmin()"), "search intelligence server actions must re-check admin authorization");
+assert.ok(searchIntelligencePage.includes('const transitions: Record<string, string[]>'), "search intelligence must enforce the same explicit opportunity transition map");
+assert.ok(searchIntelligencePage.includes('.eq("id", id).eq("status", current.status)'), "search intelligence updates must guard against stale opportunity state");
 assert.ok(!searchIntelligencePage.includes("score,created_at,last_seen_at"), "search intelligence query must not request a nonexistent score column");
 const aiContentDashboard = read("components/admin/AIContentDashboard.tsx");
 assert.ok(aiContentDashboard.includes("/admin/content-drafts"), "AI content hub must link to saved drafts");
