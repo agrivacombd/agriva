@@ -84,8 +84,8 @@ At the baseline commit, the repository tree contains:
 3. **Legacy role compatibility remains.** `profiles.role`, `user_role_memberships`, and `lib/auth/roles.ts` coexist. Privileged role assignment and public signup must not be allowed to mint staff permissions.
 4. **Seller listing edit/resubmit is incomplete.** Dashboard visibility and creation are not the full lifecycle. A secure edit path must only allow owner fields, must not accept status/commission/moderation fields from the client, and must requeue rejected/changes-requested listings for review.
 5. **Product moderator scope was found too broad and a fix was added.** The initial trigger used a shared moderation-permission predicate as a broad bypass, conflating product moderators with platform administrators. Migration `20261029170000_separate_moderator_and_admin_scope.sql` narrows the broad branch to platform admin/super-admin, limits moderator changes to review/publication fields, blocks self-moderation, and writes an audit event. The regression smoke test now asserts these boundaries. This is code-level coverage only until CI and staging SQL tests pass.
-6. **Payment IPN needs end-to-end validation.** Verify unauthenticated provider callbacks can safely reconcile orders through a narrowly granted, provider-validated, idempotent database function, rather than relying on browser-session authorization or broad direct table updates.
-7. **Storage ownership is not yet fully inventoried.** Confirm every private seller/customer media bucket has object-path ownership policies for read, insert, update, and delete; admin-only product image upload is not sufficient to prove seller media isolation.
+6. **Payment IPN browser-session dependency was fixed in code.** The callback previously used the cookie-bound anon Supabase client to read/update orders; provider IPNs do not have the buyer's browser session, so RLS could reject valid payments. The route now verifies SSLCommerz remotely and calls the service-role-only `reconcile_sslcommerz_payment` RPC, which locks the order, verifies canonical amount/state, and records the payment transaction and order event idempotently. Staging SQL and SSLCommerz sandbox validation are still required.
+7. **Public search moderation leak was fixed in code.** `app/api/search/route.ts` previously selected active products without requiring approved moderation state. It now filters to active + approved and fails closed if the migration is absent. Regression coverage was added. Production catalog search may remain unavailable until the moderation migration is validated/applied through the release process. Storage ownership is not yet fully inventoried. Confirm every private seller/customer media bucket has object-path ownership policies for read, insert, update, and delete; admin-only product image upload is not sufficient to prove seller media isolation.
 8. **Finance separation-of-duties needs matrix tests.** Seller earnings, commission ledger, payout request/review/approval, refund, and payment transitions need server/database enforcement, atomicity, idempotency, and audit events.
 9. **Staff workspaces are not all implemented.** A role in the catalogue is not evidence that the role has a connected, permission-filtered workspace. Content/SEO, marketing, finance, and support must be checked against their permitted scope.
 10. **Staging and release verification are blocked.** Only the production Supabase project is currently connected; migrations have not been applied to production. Do not run unvalidated migrations on production. A staging target and exact-commit Vercel/Netlify preview verification are release gates.
@@ -96,11 +96,14 @@ At the baseline commit, the repository tree contains:
 - [x] Enumerate app routes, API handlers, migrations, and existing test files.
 - [x] Record initial architectural gaps and high-risk paths.
 - [x] Add a scoped moderator/admin database-boundary fix and regression assertions for the discovered role-scope issue.
-- [ ] Map every route/server action/API to required capability and owner.
-- [ ] Verify the new moderator-scope migration on a disposable/staging database and run its SQL transition tests.
+- [x] Create the initial API route-to-permission matrix and document the remaining authorization gaps.
+- [x] Fix provider callback reconciliation to use a service-role-only atomic database RPC and add static regression assertions.
+- [x] Ensure public search returns only active, moderation-approved products and add regression coverage.
+- [ ] Complete route/server-action/API-to-capability mapping; initial API matrix: `docs/architecture/route-permission-matrix.md`.
+- [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
 - [ ] Reconcile all signup/dashboard role choices against the canonical role model.
-- [ ] Add or update tests for unauthenticated access, cross-account IDs, role escalation, and fail-closed lookups.
+- [ ] Add or update integration tests for unauthenticated access, cross-account IDs, role escalation, payment callback replay/races, and fail-closed lookups.
 - [ ] Validate migration sequence against a staging database.
 - [ ] Verify a deployment preview for the exact release commit.
 - [ ] Complete release gates in Architecture Document section 9.
