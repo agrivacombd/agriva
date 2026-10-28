@@ -40,8 +40,10 @@ export default function AIPage() {
       if (!response.ok) throw new Error(data.error || `অনুরোধটি সম্পন্ন হয়নি (HTTP ${response.status})।`);
       if (typeof data.answer !== "string" || !data.answer.trim()) throw new Error("উত্তর পাওয়া যায়নি। আবার চেষ্টা করুন।");
       setMessages((current) => [...current, { role: "assistant", content: data.answer! }]);
-      if (data.source === "openai") {
-        setNotice("AGRIVA AI · AI উত্তর");
+      if (data.source === "gemini") {
+        setNotice("AGRIVA AI · Google Gemini");
+      } else if (data.source === "openai") {
+        setNotice("AGRIVA AI · OpenAI");
       } else if (data.fallbackReason === "missing_api_key") {
         setNotice("সাধারণ সহায়ক উত্তর · Vercel-এ GEMINI_API_KEY / OPENAI_API_KEY সেট করা নেই");
       } else if (data.fallbackReason === "provider_error") {
