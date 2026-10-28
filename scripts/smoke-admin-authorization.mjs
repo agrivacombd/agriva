@@ -63,6 +63,15 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
+assert.ok(searchIntelligencePage.includes('from("content_opportunities")'), "search intelligence must use persisted canonical opportunities, not in-memory seed data");
+assert.ok(searchIntelligencePage.includes('rpc("create_content_draft_from_opportunity"'), "creating an opportunity draft must use the database-backed workflow");
+assert.ok(searchIntelligencePage.includes("async function requireAdmin()"), "search intelligence server actions must re-check admin authorization");
+assert.ok(!searchIntelligencePage.includes("score,created_at,last_seen_at"), "search intelligence query must not request a nonexistent score column");
+const aiContentDashboard = read("components/admin/AIContentDashboard.tsx");
+assert.ok(aiContentDashboard.includes("/admin/content-drafts"), "AI content hub must link to saved drafts");
+assert.ok(aiContentDashboard.includes("no longer creates fake local-only drafts"), "AI content hub must clearly disclose that generation is not persisted");
+assert.ok(!aiContentDashboard.includes("setDrafts"), "AI content hub must not imply local-only drafts are persisted");
 const adminDashboard = read("app/admin/page.tsx");
 assert.ok(adminDashboard.includes('from("content_drafts")'), "Super Admin dashboard must include persisted SEO content drafts");
 assert.ok(adminDashboard.includes('from("article_drafts")'), "Super Admin dashboard must include the legacy article draft queue");
