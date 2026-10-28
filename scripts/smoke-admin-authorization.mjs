@@ -140,8 +140,9 @@ assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug gene
 assert.ok(/### \$\{keyword\} কী\?\n\n/.test(articleGenerator), "article markdown must contain real line breaks rather than literal backslash-n sequences");
 
 const articleReview = read("app/admin/articles/[id]/page.tsx");
-assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
-assert.ok(articleReview.includes('profileError || profile?.role !== "admin"'), "article review page must fail closed for non-admin users");
+assert.ok(articleReview.includes('authorizePermission("content.review")'), "article review page must require the content.review capability");
+assert.ok(articleReview.includes("if (!auth.ok)"), "article review page must fail closed when capability authorization fails");
+assert.ok(!articleReview.includes('profile?.role !== "admin"'), "article review page must not rely on the legacy single-profile role");
 
 for (const [path, permission] of [
   ["app/admin/harvest/page.tsx", "roles.assign_scoped"],
