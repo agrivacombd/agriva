@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -20,6 +20,7 @@ const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export default function AdminCreateProductForm() {
   const [form, setForm] = useState(initial);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -82,6 +83,7 @@ export default function AdminCreateProductForm() {
       setMessage("পণ্যটি তৈরি হয়েছে। Draft হিসেবে রাখা হয়েছে; প্রকাশের আগে তথ্য ও ছবি যাচাই করুন।");
       setForm(initial);
       setImageFile(null);
+      if (imageInputRef.current) imageInputRef.current.value = "";
       setPreviewUrl("");
     } catch {
       if (uploadedPath && supabase) await supabase.storage.from("product-images").remove([uploadedPath]).catch(() => undefined);
@@ -130,6 +132,7 @@ export default function AdminCreateProductForm() {
         <label htmlFor="product-image" className="block text-sm font-bold">পণ্যের ছবি (ঐচ্ছিক)</label>
         <input
           id="product-image"
+          ref={imageInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
