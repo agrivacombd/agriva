@@ -1,5 +1,9 @@
 -- Require explicit approval before an opportunity can become a saved content draft.
 -- The generated-content RPC keeps the insert and opportunity transition atomic.
+CREATE UNIQUE INDEX IF NOT EXISTS content_drafts_published_article_slug_uidx
+  ON public.content_drafts (slug)
+  WHERE status = 'published' AND content_type = 'article';
+
 CREATE OR REPLACE FUNCTION public.create_content_draft_from_opportunity(p_opportunity_id uuid)
 RETURNS public.content_drafts
 LANGUAGE plpgsql
