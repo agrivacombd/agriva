@@ -104,7 +104,7 @@ At the baseline commit, the repository tree contains:
 - [x] Fix provider callback reconciliation to use a service-role-only atomic database RPC and add static regression assertions.
 - [x] Ensure public search returns only active, moderation-approved products and add regression coverage.
 - [ ] Complete route/server-action/API-to-capability mapping; initial API matrix: `docs/architecture/route-permission-matrix.md`.
-- [ ] Continue auditing public AI/search abuse limits, crop-disease Storage ownership, payment initialization concurrency, and server-action role coverage.
+- [x] Inspect crop-disease baseline table RLS and private Storage owner-folder policies; add static assertions for session checks, subject-scoped history, private bucket, and path ownership.\n- [ ] Add rate/abuse controls for public AI, search, and crop-disease inference; test burst limits and provider budget behavior.\n- [ ] Verify crop-disease Storage/RLS policies against later migration drift and cross-user reads/writes on staging.\n- [ ] Audit payment initialization concurrency and remaining server-action role coverage.
 - [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.
 - [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
