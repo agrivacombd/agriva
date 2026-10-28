@@ -6,6 +6,7 @@ on:
     paths:
       - "supabase/migrations/*guard_product_insert_status.sql"
       - "supabase/migrations/*create_harvest_listings.sql"
+      - "supabase/migrations/*reconcile_harvest_listing_policies.sql"
       - "supabase/migrations/*harden_harvest_moderation.sql"
       - "scripts/test-product-insert-moderation.sql"
       - "scripts/test-harvest-listings.sql"
@@ -14,7 +15,10 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/*guard_product_insert_status.sql"
+      - "supabase/migrations/*create_harvest_listings.sql"
+      - "supabase/migrations/*reconcile_harvest_listing_policies.sql"
       - "scripts/test-product-insert-moderation.sql"
+      - "scripts/test-harvest-listings.sql"
       - ".github/workflows/product-moderation-postgres.yml"
 
 permissions:
