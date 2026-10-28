@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `${category.name} কিনুন ও পণ্যের তথ্য দেখুন AGRIVA Marketplace-এ। ${category.description}।`;
   return {
     title, description,
-    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
+    ...(hasProducts !== true ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}` },
     keywords: [category.name, `${category.name} বাংলাদেশ`, "কৃষি পণ্য", "AGRIVA Marketplace"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
@@ -39,7 +39,7 @@ export default async function CategoryPage({ params }: Props) {
       .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
-  const isSamplePreview = products.length === 0;
+  const isSamplePreview = process.env.NODE_ENV !== "production" && products.length === 0;
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesProductCategory(product.category, category));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
   const pageUrl = `${base}/marketplace/category/${category.slug}`;
