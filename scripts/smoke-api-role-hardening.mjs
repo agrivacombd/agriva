@@ -26,6 +26,10 @@ const requestBodyReader = readFileSync("lib/http/read-limited-request-body.ts", 
 const contentPublishRoute = readFileSync("app/admin/content-drafts/publish/route.ts", "utf8");
 const orderReportRoute = readFileSync("app/admin/reports/orders.csv/route.ts", "utf8");
 const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
+const checkoutPage = readFileSync("app/checkout/page.tsx", "utf8");
+assert.match(checkoutPage, /catch \{[\s\S]*?placedProductIds\.size[\s\S]*?setItems\(\(current\) => current\.filter\(\(item\) => !placedProductIds\.has\(item\.product_id\)\)\)/, "partial checkout network failures must not leave already-placed items in the current retry set");
+assert.match(checkoutPage, /Orders already placed: \$\{orderList\}/, "partial checkout failure must tell the buyer which orders may already exist");
+
 assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
 assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
 assert.match(checkout, /paymentMethod !== "cod"/, "checkout must reject online payment until a provider is enabled");
