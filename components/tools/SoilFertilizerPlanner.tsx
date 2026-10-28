@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 const fmt = new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 });
-const number = (value: string) => Math.max(0, Number(value || 0));
+const number = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
+const contentFraction = (value: string) => { const percent = number(value); return percent > 0 && percent <= 100 ? percent / 100 : null; };
 const moneyKg = (value: number) => `${fmt.format(value)} কেজি`;
 
 function Field({ label, value, onChange, suffix, hint }: { label: string; value: string; onChange: (value: string) => void; suffix: string; hint?: string }) {
@@ -19,14 +20,19 @@ export default function SoilFertilizerPlanner() {
   const [rates, setRates] = useState({ n: "", p: "", k: "" });
   const [contents, setContents] = useState({ urea: "46", tsp: "46", mop: "60" });
   const acres = number(area) * (unit === "decimal" ? 0.01 : unit === "hectare" ? 2.47105 : 1);
-  const results = useMemo(() => ({
-    urea: number(rates.n) * acres / (number(contents.urea) / 100 || 1),
-    tsp: number(rates.p) * acres / (number(contents.tsp) / 100 || 1),
-    mop: number(rates.k) * acres / (number(contents.mop) / 100 || 1),
+  const results = useMemo(() => {
+    const ureaFraction = contentFraction(contents.urea);
+    const tspFraction = contentFraction(contents.tsp);
+    const mopFraction = contentFraction(contents.mop);
+    return {
+    urea: ureaFraction ? number(rates.n) * acres / ureaFraction : 0,
+    tsp: tspFraction ? number(rates.p) * acres / tspFraction : 0,
+    mop: mopFraction ? number(rates.k) * acres / mopFraction : 0,
     n: number(rates.n) * acres,
     p: number(rates.p) * acres,
     k: number(rates.k) * acres,
-  }), [acres, rates, contents]);
+  };
+  }, [acres, rates, contents]);
   const updateRate = (key: keyof typeof rates, value: string) => setRates(old => ({ ...old, [key]: value }));
   const updateContent = (key: keyof typeof contents, value: string) => setContents(old => ({ ...old, [key]: value }));
   const reset = () => { setArea("1"); setUnit("acre"); setCrop("ধান"); setRates({ n: "", p: "", k: "" }); setContents({ urea: "46", tsp: "46", mop: "60" }); };
@@ -63,7 +69,7 @@ export default function SoilFertilizerPlanner() {
 
       <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
         <h2 className="text-xl font-black">৩. সারের প্যাকেটের উপাদান শতাংশ যাচাই করুন</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">নিচের শতাংশগুলো প্রচলিত উদাহরণ হিসেবে দেওয়া। আপনার কেনা সারের ব্যাগের লেবেল আলাদা হলে সেই অনুযায়ী পরিবর্তন করুন।</p>
+        <p className="mt-2 text-sm leading-6 text-slate-600">নিচের শতাংশগুলো প্রচলিত উদাহরণ হিসেবে দেওয়া। আপনার কেনা সারের ব্যাগের লেবেল আলাদা হলে সেই অনুযায়ী পরিবর্তন করুন। শতাংশ অবশ্যই ০-এর বেশি এবং ১০০ বা কম হতে হবে; ভুল শতাংশ হলে সংশ্লিষ্ট সারের ফল ০ দেখাবে।</p>
         <div className="mt-5 grid gap-4 sm:grid-cols-3">
           <Field label="ইউরিয়ায় N" value={contents.urea} onChange={v => updateContent("urea", v)} suffix="%" />
           <Field label="TSP-তে P₂O₅" value={contents.tsp} onChange={v => updateContent("tsp", v)} suffix="%" />
