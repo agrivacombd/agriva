@@ -87,8 +87,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
     commissionsCount, payoutsCount, orderTotals, pendingOrdersCount,
     pendingCommissionsCount, pendingPayoutsCount, contentDraftsCount,
-    draftsNeedingReviewCount, recentDrafts, recentOrders, recentCommissions,
-    recentPayouts, opportunities,
+    draftsNeedingReviewCount, articleDraftsCount, recentArticleDrafts,
+    recentDrafts, recentOrders, recentCommissions, recentPayouts, opportunities,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "farmer"),
@@ -103,6 +103,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
     supabase.from("commission_payouts").select("id", { count: "exact", head: true }).in("status", ["requested", "approved"]),
     supabase.from("content_drafts").select("id", { count: "exact", head: true }),
     supabase.from("content_drafts").select("id", { count: "exact", head: true }).in("status", ["review", "approved"]),
+    supabase.from("article_drafts").select("id", { count: "exact", head: true }),
+    supabase.from("article_drafts").select("id,title,keyword,status,created_at").order("created_at", { ascending: false }).limit(6),
     supabase.from("content_drafts").select("id,title,slug,content_type,primary_keyword,status,updated_at").order("updated_at", { ascending: false }).limit(6),
     supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity,shipping_address,product:products(name),buyer:profiles!marketplace_orders_buyer_id_fkey(full_name)").order("created_at", { ascending: false }).limit(12),
     supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8),
@@ -128,8 +130,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
     commissionsCount, payoutsCount, orderTotals, pendingOrdersCount,
     pendingCommissionsCount, pendingPayoutsCount, contentDraftsCount,
-    draftsNeedingReviewCount, recentDrafts, recentOrders, recentCommissions,
-    recentPayouts, opportunities,
+    draftsNeedingReviewCount, articleDraftsCount, recentArticleDrafts,
+    recentDrafts, recentOrders, recentCommissions, recentPayouts, opportunities,
   ].some((result) => Boolean(result.error));
 
   return (
@@ -161,13 +163,17 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
           <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট যাচাই"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/admin/content-drafts","SEO Content Drafts"],["/admin/content-studio","Content Studio"],["/admin/ai-content","AI Content"],["/orders","অর্ডার পেজ"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
         </section>
 
-        <section className="mt-5 grid gap-4 md:grid-cols-3">
+        <section className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Link href="/admin/content-drafts" className="group rounded-2xl border border-[#dfe8dc] bg-white p-5 transition hover:border-[#9bb99b] hover:shadow-sm">
             <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-[#647468]">SEO Content Drafts</p><p className="mt-2 text-3xl font-black">{contentDraftsCount.error ? "—" : contentDraftsCount.count ?? 0}</p><p className="mt-1 text-sm text-[#748074]">মোট draft</p></div><span className="rounded-xl bg-[#eaf3e8] px-3 py-2 text-xs font-black text-[#267044]">CONTENT</span></div>
             <p className="mt-4 text-sm font-bold text-[#17452c]">Draft inbox খুলুন ↗</p>
           </Link>
           <Link href="/admin/content-drafts" className="rounded-2xl border border-amber-200 bg-amber-50 p-5 transition hover:shadow-sm">
             <p className="text-sm font-bold text-amber-900">Review queue</p><p className="mt-2 text-3xl font-black text-amber-950">{draftsNeedingReviewCount.error ? "—" : draftsNeedingReviewCount.count ?? 0}</p><p className="mt-1 text-sm text-amber-900">Review বা approval-এর অপেক্ষায়</p><p className="mt-4 text-sm font-bold text-amber-950">Review drafts ↗</p>
+          </Link>
+          <Link href="/admin/articles" className="rounded-2xl border border-[#dfe8dc] bg-white p-5 transition hover:border-[#9bb99b] hover:shadow-sm">
+            <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-[#647468]">Editorial article drafts</p><p className="mt-2 text-3xl font-black">{articleDraftsCount.error ? "—" : articleDraftsCount.count ?? 0}</p><p className="mt-1 text-sm text-[#748074]">Legacy article review queue</p></div><span className="rounded-xl bg-[#eef5ed] px-3 py-2 text-xs font-black text-[#267044]">EDITORIAL</span></div>
+            <p className="mt-4 text-sm font-bold text-[#17452c]">Article review queue খুলুন ↗</p>
           </Link>
           <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5">
             <p className="text-sm font-bold text-[#647468]">Operational queues</p>
@@ -182,6 +188,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
         <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">Content draft activity</h2><p className="mt-1 text-sm text-[#748074]">সব বিদ্যমান draft এখানে সংক্ষেপে দেখা যাবে; edit/review/publish করতে draft inbox খুলুন।</p></div><Link href="/admin/content-drafts" className="rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">সব drafts দেখুন ↗</Link></div>
           {recentDrafts.error ? <p role="alert" className="p-5 text-sm text-red-800">Content drafts লোড করা যায়নি। Draft workflow migration ও admin read permission যাচাই করুন।</p> : recentDrafts.data?.length ? <div className="divide-y divide-[#edf1ea]">{recentDrafts.data.map(draft => <Link key={draft.id} href="/admin/content-drafts" className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-[#f8fbf6]"><div className="min-w-0"><p className="truncate font-bold">{draft.title}</p><p className="mt-1 text-xs text-[#748074]">{draft.primary_keyword} · {draft.content_type} · /{draft.slug}</p><p className="mt-1 text-xs text-[#879187]">Updated {new Date(draft.updated_at).toLocaleDateString("en-GB")}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${draft.status === "review" ? "bg-amber-100 text-amber-900" : draft.status === "approved" ? "bg-emerald-100 text-emerald-900" : draft.status === "published" ? "bg-blue-100 text-blue-900" : "bg-[#f0f3ee] text-[#58665a]"}`}>{draft.status}</span></Link>)}</div> : <div className="p-6"><p className="font-bold">এখনো কোনো content draft পাওয়া যায়নি।</p><p className="mt-1 text-sm text-[#748074]">Search Intelligence থেকে opportunity বেছে নতুন draft তৈরি করতে পারেন।</p><Link href="/admin/opportunities" className="mt-3 inline-flex rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">Search opportunities ↗</Link></div>}
+        </section>
+
+        <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">Legacy article drafts</h2><p className="mt-1 text-sm text-[#748074]">আগের AI article generator-এর article_drafts টেবিলের draft-গুলোও এখানে থেকে বাদ পড়বে না।</p></div><Link href="/admin/articles" className="rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">সব article drafts ↗</Link></div>
+          {recentArticleDrafts.error ? <p role="alert" className="p-5 text-sm text-red-800">Article drafts লোড করা যায়নি। Database permissions ও article_drafts schema যাচাই করুন।</p> : recentArticleDrafts.data?.length ? <div className="divide-y divide-[#edf1ea]">{recentArticleDrafts.data.map(article => <Link key={article.id} href={`/admin/articles/${article.id}`} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-[#f8fbf6]"><div className="min-w-0"><p className="truncate font-bold">{article.title}</p><p className="mt-1 text-xs text-[#748074]">Keyword: {article.keyword} · Created {new Date(article.created_at).toLocaleDateString("en-GB")}</p></div><span className="rounded-full bg-[#eef5ed] px-3 py-1 text-xs font-bold capitalize">{article.status}</span></Link>)}</div> : <div className="p-6"><p className="font-bold">Legacy article draft নেই।</p><p className="mt-1 text-sm text-[#748074]">সব নতুন SEO draft Content Drafts workflow-তে রাখা হবে।</p></div>}
         </section>
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
