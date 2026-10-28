@@ -62,7 +62,7 @@ assert.match(permissionCatalogue, /hasPermission/);
 assert.match(permissionCatalogue, /if \(!isAgrivaKnownRole\(role\)\) continue/, "unknown roles must receive no capabilities");
 assert.match(permissionCatalogue, /seller: sellerCatalog/);
 assert.match(permissionCatalogue, /product_moderator: \[\.\.\.ownAccount, "catalog\.moderate"/);
-assert.match(permissionCatalogue, /finance_manager: \[\.\.\.ownAccount, "finance\.read_scoped", "payout\.review", "payout\.approve"/);
+assert.match(permissionCatalogue, /finance_manager: \[\.\.\.ownAccount, "finance\.read_scoped", "finance\.export_orders", "finance\.read_reports", "payout\.review", "payout\.approve"/);
 assert.match(permissionCatalogue, /This module is deliberately pure/);
 
 console.log("Role-based auth and dashboard regression checks passed.");
