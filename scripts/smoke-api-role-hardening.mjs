@@ -6,6 +6,7 @@ const reseller = readFileSync("app/api/reseller/links/route.ts", "utf8");
 const cropDiseaseRoute = readFileSync("app/api/crop-disease/route.ts", "utf8");
 const cropDiseaseMigration = readFileSync("supabase/migrations/017_crop_disease_detections.sql", "utf8");
 const publicAiRoute = readFileSync("app/api/ai/route.ts", "utf8");
+const publicSearchRoute = readFileSync("app/api/search/route.ts", "utf8");
 const contentPublishRoute = readFileSync("app/admin/content-drafts/publish/route.ts", "utf8");
 const orderReportRoute = readFileSync("app/admin/reports/orders.csv/route.ts", "utf8");
 const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
@@ -14,6 +15,8 @@ assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout 
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 assert.match(publicAiRoute, /question\.length > 2000/, "public AI endpoint must bound prompt length");
+assert.match(publicSearchRoute, /readRequestBodyWithLimit\(request, MAX_REQUEST_BYTES\)/, "public search endpoint must enforce a streamed request body limit");
+assert.match(publicSearchRoute, /boundedBody\.ok[\s\S]*?status: 413/, "oversized public search request bodies must be rejected");
 assert.match(publicAiRoute, /readRequestBodyWithLimit\(request, MAX_REQUEST_BYTES\)/, "public AI endpoint must enforce a streaming byte limit even without Content-Length");
 assert.match(publicAiRoute, /boundedBody\.ok[\s\S]*?status: 413/, "oversized public AI request bodies must be rejected");
 const limitedBodyReader = readFileSync("lib/http/read-limited-request-body.ts", "utf8");
