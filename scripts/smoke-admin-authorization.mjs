@@ -181,4 +181,12 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
-console.log("Admin Route Handler discovery, Server Action, article-review, and moderation-RPC regression checks passed.");
+const contentStudio = read("app/admin/content-studio/page.tsx");
+assert.ok(contentStudio.includes("deterministic template—not an AI provider"), "Content Studio must not misrepresent a template as AI-generated");
+assert.ok(contentStudio.includes("does not save or publish content"), "Content Studio must disclose that template briefs are not persisted");
+assert.ok(contentStudio.includes("finally"), "Content Studio must always clear its loading state after request failures");
+assert.ok(contentStudio.includes('role="alert"'), "Content Studio must surface request errors accessibly");
+const contentBriefApi = read("app/api/admin/content-brief/route.ts");
+assert.ok(contentBriefApi.includes('generatedWith: "template"'), "content brief API must disclose its deterministic template output");
+
+console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
