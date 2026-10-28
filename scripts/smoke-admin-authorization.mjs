@@ -62,6 +62,10 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const orderCsvRoute = read("app/admin/reports/orders.csv/route.ts");
+assert.ok(orderCsvRoute.includes('authorizePermission("finance.read_scoped")'), "order CSV export must require finance.read_scoped");
+assert.ok(orderCsvRoute.includes("candidate.startsWith(prefix)"), "order CSV export must neutralize spreadsheet formula prefixes in untrusted cell values");
+
 const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
 assert.ok(searchIntelligencePage.includes('authorizePermission(permission)'), "search intelligence must use shared capability authorization");
 assert.ok(searchIntelligencePage.includes('requireAdmin("content.draft")'), "creating drafts from search intelligence must require content.draft");
