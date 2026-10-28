@@ -1,18 +1,18 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 const statuses = ["open", "draft", "review", "approved", "published", "rejected"] as const;
 type OpportunityStatus = typeof statuses[number];
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login?next=%2Fadmin%2Fsearch-intelligence");
-  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (error || profile?.role !== "admin") redirect("/dashboard");
-  return { supabase, user };
+async function requireAdmin(permission: "content.review" | "content.draft" = "content.review") {
+  const auth = await authorizePermission(permission);
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login?next=%2Fadmin%2Fsearch-intelligence");
+    redirect("/dashboard");
+  }
+  return { supabase: auth.supabase, user: auth.user };
 }
 
 async function updateOpportunityStatus(formData: FormData) {
@@ -47,7 +47,7 @@ async function createDraft(formData: FormData) {
   "use server";
   const id = String(formData.get("opportunityId") ?? "").trim();
   if (!id) redirect("/admin/search-intelligence?notice=invalid_action");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("content.draft");
   const { error } = await supabase.rpc("create_content_draft_from_opportunity", { p_opportunity_id: id });
   revalidatePath("/admin");
   revalidatePath("/admin/search-intelligence");
