@@ -5,6 +5,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ArrowUp, ChevronDown, Globe2, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnLinks = [
   { href: "/", label: "হোম" },
@@ -53,12 +55,55 @@ function isEnglishPath(path: string) {
 
 export default function SiteChrome() {
   const pathname = usePathname() || "/";
+  const router = useRouter();
   const english = isEnglishPath(pathname);
   const privateRoute = /^\/(admin|dashboard|auth|login|signup|garden|profile|orders)(\/|$)/.test(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const [visible, setVisible] = useState(true);
   const [showTop, setShowTop] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [signedIn, setSignedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    try {
+      const supabase = createSupabaseBrowserClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (active) {
+          setSignedIn(Boolean(user));
+          setAuthReady(true);
+        }
+      }).catch(() => {
+        if (active) setAuthReady(true);
+      });
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (active) {
+          setSignedIn(Boolean(session?.user));
+          setAuthReady(true);
+        }
+      });
+      return () => {
+        active = false;
+        subscription.unsubscribe();
+      };
+    } catch {
+      setAuthReady(true);
+    }
+  }, []);
+
+  async function signOut() {
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase.auth.signOut();
+      if (error) return;
+      setSignedIn(false);
+      router.push(english ? "/en" : "/");
+      router.refresh();
+    } catch {
+      // Keep the session UI intact if sign-out cannot be confirmed.
+    }
+  }
 
   useEffect(() => {
     document.documentElement.lang = english ? "en" : "bn";
@@ -107,7 +152,19 @@ export default function SiteChrome() {
               <span>{english ? "বাংলা" : "English"}</span>
               <ChevronDown size={14} aria-hidden="true" />
             </Link>
-            <div className="hidden items-center gap-2 sm:flex"><Link href="/login" className="rounded-xl px-3 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-50">{english ? "Log in" : "লগইন"}</Link><Link href="/dashboard" className="rounded-xl bg-emerald-800 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-950">{english ? "Open app" : "অ্যাপ খুলুন"}</Link></div>
+            <div className="hidden items-center gap-2 sm:flex">
+              {authReady && (signedIn ? (
+                <>
+                  <Link href="/dashboard" className="rounded-xl bg-emerald-800 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-950">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
+                  <button type="button" onClick={signOut} className="rounded-xl px-3 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-50">{english ? "Log out" : "লগআউট"}</button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="rounded-xl px-3 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-50">{english ? "Log in" : "লগইন"}</Link>
+                  <Link href="/dashboard" className="rounded-xl bg-emerald-800 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-950">{english ? "Open app" : "অ্যাপ খুলুন"}</Link>
+                </>
+              ))}
+            </div>
             <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 lg:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -116,6 +173,19 @@ export default function SiteChrome() {
         {menuOpen && <nav aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="border-t border-slate-100 bg-white px-4 py-3 lg:hidden">
           <div className="mx-auto grid max-w-7xl gap-1">
             {links.map((link) => <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-bold text-slate-800 hover:bg-emerald-50">{link.label}</Link>)}
+            {authReady && <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
+              {signedIn ? (
+                <>
+                  <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="rounded-xl bg-emerald-800 px-3 py-3 text-center text-sm font-bold text-white">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
+                  <button type="button" onClick={signOut} className="rounded-xl border border-emerald-200 px-3 py-3 text-sm font-bold text-emerald-900">{english ? "Log out" : "লগআউট"}</button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMenuOpen(false)} className="rounded-xl border border-emerald-200 px-3 py-3 text-center text-sm font-bold text-emerald-900">{english ? "Log in" : "লগইন"}</Link>
+                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="rounded-xl bg-emerald-800 px-3 py-3 text-center text-sm font-bold text-white">{english ? "Sign up" : "নিবন্ধন"}</Link>
+                </>
+              )}
+            </div>}
           </div>
         </nav>}
       </header>
