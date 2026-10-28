@@ -19,7 +19,6 @@ async function requireAccessManager() {
     if (auth.status === 401) redirect("/login?next=/admin/access");
     redirect("/dashboard");
   }
-  if (!auth.roles.includes("admin")) redirect("/dashboard");
   return auth;
 }
 
