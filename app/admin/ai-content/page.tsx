@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import AIContentDashboard from "@/components/admin/AIContentDashboard";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export const metadata: Metadata = {
   title: "AI Content Dashboard | AGRIVA Admin",
@@ -10,21 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default async function AIContentDashboardPage() {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) redirect("/login");
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const auth = await authorizePermission("roles.assign_scoped");
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login");
+    redirect("/dashboard");
+  }
 
   return (
     <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
