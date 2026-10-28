@@ -31,6 +31,8 @@ const bnToEn: Record<string, string> = {
   "/seed-rate-calculator": "/en/seed-rate-calculator",
   "/farming-cost-profit-calculator": "/en/farming-cost-profit-calculator",
   "/crop-calendar": "/en/crop-calendar",
+  "/soil-fertilizer": "/en/soil-fertilizer",
+  "/crop-choice": "/en/crop-choice",
 };
 const enToBn: Record<string, string> = Object.fromEntries(Object.entries(bnToEn).map(([bn, en]) => [en, bn]));
 
