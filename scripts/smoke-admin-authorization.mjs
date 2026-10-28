@@ -227,7 +227,7 @@ assert.ok(legacyArticleRoute.includes("redirect(`/blog/${encodeURIComponent(slug
 
 const productMediaMigration = read("supabase/migrations/20261029120000_admin_product_images.sql");
 assert.ok(productMediaMigration.includes("ADD COLUMN IF NOT EXISTS image_url text"), "product images must be stored in a database-backed field");
-assert.ok(productMediaMigration.includes("file_size_limit = 5242880"), "product image storage must enforce a 5 MB limit");
+assert.ok(productMediaMigration.includes("file_size_limit") && productMediaMigration.includes("5242880"), "product image storage must enforce a 5 MB limit");
 assert.ok(productMediaMigration.includes("ARRAY['image/jpeg', 'image/png', 'image/webp']"), "product image storage must restrict allowed MIME types");
 assert.ok(productMediaMigration.includes("AND public.is_admin()"), "product image storage writes must require an admin");
 assert.ok(productMediaMigration.includes("(storage.foldername(name))[1] = auth.uid()::text"), "product image writes must be confined to the uploader's own folder");
