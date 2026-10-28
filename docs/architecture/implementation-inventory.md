@@ -20,13 +20,13 @@
 
 At the baseline commit, the repository tree contains:
 
-| Area | Inventory count | Notes |
+| Area | Baseline count | Notes |
 | --- | ---: | --- |
-| Tracked repository files | current tree | Includes application, scripts, migrations, and configuration |
-| API route handlers | current tree | Includes checkout, product creation, payment callbacks, reseller links, content APIs |
+| Tracked repository files | 371 at initial baseline | Includes application, scripts, migrations, and configuration |
+| API route handlers | 18 at initial baseline | Includes checkout, product creation, payment callbacks, reseller links, content APIs |
 | Admin page routes | 22 | Includes access, moderation, content, products, orders, reports, settings, users |
-| Supabase migration files | current tree | Legacy and dated migrations; must be replayed/validated as a sequence |
-| Security/regression test-like files | current tree | Mix of smoke scripts and SQL checks; not all are true integration tests |
+| Supabase migration files | 82 at initial baseline | Legacy and dated migrations; must be replayed/validated as a sequence |
+| Security/regression test-like files | 24 at initial baseline | Mix of smoke scripts and SQL checks; not all are true integration tests |
 
 ## Phase A — route and workflow inventory
 
@@ -104,7 +104,12 @@ At the baseline commit, the repository tree contains:
 - [x] Fix provider callback reconciliation to use a service-role-only atomic database RPC and add static regression assertions.
 - [x] Ensure public search returns only active, moderation-approved products and add regression coverage.
 - [ ] Complete route/server-action/API-to-capability mapping; initial API matrix: `docs/architecture/route-permission-matrix.md`.
-- [x] Inspect crop-disease baseline table RLS and private Storage owner-folder policies; add static assertions for session checks, subject-scoped history, private bucket, and path ownership.\n- [ ] Add rate/abuse controls for public AI, search, and crop-disease inference; test burst limits and provider budget behavior.\n- [ ] Verify crop-disease Storage/RLS policies against later migration drift and cross-user reads/writes on staging.\n- [x] Harden payment initialization with provider timeout, HTTPS/SSLCommerz host validation, and conditional update confirmation; add static regression assertions.\n- [ ] Add payment-init rate limiting and validate concurrent initialization in the SSLCommerz sandbox.\n- [ ] Audit remaining server-action role coverage.
+- [x] Inspect crop-disease baseline table RLS and private Storage owner-folder policies; add static assertions for session checks, subject-scoped history, private bucket, and path ownership.
+- [ ] Add rate/abuse controls for public AI, search, and crop-disease inference; test burst limits and provider budget behavior.
+- [ ] Verify crop-disease Storage/RLS policies against later migration drift and cross-user reads/writes on staging.
+- [x] Harden payment initialization with provider timeout, HTTPS/SSLCommerz host validation, and conditional update confirmation; add static regression assertions.
+- [ ] Add payment-init rate limiting and validate concurrent initialization in the SSLCommerz sandbox.
+- [ ] Audit remaining server-action role coverage.
 - [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.
 - [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
