@@ -302,6 +302,8 @@ const legacyAdminPages = [
   ["app/admin/harvest/page.tsx", 'authorizePermission("roles.assign_scoped")'],
   ["app/admin/jobs/page.tsx", 'authorizePermission("roles.assign_scoped")'],
   ["app/admin/articles/page.tsx", 'authorizePermission("content.review")'],
+  ["app/admin/articles/[id]/page.tsx", 'authorizePermission("content.review")'],
+  ["app/admin/content-drafts/page.tsx", 'authorizePermission("content.draft")'],
 ];
 for (const [path, expected] of legacyAdminPages) {
   const source = read(path);
