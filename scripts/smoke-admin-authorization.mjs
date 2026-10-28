@@ -62,6 +62,12 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const contentDraftRlsMigration = read("supabase/migrations/20261029230000_align_content_draft_rls_with_capabilities.sql");
+assert.ok(contentDraftRlsMigration.includes("content_drafts_capability_read"), "content drafts must be readable by explicitly authorized content roles");
+assert.ok(contentDraftRlsMigration.includes("content_drafts_review_update"), "draft mutations must be limited to review-capable roles");
+assert.ok(contentDraftRlsMigration.includes("content_draft_revisions_admin_read"), "draft revision history must be restricted to review-capable roles");
+assert.ok(contentDraftRlsMigration.includes("public.user_role_memberships"), "content draft RLS must support membership-based roles");
+
 const orderCsvRoute = read("app/admin/reports/orders.csv/route.ts");
 assert.ok(orderCsvRoute.includes('authorizePermission("finance.read_scoped")'), "order CSV export must require finance.read_scoped");
 assert.ok(orderCsvRoute.includes("candidate.startsWith(prefix)"), "order CSV export must neutralize spreadsheet formula prefixes in untrusted cell values");
