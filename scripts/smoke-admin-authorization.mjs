@@ -96,6 +96,11 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const productStatusGuardMigration = read("supabase/migrations/20261029300000_align_product_status_guard_with_scoped_moderation.sql");
+assert.ok(productStatusGuardMigration.includes("public.has_platform_admin_access()"), "product status guard must recognize shared platform-admin access");
+assert.ok(productStatusGuardMigration.includes("public.has_product_moderation_permission()"), "product status guard must allow the scoped moderation trigger to validate moderator status changes");
+assert.ok(productStatusGuardMigration.includes("TG_OP = 'INSERT'") && productStatusGuardMigration.includes("Only a platform administrator may publish a product on insert"), "scoped moderators must not bypass insert-time publication restrictions");
+assert.ok(productStatusGuardMigration.includes("enforce_seller_product_moderation()"), "product status guard must rely on the scoped trigger for moderator ownership, transition and audit checks");
 const productModerationAdminHelperMigration = read("supabase/migrations/20261029280000_use_platform_admin_helper_in_product_moderation.sql");
 assert.ok(productModerationAdminHelperMigration.includes("public.has_platform_admin_access();"), "product moderation must use the shared platform-admin helper for profile and membership roles");
 assert.ok(productModerationAdminHelperMigration.includes("Could not align platform-admin check in enforce_seller_product_moderation"), "product trigger migration must fail closed if its expected guard cannot be aligned");
