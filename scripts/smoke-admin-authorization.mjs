@@ -8,9 +8,9 @@ const read = (path) => {
 };
 
 const layout = read("app/admin/layout.tsx");
-assert.match(layout, /supabase\.auth\.getUser\(\)/, "admin layout must verify the server-side session");
-assert.match(layout, /authError\s*\|\|\s*!user/, "admin layout must fail closed on auth errors");
-assert.match(layout, /profileError\s*\|\|\s*profile\?\.role\s*!==\s*"admin"/, "admin layout must fail closed on profile lookup errors and non-admin roles");
+assert.ok(layout.includes('authorizePermission("roles.assign_scoped")'), "admin layout must require a platform administration capability");
+assert.ok(layout.includes("if (!auth.ok)"), "admin layout must fail closed when capability lookup fails");
+assert.ok(!layout.includes('profile?.role !== "admin"'), "admin layout must not block membership-based super_admin access");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -145,8 +145,14 @@ const usersAdmin = read("app/admin/users/page.tsx");
 assert.ok(usersAdmin.includes('authorizePermission("users.manage")'), "user management must require users.manage");
 assert.ok(usersAdmin.includes("if (!auth.ok)"), "user management must fail closed on permission lookup errors");
 const settingsAdmin = read("app/admin/settings/page.tsx");
-assert.ok(settingsAdmin.includes('authorizePermission("settings.integrations.manage")'), "platform settings must require settings.integrations.manage");
+assert.ok(settingsAdmin.includes('authorizePermission("settings.site.manage")'), "site configuration must require settings.site.manage");
 assert.ok(settingsAdmin.includes("if (!auth.ok)"), "platform settings must fail closed on permission lookup errors");
+const accessAdmin = read("app/admin/access/page.tsx");
+assert.ok(accessAdmin.includes('authorizePermission("roles.assign_scoped")'), "staff access management must require roles.assign_scoped");
+assert.ok(!accessAdmin.includes('auth.roles.includes("admin")'), "staff access management must not reject a valid super_admin membership after capability authorization");
+const permissionsCatalogue = read("lib/auth/permissions.ts");
+assert.ok(permissionsCatalogue.includes('"settings.site.manage"'), "site settings must have a distinct capability from integration and secret management");
+assert.ok(permissionsCatalogue.includes('"settings.site.manage", "settings.integrations.manage"'), "only platform admin roles should receive site settings and integration capabilities");
 const adminMembershipMigration = read("supabase/migrations/20261029200000_align_admin_rpcs_with_role_memberships.sql");
 assert.ok(adminMembershipMigration.includes("CREATE OR REPLACE FUNCTION public.has_platform_admin_access()"), "admin membership migration must define a shared DB governance check");
 assert.ok(adminMembershipMigration.includes("m.role IN ('admin', 'super_admin')"), "DB governance helper must accept only controlled admin memberships");
