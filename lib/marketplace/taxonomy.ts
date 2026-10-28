@@ -24,6 +24,12 @@ export const MARKETPLACE_CATEGORIES = [
     { slug: "poultry-feed", name: "পোলট্রি ফিড", description: "পোলট্রি পালনে ব্যবহৃত ফিডের পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["পোলট্রি", "poultry"] },
     { slug: "cattle-feed", name: "গবাদিপশুর খাদ্য", description: "গবাদিপশুর খাদ্য পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["গবাদিপশু", "cattle"] },
   ] },
+  { slug: "premium-superfoods", name: "প্রিমিয়াম ও সুপারফুড", description: "প্রিমিয়াম চাল, চিয়া সিড, বীজ, বাদাম ও স্বাস্থ্যকর খাদ্যপণ্য", icon: "✨", match: ["premium", "superfood", "superfoods", "chia", "চিয়া", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
+    { slug: "premium-rice", name: "প্রিমিয়াম চাল", description: "বাসমতি, কালিজিরা, চিনিগুঁড়া ও অন্যান্য প্রিমিয়াম চালের পণ্য দেখুন।", match: ["rice", "চাল", "বাসমতি", "basmati", "কালিজিরা", "চিনিগুঁড়া"] },
+    { slug: "superfoods-seeds", name: "সুপারফুড ও সিডস", description: "চিয়া সিড, ফ্ল্যাক্স সিড, পাম্পকিন সিড ও অন্যান্য খাদ্যবীজের পণ্য দেখুন।", match: ["chia", "চিয়া", "flax", "ফ্ল্যাক্স", "pumpkin", "সিড", "seed"] },
+    { slug: "nuts-dried-fruit", name: "বাদাম ও শুকনো ফল", description: "বাদাম, খেজুর ও শুকনো ফলের প্যাকেটজাত পণ্য দেখুন।", match: ["বাদাম", "nuts", "almond", "cashew", "খেজুর", "dates", "dried fruit"] },
+    { slug: "honey-natural-foods", name: "মধু ও প্রাকৃতিক খাদ্য", description: "মধু ও অন্যান্য প্যাকেটজাত প্রাকৃতিক খাদ্যপণ্যের বিবরণ দেখুন।", match: ["মধু", "honey", "natural food"] },
+  ] },
 ] as const;
 
 export function slugifyProductName(value: string) {
@@ -65,8 +71,6 @@ export function getProductCategory(value: string | null) {
     if (exactSubcategory) return category;
   }
 
-  // Prefer a category + subcategory term pair over a broad category keyword.
-  // This prevents e.g. "ধানের বীজ" from being classified as both seeds and produce.
   for (const category of MARKETPLACE_CATEGORIES) {
     if (category.subcategories.some((subcategory) =>
       matchesCategory(value, category.match) && matchesCategory(value, subcategory.match)
