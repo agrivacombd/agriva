@@ -100,7 +100,7 @@ assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface q
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
 
 const greenExchangePage = read("app/admin/green-exchange/page.tsx");
-assert.ok(greenExchangePage.includes('authorizePermission("roles.assign_scoped")'), "green exchange moderation must use the shared capability guard");
+assert.ok(greenExchangePage.includes('authorizePermission("exchange.moderate")'), "green exchange moderation must use its dedicated capability guard");
 assert.ok(!greenExchangePage.includes('profile?.role !== "admin"'), "green exchange moderation must not depend on a legacy profile-role gate");
 
 const aiContentPage = read("app/admin/ai-content/page.tsx");
