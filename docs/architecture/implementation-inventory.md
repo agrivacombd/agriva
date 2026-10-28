@@ -80,7 +80,7 @@ At the baseline commit, the repository tree contains:
 ## Initial findings and known gaps
 
 1. **Authorization helpers are duplicated.** Two server-side permission helpers implement the same profile + membership lookup with slightly different error statuses. Consolidate only after call-site inventory and tests to avoid behavior regressions.
-2. **Capability coverage is incomplete.** The typed permission catalogue exists, but the presence of a helper does not prove every route, server action, RPC, RLS policy, or Storage policy uses it. Build a route-to-capability matrix and test every privileged path.
+2. **Capability coverage is incomplete.** The typed permission catalogue exists, but the presence of a helper does not prove every route, server action, RPC, RLS policy, or Storage policy uses it. The initial matrix now records API routes, and five admin content/catalog handlers plus reseller-link creation were migrated to shared capability checks with static assertions. Build out the full matrix and test every privileged path.
 3. **Legacy role compatibility remains.** `profiles.role`, `user_role_memberships`, and `lib/auth/roles.ts` coexist. Privileged role assignment and public signup must not be allowed to mint staff permissions.
 4. **Seller listing edit/resubmit is incomplete.** Dashboard visibility and creation are not the full lifecycle. A secure edit path must only allow owner fields, must not accept status/commission/moderation fields from the client, and must requeue rejected/changes-requested listings for review.
 5. **Product moderator scope was found too broad and a fix was added.** The initial trigger used a shared moderation-permission predicate as a broad bypass, conflating product moderators with platform administrators. Migration `20261029170000_separate_moderator_and_admin_scope.sql` narrows the broad branch to platform admin/super-admin, limits moderator changes to review/publication fields, blocks self-moderation, and writes an audit event. The regression smoke test now asserts these boundaries. This is code-level coverage only until CI and staging SQL tests pass.
@@ -97,9 +97,11 @@ At the baseline commit, the repository tree contains:
 - [x] Record initial architectural gaps and high-risk paths.
 - [x] Add a scoped moderator/admin database-boundary fix and regression assertions for the discovered role-scope issue.
 - [x] Create the initial API route-to-permission matrix and document the remaining authorization gaps.
+- [x] Migrate the five inventoried admin content/catalog handlers and reseller-link API to capability-based authorization; add regression assertions.
 - [x] Fix provider callback reconciliation to use a service-role-only atomic database RPC and add static regression assertions.
 - [x] Ensure public search returns only active, moderation-approved products and add regression coverage.
 - [ ] Complete route/server-action/API-to-capability mapping; initial API matrix: `docs/architecture/route-permission-matrix.md`.
+- [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.
 - [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
 - [ ] Reconcile all signup/dashboard role choices against the canonical role model.
