@@ -115,25 +115,6 @@ export default async function Home() {
         }}
       />
       {homepageNotice && <div role="status" className="border-b border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-950">{homepageNotice}</div>}
-      <header className="sticky top-0 z-30 border-b border-emerald-950/10 bg-[#fbfcf7]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={`${siteName} home`}>
-            <Image src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width={320} height={85} priority sizes="(max-width: 640px) 176px, 208px" className="h-12 w-44 object-contain object-left sm:w-52" />
-          </Link>
-          <nav className="hidden items-center gap-5 text-sm font-semibold text-slate-600 lg:flex">
-            <Link className="hover:text-[#0b6b4f]" href="#services">সেবাসমূহ</Link>
-            <Link className="hover:text-[#0b6b4f]" href="/krishi-calculator">কৃষি ক্যালকুলেটর</Link>
-            <Link className="hover:text-[#0b6b4f]" href="/marketplace">মার্কেটপ্লেস</Link>
-            <Link className="hover:text-[#0b6b4f]" href="/learn">শিখুন</Link>
-            <Link className="hover:text-[#0b6b4f]" href="/blog">কৃষি ব্লগ</Link>
-            <Link className="hover:text-[#0b6b4f]" href="#career-tools">চাকরি ও CV</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link href="/login" className="hidden rounded-xl px-3 py-2 text-sm font-bold text-[#0b6b4f] hover:bg-emerald-50 sm:inline-flex">লগইন</Link>
-            <Link href="/dashboard" className="inline-flex items-center gap-2 rounded-xl bg-[#0b6b4f] px-4 py-2.5 text-sm font-bold text-white shadow-md shadow-emerald-900/15 transition hover:bg-[#07543e]">অ্যাপ খুলুন <ArrowRight size={16} /></Link>
-          </div>
-        </div>
-      </header>
 
       <section className="relative isolate bg-gradient-to-b from-[#f1f6e9] via-[#f8f8f1] to-[#f8f8f1]">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
@@ -230,7 +211,7 @@ export default async function Home() {
       <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
-          <Link href="/krishi-calculator" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
+          <Link href="/agriculture-calculators" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
         </div>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-h-52 flex-col rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-5 text-lg font-extrabold">{title}</h3><p className="mt-1 text-sm font-bold text-emerald-800">{subtitle}</p><p className="mt-2 text-sm leading-6 text-slate-500">{detail}</p></Link>)}
