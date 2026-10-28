@@ -145,6 +145,15 @@ assert.ok(opportunitiesAdmin.includes("if (!auth.ok)"), "content opportunities m
 const usersAdmin = read("app/admin/users/page.tsx");
 assert.ok(usersAdmin.includes('authorizePermission("users.manage")'), "user management must require users.manage");
 assert.ok(usersAdmin.includes("if (!auth.ok)"), "user management must fail closed on permission lookup errors");
+const settingsAdmin = read("app/admin/settings/page.tsx");
+assert.ok(settingsAdmin.includes('authorizePermission("settings.integrations.manage")'), "platform settings must require settings.integrations.manage");
+assert.ok(settingsAdmin.includes("if (!auth.ok)"), "platform settings must fail closed on permission lookup errors");
+const adminMembershipMigration = read("supabase/migrations/20261029200000_align_admin_rpcs_with_role_memberships.sql");
+assert.ok(adminMembershipMigration.includes("CREATE OR REPLACE FUNCTION public.has_platform_admin_access()"), "admin membership migration must define a shared DB governance check");
+assert.ok(adminMembershipMigration.includes("m.role IN ('admin', 'super_admin')"), "DB governance helper must accept only controlled admin memberships");
+assert.ok(adminMembershipMigration.includes("admin_set_transport_partner_verification"), "transport verification RPC must use the DB governance check");
+assert.ok(adminMembershipMigration.includes("FOR SELECT TO anon, authenticated"), "public category policy must remain evaluable for anonymous catalog reads");
+assert.ok(adminMembershipMigration.includes("REVOKE ALL ON FUNCTION public.has_platform_admin_access() FROM PUBLIC, anon"), "helper must revoke default public execution before explicit grants");
 const transportCapabilityAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportCapabilityAdmin.includes('authorizePermission("transport.review")'), "transport verification must require transport.review");
 assert.ok(transportCapabilityAdmin.includes("if (!auth.ok)"), "transport verification must fail closed on permission lookup errors");
