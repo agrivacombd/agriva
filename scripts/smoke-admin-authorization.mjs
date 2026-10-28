@@ -185,6 +185,7 @@ assert.ok(auditRlsMigration.includes("FOR SELECT"), "audit RLS change must grant
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
 const jobsAdmin = read("app/admin/jobs/page.tsx");
+assert.ok(jobsAdmin.includes('authorizePermission("jobs.moderate")'), "job moderation must require its dedicated capability");
 assert.ok(jobsAdmin.includes("admin_moderate_job_post"), "job status changes must use the admin-only RPC");
 assert.ok(jobsAdmin.includes('!["published", "rejected", "paused", "filled"].includes(status)'), "job moderation must allow only approved statuses");
 const transportMigration = read("supabase/migrations/20261022130000_admin_transport_partner_verification.sql");
@@ -300,7 +301,7 @@ assert.ok(productDetail.includes('"@type": "Product"'), "product detail pages mu
 const legacyAdminPages = [
   ["app/admin/products/page.tsx", 'authorizePermission("roles.assign_scoped")'],
   ["app/admin/harvest/page.tsx", 'authorizePermission("roles.assign_scoped")'],
-  ["app/admin/jobs/page.tsx", 'authorizePermission("roles.assign_scoped")'],
+  ["app/admin/jobs/page.tsx", 'authorizePermission("jobs.moderate")'],
   ["app/admin/articles/page.tsx", 'authorizePermission("content.review")'],
   ["app/admin/articles/[id]/page.tsx", 'authorizePermission("content.review")'],
   ["app/admin/content-drafts/page.tsx", 'authorizePermission("content.draft")'],
