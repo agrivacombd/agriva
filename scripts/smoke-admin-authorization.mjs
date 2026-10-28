@@ -159,8 +159,8 @@ assert.ok(jobsMigration.includes("p_status is null or p_status not in ('publishe
 
 
 const opportunityApi = read("app/api/admin/content-opportunities/route.ts");
-assert.ok(opportunityApi.includes("async function requireAdmin()"), "content opportunity API must share an explicit admin guard");
-assert.ok(opportunityApi.includes("profileError"), "content opportunity API must fail closed on profile lookup errors");
+assert.ok(opportunityApi.includes("async function requireContentPermission("), "content opportunity API must share an explicit content capability guard");
+assert.ok(opportunityApi.includes("authorizePermission(permission)") && opportunityApi.includes("if (!authorization.ok)"), "content opportunity API must fail closed through the shared permission helper");
 assert.ok(opportunityApi.includes('const transitions: Record<string, string[]>'), "opportunity status changes must use an explicit transition map");
 assert.ok(opportunityApi.includes('.eq("id", id).eq("status", current.status)'), "opportunity status update must be conditional to prevent stale writes");
 assert.ok(opportunityApi.includes("Opportunity changed; reload before trying again"), "opportunity API must reject stale status updates");
