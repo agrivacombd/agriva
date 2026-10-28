@@ -12,7 +12,8 @@ AGRIVA combines agriculture tools, AI assistance, smart search, marketplace, far
 - TypeScript
 - Tailwind CSS
 - Supabase / PostgreSQL
-- OpenAI API
+- Google Gemini API (primary AGRIVA AI provider; server-side key)
+- OpenAI API (optional fallback)
 - GitHub integration
 - Vercel
 
