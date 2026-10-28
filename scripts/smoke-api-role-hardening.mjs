@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const reseller = readFileSync("app/api/reseller/links/route.ts", "utf8");
+const cropDiseaseRoute = readFileSync("app/api/crop-disease/route.ts", "utf8");
+const cropDiseaseMigration = readFileSync("supabase/migrations/017_crop_disease_detections.sql", "utf8");
+const publicAiRoute = readFileSync("app/api/ai/route.ts", "utf8");
 const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
 assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
 assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
