@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
           "/blog",
           "/marketplace",
           "/plant-market",
-          "/tools",
+          "/krishi-calculator",
           "/jobs",
           "/jobs/cv-builder",
           "/learn",

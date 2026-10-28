@@ -3,10 +3,7 @@
 import { useMemo, useState } from "react";
 
 const toolCards = [
-  { id: "fertilizer", icon: "🧪", title: "সার হিসাব ক্যালকুলেটর", description: "আপনার নির্ধারিত প্রতি একরের মাত্রা থেকে মোট সারের পরিমাণ হিসাব করুন।" },
-  { id: "seed", icon: "🌱", title: "বীজের হিসাব", description: "জমির আয়তন ও প্রতি একরে বীজের হার দিয়ে প্রয়োজনীয় বীজ হিসাব করুন।" },
-  { id: "profit", icon: "৳", title: "চাষের খরচ ও লাভ", description: "খরচ, উৎপাদন ও বিক্রয়মূল্য দিয়ে সম্ভাব্য লাভ-লোকসান বুঝুন।" },
-  { id: "calendar", icon: "🗓️", title: "ফসল ক্যালেন্ডার", description: "মৌসুমের কাজগুলো সাজিয়ে রাখুন এবং কাজ শেষ হলে টিক দিন।" },
+  { id: "fertilizer", icon: "🌾", title: "কৃষি ক্যালকুলেটর", description: "সার ও বীজের হিসাব, চাষের খরচ-লাভ এবং ফসল ক্যালেন্ডারের কাজের চেকলিস্ট—সব এক জায়গায়।" },
 ] as const;
 
 const tasks = [
@@ -45,8 +42,8 @@ export default function ToolsDashboard() {
       <a href="/" className="text-sm font-bold text-emerald-800 hover:underline">← AGRIVA হোম</a>
       <section className="mt-5 overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-700 p-6 text-white sm:p-10">
         <div className="max-w-3xl">
-          <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold">কৃষকের ডিজিটাল টুলবক্স</span>
-          <h1 className="mt-4 text-3xl font-black leading-tight sm:text-5xl">কৃষিকাজের হিসাব, পরিকল্পনা ও শেখা—এক জায়গায়</h1>
+          <span className="inline-flex rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-bold">বাংলা কৃষি হিসাব ও পরিকল্পনা টুল</span>
+          <h1 className="mt-4 text-3xl font-black leading-tight sm:text-5xl">কৃষি ক্যালকুলেটর: সার, বীজ, চাষের খরচ ও ফসল পরিকল্পনা</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50 sm:text-base">জমির পরিমাণ অনুযায়ী হিসাব করুন, চাষের খরচ বুঝুন এবং মৌসুমের কাজ গুছিয়ে নিন। সহজ বাংলা, মোবাইল-ফ্রেন্ডলি টুল।</p>
           <div className="mt-6 flex flex-wrap gap-3"><button onClick={() => jump("fertilizer")} className="rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-emerald-900 hover:bg-emerald-50">হিসাব শুরু করুন ↓</button><button onClick={() => jump("learning")} className="rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white hover:bg-white/10">কৃষি গাইড দেখুন</button></div>
         </div>
