@@ -6,11 +6,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "বাংলাদেশের কৃষি পণ্যের অনলাইন মার্কেটপ্লেস",
-  description: "বাংলাদেশের কৃষি পণ্য, বীজ, সার, ফসল সুরক্ষা, কৃষি যন্ত্রপাতি ও তাজা উৎপাদন খুঁজুন AGRIVA Marketplace-এ। ক্যাটাগরি অনুযায়ী পণ্য দেখুন ও মূল্য যাচাই করুন।",
+  title: "AGRIVA Marketplace | Premium Food & Grains ও কৃষিপণ্য",
+  description: "AGRIVA Marketplace-এ কৃষিপণ্যের পাশাপাশি Premium Food & Grains বিভাগে চিয়া সিড, কালো চাল, লাল চাল ও ব্রাউন রাইসের পণ্য দেখুন। মূল্য ও স্টক পণ্যভেদে যাচাই করুন।",
   alternates: { canonical: "/marketplace" },
-  keywords: ["কৃষি পণ্য", "কৃষি পণ্যের মার্কেটপ্লেস", "কৃষি বীজ", "কৃষি সার", "কৃষি যন্ত্রপাতি", "বাংলাদেশ কৃষি পণ্য"],
-  openGraph: { title: "AGRIVA Marketplace | কৃষি পণ্য এক জায়গায়", description: "ক্যাটাগরি অনুযায়ী কৃষি পণ্য খুঁজুন ও পণ্যের তথ্য দেখুন।", type: "website", locale: "bn_BD" },
+  keywords: ["কৃষি পণ্য", "কৃষি পণ্যের মার্কেটপ্লেস", "কৃষি বীজ", "কৃষি সার", "কৃষি যন্ত্রপাতি", "বাংলাদেশ কৃষি পণ্য", "Premium Food & Grains", "black rice", "red rice", "brown rice", "chia seeds"],
+  openGraph: { title: "AGRIVA Marketplace | কৃষি পণ্য এক জায়গায়", description: "কৃষিপণ্য এবং Premium Food & Grains বিভাগের পণ্যের তথ্য দেখুন।", type: "website", locale: "bn_BD" },
 };
 
 export default async function MarketplacePage() {
