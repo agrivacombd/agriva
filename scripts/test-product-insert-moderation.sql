@@ -27,7 +27,7 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT COALESCE(current_setting('request.jwt.claim.role', true) = 'admin', false);
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.has_platform_admin_access()
 RETURNS boolean
@@ -35,7 +35,7 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT COALESCE(current_setting('request.jwt.claim.role', true) IN ('admin', 'super_admin'), false);
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.has_product_moderation_permission()
 RETURNS boolean
@@ -43,7 +43,7 @@ LANGUAGE sql
 STABLE
 AS $$
   SELECT COALESCE(current_setting('request.jwt.claim.role', true) IN ('admin', 'super_admin', 'product_moderator'), false);
-$;
+$$;
 
 CREATE TYPE public.product_status AS ENUM ('draft', 'active');
 
