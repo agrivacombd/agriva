@@ -189,4 +189,15 @@ assert.ok(contentStudio.includes('role="alert"'), "Content Studio must surface r
 const contentBriefApi = read("app/api/admin/content-brief/route.ts");
 assert.ok(contentBriefApi.includes('generatedWith: "template"'), "content brief API must disclose its deterministic template output");
 
+
+const draftGenerator = read("app/api/admin/content-drafts/generate/route.ts");
+assert.ok(draftGenerator.includes('opportunity.status !== "approved"'), "draft generation API must require approved opportunities");
+assert.ok(draftGenerator.includes('rpc("create_generated_content_draft_from_opportunity"'), "generated draft and opportunity status must be saved atomically through the database RPC");
+assert.ok(!draftGenerator.includes('.from("content_drafts").insert('), "draft generation API must not create drafts outside the atomic workflow RPC");
+const approvalMigration = read("supabase/migrations/20261029100000_content_draft_approval_gate.sql");
+assert.ok(approvalMigration.includes("o.status <> 'approved'"), "database RPC must enforce approval even if a client bypasses the UI");
+assert.ok(approvalMigration.includes("FOR UPDATE"), "database draft creation must lock the opportunity against concurrent requests");
+assert.ok(approvalMigration.includes("create_generated_content_draft_from_opportunity"), "database must provide an atomic generated-draft RPC");
+assert.ok(approvalMigration.includes("REVOKE ALL ON FUNCTION public.create_generated_content_draft_from_opportunity"), "generated-draft RPC must revoke public execution");
+
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
