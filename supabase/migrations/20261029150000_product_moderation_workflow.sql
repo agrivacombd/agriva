@@ -20,6 +20,16 @@ WHERE status = 'active';
 CREATE INDEX IF NOT EXISTS products_moderation_queue_idx
   ON public.products (moderation_status, updated_at DESC);
 
+-- Defense in depth: public reads require both publication state and approval.
+DROP POLICY IF EXISTS products_public_active ON public.products;
+CREATE POLICY products_public_active
+ON public.products FOR SELECT
+TO anon, authenticated
+USING (
+  (status = 'active'::public.product_status AND moderation_status = 'approved')
+  OR (SELECT auth.uid()) = farmer_id
+);
+
 -- Extend the existing seller guard to protect the new moderation fields and
 -- keep the public active state synchronized with a privileged admin decision.
 CREATE OR REPLACE FUNCTION public.enforce_seller_product_moderation()
@@ -115,7 +125,7 @@ BEGIN
   IF auth.uid() IS NULL OR NOT public.is_admin() THEN
     RAISE EXCEPTION 'Admin moderation permission required' USING ERRCODE = '42501';
   END IF;
-  IF p_product_id IS NULL OR p_decision NOT IN ('approve', 'reject', 'request_changes') THEN
+  IF p_product_id IS NULL OR p_decision IS NULL OR p_decision NOT IN ('approve', 'reject', 'request_changes') THEN
     RAISE EXCEPTION 'Invalid moderation decision' USING ERRCODE = '22023';
   END IF;
   IF p_decision IN ('reject', 'request_changes') AND (clean_reason IS NULL OR char_length(clean_reason) < 3 OR char_length(clean_reason) > 1000) THEN
