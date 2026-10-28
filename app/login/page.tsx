@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -64,6 +64,25 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = copy[language];
+  const requestedNextPath = searchParams.get("next");
+
+  useEffect(() => {
+    let active = true;
+    try {
+      const supabase = createSupabaseBrowserClient();
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (!active || !user) return;
+        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//") && !requestedNextPath.includes("\\\\")
+          ? requestedNextPath
+          : "/dashboard";
+        router.replace(target);
+        router.refresh();
+      }).catch(() => {});
+    } catch {
+      // Login remains available if auth configuration is temporarily unavailable.
+    }
+    return () => { active = false; };
+  }, [requestedNextPath, router]);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
