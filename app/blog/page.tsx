@@ -69,10 +69,7 @@ export const metadata: Metadata = {
 
 export default async function ArticlesPage() {
   const publishedContent = await getPublishedContentArticles();
-  const staticSlugs = new Set(articles.map((article) => article.slug));
-  const publishedArticles: Article[] = publishedContent
-    .filter((article) => !staticSlugs.has(article.slug))
-    .map((article) => {
+  const publishedArticles: Article[] = publishedContent.map((article) => {
       const body = article.body_markdown ?? "";
       const excerpt = (article.meta_description || body.replace(/[#*_\`>]/g, "").replace(/\s+/g, " ").trim()).slice(0, 200);
       const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
@@ -86,7 +83,8 @@ export default async function ArticlesPage() {
         emoji: "📝",
       };
     });
-  const allArticles = [...articles, ...publishedArticles];
+  const publishedSlugs = new Set(publishedArticles.map((article) => article.slug));
+  const allArticles = [...publishedArticles, ...articles.filter((article) => !publishedSlugs.has(article.slug))];
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const listingJsonLd = {
     "@context": "https://schema.org",
