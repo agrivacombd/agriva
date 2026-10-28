@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Sprout } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export default function ResetPasswordPage() {
@@ -40,7 +41,7 @@ export default function ResetPasswordPage() {
   }
 
   return <main className="grid min-h-screen place-items-center bg-[#f6f8f3] px-5 py-12 text-[#17351f]"><section className="w-full max-w-md rounded-[1.75rem] border border-[#e3e9e0] bg-white p-7 shadow-[0_18px_60px_rgba(26,65,39,0.07)] sm:p-9">
-    <div className="flex items-center justify-between"><Link href="/" className="flex items-center gap-2 text-xl font-black"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#173f2b] text-white"><Sprout size={20}/></span>AGRIVA<span className="text-[#c49a3e]">.</span></Link><button type="button" onClick={() => setLanguage(bn ? "en" : "bn")} className="rounded-full border border-[#d8e1d6] px-3 py-2 text-xs font-semibold">{bn ? "English" : "বাংলা"}</button></div>
+    <div className="flex items-center justify-between"><BrandLogo href="/" imageClassName="h-9 w-36 sm:w-44" /><button type="button" onClick={() => setLanguage(bn ? "en" : "bn")} className="rounded-full border border-[#d8e1d6] px-3 py-2 text-xs font-semibold">{bn ? "English" : "বাংলা"}</button></div>
     <h1 className="mt-8 text-3xl font-black">{bn ? "নতুন পাসওয়ার্ড দিন" : "Choose a new password"}</h1><p className="mt-2 text-sm leading-6 text-[#66776a]">{bn ? "আপনার অ্যাকাউন্টের জন্য নতুন, শক্তিশালী পাসওয়ার্ড তৈরি করুন।" : "Create a new, strong password for your account."}</p>
     <form onSubmit={submit} className="mt-7 space-y-4"><label className="block text-sm font-semibold">{bn ? "নতুন পাসওয়ার্ড" : "New password"}<span className="relative mt-2 block"><input className="w-full rounded-xl border border-[#dce5da] bg-[#fcfdfb] px-4 py-3.5 pr-12 font-normal outline-none focus:border-[#438253] focus:ring-4 focus:ring-[#438253]/10" type={show ? "text" : "password"} minLength={8} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} required/><button type="button" aria-label={show ? "Hide password" : "Show password"} onClick={() => setShow(!show)} className="absolute inset-y-0 right-3 text-[#718274]">{show ? <EyeOff size={19}/> : <Eye size={19}/>}</button></span></label>
     <label className="block text-sm font-semibold">{bn ? "পাসওয়ার্ড নিশ্চিত করুন" : "Confirm password"}<input className="mt-2 w-full rounded-xl border border-[#dce5da] bg-[#fcfdfb] px-4 py-3.5 font-normal outline-none focus:border-[#438253] focus:ring-4 focus:ring-[#438253]/10" type="password" autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} required/></label>
