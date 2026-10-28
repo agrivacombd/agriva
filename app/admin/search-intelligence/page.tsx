@@ -1,5 +1,146 @@
-"use client";
-import {useMemo,useState} from "react";
-const seed=[{query:"best fertilizer for rice",count:42,intent:"informational",type:"article",score:91,status:"draft",title:"Best Fertilizer for Rice: Complete Farmer Guide"},{query:"buy potato online",count:31,intent:"transactional",type:"product",score:86,status:"draft",title:"Fresh Potato Online: Farmer Marketplace Guide"},{query:"tomato disease treatment",count:24,intent:"informational",type:"article",score:79,status:"review",title:"Tomato Disease Identification & Treatment Guide"},{query:"agriculture calculator",count:18,intent:"commercial",type:"tool",score:73,status:"draft",title:"Free Agriculture Calculator Tools"}];
-export default function Page(){const [rows,setRows]=useState(seed);const [filter,setFilter]=useState("all");const [selected,setSelected]=useState<(typeof seed)[number]|null>(null);const visible=useMemo(()=>rows.filter(r=>filter==="all"||r.status===filter),[rows,filter]);function approve(q:string){setRows(xs=>xs.map(r=>r.query===q?{...r,status:"approved"}:r));setSelected(null)}function reject(q:string){setRows(xs=>xs.map(r=>r.query===q?{...r,status:"rejected"}:r));setSelected(null)}return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto max-w-7xl px-6 py-12"><p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Intelligence</p><h1 className="mt-3 text-4xl font-black">Search Intelligence</h1><p className="mt-3 max-w-3xl text-[#647468]">Monitor aggregated site-search demand and turn high-value queries into AI content, product, category or tool drafts. Nothing is published automatically.</p><div className="mt-8 grid gap-4 sm:grid-cols-3"><Stat label="Search opportunities" value={rows.length}/><Stat label="Drafts" value={rows.filter(r=>r.status==="draft").length}/><Stat label="Needs review" value={rows.filter(r=>r.status==="review").length}/></div><div className="mt-8 flex flex-wrap gap-2">{["all","draft","review","approved","rejected"].map(f=><button key={f} onClick={()=>setFilter(f)} className={`rounded-xl px-4 py-2 text-sm font-bold capitalize ${filter===f?"bg-[#17351f] text-white":"bg-white"}`}>{f}</button>)}</div><section className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm"><div className="hidden grid-cols-6 gap-3 border-b p-5 text-xs font-bold uppercase tracking-wide text-[#647468] md:grid"><span>Query</span><span>Searches</span><span>Intent</span><span>Opportunity</span><span>Score</span><span>Status</span></div>{visible.map(r=><button key={r.query} onClick={()=>setSelected(r)} className="grid w-full gap-2 border-b p-5 text-left md:grid-cols-6 md:items-center md:gap-3 hover:bg-[#f8faf6]"><div><b>{r.query}</b><p className="text-xs text-[#647468]">{r.title}</p></div><div>{r.count}</div><div className="capitalize">{r.intent}</div><div className="capitalize">{r.type}</div><div className="font-black">{r.score}</div><div><span className="rounded-full bg-[#eef5ed] px-3 py-1 text-xs font-bold capitalize">{r.status}</span></div></button>)}</section><div className="mt-6 rounded-2xl border border-dashed p-5 text-sm leading-6 text-[#647468]">Privacy rule: aggregate search demand rather than building individual behavioral profiles. AI analysis should use public/search-intent data and approved sources. Competitor analysis must remain factual and source-backed.</div>{selected&&<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"><div className="w-full max-w-2xl rounded-3xl bg-white p-6"><div className="flex items-start justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-[#b58b28]">AI opportunity draft</p><h2 className="mt-1 text-2xl font-black">{selected.title}</h2></div><button onClick={()=>setSelected(null)} className="text-xl">×</button></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><p className="rounded-xl bg-[#f5f7f2] p-4 text-sm"><b>Keyword</b><br/>{selected.query}</p><p className="rounded-xl bg-[#f5f7f2] p-4 text-sm"><b>Intent</b><br/>{selected.intent}</p><p className="rounded-xl bg-[#f5f7f2] p-4 text-sm"><b>Opportunity score</b><br/>{selected.score}/100</p></div><p className="mt-4 rounded-2xl bg-[#fff8e8] p-4 text-sm leading-6">AI can generate SEO outline, search-intent analysis, related keywords, internal-link suggestions and a draft article/product brief. An admin must manually review sources, claims, SEO quality and compliance before publishing.</p><div className="mt-5 flex gap-2"><button onClick={()=>reject(selected.query)} className="flex-1 rounded-xl border px-5 py-3 font-bold">Reject</button><button onClick={()=>approve(selected.query)} className="flex-1 rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white">Approve for production</button></div></div></div>}</section></main>}
-function Stat({label,value}:{label:string;value:number}){return <div className="rounded-3xl bg-white p-5 shadow-sm"><p className="text-sm text-[#647468]">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></div>}
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const statuses = ["open", "draft", "review", "approved", "published", "rejected"] as const;
+type OpportunityStatus = typeof statuses[number];
+
+async function requireAdmin() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/login?next=%2Fadmin%2Fsearch-intelligence");
+  const { data: profile, error } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (error || profile?.role !== "admin") redirect("/dashboard");
+  return { supabase, user };
+}
+
+async function updateOpportunityStatus(formData: FormData) {
+  "use server";
+  const id = String(formData.get("opportunityId") ?? "").trim();
+  const status = String(formData.get("status") ?? "") as OpportunityStatus;
+  if (!id || !statuses.includes(status) || !["approved", "rejected", "review"].includes(status)) {
+    redirect("/admin/search-intelligence?notice=invalid_action");
+  }
+  const { supabase, user } = await requireAdmin();
+  const { error } = await supabase.from("content_opportunities").update({
+    status,
+    reviewed_at: new Date().toISOString(),
+    reviewed_by: user.id,
+  }).eq("id", id);
+  revalidatePath("/admin");
+  revalidatePath("/admin/search-intelligence");
+  revalidatePath("/admin/opportunities");
+  redirect(error ? "/admin/search-intelligence?notice=update_error" : "/admin/search-intelligence?notice=updated");
+}
+
+async function createDraft(formData: FormData) {
+  "use server";
+  const id = String(formData.get("opportunityId") ?? "").trim();
+  if (!id) redirect("/admin/search-intelligence?notice=invalid_action");
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase.rpc("create_content_draft_from_opportunity", { p_opportunity_id: id });
+  revalidatePath("/admin");
+  revalidatePath("/admin/search-intelligence");
+  revalidatePath("/admin/content-drafts");
+  revalidatePath("/admin/opportunities");
+  redirect(error ? "/admin/search-intelligence?notice=create_error" : "/admin/search-intelligence?notice=draft_created");
+}
+
+const noticeText: Record<string, string> = {
+  updated: "Opportunity status saved to the database.",
+  update_error: "Status was not saved. Check the opportunity and admin database permissions.",
+  draft_created: "Draft created and saved. Open Content Drafts to review it.",
+  create_error: "Draft could not be created. It may already have a draft or its status may not allow conversion.",
+  invalid_action: "Invalid request. Reload the page and try again.",
+};
+
+export default async function SearchIntelligencePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string; status?: string; notice?: string }>;
+}) {
+  const params = await searchParams;
+  const q = (params?.q ?? "").trim().slice(0, 120);
+  const status = statuses.includes(params?.status as OpportunityStatus) ? params?.status as OpportunityStatus : "all";
+  const { supabase } = await requireAdmin();
+
+  let query = supabase.from("content_opportunities")
+    .select("id,keyword,intent,opportunity_type,search_count,result_count,status,title,slug,score,created_at,last_seen_at")
+    .order("search_count", { ascending: false })
+    .limit(100);
+  if (q) query = query.or(`keyword.ilike.%${q.replace(/[,%()]/g, " ")}%,title.ilike.%${q.replace(/[,%()]/g, " ")}%`);
+  if (status !== "all") query = query.eq("status", status);
+  const [{ data: opportunities, error }, { count: totalCount }, { count: reviewCount }] = await Promise.all([
+    query,
+    supabase.from("content_opportunities").select("id", { count: "exact", head: true }),
+    supabase.from("content_opportunities").select("id", { count: "exact", head: true }).in("status", ["review", "approved"]),
+  ]);
+
+  const rows = opportunities ?? [];
+  return (
+    <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
+      <section className="mx-auto max-w-7xl px-5 py-10 md:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Intelligence</p>
+            <h1 className="mt-3 text-3xl font-black md:text-4xl">Search Intelligence</h1>
+            <p className="mt-3 max-w-3xl text-[#647468]">Live database-backed search opportunities. Status changes are saved, and converting an opportunity creates a persisted draft; nothing is published automatically.</p>
+          </div>
+          <Link href="/admin/content-drafts" className="rounded-xl bg-[#17351f] px-4 py-3 text-sm font-bold text-white">Open Content Drafts ↗</Link>
+        </div>
+
+        {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-4 text-sm font-semibold ${params.notice.endsWith("_error") || params.notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[params.notice] ?? "Operation completed."}</p>}
+
+        <div className="mt-7 grid gap-4 sm:grid-cols-3">
+          <Stat label="Total opportunities" value={totalCount ?? 0} />
+          <Stat label="Needs review / approval" value={reviewCount ?? 0} />
+          <Stat label="Showing results" value={rows.length} />
+        </div>
+
+        <form className="mt-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto]" method="get">
+          <label className="text-xs font-bold text-[#647468]">Search keyword or title
+            <input name="q" defaultValue={q} maxLength={120} placeholder="e.g. rice fertilizer" className="mt-2 w-full rounded-xl border px-3 py-3 text-sm font-normal text-[#17351f]" />
+          </label>
+          <label className="text-xs font-bold text-[#647468]">Workflow status
+            <select name="status" defaultValue={status} className="mt-2 w-full rounded-xl border bg-white px-3 py-3 text-sm font-normal capitalize text-[#17351f]">
+              <option value="all">All statuses</option>
+              {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </label>
+          <button className="self-end rounded-xl border border-[#d8e3d4] px-5 py-3 text-sm font-bold">Apply filters</button>
+        </form>
+
+        {error ? <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800">Opportunity data could not be loaded. Verify the canonical content_opportunities table and admin read policy.</p> : (
+          <section className="mt-6 space-y-3">
+            {rows.map(item => (
+              <article key={item.id} className="rounded-2xl border border-[#e0e8dc] bg-white p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h2 className="break-words text-lg font-black">{item.title || item.keyword}</h2>
+                    <p className="mt-1 text-sm text-[#647468]">Keyword: {item.keyword} · Intent: {item.intent || "unknown"} · Type: {item.opportunity_type}</p>
+                    <p className="mt-1 text-xs text-[#7b887c]">{item.search_count} recorded searches · {item.result_count} results · Last seen {new Date(item.last_seen_at).toLocaleDateString("en-GB")}</p>
+                    {item.slug && <p className="mt-1 break-all text-xs text-[#7b887c]">/{item.slug}</p>}
+                  </div>
+                  <span className="rounded-full bg-[#eef5ed] px-3 py-1 text-xs font-bold capitalize">{item.status}</span>
+                </div>
+                {item.competitor_notes && <p className="mt-3 rounded-xl bg-[#f7f9f5] p-3 text-sm text-[#647468]">Research notes: {item.competitor_notes}</p>}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["open", "draft", "review"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="approved"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Approve opportunity</button></form>}
+                  {!["rejected", "published"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="rejected"/><button className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-800">Reject</button></form>}
+                  {["open", "approved"].includes(item.status) && <form action={createDraft}><input type="hidden" name="opportunityId" value={item.id}/><button className="rounded-lg border border-[#d8e3d4] px-4 py-2 text-xs font-bold">Create saved draft</button></form>}
+                </div>
+              </article>
+            ))}
+            {!rows.length && <div className="rounded-2xl border border-dashed border-[#cddbc8] bg-white p-8 text-center"><h2 className="font-bold">No matching opportunities</h2><p className="mt-2 text-sm text-[#647468]">No seed/demo rows are shown. Search activity must be aggregated into the canonical opportunities table before it appears here.</p></div>}
+            <p className="text-xs text-[#7b887c]">Showing up to 100 records ordered by recorded search count. All changes are subject to server-side admin checks and database policies.</p>
+          </section>
+        )}
+      </section>
+    </main>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return <div className="rounded-2xl border border-[#e0e8dc] bg-white p-5"><p className="text-sm text-[#647468]">{label}</p><p className="mt-2 text-3xl font-black">{value}</p></div>;
+}
