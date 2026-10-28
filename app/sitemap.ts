@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
-import { getPublishedContentArticles } from "@/lib/content/published-articles";
+import { getPublishedContentArticles, getPublishedContentLandingPages } from "@/lib/content/published-articles";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const publishedArticles = await getPublishedContentArticles();
+  const [publishedArticles, publishedLandingPages] = await Promise.all([getPublishedContentArticles(), getPublishedContentLandingPages()]);
 
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
@@ -112,6 +112,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: article.updated_at ? new Date(article.updated_at) : now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
+    })),
+    ...publishedLandingPages.map((page) => ({
+      url: `${base}/landing/${page.slug}`,
+      lastModified: page.updated_at ? new Date(page.updated_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
     })),
   ];
 
