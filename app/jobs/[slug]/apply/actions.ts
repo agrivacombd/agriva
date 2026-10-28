@@ -1,16 +1,16 @@
 "use server";
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export async function applyToJob(slug: string, formData: FormData) {
   const safeSlug = slug.trim();
   const applyPath = "/jobs/" + encodeURIComponent(safeSlug) + "/apply";
-  const db = await createSupabaseServerClient();
-  const { data: { user } } = await db.auth.getUser();
-
-  if (!user) {
-    redirect("/login?next=" + encodeURIComponent(applyPath));
+  const authorization = await authorizePermission("jobs.apply_own");
+  if (!authorization.ok) {
+    if (authorization.status === 401) redirect("/login?next=" + encodeURIComponent(applyPath));
+    redirect(applyPath + "?error=permission");
   }
+  const { supabase: db, user } = authorization;
 
   const { data: job, error: jobError } = await db
     .from("job_posts")
