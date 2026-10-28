@@ -62,6 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/en/seed-rate-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/en/farming-cost-profit-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/en/crop-calendar`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/en/soil-fertilizer`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/en/crop-choice`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/learn`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/articles`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...["boro-rice-season-preparation", "soil-health-basics", "integrated-pest-management", "vegetable-garden-water-management"].map((slug) => ({ url: `${base}/articles/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.7 })),
