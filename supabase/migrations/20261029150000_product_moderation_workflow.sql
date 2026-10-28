@@ -49,7 +49,8 @@ BEGIN
         NEW.moderation_reason := NULL;
         NEW.moderated_by := auth.uid();
         NEW.moderated_at := now();
-      ELSIF NEW.status = 'draft' AND OLD.status = 'active' THEN
+      ELSIF NEW.status = 'draft' AND OLD.status = 'active'
+         AND NEW.moderation_status IS NOT DISTINCT FROM OLD.moderation_status THEN
         NEW.moderation_status := 'pending';
         NEW.moderated_by := auth.uid();
         NEW.moderated_at := now();
