@@ -170,7 +170,7 @@ BEGIN
       stock = p_stock,
       reseller_commission_percent = p_commission_percent,
       status = p_status,
-      category = subcategory_name,
+      category = CASE WHEN v_category_slug IS NULL THEN category ELSE subcategory_name END,
       category_slug = v_category_slug,
       subcategory_slug = v_subcategory_slug,
       updated_at = now()
