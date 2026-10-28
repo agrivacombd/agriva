@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "supabase/migrations/*guard_product_insert_status.sql"
+      - "supabase/migrations/*align_product_status_guard_with_scoped_moderation.sql"
       - "supabase/migrations/*create_harvest_listings.sql"
       - "supabase/migrations/*reconcile_harvest_listing_policies.sql"
       - "supabase/migrations/*harden_harvest_moderation.sql"
