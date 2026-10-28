@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
+import { getPublishedContentArticleBySlug, type PublishedContentArticle } from "@/lib/content/published-articles";
 
 const articles = [
   {
@@ -67,20 +68,103 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const article = articles.find((item) => item.slug === slug);
-  if (!article) return { title: "লেখা পাওয়া যায়নি" };
+  if (article) {
+    return {
+      title: article.title,
+      description: article.intro,
+      alternates: { canonical: `/blog/${article.slug}` },
+      openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
+      twitter: { card: "summary_large_image", title: article.title, description: article.intro },
+    };
+  }
+
+  const published = await getPublishedContentArticleBySlug(slug);
+  if (!published) return { title: "লেখা পাওয়া যায়নি" };
+  const description = published.meta_description || published.body_markdown?.replace(/[#*_>]/g, "").replace(/\s+/g, " ").trim().slice(0, 320) || published.title;
+  const title = published.meta_title || published.title;
   return {
-    title: article.title,
-    description: article.intro,
-    alternates: { canonical: `/blog/${article.slug}` },
-    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
-    twitter: { card: "summary_large_image", title: article.title, description: article.intro },
+    title,
+    description,
+    alternates: { canonical: `/blog/${published.slug}` },
+    openGraph: { siteName: "AGRIVA", title, description, url: `/blog/${published.slug}`, type: "article", locale: "bn_BD" },
+    twitter: { card: "summary_large_image", title, description },
   };
+}
+
+function renderMarkdown(markdown: string, title: string) {
+  const blocks = markdown.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+  return blocks.map((block, index) => {
+    if (/^#\s+/.test(block) && block.slice(2).trim() === title.trim()) return null;
+    if (/^###\s+/.test(block)) return <h3 key={index} className="mt-6 text-lg font-black text-slate-900">{block.replace(/^###\s+/, "")}</h3>;
+    if (/^##\s+/.test(block)) return <h2 key={index} className="mt-8 border-t border-slate-100 pt-5 text-xl font-black text-slate-900">{block.replace(/^##\s+/, "")}</h2>;
+    if (/^#\s+/.test(block)) return <h2 key={index} className="mt-8 text-2xl font-black text-slate-900">{block.replace(/^#\s+/, "")}</h2>;
+
+    const lines = block.split("\n");
+    if (lines.every((line) => /^\s*[-*]\s+/.test(line))) {
+      return <ul key={index} className="mt-4 list-disc space-y-2 pl-6 text-sm leading-8 text-slate-700 sm:text-base">{lines.map((line, itemIndex) => <li key={itemIndex}>{line.replace(/^\s*[-*]\s+/, "")}</li>)}</ul>;
+    }
+    if (lines.every((line) => /^\s*\d+\.\s+/.test(line))) {
+      return <ol key={index} className="mt-4 list-decimal space-y-2 pl-6 text-sm leading-8 text-slate-700 sm:text-base">{lines.map((line, itemIndex) => <li key={itemIndex}>{line.replace(/^\s*\d+\.\s+/, "")}</li>)}</ol>;
+    }
+    return <p key={index} className="mt-4 whitespace-pre-line text-sm leading-8 text-slate-700 sm:text-base">{block}</p>;
+  });
+}
+
+function PublishedContentArticle({ article }: { article: PublishedContentArticle }) {
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const articleUrl = `${siteUrl}/blog/${article.slug}`;
+  const description = article.meta_description || article.body_markdown?.replace(/[#*_>]/g, "").replace(/\s+/g, " ").trim().slice(0, 320) || article.title;
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description,
+    dateModified: article.updated_at,
+    url: articleUrl,
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
+    author: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    publisher: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    inLanguage: "bn-BD",
+    isAccessibleForFree: true,
+  };
+
+  return (
+    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }} />
+      <article className="mx-auto max-w-4xl">
+        <ReadingProgress />
+        <nav aria-label="Breadcrumb" className="text-sm text-emerald-800"><Link href="/" className="hover:underline">হোম</Link> / <Link href="/blog" className="hover:underline">AGRIVA Blog</Link> / <span>{article.title}</span></nav>
+        <header className="mt-7 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm">
+          <div aria-hidden="true" className="flex min-h-36 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-6xl">📝</div>
+          <div className="p-6 sm:p-9">
+            <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">AGRIVA নির্দেশিকা</span>
+            <h1 className="mt-4 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">{article.title}</h1>
+            <p className="mt-4 text-sm text-slate-500">AGRIVA Blog · আপডেট {new Date(article.updated_at).toLocaleDateString("bn-BD")}</p>
+            {description && <p className="mt-5 text-base leading-8 text-slate-700">{description}</p>}
+          </div>
+        </header>
+        <div className="mt-6 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9">
+          {renderMarkdown(article.body_markdown || description, article.title)}
+          <aside className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">এই লেখা সাধারণ শিক্ষামূলক তথ্যের জন্য। ফসল, মাটি, জাত ও এলাকার পরিস্থিতি অনুযায়ী সিদ্ধান্ত নিতে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
+        </div>
+        <div className="mt-7 flex flex-wrap items-start gap-3">
+          <ShareArticle title={article.title} />
+          <Link href="/blog" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-900">← সব লেখা</Link>
+          <Link href="/learn" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">কৃষি শেখার কেন্দ্র →</Link>
+        </div>
+      </article>
+    </main>
+  );
 }
 
 export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article: Article | undefined = articles.find((item) => item.slug === slug);
-  if (!article) notFound();
+  if (!article) {
+    const published = await getPublishedContentArticleBySlug(slug);
+    if (!published) notFound();
+    return <PublishedContentArticle article={published} />;
+  }
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const articleUrl = `${siteUrl}/blog/${article.slug}`;
   const articleJsonLd = {
