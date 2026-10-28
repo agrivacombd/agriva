@@ -96,6 +96,14 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const staffRoleConstraint = read("supabase/migrations/20261029240000_allow_controlled_staff_role_memberships.sql");
+for (const role of ["operations", "product_moderator", "content_seo_manager", "marketing_manager", "finance_manager", "support_agent", "agronomist"]) {
+  assert.ok(staffRoleConstraint.includes(`'${role}'`), `membership constraint must allow the controlled ${role} role`);
+}
+assert.ok(!staffRoleConstraint.includes("'super_admin'"), "super_admin must not be added without its separate owner-controlled grant path");
+const staffRoleAssignment = read("supabase/migrations/20261029160000_staff_role_assignment.sql");
+assert.ok(staffRoleAssignment.includes("public.is_admin()"), "staff role assignment must remain restricted to platform admins");
+
 const permissionMap = read("lib/auth/permissions.ts");
 assert.ok(permissionMap.includes('| "finance.read_reports"'), "finance.read_reports must be part of the capability catalogue");
 assert.ok(permissionMap.includes('finance_manager: [...ownAccount, "finance.read_scoped", "finance.export_orders", "finance.read_reports"'), "finance managers must have explicit financial report access");
