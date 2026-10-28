@@ -63,6 +63,10 @@ for (const path of [
 }
 
 const contentDraftRlsMigration = read("supabase/migrations/20261029230000_align_content_draft_rls_with_capabilities.sql");
+const roleMembershipWriteLock = read("supabase/migrations/20261029310000_lock_direct_role_membership_writes.sql");
+assert.match(roleMembershipWriteLock, /REVOKE INSERT, UPDATE, DELETE ON TABLE public\.user_role_memberships FROM authenticated/, "authenticated users must not mutate role memberships directly");
+assert.match(roleMembershipWriteLock, /GRANT SELECT ON TABLE public\.user_role_memberships TO authenticated/, "authenticated users must retain membership reads");
+assert.match(roleMembershipWriteLock, /admin_set_staff_role \/ role RPC audit/, "role membership writes must use audited RPCs");
 assert.ok(contentDraftRlsMigration.includes("content_drafts_capability_read"), "content drafts must be readable by explicitly authorized content roles");
 assert.ok(contentDraftRlsMigration.includes("content_drafts_review_update"), "draft mutations must be limited to review-capable roles");
 assert.ok(contentDraftRlsMigration.includes("content_draft_revisions_admin_read"), "draft revision history must be restricted to review-capable roles");
