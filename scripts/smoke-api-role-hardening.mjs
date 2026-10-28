@@ -10,6 +10,8 @@ const publicSearchRoute = readFileSync("app/api/search/route.ts", "utf8");
 const cropMultipartReader = readFileSync("app/api/crop-disease/route.ts", "utf8");
 const sslIpnRoute = readFileSync("app/api/payment/sslcommerz/ipn/route.ts", "utf8");
 const sslSuccessRoute = readFileSync("app/api/payment/sslcommerz/success/route.ts", "utf8");
+const sslCancelRoute = readFileSync("app/api/payment/sslcommerz/cancel/route.ts", "utf8");
+const sslFailRoute = readFileSync("app/api/payment/sslcommerz/fail/route.ts", "utf8");
 const adminArticleRoute = readFileSync("app/api/admin/article/generate/route.ts", "utf8");
 const contentBriefRoute = readFileSync("app/api/admin/content-brief/route.ts", "utf8");
 const contentDraftRoute = readFileSync("app/api/admin/content-drafts/generate/route.ts", "utf8");
@@ -35,6 +37,8 @@ assert.match(cropMultipartReader, /readRequestBytesWithLimit\(request, MAX_REQUE
 assert.match(cropMultipartReader, /new Response\(boundedBody\.bytes, \{ headers: request\.headers \}\)\.formData\(\)/, "crop-disease must parse multipart only after enforcing the byte limit");
 assert.match(sslIpnRoute, /readRequestBytesWithLimit\(request, MAX_IPN_BODY_BYTES\)/, "SSLCommerz IPN must enforce a streamed form body limit");
 assert.match(sslSuccessRoute, /readRequestBytesWithLimit\(request, 16 \* 1024\)/, "SSLCommerz success callback must enforce a streamed form body limit");
+assert.match(sslCancelRoute, /readRequestBytesWithLimit\(request, 16 \* 1024\)/, "SSLCommerz cancellation callback must enforce a streamed form body limit");
+assert.match(sslFailRoute, /readRequestBytesWithLimit\(request, 16 \* 1024\)/, "SSLCommerz failure callback must enforce a streamed form body limit");
 assert.match(adminArticleRoute, /readRequestBodyWithLimit\(request, 32768\)/, "article generation must bound JSON request bodies");
 assert.match(contentBriefRoute, /readRequestBodyWithLimit\(request, 16384\)/, "content brief must bound JSON request bodies");
 assert.match(contentDraftRoute, /readRequestBodyWithLimit\(request, 32768\)/, "content draft generation must bound JSON request bodies");
