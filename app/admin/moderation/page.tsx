@@ -9,7 +9,7 @@ async function requireModerator() {
     if (auth.status === 401) redirect("/login?next=/admin/moderation");
     redirect("/dashboard");
   }
-  if (!auth.roles.some((role) => role === "admin" || role === "super_admin")) redirect("/dashboard");
+  if (!auth.roles.some((role) => role === "admin" || role === "super_admin" || role === "product_moderator")) redirect("/dashboard");
   return auth;
 }
 
