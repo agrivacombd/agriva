@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
   const amount = Number(validated?.amount);
   if (!validation.ok ||
       !["VALID", "VALIDATED"].includes(gatewayStatus) ||
+      String(validated?.store_id || "") !== process.env.SSLCOMMERZ_STORE_ID ||
       validated?.tran_id !== tranId ||
       currency !== "BDT" ||
       !Number.isFinite(amount) || amount <= 0) {
