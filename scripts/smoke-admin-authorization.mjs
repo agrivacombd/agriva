@@ -69,7 +69,7 @@ assert.ok(contentDraftRlsMigration.includes("content_draft_revisions_admin_read"
 assert.ok(contentDraftRlsMigration.includes("public.user_role_memberships"), "content draft RLS must support membership-based roles");
 
 const orderCsvRoute = read("app/admin/reports/orders.csv/route.ts");
-assert.ok(orderCsvRoute.includes('authorizePermission("finance.read_scoped")'), "order CSV export must require finance.read_scoped");
+assert.ok(orderCsvRoute.includes('authorizePermission("finance.export_orders")'), "order CSV export must require the dedicated finance.export_orders capability");
 assert.ok(orderCsvRoute.includes("candidate.startsWith(prefix)"), "order CSV export must neutralize spreadsheet formula prefixes in untrusted cell values");
 
 const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
