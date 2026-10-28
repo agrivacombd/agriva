@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   if (!authorization.ok) {
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
   }
-  const { supabase, user } = authorization;
+  const { supabase } = authorization;
 
   const body = await request.json().catch(() => null);
   const productId = body && typeof body === "object" && !Array.isArray(body)
