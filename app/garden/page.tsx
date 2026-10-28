@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Sprout } from "lucide-react";
 import GardenClient from "./GardenClient";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -13,15 +14,16 @@ export const metadata: Metadata = {
 
 export default async function GardenPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) redirect("/login?next=%2Fgarden");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=%2Fgarden");
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
       <header className="border-b border-emerald-950/10 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="text-xl font-black sm:text-2xl">AGRIVA<span className="text-amber-600">.</span></Link>
+          <Link href="/" className="inline-flex items-center gap-2 text-xl font-black sm:text-2xl"><Sprout aria-hidden="true" className="h-6 w-6 text-emerald-700" strokeWidth={2.5} />AGRIVA<span className="text-amber-600">.</span></Link>
           <nav aria-label="Garden navigation" className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-sm font-bold">
+            <Link href="/garden" aria-current="page" className="inline-flex items-center gap-1.5 text-emerald-900 hover:underline"><Sprout aria-hidden="true" className="h-4 w-4" /> Garden</Link>
             <Link href="/dashboard" className="text-emerald-900 hover:underline">Dashboard</Link>
             <Link href="/green-living" className="text-emerald-900 hover:underline">Green Living</Link>
           </nav>
