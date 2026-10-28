@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { ArrowRight, Check, Globe2, Leaf, Sprout, ShoppingCart, Store, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
+import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Store, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import BrandLogo from "@/components/BrandLogo";
 
 type RoleId = "farmer" | "buyer" | "seller" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
@@ -133,10 +134,7 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen bg-[#f5f8f2] text-[#173b2d]">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
-        <Link href="/" aria-label="AGRIVA home" className="flex items-center gap-2 text-2xl font-black tracking-tight">
-          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#126b4f] text-white"><Leaf size={22} /></span>
-          AGRIVA<span className="text-[#c59c3b]">.</span>
-        </Link>
+        <BrandLogo href="/" imageClassName="h-10 w-40 sm:w-48" priority />
         <div className="flex items-center gap-3">
           <Link href="/" className="hidden text-sm font-semibold text-slate-600 hover:text-[#126b4f] sm:block">{t.home}</Link>
           <button type="button" onClick={() => setLanguage(language === "bn" ? "en" : "bn")} className="inline-flex items-center gap-2 rounded-full border border-[#d9e3d8] bg-white px-3 py-2 text-sm font-semibold hover:border-[#126b4f]">
