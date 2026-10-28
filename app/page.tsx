@@ -43,7 +43,7 @@ export const metadata: Metadata = {
   title: "কৃষি সেবা, বীজ, বাজারদর ও কৃষি টুলস",
   description:
     "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য AGRIVA—ফসলের সহায়তা, কৃষি পণ্য, বাজারদর, চাষের হিসাব, কৃষি চাকরি ও বাংলা-ইংরেজি CV Builder এক প্ল্যাটফর্মে।",
-  alternates: { canonical: "/" },
+  alternates: { canonical: "/", languages: { "bn-BD": "/", en: "/en", "x-default": "/" } },
   openGraph: {
     type: "website",
     locale: "bn_BD",
