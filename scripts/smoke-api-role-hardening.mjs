@@ -29,6 +29,8 @@ const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
 assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
 assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
 assert.match(checkout, /paymentMethod !== "cod"/, "checkout must reject online payment until a provider is enabled");
+assert.match(checkout, /const paymentMethod = body\.paymentMethod;[\s\S]*?if \(paymentMethod !== "cod"\)/, "checkout must accept only an explicit COD payment method");
+assert.match(checkout, /typeof body !== "object" \|\| Array\.isArray\(body\)/, "checkout must reject array payloads instead of treating them as order objects");
 assert.match(checkoutModeMigration, /\(\x27cod_enabled\x27, \x27true\x27[\s\S]*?\(\x27online_payment_enabled\x27, \x27false\x27/, "COD must be enabled while online payments remain disabled");
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
