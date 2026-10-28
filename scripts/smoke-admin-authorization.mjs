@@ -96,6 +96,12 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const publicationInvariant = read("supabase/migrations/20261029250000_enforce_content_draft_publication_in_database.sql");
+assert.ok(publicationInvariant.includes("BEFORE UPDATE OF status ON public.content_drafts"), "database must enforce content draft publication invariants");
+assert.ok(publicationInvariant.includes("OLD.status IS DISTINCT FROM 'approved'"), "database must reject publication unless the previous status was approved");
+assert.ok(publicationInvariant.includes("valid slug, and body"), "database must reject publication without required content fields");
+assert.ok(publicationInvariant.includes("REVOKE ALL ON FUNCTION public.enforce_content_draft_publication() FROM PUBLIC, anon, authenticated"), "publication trigger function must not be directly executable by client roles");
+
 const staffRoleConstraint = read("supabase/migrations/20261029240000_allow_controlled_staff_role_memberships.sql");
 for (const role of ["operations", "product_moderator", "content_seo_manager", "marketing_manager", "finance_manager", "support_agent", "agronomist"]) {
   assert.ok(staffRoleConstraint.includes(`'${role}'`), `membership constraint must allow the controlled ${role} role`);
