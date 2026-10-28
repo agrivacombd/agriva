@@ -6,6 +6,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+// Allow multipart headers/fields while rejecting oversized declared bodies before formData() buffers them.
+const MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + 256 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 type Diagnosis = {
@@ -98,6 +100,17 @@ export async function POST(request: NextRequest) {
         error: "ছবি বিশ্লেষণ এখনো চালু হয়নি: সার্ভারে GEMINI_API_KEY সেট করতে হবে। কোনো ছবি সংরক্ষণ করা হয়নি।",
         code: "AI_NOT_CONFIGURED",
       }, { status: 503 });
+    }
+
+    const contentLength = request.headers.get("content-length");
+    if (contentLength !== null) {
+      const declaredBytes = Number(contentLength);
+      if (!Number.isSafeInteger(declaredBytes) || declaredBytes < 0 || declaredBytes > MAX_REQUEST_BYTES) {
+        return NextResponse.json(
+          { error: "আপলোডের মোট আকার সীমার বেশি। ৫ MB-এর মধ্যে একটি ছবি ও প্রয়োজনীয় তথ্য দিন।" },
+          { status: 413 },
+        );
+      }
     }
 
     const form = await request.formData();
