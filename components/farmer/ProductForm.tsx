@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
-const INITIAL_FORM = { name: "", price: "", stock: "", commission: "10", description: "", category_slug: "premium-superfoods", subcategory_slug: "superfoods-seeds" };
+const INITIAL_FORM = { name: "", price: "", stock: "", commission: "10", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
 
 export default function ProductForm() {
   const [form, setForm] = useState(INITIAL_FORM);
