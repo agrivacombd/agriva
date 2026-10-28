@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 const SELECT_COLUMNS = "id,keyword,intent,opportunity_type,search_count,result_count,status,title,slug,created_at";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return { response: NextResponse.json({ error: "Authentication required" }, { status: 401 }) };
-
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError) return { response: NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 }) };
-  if (profile?.role !== "admin") return { response: NextResponse.json({ error: "Admin role required" }, { status: 403 }) };
-  return { supabase, user };
+async function requireContentPermission(permission: "content.review" | "content.publish") {
+  const authorization = await authorizePermission(permission);
+  if (!authorization.ok) {
+    return { response: NextResponse.json({ error: authorization.error }, { status: authorization.status }) };
+  }
+  return { supabase: authorization.supabase, user: authorization.user };
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAdmin();
+  const auth = await requireContentPermission("content.review");
   if ("response" in auth) return auth.response;
   const status = request.nextUrl.searchParams.get("status") ?? "all";
   const allowed = ["all", "open", "draft", "review", "approved", "published", "rejected"];
@@ -36,6 +33,11 @@ export async function PATCH(request: NextRequest) {
   const nextStatus = typeof body?.status === "string" ? body.status : "";
   if (!id || !["review", "approved", "published", "rejected"].includes(nextStatus)) {
     return NextResponse.json({ error: "Valid opportunity id and status are required" }, { status: 400 });
+  }
+
+  if (nextStatus === "published") {
+    const publishAuth = await requireContentPermission("content.publish");
+    if ("response" in publishAuth) return publishAuth.response;
   }
 
   const { data: current, error: readError } = await auth.supabase.from("content_opportunities").select("id,status").eq("id", id).maybeSingle();
