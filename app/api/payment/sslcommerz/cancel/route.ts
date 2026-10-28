@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBytesWithLimit } from "@/lib/http/read-limited-request-body";
 
 function orderIdFrom(value: string | null) {
   const raw = (value || "").replace(/^AGRIVA-/, "");
@@ -14,8 +15,10 @@ function cancelledRedirect(request: NextRequest, value: string | null) {
 }
 
 export async function POST(request: NextRequest) {
+  const boundedBody = await readRequestBytesWithLimit(request, 16 * 1024);
+  if (!boundedBody.ok) return cancelledRedirect(request, null);
   try {
-    const form = await request.formData();
+    const form = await new Response(boundedBody.bytes, { headers: request.headers }).formData();
     return cancelledRedirect(request, String(form.get("tran_id") || ""));
   } catch {
     return cancelledRedirect(request, null);
