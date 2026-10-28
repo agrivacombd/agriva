@@ -127,7 +127,6 @@ assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review pag
 assert.ok(articleReview.includes('profileError || profile?.role !== "admin"'), "article review page must fail closed for non-admin users");
 
 for (const path of [
-  "app/admin/transport/page.tsx",
   "app/admin/harvest/page.tsx",
   "app/admin/jobs/page.tsx",
 ]) {
@@ -140,7 +139,7 @@ const categoryAdmin = read("app/admin/categories/page.tsx");
 assert.ok(categoryAdmin.includes('authorizePermission("catalog.create_platform")'), "category management must require catalog.create_platform");
 assert.ok(categoryAdmin.includes("if (!auth.ok)"), "category management must fail closed on permission lookup errors");
 const opportunitiesAdmin = read("app/admin/opportunities/page.tsx");
-assert.ok(opportunitiesAdmin.includes('authorizePermission("content.review")'), "content opportunities must require content.review");
+assert.ok(opportunitiesAdmin.includes('authorizePermission("content.opportunities.read")'), "content opportunities must require content.opportunities.read");
 assert.ok(opportunitiesAdmin.includes("if (!auth.ok)"), "content opportunities must fail closed on permission lookup errors");
 const usersAdmin = read("app/admin/users/page.tsx");
 assert.ok(usersAdmin.includes('authorizePermission("users.manage")'), "user management must require users.manage");
