@@ -52,7 +52,6 @@ for (const path of [
   "app/admin/page.tsx",
   "app/admin/products/page.tsx",
   "app/admin/categories/page.tsx",
-  "app/admin/transport/page.tsx",
   "app/admin/harvest/page.tsx",
   "app/admin/jobs/page.tsx",
   "app/admin/users/page.tsx",
@@ -137,14 +136,18 @@ for (const path of [
   assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
 }
 
-for (const path of [
-  "app/admin/categories/page.tsx",
-  "app/admin/opportunities/page.tsx",
-]) {
-  const source = read(path);
-  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
-  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
-}
+const categoryAdmin = read("app/admin/categories/page.tsx");
+assert.ok(categoryAdmin.includes('authorizePermission("catalog.create_platform")'), "category management must require catalog.create_platform");
+assert.ok(categoryAdmin.includes("if (!auth.ok)"), "category management must fail closed on permission lookup errors");
+const opportunitiesAdmin = read("app/admin/opportunities/page.tsx");
+assert.ok(opportunitiesAdmin.includes('authorizePermission("content.review")'), "content opportunities must require content.review");
+assert.ok(opportunitiesAdmin.includes("if (!auth.ok)"), "content opportunities must fail closed on permission lookup errors");
+const usersAdmin = read("app/admin/users/page.tsx");
+assert.ok(usersAdmin.includes('authorizePermission("users.manage")'), "user management must require users.manage");
+assert.ok(usersAdmin.includes("if (!auth.ok)"), "user management must fail closed on permission lookup errors");
+const transportCapabilityAdmin = read("app/admin/transport/page.tsx");
+assert.ok(transportCapabilityAdmin.includes('authorizePermission("transport.review")'), "transport verification must require transport.review");
+assert.ok(transportCapabilityAdmin.includes("if (!auth.ok)"), "transport verification must fail closed on permission lookup errors");
 
 const auditPage = read("app/admin/audit/page.tsx");
 assert.ok(auditPage.includes('authorizePermission("audit.read")'), "audit page must enforce the audit.read capability");
