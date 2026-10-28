@@ -5,7 +5,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS content_drafts_published_article_slug_uidx
   WHERE status = 'published' AND content_type = 'article';
 
 -- RLS limits anonymous reads to published article rows only.
-GRANT SELECT ON TABLE public.content_drafts TO anon;
+GRANT SELECT (slug, title, meta_title, meta_description, body_markdown, updated_at, status, content_type) ON TABLE public.content_drafts TO anon;
 
 CREATE OR REPLACE FUNCTION public.guard_published_content_article_slug()
 RETURNS trigger
