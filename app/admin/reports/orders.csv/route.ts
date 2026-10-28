@@ -11,7 +11,7 @@ function csvCell(value: unknown) {
 }
 
 export async function GET(request: Request) {
-  const authorization = await authorizePermission("finance.read_scoped");
+  const authorization = await authorizePermission("finance.export_orders");
   if (!authorization.ok) {
     if (authorization.status === 401) return NextResponse.redirect(new URL("/login", request.url));
     return NextResponse.json({ error: authorization.error }, { status: authorization.status });
