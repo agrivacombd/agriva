@@ -213,7 +213,7 @@ assert.ok(publishedArticleData.includes('.eq("content_type", "article")'), "publ
 assert.ok(publishedArticleData.includes("NEXT_PUBLIC_SUPABASE_ANON_KEY"), "public article reads must use the public Supabase key, not a service-role secret");
 const blogListing = read("app/blog/page.tsx");
 assert.ok(blogListing.includes("getPublishedContentArticles"), "blog listing must read published CMS articles");
-assert.ok(blogListing.includes("const allArticles = [...articles, ...publishedArticles]"), "blog listing must merge static and published CMS articles");
+assert.ok(blogListing.includes("const allArticles = [...publishedArticles, ...articles.filter((article) => !publishedSlugs.has(article.slug))]"), "blog listing must prioritize published CMS articles and avoid duplicate slugs");
 const blogDetail = read("app/blog/[slug]/page.tsx");
 assert.ok(blogDetail.includes("getPublishedContentArticleBySlug"), "blog detail route must resolve published CMS articles by slug");
 assert.ok(blogDetail.includes("renderMarkdown(article.body_markdown"), "published CMS article body must be rendered on its public route");
