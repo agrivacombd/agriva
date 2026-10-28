@@ -67,27 +67,27 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const published = await getPublishedContentArticleBySlug(slug);
-  if (published) {
-    const description = published.meta_description || published.body_markdown?.replace(/[#*_>]/g, "").replace(/\s+/g, " ").trim().slice(0, 320) || published.title;
-    const title = published.meta_title || published.title;
+  const article = articles.find((item) => item.slug === slug);
+  if (article) {
     return {
-      title,
-      description,
-      alternates: { canonical: `/blog/${published.slug}` },
-      openGraph: { siteName: "AGRIVA", title, description, url: `/blog/${published.slug}`, type: "article", locale: "bn_BD" },
-      twitter: { card: "summary_large_image", title, description },
+      title: article.title,
+      description: article.intro,
+      alternates: { canonical: `/blog/${article.slug}` },
+      openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
+      twitter: { card: "summary_large_image", title: article.title, description: article.intro },
     };
   }
 
-  const article = articles.find((item) => item.slug === slug);
-  if (!article) return { title: "লেখা পাওয়া যায়নি" };
+  const published = await getPublishedContentArticleBySlug(slug);
+  if (!published) return { title: "লেখা পাওয়া যায়নি" };
+  const description = published.meta_description || published.body_markdown?.replace(/[#*_>]/g, "").replace(/\s+/g, " ").trim().slice(0, 320) || published.title;
+  const title = published.meta_title || published.title;
   return {
-    title: article.title,
-    description: article.intro,
-    alternates: { canonical: `/blog/${article.slug}` },
-    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
-    twitter: { card: "summary_large_image", title: article.title, description: article.intro },
+    title,
+    description,
+    alternates: { canonical: `/blog/${published.slug}` },
+    openGraph: { siteName: "AGRIVA", title, description, url: `/blog/${published.slug}`, type: "article", locale: "bn_BD" },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
@@ -159,11 +159,12 @@ function PublishedContentArticle({ article }: { article: PublishedContentArticle
 
 export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const published = await getPublishedContentArticleBySlug(slug);
-  if (published) return <PublishedContentArticle article={published} />;
-
   const article: Article | undefined = articles.find((item) => item.slug === slug);
-  if (!article) notFound();
+  if (!article) {
+    const published = await getPublishedContentArticleBySlug(slug);
+    if (!published) notFound();
+    return <PublishedContentArticle article={published} />;
+  }
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const articleUrl = `${siteUrl}/blog/${article.slug}`;
   const articleJsonLd = {
