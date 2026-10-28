@@ -317,5 +317,7 @@ for (const rpc of ["admin_update_marketplace_product", "admin_moderate_harvest_l
 assert.ok(adminRpcMigration.includes("SELECT public.has_platform_admin_access() INTO v_is_admin;"), "order status RPC must use membership-aware admin checks");
 assert.ok(adminRpcMigration.includes("IF v_admin IS NULL OR NOT public.has_platform_admin_access() THEN"), "harvest moderation RPC must use membership-aware admin checks");
 assert.ok(adminRpcMigration.includes("if v_admin is null or not public.has_platform_admin_access() then"), "job moderation RPC must use membership-aware admin checks");
+assert.ok(adminRpcMigration.includes("Could not fully align admin guard for RPC"), "RPC migration must fail instead of silently leaving a legacy admin guard");
+assert.ok(adminRpcMigration.includes("v_updated_definition ~*"), "RPC migration must detect unconverted legacy guards before applying changes");
 
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
