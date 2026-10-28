@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+  const authorization = await authorizePermission("content.draft");
+  if (!authorization.ok) return NextResponse.json({ error: authorization.error }, { status: authorization.status });
 
   const body = await request.json().catch(() => null);
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
