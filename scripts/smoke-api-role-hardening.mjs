@@ -20,6 +20,7 @@ const adminProductRoute = readFileSync("app/api/admin/products/route.ts", "utf8"
 const resellerLinkRoute = readFileSync("app/api/reseller/links/route.ts", "utf8");
 const publishDraftRoute = readFileSync("app/admin/content-drafts/publish/route.ts", "utf8");
 const checkoutRoute = readFileSync("app/api/checkout/route.ts", "utf8");
+const checkoutModeMigration = readFileSync("supabase/migrations/20261029340000_enable_cod_disable_online_payment_until_provider_ready.sql", "utf8");
 const paymentInitRoute = readFileSync("app/api/payment/sslcommerz/init/route.ts", "utf8");
 const requestBodyReader = readFileSync("lib/http/read-limited-request-body.ts", "utf8");
 const contentPublishRoute = readFileSync("app/admin/content-drafts/publish/route.ts", "utf8");
@@ -27,6 +28,8 @@ const orderReportRoute = readFileSync("app/admin/reports/orders.csv/route.ts", "
 const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
 assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
 assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
+assert.match(checkout, /paymentMethod !== "cod"/, "checkout must reject online payment until a provider is enabled");
+assert.match(checkoutModeMigration, /\(\x27cod_enabled\x27, \x27true\x27[\s\S]*?\(\x27online_payment_enabled\x27, \x27false\x27/, "COD must be enabled while online payments remain disabled");
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 assert.match(publicAiRoute, /question\.length > 2000/, "public AI endpoint must bound prompt length");
