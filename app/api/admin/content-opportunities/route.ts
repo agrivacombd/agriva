@@ -40,6 +40,25 @@ export async function PATCH(request: NextRequest) {
     if ("response" in publishAuth) return publishAuth.response;
   }
 
+  if (nextStatus === "published") {
+    const { data: publishedDraft, error: publishedDraftError } = await auth.supabase
+      .from("content_drafts")
+      .select("id")
+      .eq("opportunity_id", id)
+      .eq("status", "published")
+      .limit(1)
+      .maybeSingle();
+    if (publishedDraftError) {
+      return NextResponse.json({ error: "Unable to verify publication state" }, { status: 500 });
+    }
+    if (!publishedDraft) {
+      return NextResponse.json(
+        { error: "An opportunity can only be marked published after its linked content draft is published" },
+        { status: 409 },
+      );
+    }
+  }
+
   const { data: current, error: readError } = await auth.supabase.from("content_opportunities").select("id,status").eq("id", id).maybeSingle();
   if (readError) return NextResponse.json({ error: "Unable to verify opportunity status" }, { status: 500 });
   if (!current) return NextResponse.json({ error: "Opportunity not found" }, { status: 404 });
