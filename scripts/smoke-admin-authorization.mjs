@@ -140,12 +140,16 @@ for (const path of [
 for (const path of [
   "app/admin/categories/page.tsx",
   "app/admin/opportunities/page.tsx",
-  "app/admin/audit/page.tsx",
 ]) {
   const source = read(path);
   assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
   assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
 }
+
+const auditPage = read("app/admin/audit/page.tsx");
+assert.ok(auditPage.includes('authorizePermission("audit.read")'), "audit page must enforce the audit.read capability");
+assert.ok(auditPage.includes("if (!auth.ok)"), "audit page must fail closed when authorization lookup fails");
+assert.ok(!auditPage.includes('profile?.role !== "admin"'), "audit page must not rely on a legacy single-profile role check");
 
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
