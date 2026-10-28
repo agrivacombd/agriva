@@ -15,6 +15,9 @@ const serverAuthorization = readFileSync("lib/auth/server-authorization.ts", "ut
 const moderationPage = readFileSync("app/admin/moderation/page.tsx", "utf8");
 const moderationMigration = readFileSync("supabase/migrations/20261029150000_product_moderation_workflow.sql", "utf8");
 const adminOverview = readFileSync("app/admin/page.tsx", "utf8");
+const staffAccessPage = readFileSync("app/admin/access/page.tsx", "utf8");
+const staffRoleMigration = readFileSync("supabase/migrations/20261029160000_staff_role_assignment.sql", "utf8");
+const permissionCatalogue = readFileSync("lib/auth/permissions.ts", "utf8");
 assert.match(farmer, /Farmer product creation failed/, "product insert failures must be logged server-side");
 assert.match(farmer, /পণ্য সংরক্ষণ করা যায়নি/, "product insert failures must return safe localized message");
 assert.doesNotMatch(farmer, /error: error\.message/, "database details must not be exposed by farmer product API");
@@ -38,5 +41,12 @@ assert.ok(moderationPage.includes("request_changes"), "moderators must be able t
 assert.ok(moderationPage.includes("Approve & publish"), "approved listings must have an explicit publication action");
 assert.ok(moderationPage.includes("super_admin"), "moderation page must check privileged roles");
 assert.ok(adminOverview.includes("/admin/moderation"), "Super Admin must have a direct link to the moderation queue");
+
+assert.ok(staffRoleMigration.includes("admin_set_staff_role"), "staff roles must be assigned through a dedicated database RPC");
+assert.ok(staffRoleMigration.includes("Self-service staff role changes are not allowed"), "staff must not self-assign privileged roles");
+assert.ok(staffRoleMigration.includes("staff.role.granted"), "staff role grants must be audited");
+assert.ok(staffAccessPage.includes("Grant role") && staffAccessPage.includes("Revoke selected"), "Super Admin needs staff role grant/revoke controls");
+assert.ok(adminOverview.includes("/admin/access"), "Super Admin console must link to staff access management");
+assert.ok(permissionCatalogue.includes('"finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read"'), "admin capability set must include scoped staff provisioning");
 
 console.log("API role and error disclosure regression checks passed.");
