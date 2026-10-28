@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
+import BrandLogo from "@/components/BrandLogo";
 
 async function requireAdmin() {
   const supabase = await createSupabaseServerClient();
@@ -124,7 +125,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
       <aside className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
         <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-8">
-          <div><Link href="/" className="text-2xl font-black tracking-tight">AGRIVA<span className="text-[#d9b85b]">.</span></Link><p className="mt-1 text-xs font-bold uppercase tracking-[.2em] text-emerald-100">Super Admin Console</p></div>
+          <div><BrandLogo href="/" imageClassName="h-10 w-40 rounded-lg bg-white p-1" /><p className="mt-2 text-xs font-bold uppercase tracking-[.2em] text-emerald-100">Super Admin Console</p></div>
           <div className="flex items-center gap-3 text-sm"><span className="rounded-full border border-white/20 px-3 py-1.5">Admin verified</span><Link href="/dashboard" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">User dashboard ↗</Link></div>
         </div>
       </aside>
