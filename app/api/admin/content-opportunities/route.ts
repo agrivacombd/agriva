@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 const SELECT_COLUMNS = "id,keyword,intent,opportunity_type,search_count,result_count,status,title,slug,created_at";
@@ -28,7 +29,11 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   const auth = await requireContentPermission("content.review");
   if ("response" in auth) return auth.response;
-  const body = await request.json().catch(() => null);
+  const boundedBody = await readRequestBodyWithLimit(request, 16384);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const id = typeof body?.id === "string" ? body.id.trim() : "";
   const nextStatus = typeof body?.status === "string" ? body.status : "";
   if (!id || !["review", "approved", "published", "rejected"].includes(nextStatus)) {
