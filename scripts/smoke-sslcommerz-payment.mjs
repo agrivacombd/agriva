@@ -29,6 +29,11 @@ assert.match(init, /order\.buyer_id\s*!==\s*user\.id/, "init must require exact 
 assert.match(init, /order\.payment_method\s*!==\s*"online"/, "init must reject non-online orders");
 assert.match(init, /order\.payment_status\s*!==\s*"pending"/, "init must reject non-pending payments");
 assert.match(init, /if\s*\(referenceError\)/, "init must check payment-reference write errors");
+assert.match(init, /AbortSignal\.timeout\(15_000\)/, "payment init must time-bound the provider request");
+assert.match(init, /gatewayUrl\.protocol !== "https:"/, "payment init must reject non-HTTPS gateway URLs");
+assert.match(init, /hostname\.endsWith\("\.sslcommerz\.com"\)/, "payment init must restrict redirects to SSLCommerz-owned hosts");
+assert.match(init, /\.select\("id"\)\.maybeSingle\(\)/, "payment init must confirm the conditional reference update matched a still-payable order");
+assert.match(init, /if\s*\(!referencedOrder\)[\s\S]*?status:\s*409/, "payment init must reject an order that became unpayable during gateway initialization");
 
 console.log("SSLCommerz payment route regression checks passed.");
 
