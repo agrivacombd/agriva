@@ -7,32 +7,35 @@ export async function POST(request: NextRequest) {
   const { supabase, user } = authorization;
 
   const body = await request.json().catch(() => null);
-  const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
-  const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId.trim() : null;
-  if (!keyword || keyword.length > 160) {
-    return NextResponse.json({ error: "A keyword of 1–160 characters is required" }, { status: 400 });
+  const suppliedKeyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
+  const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId.trim() : "";
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(opportunityId)) {
+    return NextResponse.json({ error: "A valid approved opportunityId is required" }, { status: 400 });
   }
 
-  // When a draft is linked to an opportunity, enforce the same approval gate
-  // as the persisted content-draft workflow instead of trusting the client.
-  if (opportunityId !== null) {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(opportunityId)) {
-      return NextResponse.json({ error: "A valid opportunityId is required" }, { status: 400 });
-    }
-    const { data: opportunity, error: opportunityError } = await supabase
-      .from("content_opportunities")
-      .select("id,status")
-      .eq("id", opportunityId)
-      .maybeSingle();
-    if (opportunityError) {
-      return NextResponse.json({ error: "Unable to verify opportunity approval" }, { status: 500 });
-    }
-    if (!opportunity) {
-      return NextResponse.json({ error: "Opportunity not found" }, { status: 404 });
-    }
-    if (opportunity.status !== "approved") {
-      return NextResponse.json({ error: "Only approved opportunities can be converted to article drafts" }, { status: 409 });
-    }
+  // The legacy article queue must follow the same approval gate and use the
+  // database-owned keyword so a client cannot attach unrelated content to an
+  // approved opportunity.
+  const { data: opportunity, error: opportunityError } = await supabase
+    .from("content_opportunities")
+    .select("id,keyword,status")
+    .eq("id", opportunityId)
+    .maybeSingle();
+  if (opportunityError) {
+    return NextResponse.json({ error: "Unable to verify opportunity approval" }, { status: 500 });
+  }
+  if (!opportunity) {
+    return NextResponse.json({ error: "Opportunity not found" }, { status: 404 });
+  }
+  if (opportunity.status !== "approved") {
+    return NextResponse.json({ error: "Only approved opportunities can be converted to article drafts" }, { status: 409 });
+  }
+  const keyword = opportunity.keyword.trim();
+  if (!keyword || keyword.length > 160) {
+    return NextResponse.json({ error: "The approved opportunity has an invalid keyword" }, { status: 409 });
+  }
+  if (suppliedKeyword && suppliedKeyword !== keyword) {
+    return NextResponse.json({ error: "Keyword must match the approved opportunity" }, { status: 409 });
   }
 
   const title = `কৃষকের জন্য ${keyword}: কারণ, করণীয় ও প্রতিরোধের পূর্ণাঙ্গ গাইড`;
