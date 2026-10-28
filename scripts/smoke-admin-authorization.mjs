@@ -205,6 +205,8 @@ assert.ok(approvalMigration.includes("REVOKE ALL ON FUNCTION public.create_gener
 assert.ok(approvalMigration.includes("content_drafts_published_article_slug_uidx"), "published CMS articles must have unique canonical slugs");
 assert.ok(approvalMigration.includes("GRANT SELECT (slug, title, meta_title, meta_description, body_markdown, updated_at, status, content_type)"), "public CMS article queries must receive column-limited SELECT grants");
 assert.ok(approvalMigration.includes("guard_published_content_article_slug"), "database must reserve slugs used by built-in blog posts");
+assert.ok(approvalMigration.includes("'landing_page'::text"), "content workflow constraints must allow SEO landing pages");
+assert.ok(approvalMigration.includes("content_drafts_public_published_landing_pages_read"), "published landing pages must have a separate public RLS policy");
 assert.ok(approvalMigration.includes("'agri-guide-' || substr(o.id::text, 1, 8)"), "database must produce a valid fallback slug for non-Latin keywords");
 
 
@@ -221,6 +223,12 @@ assert.ok(blogDetail.includes("renderMarkdown(article.body_markdown"), "publishe
 const sitemap = read("app/sitemap.ts");
 assert.ok(sitemap.includes("getPublishedContentArticles"), "sitemap must include published CMS articles");
 assert.ok(sitemap.includes("url: `${base}/blog/${article.slug}`"), "sitemap must include canonical public blog URLs for CMS articles");
+assert.ok(sitemap.includes("getPublishedContentLandingPages"), "sitemap must include published SEO landing pages");
+assert.ok(sitemap.includes("url: `${base}/landing/${page.slug}`"), "sitemap must include canonical landing page URLs");
+const landingPageRoute = read("app/landing/[slug]/page.tsx");
+assert.ok(landingPageRoute.includes("getPublishedContentLandingPageBySlug"), "public landing route must load published landing content");
+assert.ok(landingPageRoute.includes('"@type": "WebPage"'), "landing pages must expose WebPage structured data");
+assert.ok(contentDraftsClient.includes('"landing_page"'), "admin content drafts must support landing_page content type");
 const legacyArticleRoute = read("app/articles/[slug]/page.tsx");
 assert.ok(legacyArticleRoute.includes("redirect(`/blog/${encodeURIComponent(slug)}`)"), "legacy article URLs must canonicalize to the blog route");
 
