@@ -96,6 +96,12 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const attributionInputMigration = read("supabase/migrations/20261029260000_validate_attribution_rpc_inputs.sql");
+assert.ok(attributionInputMigration.includes("p_days IS NULL OR p_days < 1 OR p_days > 30"), "attribution RPC must reject null or out-of-range attribution windows");
+assert.ok(attributionInputMigration.includes("length(p_code) > 64"), "attribution RPC must bound referral code input");
+assert.ok(attributionInputMigration.includes("p_product_id IS NULL"), "attribution RPC must reject missing product IDs");
+assert.ok(attributionInputMigration.includes("p_visitor_token !~ '[^[:space:]]'"), "attribution RPC must reject whitespace-only visitor tokens");
+assert.ok(attributionInputMigration.includes("GRANT EXECUTE ON FUNCTION public.record_attribution_session(text, text, uuid, integer) TO anon, authenticated"), "attribution RPC must preserve intended referral redirect access");
 const sslCommerzIpn = read("app/api/payment/sslcommerz/ipn/route.ts");
 assert.ok(sslCommerzIpn.includes('String(validated?.store_id || "") !== process.env.SSLCOMMERZ_STORE_ID'), "SSLCommerz IPN must verify the validation response belongs to the configured merchant store");
 const legacyArticleGenerate = read("app/api/admin/article/generate/route.ts");
