@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json({ error: "সঠিক JSON অনুরোধ পাঠান।" }, { status: 400 });
     }
-    const question = typeof body?.question === "string" ? body.question.trim() : "";
+    const payload = body && typeof body === "object" && !Array.isArray(body)
+      ? body as Record<string, unknown>
+      : {};
+    const question = typeof payload.question === "string" ? payload.question.trim() : "";
     if (!question) return NextResponse.json({ error: "প্রশ্ন লিখুন।" }, { status: 400 });
     if (question.length > 2000) return NextResponse.json({ error: "প্রশ্নটি ২০০০ অক্ষরের মধ্যে রাখুন।" }, { status: 400 });
 
