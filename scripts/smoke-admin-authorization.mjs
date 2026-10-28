@@ -192,6 +192,7 @@ assert.ok(contentBriefApi.includes('generatedWith: "template"'), "content brief 
 
 const draftGenerator = read("app/api/admin/content-drafts/generate/route.ts");
 assert.ok(draftGenerator.includes('opportunity.status !== "approved"'), "draft generation API must require approved opportunities");
+assert.ok(draftGenerator.includes("opportunity.slug?.trim() || slugify(title)"), "generated URL slug must match the final selected article title");
 assert.ok(draftGenerator.includes('rpc("create_generated_content_draft_from_opportunity"'), "generated draft and opportunity status must be saved atomically through the database RPC");
 assert.ok(draftGenerator.includes('"x-goog-api-key": key'), "Gemini API keys must be sent in a request header");
 assert.ok(!draftGenerator.includes(":generateContent?key="), "Gemini API keys must not be placed in URL query strings");
