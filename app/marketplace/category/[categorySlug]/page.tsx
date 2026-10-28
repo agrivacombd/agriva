@@ -36,7 +36,7 @@ export default async function CategoryPage({ params }: Props) {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
-      .eq("status", "active").eq("moderation_status", "approved").order("created_at", { ascending: false }).limit(200);
+      .eq("status", "active").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
   const isSamplePreview = process.env.NODE_ENV !== "production" && products.length === 0;
