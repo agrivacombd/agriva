@@ -29,9 +29,9 @@ for (const path of [
   ...collectRouteHandlers("app/admin"),
 ]) {
   const source = read(path);
-  assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
-  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
-  assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+  assert.ok(/auth\.getUser\(\)|authorizePermission\(/.test(source), `${path} must verify the server session directly or through the shared capability helper`);
+  assert.ok(/profiles|authorizePermission\(/.test(source), `${path} must verify role/capability authorization`);
+  assert.ok(/role|authorizePermission\(/.test(source), `${path} must check authorization, not just authentication`);
 }
 
 for (const path of [
@@ -43,9 +43,9 @@ for (const path of [
   "app/admin/reports/orders.csv/route.ts",
 ]) {
   const source = read(path);
-  assert.match(source, /auth\.getUser\(\)/, `${path} must verify a server-side session`);
-  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
-  assert.match(source, /role/, `${path} must check a role`);
+  assert.ok(/auth\.getUser\(\)|authorizePermission\(/.test(source), `${path} must verify the server session directly or through the shared capability helper`);
+  assert.ok(/profiles|authorizePermission\(/.test(source), `${path} must verify role/capability authorization`);
+  assert.ok(/role|authorizePermission\(/.test(source), `${path} must check a role/capability`);
 }
 
 for (const path of [
@@ -248,7 +248,7 @@ assert.ok(productForm.includes('storage.from("product-images").upload'), "admin 
 assert.ok(productForm.includes("MAX_IMAGE_SIZE = 5 * 1024 * 1024"), "admin product form must enforce the image size limit");
 assert.ok(productForm.includes("storage.from(" + '"product-images"' + ").remove([uploadedPath])"), "failed product creation must clean up uploaded images");
 const productApi = read("app/api/admin/products/route.ts");
-assert.ok(productApi.includes('profile?.role !== "admin"'), "product creation API must require admin authorization");
+assert.ok(productApi.includes('authorizePermission("catalog.create_platform")'), "product creation API must require platform catalog capability");
 assert.ok(productApi.includes('rpc("admin_create_marketplace_product_with_image"'), "product creation API must call the image-aware RPC");
 assert.ok(productApi.includes("expectedImagePrefix"), "product image URLs must be restricted to the authenticated admin's Supabase storage folder");
 const productAdminPage = read("app/admin/products/page.tsx");
