@@ -72,7 +72,7 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!active || !user) return;
-        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//") && !requestedNextPath.includes("\\\\")
+        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//")
           ? requestedNextPath
           : "/dashboard";
         router.replace(target);
@@ -95,8 +95,7 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      const nextPath = searchParams.get("next");
-      router.push(nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard");
+      router.push(requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//") ? requestedNextPath : "/dashboard");
       router.refresh();
     } catch {
       setMessage(t.failed);
