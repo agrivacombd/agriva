@@ -246,7 +246,7 @@ assert.ok(productAdminPage.includes('rpc("admin_update_marketplace_product"'), "
 assert.ok(!productAdminPage.includes('rpc("admin_set_product_taxonomy"'), "product edits must not depend on the missing taxonomy RPC");
 const productMarketplace = read("components/marketplace/MarketplaceCore.tsx");
 assert.ok(productMarketplace.includes("product.image_url"), "marketplace cards must display uploaded product images");
-const productDetail = read("app/marketplace/[slug]/page.tsx");
+const productDetail = read("app/marketplace/[productId]/page.tsx");
 assert.ok(productDetail.includes('.eq("status", "active")'), "public product details must expose active products only");
 assert.ok(productDetail.includes('"@type": "Product"'), "product detail pages must include Product structured data");
 
