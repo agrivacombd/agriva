@@ -29,6 +29,7 @@ assert.ok(indexability.includes('.eq("status", "active")') && !indexability.incl
 assert.ok(indexability.includes('select("category'), "indexability query must use fields present in production schema");
 assert.ok(sitemap.includes("categoryUrls") && sitemap.includes("matchesSubcategory"), "sitemap must include only populated taxonomy URLs");
 assert.ok(productPage.includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumb must link to category and subcategory");
+assert.ok(!productPage.includes("moderation_status") && productPage.includes("image_url"), "product detail query must use deployed product columns and include product media");
 assert.ok(!adminProducts.includes('name="category"'), "admin form must no longer write free-text category");
 
 console.log("Category taxonomy and SEO smoke checks passed.");
