@@ -11,6 +11,7 @@ export type AgrivaPermission =
   | "profile.update_own"
   | "catalog.read_public"
   | "catalog.create_own"
+  | "catalog.create_platform"
   | "catalog.update_own"
   | "catalog.submit_for_review"
   | "catalog.moderate"
@@ -83,7 +84,7 @@ const sellerCatalog: AgrivaPermission[] = [
 const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
   super_admin: [
     "dashboard.read_own", "profile.read_own", "profile.update_own",
-    "catalog.read_public", "catalog.create_own", "catalog.update_own",
+    "catalog.read_public", "catalog.create_own", "catalog.create_platform", "catalog.update_own",
     "catalog.submit_for_review", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.read_own", "orders.fulfill_own", "orders.support_read",
     "users.support_read_minimal", "users.manage", "content.draft", "content.review",
@@ -93,7 +94,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     "roles.assign_super_admin", "audit.read",
   ],
   admin: [
-    ...ownAccount, "catalog.moderate", "catalog.publish", "catalog.pause",
+    ...ownAccount, "catalog.create_platform", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.support_read", "users.support_read_minimal", "users.manage",
     "content.draft", "content.review", "content.publish", "analytics.read_aggregated",
     "finance.read_scoped", "payout.review", "audit.read",
