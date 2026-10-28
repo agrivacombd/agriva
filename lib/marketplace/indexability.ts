@@ -8,7 +8,7 @@ async function getActiveProductCategories(): Promise<ProductCategoryRecord[] | n
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("category")
+      .select("category,category_slug,subcategory_slug")
       .eq("status", "active")
       .limit(5000);
     if (error || !data) return null;

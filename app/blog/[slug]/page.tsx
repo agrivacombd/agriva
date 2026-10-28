@@ -71,8 +71,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: article.title,
     description: article.intro,
-    alternates: { canonical: `/blog/${article.slug}` },
-    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
+    alternates: { canonical: `/articles/${article.slug}` },
+    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/articles/${article.slug}`, type: "article", locale: "bn_BD" },
     twitter: { card: "summary_large_image", title: article.title, description: article.intro },
   };
 }
@@ -113,7 +113,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
       <article className="mx-auto max-w-3xl">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
-          <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/blog" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
+          <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/articles" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
         </nav>
         <header className="mt-7 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm">
           <div aria-hidden="true" className="flex min-h-48 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-7xl sm:min-h-60">{article.emoji}</div>

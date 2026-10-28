@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "কৃষি ক্যালকুলেটর: সার, বীজ ও চাষের লাভ-লোকসানের হিসাব | AGRIVA",
+  title: "কৃষি ক্যালকুলেটর: সার, বীজ ও চাষের লাভ-লোকসানের হিসাব",
   description: "জমির পরিমাণ অনুযায়ী সার ও বীজের হিসাব, চাষের খরচ, সম্ভাব্য আয়-লাভ এবং ফসল পরিকল্পনার সহজ বাংলা কৃষি ক্যালকুলেটর ব্যবহার করুন।",
   alternates: { canonical: "/krishi-calculator" },
   openGraph: {

@@ -2,7 +2,6 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
-type SitemapArticle = { slug: string; updated_at: string | null; title: string; body_markdown: string | null };
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
@@ -12,7 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  let articles: SitemapArticle[] = [];
   let products: SitemapProduct[] = [];
   let jobs: SitemapJob[] = [];
   let exchangeListings: SitemapExchangeListing[] = [];
@@ -21,13 +19,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [articleResult, productResult, jobsResult, exchangeResult] = await Promise.all([
-      supabase.from("content_drafts").select("slug,updated_at,title,body_markdown").eq("status", "published").eq("content_type", "article"),
-      supabase.from("products").select("slug,updated_at,category").eq("status", "active").not("slug", "is", null).limit(5000),
+    const [productResult, jobsResult, exchangeResult] = await Promise.all([
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
       supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").limit(5000),
     ]);
-    if (!articleResult.error && articleResult.data) articles = (articleResult.data as SitemapArticle[]).filter((article) => isValidSlug(article.slug) && Boolean(article.title?.trim()) && Boolean(article.body_markdown?.trim()));
     if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
     if (!exchangeResult.error && exchangeResult.data) exchangeListings = (exchangeResult.data as SitemapExchangeListing[]).filter((listing) => isValidSlug(listing.slug));
     if (!productResult.error && productResult.data) {
@@ -67,7 +63,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/en/soil-fertilizer`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/en/crop-choice`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/learn`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${base}/articles`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...["boro-rice-season-preparation", "soil-health-basics", "integrated-pest-management", "vegetable-garden-water-management"].map((slug) => ({ url: `${base}/articles/${slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${base}/green-living`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/green-exchange`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
@@ -108,12 +103,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: job.updated_at ? new Date(job.updated_at) : now,
       changeFrequency: "daily" as const,
       priority: 0.75,
-    })),
-    ...articles.map((article) => ({
-      url: `${base}/blog/${article.slug}`,
-      lastModified: article.updated_at ? new Date(article.updated_at) : now,
-      changeFrequency: "monthly" as const,
-      priority: 0.7,
     })),
   ];
 }
