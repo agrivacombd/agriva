@@ -30,7 +30,7 @@
 | `POST /jobs/[slug]/apply` Server Action | `jobs.apply_own` | Shared capability helper; candidate ID comes from authenticated user; only published non-expired jobs accepted | RLS policy now also restricts direct inserts to job_seeker/worker profile/membership; stage-test cross-account and self-application denial |
 | `POST /api/search` (if introduced) | Not applicable | No GET search route found; public POST search exists above | Keep absent unless deliberately implemented |
 
-## Cross-cutting findings
+| `GET /admin/audit` page | `audit.read` | Shared `authorizePermission`; returns login redirect for unauthenticated users and denies callers without the capability | Verify `admin_audit_log` RLS supports the same authorized roles; test membership-only Super Admin and profile-admin accounts on staging |\n\n## Cross-cutting findings
 
 1. The shared server permission helper checks both profile and role memberships and fails closed on lookup errors. Legacy single-profile checks were removed from content publication and order CSV export; complete call-site inventory and any remaining duplicate helpers still need consolidation.
 2. The inventoried admin content/catalog handlers, content publication, order CSV export, reseller-link creation, checkout, and both job-marketplace Server Actions now use capability checks with static regression assertions. Continue searching all routes and server actions for legacy `profiles.role` checks.
@@ -40,7 +40,7 @@
 6. Public AI/search endpoints need abuse/rate-limit review. A maximum input length alone is not a rate limit. Crop-disease analysis is authenticated and its initial migration defines owner-folder Storage policies, but there is no demonstrated per-user AI quota; static source checks do not replace live cross-user tests.
 7. Crop-disease baseline policies were inspected in `017_crop_disease_detections.sql`: private bucket and owner-folder checks exist for insert/read/delete, and table rows are subject-scoped. Policy drift across later migrations and cross-user access still need staging tests.
 8. SSLCommerz init now bounds gateway calls to 15 seconds, accepts only HTTPS URLs on SSLCommerz-owned hostnames, and confirms the conditional payment-reference update matched an order still in a payable state. Per-user throttling and sandbox concurrency tests remain open.
-9. This is not yet the complete inventory: server actions, RPCs, RLS policies, Storage buckets, and every page route still need mapping.
+9. The audit workspace now uses the shared `audit.read` capability rather than a single `profiles.role` check. Database RLS must still be verified to ensure its allowed roles match the helper.\n10. This is not yet the complete inventory: server actions, RPCs, RLS policies, Storage buckets, and every page route still need mapping.
 
 ## Tests and release gates
 
