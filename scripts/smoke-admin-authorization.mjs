@@ -75,6 +75,8 @@ assert.ok(aiContentDashboard.includes("/admin/content-drafts"), "AI content hub 
 assert.ok(aiContentDashboard.includes("no longer creates fake local-only drafts"), "AI content hub must clearly disclose that generation is not persisted");
 assert.ok(!aiContentDashboard.includes("setDrafts"), "AI content hub must not imply local-only drafts are persisted");
 const adminDashboard = read("app/admin/page.tsx");
+assert.ok(adminDashboard.includes('authorizePermission("roles.assign_scoped")'), "admin dashboard must authorize platform admins through membership-aware capabilities");
+assert.ok(!adminDashboard.includes('profile?.role !== "admin"'), "admin dashboard must not rely on the legacy single-profile role");
 assert.ok(adminDashboard.includes('from("content_drafts")'), "Super Admin dashboard must include persisted SEO content drafts");
 assert.ok(adminDashboard.includes('from("article_drafts")'), "Super Admin dashboard must include the legacy article draft queue");
 assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashboard must surface recent SEO content drafts");
@@ -163,6 +165,13 @@ assert.ok(adminMembershipMigration.includes("REVOKE ALL ON FUNCTION public.has_p
 const transportCapabilityAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportCapabilityAdmin.includes('authorizePermission("transport.review")'), "transport verification must require transport.review");
 assert.ok(transportCapabilityAdmin.includes("if (!auth.ok)"), "transport verification must fail closed on permission lookup errors");
+
+const orderPayoutMembershipMigration = read("supabase/migrations/20261029213000_align_order_and_payout_rpcs_with_admin_memberships.sql");
+for (const rpcName of ["set_marketplace_order_status", "approve_reseller_commission", "approve_commission_payout", "complete_commission_payout"]) {
+  assert.ok(orderPayoutMembershipMigration.includes(rpcName), `order/payout RPC migration must align ${rpcName} with controlled admin memberships`);
+}
+assert.ok(orderPayoutMembershipMigration.includes("public.has_platform_admin_access()"), "order/payout RPC migration must use the shared membership-aware database guard");
+assert.ok(orderPayoutMembershipMigration.includes("IF v_updated_definition IS DISTINCT FROM v_definition"), "order/payout RPC migration must only rewrite function definitions when a legacy guard is present");
 
 const auditPage = read("app/admin/audit/page.tsx");
 assert.ok(auditPage.includes('authorizePermission("audit.read")'), "audit page must enforce the audit.read capability");
