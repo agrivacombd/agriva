@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const boundedBody = await readRequestBytesWithLimit(request, 16 * 1024);
   if (!boundedBody.ok) return failedRedirect(request, null);
   let form: FormData;
-  try { form = await new Response(boundedBody.bytes, { headers: request.headers }).formData();
+  try { form = await new Response(boundedBody.bytes, { headers: request.headers }).formData(); }
   catch { return failedRedirect(request, null); }
   return failedRedirect(request, String(form.get("tran_id") || ""));
 }
