@@ -7,7 +7,7 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -23,7 +23,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     keywords: [product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
-    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}` },
+    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
   };
 }
 
@@ -61,6 +61,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
     description: typeof product.description === "string" ? product.description : undefined,
+    ...(product.image_url ? { image: [product.image_url] } : {}),
     category: product.category || undefined,
     ...(hasRealPrice ? {
       offers: {
@@ -77,7 +78,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link>{subcategory && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}</>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-8 md:min-h-[420px]"><div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div></div>
+        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-8 md:min-h-[420px]">{product.image_url ? <div role="img" aria-label={product.name} className="h-80 w-full bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${product.image_url}")` }} /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
