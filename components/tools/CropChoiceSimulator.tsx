@@ -19,7 +19,7 @@ const initialCrops: CropEstimate[] = [
 
 const numberFormat = new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 });
 const money = (value: number) => `৳${numberFormat.format(value)}`;
-const asNumber = (value: string) => Math.max(0, Number(value || 0));
+const asNumber = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
 
 export default function CropChoiceSimulator() {
   const [area, setArea] = useState("1");
