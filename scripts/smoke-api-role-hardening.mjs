@@ -55,7 +55,7 @@ assert.match(limitedBodyReader, /totalBytes > maxBytes/, "request body reader mu
 assert.match(limitedBodyReader, /reader\.cancel\(/, "request body reader must cancel streams that exceed the limit");
 assert.match(contentPublishRoute, /authorizePermission\("content\.publish"\)/, "content publishing route must require the publication capability");
 assert.doesNotMatch(contentPublishRoute, /profile\?\.role !== "admin"/, "content publishing must not use a legacy single-profile admin check");
-assert.match(orderReportRoute, /authorizePermission\("finance\.read_scoped"\)/, "order export must require the finance reporting capability");
+assert.match(orderReportRoute, /authorizePermission\("finance\.export_orders"\)/, "order export must require the dedicated finance export capability");
 assert.doesNotMatch(orderReportRoute, /profile\?\.role !== "admin"/, "order export must not use a legacy single-profile admin check");
 assert.match(orderReportRoute, /Cache-Control.*private, no-store/, "sensitive order exports must not be cached");
 assert.match(cropDiseaseRoute, /supabase\.auth\.getUser\(\)/, "crop-disease history and uploads must require a verified session");
