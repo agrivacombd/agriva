@@ -66,10 +66,10 @@ export default async function SearchIntelligencePage({
   const { supabase } = await requireAdmin();
 
   let query = supabase.from("content_opportunities")
-    .select("id,keyword,intent,opportunity_type,search_count,result_count,status,title,slug,score,created_at,last_seen_at")
+    .select("id,keyword,intent,opportunity_type,search_count,result_count,status,title,slug,competitor_notes,created_at,last_seen_at")
     .order("search_count", { ascending: false })
     .limit(100);
-  if (q) query = query.or(`keyword.ilike.%${q.replace(/[,%()]/g, " ")}%,title.ilike.%${q.replace(/[,%()]/g, " ")}%`);
+  if (q) query = query.ilike("keyword", `%${q.replace(/[%_,()]/g, " ")}%`);
   if (status !== "all") query = query.eq("status", status);
   const [{ data: opportunities, error }, { count: totalCount }, { count: reviewCount }] = await Promise.all([
     query,
