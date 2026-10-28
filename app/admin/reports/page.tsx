@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export default async function AdminReportsPage() {
-  const auth = await authorizePermission("analytics.read_aggregated");
+  const auth = await authorizePermission("finance.read_reports");
   if (!auth.ok) {
     if (auth.status === 401) redirect("/login");
     redirect("/dashboard");
