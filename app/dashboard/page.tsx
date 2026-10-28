@@ -16,10 +16,10 @@ const roleInfo: Record<Role, { bn: string; en: string; description: string; link
   job_seeker: { bn: "চাকরিপ্রার্থী", en: "Job seeker", description: "কৃষি খাতের চাকরি খুঁজুন এবং নিজের প্রোফাইল প্রস্তুত করুন।", links: [{ label: "চাকরির সুযোগ", href: "/jobs", icon: "💼" }, { label: "CV তৈরি করুন", href: "/jobs/cv-builder", icon: "📄" }] },
   worker: { bn: "কৃষিশ্রমিক", en: "Agricultural worker", description: "কৃষি খাতে কাজের সুযোগ খুঁজুন।", links: [{ label: "চাকরির সুযোগ", href: "/jobs", icon: "🧑‍🌾" }] },
   employer: { bn: "নিয়োগদাতা", en: "Employer", description: "কৃষি খাতে কাজের সুযোগ প্রকাশ করুন ও কর্মী খুঁজুন।", links: [{ label: "চাকরির সুযোগ", href: "/jobs", icon: "📣" }] },
-  student: { bn: "কৃষি শিক্ষার্থী", en: "Agriculture student", description: "কৃষি বিষয়ে শিখুন, অনুশীলন করুন ও দক্ষতা বাড়ান।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "🎓" }, { label: "কৃষি আর্টিকেল", href: "/learn/plant-science", icon: "📚" }] },
-  educator: { bn: "শিক্ষার্থী / প্রশিক্ষক", en: "Student / Educator", description: "কৃষি জ্ঞান, গাইড ও শেখার রিসোর্স ব্যবহার করুন।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "🎓" }, { label: "কৃষি আর্টিকেল", href: "/articles", icon: "📚" }] },
-  expert: { bn: "কৃষিবিদ / বিশেষজ্ঞ", en: "Agriculture expert", description: "বিশেষজ্ঞ জ্ঞান ও কৃষি পরামর্শের জন্য প্রাসঙ্গিক টুল ব্যবহার করুন।", links: [{ label: "কৃষি জ্ঞান", href: "/learn", icon: "📘" }, { label: "কৃষি আর্টিকেল", href: "/learn/plant-science", icon: "📰" }, { label: "ফসলের রোগ সহায়তা", href: "/crop-disease", icon: "🔬" }] },
-  agriculturist: { bn: "কৃষিবিদ", en: "Agriculturist", description: "কৃষি জ্ঞান ও পরামর্শের রিসোর্সে দ্রুত প্রবেশ করুন।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "📘" }, { label: "কৃষি আর্টিকেল", href: "/articles", icon: "📰" }] },
+  student: { bn: "কৃষি শিক্ষার্থী", en: "Agriculture student", description: "কৃষি বিষয়ে শিখুন, অনুশীলন করুন ও দক্ষতা বাড়ান।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "🎓" }, { label: "কৃষি আর্টিকেল", href: "/blog", icon: "📚" }] },
+  educator: { bn: "শিক্ষার্থী / প্রশিক্ষক", en: "Student / Educator", description: "কৃষি জ্ঞান, গাইড ও শেখার রিসোর্স ব্যবহার করুন।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "🎓" }, { label: "কৃষি আর্টিকেল", href: "/blog", icon: "📚" }] },
+  expert: { bn: "কৃষিবিদ / বিশেষজ্ঞ", en: "Agriculture expert", description: "বিশেষজ্ঞ জ্ঞান ও কৃষি পরামর্শের জন্য প্রাসঙ্গিক টুল ব্যবহার করুন।", links: [{ label: "কৃষি জ্ঞান", href: "/learn", icon: "📘" }, { label: "কৃষি আর্টিকেল", href: "/blog", icon: "📰" }, { label: "ফসলের রোগ সহায়তা", href: "/crop-disease", icon: "🔬" }] },
+  agriculturist: { bn: "কৃষিবিদ", en: "Agriculturist", description: "কৃষি জ্ঞান ও পরামর্শের রিসোর্সে দ্রুত প্রবেশ করুন।", links: [{ label: "শেখার কেন্দ্র", href: "/learn", icon: "📘" }, { label: "কৃষি আর্টিকেল", href: "/blog", icon: "📰" }] },
   rooftop_gardener: { bn: "ছাদবাগানকারী", en: "Rooftop gardener", description: "আপনার ছাদবাগান, গাছ ও পরিচর্যার কাজ গুছিয়ে রাখুন।", links: [{ label: "আমার বাগান", href: "/garden", icon: "🪴" }, { label: "Green Exchange", href: "/green-exchange/board", icon: "🌱" }] },
   organization: { bn: "প্রতিষ্ঠান", en: "Organization", description: "কৃষি-সম্পর্কিত প্রতিষ্ঠানের কার্যক্রম পরিচালনা করুন।", links: [{ label: "মার্কেটপ্লেস", href: "/marketplace", icon: "🏢" }, { label: "চাকরি", href: "/jobs", icon: "💼" }] },
   admin: { bn: "অ্যাডমিন", en: "Administrator", description: "অনুমোদিত প্রশাসনিক কাজ ও প্ল্যাটফর্ম পরিচালনা।", links: [{ label: "অ্যাডমিন প্যানেল", href: "/admin", icon: "🛡️" }, { label: "কৃষি কনটেন্ট", href: "/admin/articles", icon: "📚" }] },
@@ -37,8 +37,8 @@ const commonLinks = [
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login?next=/dashboard");
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/dashboard");
 
   const [{ data: profile }, { data: memberships }] = await Promise.all([
     supabase.from("profiles").select("full_name, role").eq("id", user.id).maybeSingle(),
