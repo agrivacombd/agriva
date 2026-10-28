@@ -96,6 +96,10 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const superAdminProfileMigration = read("supabase/migrations/20261029270000_align_platform_admin_helpers_with_super_admin_profile.sql");
+assert.ok(superAdminProfileMigration.includes("p.role IN ('admin', 'super_admin')"), "database platform-admin helper must recognize a protected super_admin profile role");
+assert.ok(superAdminProfileMigration.includes("m.role IN ('admin', 'super_admin')"), "database platform-admin helper must retain membership-based platform admin access");
+assert.ok(superAdminProfileMigration.includes("public.has_product_moderation_permission()"), "product moderation helper must be aligned with the protected super_admin profile role");
 const attributionInputMigration = read("supabase/migrations/20261029260000_validate_attribution_rpc_inputs.sql");
 assert.ok(attributionInputMigration.includes("p_days IS NULL OR p_days < 1 OR p_days > 30"), "attribution RPC must reject null or out-of-range attribution windows");
 assert.ok(attributionInputMigration.includes("length(p_code) > 64"), "attribution RPC must bound referral code input");
