@@ -7,7 +7,7 @@ SET search_path TO 'pg_catalog', 'public', 'pg_temp'
 AS $function$
 BEGIN
   IF NEW.status = 'published' AND OLD.status IS DISTINCT FROM 'published' THEN
-    IF OLD.status <> 'approved' THEN
+    IF OLD.status IS DISTINCT FROM 'approved' THEN
       RAISE EXCEPTION 'Only approved content drafts can be published'
         USING ERRCODE = '55000';
     END IF;
