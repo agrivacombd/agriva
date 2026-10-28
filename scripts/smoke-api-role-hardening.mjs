@@ -12,6 +12,9 @@ const sellerDashboard = readFileSync("app/seller/page.tsx", "utf8");
 const sellerForm = readFileSync("components/farmer/ProductForm.tsx", "utf8");
 const productModeration = readFileSync("supabase/migrations/20261029140000_seller_product_moderation.sql", "utf8");
 const serverAuthorization = readFileSync("lib/auth/server-authorization.ts", "utf8");
+const moderationPage = readFileSync("app/admin/moderation/page.tsx", "utf8");
+const moderationMigration = readFileSync("supabase/migrations/20261029150000_product_moderation_workflow.sql", "utf8");
+const adminOverview = readFileSync("app/admin/page.tsx", "utf8");
 assert.match(farmer, /Farmer product creation failed/, "product insert failures must be logged server-side");
 assert.match(farmer, /পণ্য সংরক্ষণ করা যায়নি/, "product insert failures must return safe localized message");
 assert.doesNotMatch(farmer, /error: error\.message/, "database details must not be exposed by farmer product API");
@@ -27,5 +30,13 @@ assert.match(productModeration, /Listing status changes require moderation/, "se
 assert.match(productModeration, /Commission changes require platform administration/, "seller must not change commission through direct database updates");
 assert.match(productModeration, /role IN \('farmer', 'seller'\)/, "database policy must limit listing writes to seller/farmer roles");
 
+
+assert.ok(moderationMigration.includes("moderation_status text NOT NULL DEFAULT"), "listing moderation state must be persisted");
+assert.ok(moderationMigration.includes("admin_moderate_marketplace_product"), "moderation decisions must use a database RPC");
+assert.ok(moderationMigration.includes("product.moderation."), "moderation decisions must be auditable");
+assert.ok(moderationPage.includes("request_changes"), "moderators must be able to request seller changes");
+assert.ok(moderationPage.includes("Approve & publish"), "approved listings must have an explicit publication action");
+assert.ok(moderationPage.includes("super_admin"), "moderation page must check privileged roles");
+assert.ok(adminOverview.includes("/admin/moderation"), "Super Admin must have a direct link to the moderation queue");
 
 console.log("API role and error disclosure regression checks passed.");
