@@ -60,7 +60,7 @@ assert.doesNotMatch(orderReportRoute, /profile\?\.role !== "admin"/, "order expo
 assert.match(orderReportRoute, /Cache-Control.*private, no-store/, "sensitive order exports must not be cached");
 assert.match(cropDiseaseRoute, /supabase\.auth\.getUser\(\)/, "crop-disease history and uploads must require a verified session");
 assert.match(cropDiseaseRoute, /MAX_REQUEST_BYTES = MAX_IMAGE_BYTES \+ 256 \* 1024/, "crop-disease multipart bodies must have a bounded overhead allowance");
-assert.ok(cropDiseaseRoute.indexOf("request.headers.get(\"content-length\")") < cropDiseaseRoute.indexOf("request.formData()"), "declared upload size must be checked before multipart parsing");
+assert.ok(cropDiseaseRoute.indexOf("request.headers.get(\"content-length\")") < cropDiseaseRoute.indexOf("readRequestBytesWithLimit(request, MAX_REQUEST_BYTES)") && cropDiseaseRoute.indexOf("readRequestBytesWithLimit(request, MAX_REQUEST_BYTES)") < cropDiseaseRoute.indexOf("new Response(boundedBody.bytes, { headers: request.headers }).formData()"), "declared and streamed upload size must be checked before multipart parsing");
 assert.match(cropDiseaseRoute, /Number\.isSafeInteger\(declaredBytes\)[\s\S]*?declaredBytes > MAX_REQUEST_BYTES/, "invalid or oversized declared upload bodies must fail closed");
 assert.match(cropDiseaseRoute, /\.eq\("user_id", user\.id\)/, "crop-disease history must be scoped to the authenticated user");
 assert.match(cropDiseaseRoute, /user\.id \+ "\/" \+ crypto\.randomUUID\(\)/, "crop photo paths must be rooted in authenticated user ID");
