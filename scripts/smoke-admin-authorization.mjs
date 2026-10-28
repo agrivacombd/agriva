@@ -224,4 +224,30 @@ assert.ok(sitemap.includes("url: `${base}/blog/${article.slug}`"), "sitemap must
 const legacyArticleRoute = read("app/articles/[slug]/page.tsx");
 assert.ok(legacyArticleRoute.includes("redirect(`/blog/${encodeURIComponent(slug)}`)"), "legacy article URLs must canonicalize to the blog route");
 
+
+const productMediaMigration = read("supabase/migrations/20261029120000_admin_product_images.sql");
+assert.ok(productMediaMigration.includes("ADD COLUMN IF NOT EXISTS image_url text"), "product images must be stored in a database-backed field");
+assert.ok(productMediaMigration.includes("file_size_limit = 5242880"), "product image storage must enforce a 5 MB limit");
+assert.ok(productMediaMigration.includes("ARRAY['image/jpeg', 'image/png', 'image/webp']"), "product image storage must restrict allowed MIME types");
+assert.ok(productMediaMigration.includes("AND public.is_admin()"), "product image storage writes must require an admin");
+assert.ok(productMediaMigration.includes("(storage.foldername(name))[1] = auth.uid()::text"), "product image writes must be confined to the uploader's own folder");
+assert.ok(productMediaMigration.includes("admin_create_marketplace_product_with_image"), "product creation with image must use a database RPC");
+assert.ok(productMediaMigration.includes("admin_update_marketplace_product"), "product and taxonomy edits must be atomic");
+const productForm = read("components/admin/AdminCreateProductForm.tsx");
+assert.ok(productForm.includes('storage.from("product-images").upload'), "admin product form must upload image files to Supabase Storage");
+assert.ok(productForm.includes("MAX_IMAGE_SIZE = 5 * 1024 * 1024"), "admin product form must enforce the image size limit");
+assert.ok(productForm.includes("storage.from(" + '"product-images"' + ").remove([uploadedPath])"), "failed product creation must clean up uploaded images");
+const productApi = read("app/api/admin/products/route.ts");
+assert.ok(productApi.includes('profile?.role !== "admin"'), "product creation API must require admin authorization");
+assert.ok(productApi.includes('rpc("admin_create_marketplace_product_with_image"'), "product creation API must call the image-aware RPC");
+assert.ok(productApi.includes("expectedImagePrefix"), "product image URLs must be restricted to the authenticated admin's Supabase storage folder");
+const productAdminPage = read("app/admin/products/page.tsx");
+assert.ok(productAdminPage.includes('rpc("admin_update_marketplace_product"'), "product edits must use the atomic product-and-taxonomy RPC");
+assert.ok(!productAdminPage.includes('rpc("admin_set_product_taxonomy"'), "product edits must not depend on the missing taxonomy RPC");
+const productMarketplace = read("components/marketplace/MarketplaceCore.tsx");
+assert.ok(productMarketplace.includes("product.image_url"), "marketplace cards must display uploaded product images");
+const productDetail = read("app/marketplace/[slug]/page.tsx");
+assert.ok(productDetail.includes('.eq("status", "active")'), "public product details must expose active products only");
+assert.ok(productDetail.includes('"@type": "Product"'), "product detail pages must include Product structured data");
+
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
