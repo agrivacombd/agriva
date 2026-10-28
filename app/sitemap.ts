@@ -53,6 +53,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/jobs`, lastModified: now, changeFrequency: "daily", priority: 0.85 },
     { url: `${base}/jobs/cv-builder`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/agriculture-calculators`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/tools`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
+    { url: `${base}/krishi-calculator`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/fertilizer-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/seed-rate-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/farming-cost-profit-calculator`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
