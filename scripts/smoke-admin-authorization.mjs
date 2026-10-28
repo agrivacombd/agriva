@@ -296,4 +296,21 @@ assert.ok(productDetail.includes('.eq("status", "active")'), "public product det
 assert.ok(productDetail.includes('.eq("moderation_status", "approved")'), "public product details must expose only approved listings");
 assert.ok(productDetail.includes('"@type": "Product"'), "product detail pages must include Product structured data");
 
+
+const legacyAdminPages = [
+  ["app/admin/products/page.tsx", 'authorizePermission("roles.assign_scoped")'],
+  ["app/admin/harvest/page.tsx", 'authorizePermission("roles.assign_scoped")'],
+  ["app/admin/jobs/page.tsx", 'authorizePermission("roles.assign_scoped")'],
+  ["app/admin/articles/page.tsx", 'authorizePermission("content.review")'],
+];
+for (const [path, expected] of legacyAdminPages) {
+  const source = read(path);
+  assert.ok(source.includes(expected), `${path} must use capability-based authorization`);
+  assert.ok(!source.includes('from("profiles").select("role")'), `${path} must not rely on a legacy profile-role gate`);
+}
+const adminRpcMigration = read("supabase/migrations/20261029213000_align_order_and_payout_rpcs_with_admin_memberships.sql");
+for (const rpc of ["admin_update_marketplace_product", "admin_moderate_harvest_listing", "admin_moderate_job_post", "set_marketplace_order_status", "approve_reseller_commission", "approve_commission_payout", "complete_commission_payout"]) {
+  assert.ok(adminRpcMigration.includes(rpc), `admin membership migration must include ${rpc}`);
+}
+
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
