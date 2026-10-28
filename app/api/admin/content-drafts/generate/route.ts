@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 type GeneratedDraft = {
@@ -106,7 +107,11 @@ export async function POST(request: NextRequest) {
   if (!authorization.ok) return NextResponse.json({ error: authorization.error }, { status: authorization.status });
   const { supabase, user } = authorization;
 
-  const body = await request.json().catch(() => null);
+  const boundedBody = await readRequestBodyWithLimit(request, 32768);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const id = typeof body?.opportunityId === "string" ? body.opportunityId.trim() : "";
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) {
     return NextResponse.json({ error: "A valid opportunityId is required" }, { status: 400 });
