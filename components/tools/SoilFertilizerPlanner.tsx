@@ -6,6 +6,8 @@ import Link from "next/link";
 const fmt = new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 });
 const number = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
 const contentFraction = (value: string) => { const percent = number(value); return percent > 0 && percent <= 100 ? percent / 100 : null; };
+const safeProduct = (...values: number[]) => { const result = values.reduce((product, value) => product * value, 1); return Number.isFinite(result) ? result : 0; };
+const safeDivide = (numerator: number, denominator: number) => { const result = numerator / denominator; return Number.isFinite(result) ? result : 0; };
 const moneyKg = (value: number) => `${fmt.format(value)} কেজি`;
 
 function Field({ label, value, onChange, suffix, hint }: { label: string; value: string; onChange: (value: string) => void; suffix: string; hint?: string }) {
@@ -19,18 +21,18 @@ export default function SoilFertilizerPlanner() {
   const [source, setSource] = useState("মাটি পরীক্ষার রিপোর্ট / কৃষি কর্মকর্তার সুপারিশ");
   const [rates, setRates] = useState({ n: "", p: "", k: "" });
   const [contents, setContents] = useState({ urea: "46", tsp: "46", mop: "60" });
-  const acres = number(area) * (unit === "decimal" ? 0.01 : unit === "hectare" ? 2.47105 : 1);
+  const acres = safeProduct(number(area), unit === "decimal" ? 0.01 : unit === "hectare" ? 2.47105 : 1);
   const results = useMemo(() => {
     const ureaFraction = contentFraction(contents.urea);
     const tspFraction = contentFraction(contents.tsp);
     const mopFraction = contentFraction(contents.mop);
     return {
-    urea: ureaFraction ? number(rates.n) * acres / ureaFraction : 0,
-    tsp: tspFraction ? number(rates.p) * acres / tspFraction : 0,
-    mop: mopFraction ? number(rates.k) * acres / mopFraction : 0,
-    n: number(rates.n) * acres,
-    p: number(rates.p) * acres,
-    k: number(rates.k) * acres,
+    urea: ureaFraction ? safeDivide(safeProduct(number(rates.n), acres), ureaFraction) : 0,
+    tsp: tspFraction ? safeDivide(safeProduct(number(rates.p), acres), tspFraction) : 0,
+    mop: mopFraction ? safeDivide(safeProduct(number(rates.k), acres), mopFraction) : 0,
+    n: safeProduct(number(rates.n), acres),
+    p: safeProduct(number(rates.p), acres),
+    k: safeProduct(number(rates.k), acres),
   };
   }, [acres, rates, contents]);
   const updateRate = (key: keyof typeof rates, value: string) => setRates(old => ({ ...old, [key]: value }));
