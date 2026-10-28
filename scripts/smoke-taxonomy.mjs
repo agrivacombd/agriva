@@ -21,7 +21,7 @@ assert.ok(migration.includes("public.is_admin()"), "taxonomy writes must be admi
 assert.ok(migration.includes("Keep any unmapped legacy free-text category"), "unknown legacy categories must be preserved");
 assert.ok(selector.includes('name="category_slug"') && selector.includes('name="subcategory_slug"'), "admin form must submit stable taxonomy slugs");
 assert.ok(selector.includes("selectedCategory?.subcategories"), "subcategory choices must depend on selected category");
-assert.ok(adminProducts.includes("admin_set_product_taxonomy") && adminProducts.includes("category_slug,subcategory_slug"), "admin form must persist and load stable taxonomy");
+assert.ok(adminProducts.includes("admin_update_marketplace_product") && adminProducts.includes("category_slug,subcategory_slug"), "admin form must persist stable taxonomy atomically");
 assert.ok(taxonomy.includes("getProductTaxonomy") && taxonomy.includes("function matchesSubcategory"), "taxonomy resolver must support stable slugs and legacy fallback");
 assert.ok(categoryPage.includes("hasIndexableCategoryProducts") && categoryPage.includes("category_slug"), "category pages must use stable slugs and avoid indexing empty pages");
 assert.ok(subcategoryPage.includes("hasIndexableSubcategoryProducts") && subcategoryPage.includes("subcategory_slug"), "subcategory pages must use stable slugs and avoid indexing empty pages");
