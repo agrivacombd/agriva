@@ -96,6 +96,8 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const sslCommerzIpn = read("app/api/payment/sslcommerz/ipn/route.ts");
+assert.ok(sslCommerzIpn.includes('String(validated?.store_id || "") !== process.env.SSLCOMMERZ_STORE_ID'), "SSLCommerz IPN must verify the validation response belongs to the configured merchant store");
 const legacyArticleGenerate = read("app/api/admin/article/generate/route.ts");
 assert.ok(legacyArticleGenerate.includes('from("content_opportunities")'), "legacy article generation must verify linked opportunity state");
 assert.ok(legacyArticleGenerate.includes('opportunity.status !== "approved"'), "legacy article generation must reject unapproved opportunities");
