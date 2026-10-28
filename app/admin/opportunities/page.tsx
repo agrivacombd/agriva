@@ -2,7 +2,7 @@ import { authorizePermission } from "@/lib/auth/server-authorization";
 import { redirect } from "next/navigation";
 
 export default async function OpportunitiesPage() {
-  const auth = await authorizePermission("content.review");
+  const auth = await authorizePermission("content.opportunities.read");
   if (!auth.ok) {
     if (auth.status === 401) redirect("/login");
     redirect("/dashboard");
