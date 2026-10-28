@@ -29,6 +29,7 @@ export type AgrivaPermission =
   | "analytics.read_aggregated"
   | "finance.read_scoped"
   | "payout.request_own"
+  | "reseller.links.create_own"
   | "payout.review"
   | "payout.approve"
   | "settings.integrations.manage"
@@ -111,7 +112,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
   seller: sellerCatalog,
   farmer: [...sellerCatalog],
   buyer: [...ownAccount, "orders.read_own"],
-  reseller: [...ownAccount, "orders.read_own", "finance.read_scoped", "payout.request_own"],
+  reseller: [...ownAccount, "orders.read_own", "finance.read_scoped", "payout.request_own", "reseller.links.create_own"],
   transport: [...ownAccount, "orders.read_own", "orders.fulfill_own"],
   transport_provider: [...ownAccount, "orders.read_own", "orders.fulfill_own"],
   job_seeker: ownAccount,
