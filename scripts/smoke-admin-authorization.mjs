@@ -204,6 +204,7 @@ assert.ok(approvalMigration.includes("create_generated_content_draft_from_opport
 assert.ok(approvalMigration.includes("REVOKE ALL ON FUNCTION public.create_generated_content_draft_from_opportunity"), "generated-draft RPC must revoke public execution");
 assert.ok(approvalMigration.includes("content_drafts_published_article_slug_uidx"), "published CMS articles must have unique canonical slugs");
 assert.ok(approvalMigration.includes("guard_published_content_article_slug"), "database must reserve slugs used by built-in blog posts");
+assert.ok(approvalMigration.includes("'agri-guide-' || substr(o.id::text, 1, 8)"), "database must produce a valid fallback slug for non-Latin keywords");
 
 
 const publishedArticleData = read("lib/content/published-articles.ts");
