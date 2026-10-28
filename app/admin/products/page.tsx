@@ -50,8 +50,8 @@ async function saveProduct(formData: FormData) {
   redirect(saveError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string }> }) {
-  const { notice } = await (searchParams ?? Promise.resolve({}));
+export default async function AdminProductsPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
+  const { notice } = await searchParams;
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
     .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,updated_at")
