@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Free Farming Tools and Agriculture Calculators | AGRIVA",
+  title: "Free Farming Tools and Agriculture Calculators",
   description: "Explore practical farming tools for fertilizer rates, seed quantities, crop production costs, profit estimates and seasonal task planning.",
   alternates: { canonical: "/tools" },
   openGraph: {
