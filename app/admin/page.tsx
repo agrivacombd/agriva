@@ -114,9 +114,6 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
   const revenue = orders.filter(o => !["cancelled", "refunded"].includes(o.status)).reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
   // Queue totals are counted independently of the recent-item lists below, so
   // old pending work cannot disappear from the dashboard merely due to limits.
-  const pendingOrders = pendingOrdersCount.count;
-  const pendingCommissions = pendingCommissionsCount.count;
-  const pendingPayouts = pendingPayoutsCount.count;
   const cards = [
     ["মোট ব্যবহারকারী", profilesCount.error ? "—" : profilesCount.count ?? 0, "users"],
     ["কৃষক", farmersCount.error ? "—" : farmersCount.count ?? 0, "sprout"],
