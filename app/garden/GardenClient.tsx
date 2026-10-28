@@ -2,7 +2,9 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+
+const supabase = createSupabaseBrowserClient();
 
 type Plant = {
   id: string;
