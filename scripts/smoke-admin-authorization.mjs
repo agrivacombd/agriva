@@ -135,13 +135,14 @@ const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
 assert.ok(articleReview.includes('profileError || profile?.role !== "admin"'), "article review page must fail closed for non-admin users");
 
-for (const path of [
-  "app/admin/harvest/page.tsx",
-  "app/admin/jobs/page.tsx",
+for (const [path, permission] of [
+  ["app/admin/harvest/page.tsx", "roles.assign_scoped"],
+  ["app/admin/jobs/page.tsx", "jobs.moderate"],
 ]) {
   const source = read(path);
-  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
-  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
+  assert.ok(source.includes(`authorizePermission("${permission}")`), `${path} must use its explicit capability guard`);
+  assert.ok(source.includes("if (!auth.ok)"), `${path} must fail closed on authorization lookup errors`);
+  assert.ok(!source.includes('from("profiles").select("role")'), `${path} must not depend on a legacy profile-role gate`);
 }
 
 const categoryAdmin = read("app/admin/categories/page.tsx");
