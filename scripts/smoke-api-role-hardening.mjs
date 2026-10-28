@@ -109,7 +109,7 @@ assert.ok(staffRoleMigration.includes("Self-service staff role changes are not a
 assert.ok(staffRoleMigration.includes("staff.role.granted"), "staff role grants must be audited");
 assert.ok(staffAccessPage.includes("Grant role") && staffAccessPage.includes("Revoke selected"), "Super Admin needs staff role grant/revoke controls");
 assert.ok(adminOverview.includes("/admin/access"), "Super Admin console must link to staff access management");
-assert.ok(permissionCatalogue.includes('"finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read"'), "admin capability set must include scoped staff provisioning");
+assert.match(permissionCatalogue, /admin: \[[\s\S]*?"roles\.assign_scoped"[\s\S]*?"audit\.read"/, "admin capability set must include scoped staff provisioning and audit access");
 
 
 const moderatorScopeMigration = readFileSync("supabase/migrations/20261029170000_separate_moderator_and_admin_scope.sql", "utf8");
