@@ -83,7 +83,7 @@ At the baseline commit, the repository tree contains:
 2. **Capability coverage is incomplete.** The typed permission catalogue exists, but the presence of a helper does not prove every route, server action, RPC, RLS policy, or Storage policy uses it. Build a route-to-capability matrix and test every privileged path.
 3. **Legacy role compatibility remains.** `profiles.role`, `user_role_memberships`, and `lib/auth/roles.ts` coexist. Privileged role assignment and public signup must not be allowed to mint staff permissions.
 4. **Seller listing edit/resubmit is incomplete.** Dashboard visibility and creation are not the full lifecycle. A secure edit path must only allow owner fields, must not accept status/commission/moderation fields from the client, and must requeue rejected/changes-requested listings for review.
-5. **Product moderation database boundary needs focused review.** The current moderation trigger uses a shared moderation-permission predicate in its privileged branch. Verify that a product moderator cannot use direct writes to change price, commission, ownership, or other non-moderation fields; moderator access should be narrower than platform administration.
+5. **Product moderator scope was found too broad and a fix was added.** The initial trigger used a shared moderation-permission predicate as a broad bypass, conflating product moderators with platform administrators. Migration `20261029170000_separate_moderator_and_admin_scope.sql` narrows the broad branch to platform admin/super-admin, limits moderator changes to review/publication fields, blocks self-moderation, and writes an audit event. The regression smoke test now asserts these boundaries. This is code-level coverage only until CI and staging SQL tests pass.
 6. **Payment IPN needs end-to-end validation.** Verify unauthenticated provider callbacks can safely reconcile orders through a narrowly granted, provider-validated, idempotent database function, rather than relying on browser-session authorization or broad direct table updates.
 7. **Storage ownership is not yet fully inventoried.** Confirm every private seller/customer media bucket has object-path ownership policies for read, insert, update, and delete; admin-only product image upload is not sufficient to prove seller media isolation.
 8. **Finance separation-of-duties needs matrix tests.** Seller earnings, commission ledger, payout request/review/approval, refund, and payment transitions need server/database enforcement, atomicity, idempotency, and audit events.
@@ -95,7 +95,9 @@ At the baseline commit, the repository tree contains:
 - [x] Identify current PR baseline and source commit.
 - [x] Enumerate app routes, API handlers, migrations, and existing test files.
 - [x] Record initial architectural gaps and high-risk paths.
+- [x] Add a scoped moderator/admin database-boundary fix and regression assertions for the discovered role-scope issue.
 - [ ] Map every route/server action/API to required capability and owner.
+- [ ] Verify the new moderator-scope migration on a disposable/staging database and run its SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
 - [ ] Reconcile all signup/dashboard role choices against the canonical role model.
 - [ ] Add or update tests for unauthenticated access, cross-account IDs, role escalation, and fail-closed lookups.
