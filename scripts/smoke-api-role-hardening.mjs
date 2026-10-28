@@ -14,6 +14,11 @@ assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout 
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 assert.match(publicAiRoute, /question\.length > 2000/, "public AI endpoint must bound prompt length");
+assert.match(publicAiRoute, /readRequestBodyWithLimit\(request, MAX_REQUEST_BYTES\)/, "public AI endpoint must enforce a streaming byte limit even without Content-Length");
+assert.match(publicAiRoute, /boundedBody\.ok[\s\S]*?status: 413/, "oversized public AI request bodies must be rejected");
+const limitedBodyReader = readFileSync("lib/http/read-limited-request-body.ts", "utf8");
+assert.match(limitedBodyReader, /totalBytes > maxBytes/, "request body reader must enforce the actual streamed byte count");
+assert.match(limitedBodyReader, /reader\.cancel\(/, "request body reader must cancel streams that exceed the limit");
 assert.match(contentPublishRoute, /authorizePermission\("content\.publish"\)/, "content publishing route must require the publication capability");
 assert.doesNotMatch(contentPublishRoute, /profile\?\.role !== "admin"/, "content publishing must not use a legacy single-profile admin check");
 assert.match(orderReportRoute, /authorizePermission\("finance\.read_scoped"\)/, "order export must require the finance reporting capability");
