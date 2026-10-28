@@ -42,6 +42,8 @@ const descriptions = {
 
 const moneyCodes = ["BDT", "USD", "INR"] as const;
 const nonNegativeNumber = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
+const safeProduct = (...values: number[]) => { const result = values.reduce((product, value) => product * value, 1); return Number.isFinite(result) ? result : 0; };
+const safeSum = (left: number, right: number) => { const result = left + right; return Number.isFinite(result) ? result : 0; };
 type MoneyCode = typeof moneyCodes[number];
 
 export default function StandaloneCalculator({ kind, locale }: { kind: CalculatorKind; locale: Locale }) {
@@ -77,11 +79,13 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
     try { window.localStorage.setItem(taskStorageKey, JSON.stringify(checkedTasks)); } catch { /* Storage may be disabled. */ }
   }, [kind, taskStorageKey, checkedTasks, tasksLoaded]);
 
-  const acres = Number(area || 0) * (areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01);
-  const totalRate = useMemo(() => nonNegativeNumber(area) * (areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01) * nonNegativeNumber(rate), [acres, rate]);
-  const totalCost = Object.values(costs).reduce((sum, value) => sum + nonNegativeNumber(value), 0);
-  const revenue = nonNegativeNumber(yieldKg) * nonNegativeNumber(pricePerKg);
-  const net = revenue - totalCost;
+  const areaFactor = areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01;
+  const acres = safeProduct(nonNegativeNumber(area), areaFactor);
+  const totalRate = useMemo(() => safeProduct(nonNegativeNumber(area), areaFactor, nonNegativeNumber(rate)), [area, areaFactor, rate]);
+  const totalCost = Object.values(costs).reduce((sum, value) => safeSum(sum, nonNegativeNumber(value)), 0);
+  const revenue = safeProduct(nonNegativeNumber(yieldKg), nonNegativeNumber(pricePerKg));
+  const rawNet = revenue - totalCost;
+  const net = Number.isFinite(rawNet) ? rawNet : 0;
   const number = (value: number) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 2 }).format(value);
   const money = (value: number) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
   const areaUnitLabel = areaUnit === "acre" ? t.acre : areaUnit === "hectare" ? t.hectare : t.decimal;
