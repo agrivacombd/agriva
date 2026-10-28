@@ -138,7 +138,7 @@ export default async function SearchIntelligencePage({
                 <div className="mt-4 flex flex-wrap gap-2">
                   {["open", "draft"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="review"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Send to review</button></form>}
                   {item.status === "review" && <><form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="approved"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Approve opportunity</button></form><form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="rejected"/><button className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-800">Reject</button></form></>}
-                  {["open", "approved"].includes(item.status) && <form action={createDraft}><input type="hidden" name="opportunityId" value={item.id}/><button className="rounded-lg border border-[#d8e3d4] px-4 py-2 text-xs font-bold">Create saved draft</button></form>}
+                  {item.status === "approved" && <form action={createDraft}><input type="hidden" name="opportunityId" value={item.id}/><button className="rounded-lg border border-[#d8e3d4] px-4 py-2 text-xs font-bold">Create saved draft</button></form>}
                 </div>
               </article>
             ))}
