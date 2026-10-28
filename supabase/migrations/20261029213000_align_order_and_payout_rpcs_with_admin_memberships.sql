@@ -45,6 +45,16 @@ BEGIN
       'if v_admin is null or not public.has_platform_admin_access() then'
     );
 
+    -- Fail the migration rather than silently leaving a known RPC on a legacy admin guard.
+    IF v_updated_definition ~* 'public[.]is_admin[[:space:]]*[(][[:space:]]*[)]'
+       OR v_updated_definition ~* '(^|[^[:alnum:]_])is_admin[[:space:]]*[(][[:space:]]*[)]'
+       OR v_updated_definition LIKE '%p.role = ''admin''::public.user_role%'
+       OR v_updated_definition LIKE '%p.role=''admin''::public.user_role%'
+       OR v_updated_definition LIKE '%p.role=''admin''%'
+    THEN
+      RAISE EXCEPTION 'Could not fully align admin guard for RPC %', v_function.oid::regprocedure;
+    END IF;
+
     IF v_updated_definition IS DISTINCT FROM v_definition THEN
       EXECUTE v_updated_definition;
     END IF;
