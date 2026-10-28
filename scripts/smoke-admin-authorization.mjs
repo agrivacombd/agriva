@@ -150,6 +150,10 @@ const auditPage = read("app/admin/audit/page.tsx");
 assert.ok(auditPage.includes('authorizePermission("audit.read")'), "audit page must enforce the audit.read capability");
 assert.ok(auditPage.includes("if (!auth.ok)"), "audit page must fail closed when authorization lookup fails");
 assert.ok(!auditPage.includes('profile?.role !== "admin"'), "audit page must not rely on a legacy single-profile role check");
+const auditRlsMigration = read("supabase/migrations/20261029195000_align_audit_log_read_permissions.sql");
+assert.ok(auditRlsMigration.includes('DROP POLICY IF EXISTS "audit_admin_read"'), "audit RLS migration must replace the legacy read policy");
+assert.ok(auditRlsMigration.includes("m.role IN ('admin', 'super_admin')"), "audit RLS must support controlled admin memberships consistently with the server capability helper");
+assert.ok(auditRlsMigration.includes("FOR SELECT"), "audit RLS change must grant read access only, not broaden write access");
 
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
