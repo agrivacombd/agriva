@@ -96,6 +96,10 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const legacyArticleGenerate = read("app/api/admin/article/generate/route.ts");
+assert.ok(legacyArticleGenerate.includes('from("content_opportunities")'), "legacy article generation must verify linked opportunity state");
+assert.ok(legacyArticleGenerate.includes('opportunity.status !== "approved"'), "legacy article generation must reject unapproved opportunities");
+assert.ok(legacyArticleGenerate.includes("A valid opportunityId is required"), "legacy article generation must validate supplied opportunity IDs");
 const publicationInvariant = read("supabase/migrations/20261029250000_enforce_content_draft_publication_in_database.sql");
 assert.ok(publicationInvariant.includes("BEFORE UPDATE OF status ON public.content_drafts"), "database must enforce content draft publication invariants");
 assert.ok(publicationInvariant.includes("OLD.status IS DISTINCT FROM 'approved'"), "database must reject publication unless the previous status was approved");
