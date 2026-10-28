@@ -64,6 +64,11 @@ for (const path of [
 
 const contentDraftRlsMigration = read("supabase/migrations/20261029230000_align_content_draft_rls_with_capabilities.sql");
 const roleMembershipWriteLock = read("supabase/migrations/20261029310000_lock_direct_role_membership_writes.sql");
+const staleAdminMembershipGuard = read("supabase/migrations/20261029320000_prevent_role_rpc_from_leaving_stale_admin_memberships.sql");
+assert.ok(staleAdminMembershipGuard.includes("public.has_platform_admin_access()"), "role RPC must use the shared platform-admin guard");
+assert.ok(staleAdminMembershipGuard.includes("p_role IS NULL"), "role RPC must reject a null role explicitly");
+assert.ok(staleAdminMembershipGuard.includes("m.role IN ('admin', 'super_admin')"), "limited role RPC must not demote accounts with privileged memberships");
+assert.ok(staleAdminMembershipGuard.includes("dedicated platform-admin revocation workflow"), "privileged account role changes must use a dedicated revocation workflow");
 assert.match(roleMembershipWriteLock, /REVOKE INSERT, UPDATE, DELETE ON TABLE public\.user_role_memberships FROM authenticated/, "authenticated users must not mutate role memberships directly");
 assert.match(roleMembershipWriteLock, /GRANT SELECT ON TABLE public\.user_role_memberships TO authenticated/, "authenticated users must retain membership reads");
 assert.match(roleMembershipWriteLock, /admin_set_staff_role \/ role RPC audit/, "role membership writes must use audited RPCs");
