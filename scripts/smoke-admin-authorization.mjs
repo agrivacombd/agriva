@@ -193,6 +193,8 @@ assert.ok(contentBriefApi.includes('generatedWith: "template"'), "content brief 
 const draftGenerator = read("app/api/admin/content-drafts/generate/route.ts");
 assert.ok(draftGenerator.includes('opportunity.status !== "approved"'), "draft generation API must require approved opportunities");
 assert.ok(draftGenerator.includes('rpc("create_generated_content_draft_from_opportunity"'), "generated draft and opportunity status must be saved atomically through the database RPC");
+assert.ok(draftGenerator.includes('"x-goog-api-key": key'), "Gemini API keys must be sent in a request header");
+assert.ok(!draftGenerator.includes(":generateContent?key="), "Gemini API keys must not be placed in URL query strings");
 assert.ok(!draftGenerator.includes('.from("content_drafts").insert('), "draft generation API must not create drafts outside the atomic workflow RPC");
 const approvalMigration = read("supabase/migrations/20261029100000_content_draft_approval_gate.sql");
 assert.ok(approvalMigration.includes("o.status <> 'approved'"), "database RPC must enforce approval even if a client bypasses the UI");
