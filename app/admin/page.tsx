@@ -78,12 +78,16 @@ const noticeText: Record<string, string> = {
   invalid_payout: "পেআউটের তথ্য সঠিক নয়।",
 };
 
-export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
+export default async function AdminPage({ searchParams }: { searchParams?: Promise<{ notice?: string | string[] }> }) {
   const { supabase, user } = await requireAdmin();
+  const params = await searchParams;
+  const notice = typeof params?.notice === "string" ? params.notice : undefined;
 
   const [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
-    commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
+    commissionsCount, payoutsCount, orderTotals, pendingOrdersCount,
+    pendingCommissionsCount, pendingPayoutsCount, contentDraftsCount,
+    draftsNeedingReviewCount, recentDrafts, recentOrders, recentCommissions,
     recentPayouts, opportunities,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -94,6 +98,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     supabase.from("reseller_commissions").select("id", { count: "exact", head: true }),
     supabase.from("commission_payouts").select("id", { count: "exact", head: true }),
     supabase.from("marketplace_orders").select("total_amount,status,payment_status"),
+    supabase.from("marketplace_orders").select("id", { count: "exact", head: true }).in("status", ["pending", "processing"]),
+    supabase.from("reseller_commissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("commission_payouts").select("id", { count: "exact", head: true }).in("status", ["requested", "approved"]),
+    supabase.from("content_drafts").select("id", { count: "exact", head: true }),
+    supabase.from("content_drafts").select("id", { count: "exact", head: true }).in("status", ["review", "approved"]),
+    supabase.from("content_drafts").select("id,title,slug,content_type,primary_keyword,status,updated_at").order("updated_at", { ascending: false }).limit(6),
     supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity,shipping_address,product:products(name),buyer:profiles!marketplace_orders_buyer_id_fkey(full_name)").order("created_at", { ascending: false }).limit(12),
     supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("commission_payouts").select("id,reseller_id,amount,status,payment_method,requested_at,payment_reference").order("requested_at", { ascending: false }).limit(8),
@@ -102,9 +112,11 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
 
   const orders = orderTotals.data ?? [];
   const revenue = orders.filter(o => !["cancelled", "refunded"].includes(o.status)).reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
-  const pendingOrders = orders.filter(o => ["pending", "processing"].includes(o.status)).length;
-  const pendingCommissions = (recentCommissions.data ?? []).filter(c => c.status === "pending");
-  const pendingPayouts = (recentPayouts.data ?? []).filter(p => ["requested", "approved"].includes(p.status));
+  // Queue totals are counted independently of the recent-item lists below, so
+  // old pending work cannot disappear from the dashboard merely due to limits.
+  const pendingOrders = pendingOrdersCount.count;
+  const pendingCommissions = pendingCommissionsCount.count;
+  const pendingPayouts = pendingPayoutsCount.count;
   const cards = [
     ["মোট ব্যবহারকারী", profilesCount.error ? "—" : profilesCount.count ?? 0, "users"],
     ["কৃষক", farmersCount.error ? "—" : farmersCount.count ?? 0, "sprout"],
@@ -117,7 +129,9 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
   ];
   const hasDashboardQueryError = [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
-    commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
+    commissionsCount, payoutsCount, orderTotals, pendingOrdersCount,
+    pendingCommissionsCount, pendingPayoutsCount, contentDraftsCount,
+    draftsNeedingReviewCount, recentDrafts, recentOrders, recentCommissions,
     recentPayouts, opportunities,
   ].some((result) => Boolean(result.error));
 
@@ -136,7 +150,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
         </div>
 
-        {searchParams?.notice && <div role="status" className={`mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${searchParams.notice.endsWith("_error") || searchParams.notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[searchParams.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</div>}
+        {notice && <div role="status" className={`mt-6 rounded-2xl border px-4 py-3 text-sm font-semibold ${notice.endsWith("_error") || notice.startsWith("invalid") ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeText[notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</div>}
         {hasDashboardQueryError && <div role="alert" className="mt-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">কিছু dashboard data লোড করা যায়নি। যেসব metric-এ “—” দেখাচ্ছে সেগুলোকে শূন্য ধরে নেবেন না। Database permissions বা query error যাচাই করে আবার চেষ্টা করুন।</div>}
 
         <section className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
@@ -147,7 +161,30 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
           <div className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:p-6">
             <p className="text-sm font-bold text-[#6b786d]">ORDER VALUE SNAPSHOT</p><div className="mt-3 flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><p className="break-words text-2xl font-black sm:text-3xl">{orderTotals.error ? "ডেটা পাওয়া যায়নি" : money(revenue)}</p><p className="mt-1 text-sm text-[#68786b]">Non-cancelled order value (all time)</p></div><div className="rounded-xl bg-amber-50 px-3 py-3 text-sm sm:px-4"><span className="font-black text-amber-800">{orderTotals.error ? "—" : pendingOrders}</span><span className="ml-2 text-amber-900">অর্ডার প্রসেসিং প্রয়োজন</span></div></div><p className="mt-4 text-xs leading-5 text-[#879187]">এটি অর্ডারের মোট মূল্য; এটি নিট আয় বা নিশ্চিতভাবে আদায় করা টাকা নয়।</p>
           </div>
-          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট যাচাই"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/orders","অর্ডার পেজ"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
+          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট যাচাই"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/admin/content-drafts","SEO Content Drafts"],["/admin/content-studio","Content Studio"],["/admin/ai-content","AI Content"],["/orders","অর্ডার পেজ"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
+        </section>
+
+        <section className="mt-5 grid gap-4 md:grid-cols-3">
+          <Link href="/admin/content-drafts" className="group rounded-2xl border border-[#dfe8dc] bg-white p-5 transition hover:border-[#9bb99b] hover:shadow-sm">
+            <div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-[#647468]">SEO Content Drafts</p><p className="mt-2 text-3xl font-black">{contentDraftsCount.error ? "—" : contentDraftsCount.count ?? 0}</p><p className="mt-1 text-sm text-[#748074]">মোট draft</p></div><span className="rounded-xl bg-[#eaf3e8] px-3 py-2 text-xs font-black text-[#267044]">CONTENT</span></div>
+            <p className="mt-4 text-sm font-bold text-[#17452c]">Draft inbox খুলুন ↗</p>
+          </Link>
+          <Link href="/admin/content-drafts" className="rounded-2xl border border-amber-200 bg-amber-50 p-5 transition hover:shadow-sm">
+            <p className="text-sm font-bold text-amber-900">Review queue</p><p className="mt-2 text-3xl font-black text-amber-950">{draftsNeedingReviewCount.error ? "—" : draftsNeedingReviewCount.count ?? 0}</p><p className="mt-1 text-sm text-amber-900">Review বা approval-এর অপেক্ষায়</p><p className="mt-4 text-sm font-bold text-amber-950">Review drafts ↗</p>
+          </Link>
+          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5">
+            <p className="text-sm font-bold text-[#647468]">Operational queues</p>
+            <div className="mt-3 space-y-2 text-sm">
+              <Link href="/admin/orders" className="flex items-center justify-between gap-3 rounded-lg bg-[#f7faf5] px-3 py-2"><span>অর্ডার প্রসেসিং</span><strong>{pendingOrdersCount.error ? "—" : pendingOrdersCount.count ?? 0}</strong></Link>
+              <Link href="/admin" className="flex items-center justify-between gap-3 rounded-lg bg-[#f7faf5] px-3 py-2"><span>Pending commission</span><strong>{pendingCommissionsCount.error ? "—" : pendingCommissionsCount.count ?? 0}</strong></Link>
+              <Link href="/admin" className="flex items-center justify-between gap-3 rounded-lg bg-[#f7faf5] px-3 py-2"><span>Payout requests</span><strong>{pendingPayoutsCount.error ? "—" : pendingPayoutsCount.count ?? 0}</strong></Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">Content draft activity</h2><p className="mt-1 text-sm text-[#748074]">সব বিদ্যমান draft এখানে সংক্ষেপে দেখা যাবে; edit/review/publish করতে draft inbox খুলুন।</p></div><Link href="/admin/content-drafts" className="rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">সব drafts দেখুন ↗</Link></div>
+          {recentDrafts.error ? <p role="alert" className="p-5 text-sm text-red-800">Content drafts লোড করা যায়নি। Draft workflow migration ও admin read permission যাচাই করুন।</p> : recentDrafts.data?.length ? <div className="divide-y divide-[#edf1ea]">{recentDrafts.data.map(draft => <Link key={draft.id} href="/admin/content-drafts" className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition hover:bg-[#f8fbf6]"><div className="min-w-0"><p className="truncate font-bold">{draft.title}</p><p className="mt-1 text-xs text-[#748074]">{draft.primary_keyword} · {draft.content_type} · /{draft.slug}</p><p className="mt-1 text-xs text-[#879187]">Updated {new Date(draft.updated_at).toLocaleDateString("en-GB")}</p></div><span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${draft.status === "review" ? "bg-amber-100 text-amber-900" : draft.status === "approved" ? "bg-emerald-100 text-emerald-900" : draft.status === "published" ? "bg-blue-100 text-blue-900" : "bg-[#f0f3ee] text-[#58665a]"}`}>{draft.status}</span></Link>)}</div> : <div className="p-6"><p className="font-bold">এখনো কোনো content draft পাওয়া যায়নি।</p><p className="mt-1 text-sm text-[#748074]">Search Intelligence থেকে opportunity বেছে নতুন draft তৈরি করতে পারেন।</p><Link href="/admin/opportunities" className="mt-3 inline-flex rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">Search opportunities ↗</Link></div>}
         </section>
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
