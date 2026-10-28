@@ -21,6 +21,7 @@ const numberFormat = new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }
 const money = (value: number) => `৳${numberFormat.format(value)}`;
 const asNumber = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
 const safeProduct = (...values: number[]) => { const result = values.reduce((product, value) => product * value, 1); return Number.isFinite(result) ? result : 0; };
+const safeDivide = (numerator: number, denominator: number) => { const result = numerator / denominator; return Number.isFinite(result) ? result : 0; };
 
 export default function CropChoiceSimulator() {
   const [area, setArea] = useState("1");
@@ -34,7 +35,7 @@ export default function CropChoiceSimulator() {
     const revenue = safeProduct(yieldKg, asNumber(crop.pricePerKg));
     const rawProfit = revenue - cost;
     const profit = Number.isFinite(rawProfit) ? rawProfit : 0;
-    return { ...crop, cost, yieldKg, revenue, profit, breakEvenPrice: yieldKg > 0 ? cost / yieldKg : 0 };
+    return { ...crop, cost, yieldKg, revenue, profit, breakEvenPrice: yieldKg > 0 ? safeDivide(cost, yieldKg) : 0 };
   }), [crops, acres]);
 
   const ranked = [...results].filter((crop) => crop.name.trim() && crop.costPerAcre !== "" && crop.yieldKgPerAcre !== "" && crop.pricePerKg !== "" && asNumber(crop.yieldKgPerAcre) > 0 && asNumber(crop.pricePerKg) > 0)
