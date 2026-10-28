@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const reseller = readFileSync("app/api/reseller/links/route.ts", "utf8");
-assert.match(reseller, /profile\?\.role !== "reseller"/, "reseller role must be checked before link creation");
+assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 
@@ -57,4 +57,18 @@ assert.match(moderatorScopeMigration, /OLD\.farmer_id <> auth\.uid\(\)/, "modera
 assert.match(moderatorScopeMigration, /INSERT INTO public\.admin_audit_log/, "moderator database transitions must be auditable");
 assert.match(moderatorScopeMigration, /AND \(v_is_platform_admin OR farmer_id <> auth\.uid\(\)\)/, "moderation RPC must reject self-approval");
 
-console.log("API role, moderator-scope, and error disclosure regression checks passed.");
+
+const articleGenerate = readFileSync("app/api/admin/article/generate/route.ts", "utf8");
+const contentBrief = readFileSync("app/api/admin/content-brief/route.ts", "utf8");
+const contentDraftGenerate = readFileSync("app/api/admin/content-drafts/generate/route.ts", "utf8");
+const contentOpportunities = readFileSync("app/api/admin/content-opportunities/route.ts", "utf8");
+const adminProductsApi = readFileSync("app/api/admin/products/route.ts", "utf8");
+assert.match(articleGenerate, /authorizePermission\("content\.draft"\)/, "article draft endpoint must use content.draft capability");
+assert.match(contentBrief, /authorizePermission\("content\.draft"\)/, "content brief endpoint must use content.draft capability");
+assert.match(contentDraftGenerate, /authorizePermission\("content\.draft"\)/, "content generation endpoint must use content.draft capability");
+assert.match(contentOpportunities, /requireContentPermission\("content\.review"\)/, "content queue must require content.review capability");
+assert.match(contentOpportunities, /requireContentPermission\("content\.publish"\)/, "publishing transition must separately require content.publish capability");
+assert.match(adminProductsApi, /authorizePermission\("catalog\.create_platform"\)/, "platform catalog creation must use catalog.create_platform capability");
+assert.match(permissionCatalogue, /reseller\.links\.create_own/, "reseller link permission must be defined in the capability catalogue");
+
+console.log("API capability, moderator-scope, and error disclosure regression checks passed.");
