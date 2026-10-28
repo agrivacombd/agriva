@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const auth = await requireAdmin();
+  const auth = await requireContentPermission("content.review");
   if ("response" in auth) return auth.response;
   const body = await request.json().catch(() => null);
   const id = typeof body?.id === "string" ? body.id.trim() : "";
