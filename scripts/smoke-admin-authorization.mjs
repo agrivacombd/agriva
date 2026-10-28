@@ -65,6 +65,12 @@ for (const path of [
 const contentDraftRlsMigration = read("supabase/migrations/20261029230000_align_content_draft_rls_with_capabilities.sql");
 const roleMembershipWriteLock = read("supabase/migrations/20261029310000_lock_direct_role_membership_writes.sql");
 const staleAdminMembershipGuard = read("supabase/migrations/20261029320000_prevent_role_rpc_from_leaving_stale_admin_memberships.sql");
+const staffRoleRevocationGuard = read("supabase/migrations/20261029330000_revoke_staff_role_from_profile_and_membership.sql");
+assert.ok(staffRoleRevocationGuard.includes("public.has_platform_admin_access()"), "staff-role changes must require platform-admin authorization");
+assert.ok(staffRoleRevocationGuard.includes("DELETE FROM public.user_role_memberships"), "staff-role revocation must remove the membership grant");
+assert.ok(staffRoleRevocationGuard.includes("IF previous_profile_role = p_role THEN"), "staff-role revocation must also inspect legacy profile-role grants");
+assert.ok(staffRoleRevocationGuard.includes("SET role = 'farmer', updated_at = now()"), "revoking a primary staff profile role must remove the stale grant");
+assert.ok(staffRoleRevocationGuard.includes("'profile_role_before', previous_profile_role"), "staff-role revocation audit must capture profile-role transition");
 assert.ok(staleAdminMembershipGuard.includes("public.has_platform_admin_access()"), "role RPC must use the shared platform-admin guard");
 assert.ok(staleAdminMembershipGuard.includes("p_role IS NULL"), "role RPC must reject a null role explicitly");
 assert.ok(staleAdminMembershipGuard.includes("m.role IN ('admin', 'super_admin')"), "limited role RPC must not demote accounts with privileged memberships");
