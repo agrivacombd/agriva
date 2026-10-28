@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
@@ -10,7 +11,11 @@ export async function POST(request: NextRequest) {
   }
   const { supabase, user } = auth;
 
-  const body = await request.json().catch(() => ({}));
+  const boundedBody = await readRequestBodyWithLimit(request, 32768);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
