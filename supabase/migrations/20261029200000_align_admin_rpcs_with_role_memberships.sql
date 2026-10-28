@@ -62,6 +62,14 @@ CREATE POLICY "product_categories_public_read" ON public.product_categories
 FOR SELECT TO anon, authenticated
 USING (is_active OR public.has_platform_admin_access());
 
+DROP POLICY IF EXISTS "opportunities_admin_read" ON public.search_opportunities;
+CREATE POLICY "opportunities_admin_read" ON public.search_opportunities
+FOR SELECT TO authenticated USING (public.has_platform_admin_access());
+DROP POLICY IF EXISTS "opportunities_admin_update" ON public.search_opportunities;
+CREATE POLICY "opportunities_admin_update" ON public.search_opportunities
+FOR UPDATE TO authenticated USING (public.has_platform_admin_access())
+WITH CHECK (public.has_platform_admin_access());
+
 DROP POLICY IF EXISTS transport_partners_read ON public.transport_partners;
 CREATE POLICY transport_partners_read ON public.transport_partners
 FOR SELECT TO authenticated
