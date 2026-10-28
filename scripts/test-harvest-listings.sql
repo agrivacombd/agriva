@@ -88,7 +88,41 @@ INSERT INTO public.profiles (id, role) VALUES
 
 \i supabase/migrations/20261029090000_create_harvest_listings.sql
 \i supabase/migrations/20261026233434_harden_harvest_moderation.sql
+-- Simulate legacy policy names from the production schema to prove the corrective migration removes them.
+CREATE POLICY "Admins can delete harvest listings"
+  ON public.harvest_listings FOR DELETE TO authenticated USING (public.is_admin());
+CREATE POLICY "Authenticated users can submit harvest listings"
+  ON public.harvest_listings FOR INSERT TO authenticated WITH CHECK (owner_id = (SELECT auth.uid()));
+CREATE POLICY "Owners can update own harvest listings"
+  ON public.harvest_listings FOR UPDATE TO authenticated
+  USING (owner_id = (SELECT auth.uid())) WITH CHECK (owner_id = (SELECT auth.uid()));
+CREATE POLICY "Public can read approved available harvest listings"
+  ON public.harvest_listings FOR SELECT TO anon
+  USING (moderation_status = 'approved' AND status = 'available');
+CREATE POLICY "Users can read approved or own harvest listings"
+  ON public.harvest_listings FOR SELECT TO authenticated
+  USING (owner_id = (SELECT auth.uid()) OR (moderation_status = 'approved' AND status = 'available'));
+
 \i supabase/migrations/20261029093000_reconcile_harvest_listing_policies.sql
+
+DO $policy_cleanup$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'harvest_listings'
+      AND policyname IN (
+        'Admins can delete harvest listings',
+        'Authenticated users can submit harvest listings',
+        'Owners can update own harvest listings',
+        'Public can read approved available harvest listings',
+        'Users can read approved or own harvest listings'
+      )
+  ) THEN
+    RAISE EXCEPTION 'FAIL: legacy permissive harvest policies remain active';
+  END IF;
+END
+$policy_cleanup$;
 
 SET LOCAL ROLE authenticated;
 DO $test$
