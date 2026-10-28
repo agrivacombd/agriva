@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
   const template = fallback(opportunity.keyword, opportunity.intent);
   const generated = { ...template, ...aiGenerated };
   const title = (opportunity.title?.trim() || generated.title || template.title).slice(0, 160);
-  const proposedSlug = opportunity.slug?.trim() || generated.slug || "";
+  const proposedSlug = opportunity.slug?.trim() || slugify(title);
   const slug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(proposedSlug) && proposedSlug.length <= 180
     ? proposedSlug
     : slugify(title) || `agri-guide-${opportunity.id.slice(0, 8)}`;
