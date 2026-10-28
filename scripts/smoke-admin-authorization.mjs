@@ -241,6 +241,8 @@ assert.ok(jobsMigration.includes("p_status is null or p_status not in ('publishe
 
 
 const opportunityApi = read("app/api/admin/content-opportunities/route.ts");
+assert.ok(opportunityApi.includes('"status", "published"'), "opportunity API must verify a linked published draft before marking an opportunity published");
+assert.ok(opportunityApi.includes("An opportunity can only be marked published after its linked content draft is published"), "opportunity publication must fail closed without a published draft");
 assert.ok(opportunityApi.includes("async function requireContentPermission("), "content opportunity API must share an explicit content capability guard");
 assert.ok(opportunityApi.includes("authorizePermission(permission)") && opportunityApi.includes("if (!authorization.ok)"), "content opportunity API must fail closed through the shared permission helper");
 assert.ok(opportunityApi.includes('const transitions: Record<string, string[]>'), "opportunity status changes must use an explicit transition map");
