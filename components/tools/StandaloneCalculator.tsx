@@ -41,6 +41,7 @@ const descriptions = {
 };
 
 const moneyCodes = ["BDT", "USD", "INR"] as const;
+const nonNegativeNumber = (value: string) => { const parsed = Number(value); return Number.isFinite(parsed) && parsed > 0 ? parsed : 0; };
 type MoneyCode = typeof moneyCodes[number];
 
 export default function StandaloneCalculator({ kind, locale }: { kind: CalculatorKind; locale: Locale }) {
@@ -77,9 +78,9 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
   }, [kind, taskStorageKey, checkedTasks, tasksLoaded]);
 
   const acres = Number(area || 0) * (areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01);
-  const totalRate = useMemo(() => Math.max(0, acres) * Math.max(0, Number(rate || 0)), [acres, rate]);
-  const totalCost = Object.values(costs).reduce((sum, value) => sum + Math.max(0, Number(value || 0)), 0);
-  const revenue = Math.max(0, Number(yieldKg || 0)) * Math.max(0, Number(pricePerKg || 0));
+  const totalRate = useMemo(() => nonNegativeNumber(area) * (areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01) * nonNegativeNumber(rate), [acres, rate]);
+  const totalCost = Object.values(costs).reduce((sum, value) => sum + nonNegativeNumber(value), 0);
+  const revenue = nonNegativeNumber(yieldKg) * nonNegativeNumber(pricePerKg);
   const net = revenue - totalCost;
   const number = (value: number) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 2 }).format(value);
   const money = (value: number) => new Intl.NumberFormat(locale === "bn" ? "bn-BD" : "en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(value);
