@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ArticlesBrowser from "../articles/articles-browser";
+import { getPublishedContentArticles } from "@/lib/content/published-articles";
 
 type Article = {
   slug: string;
@@ -66,7 +67,26 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ArticlesPage() {
+export default async function ArticlesPage() {
+  const publishedContent = await getPublishedContentArticles();
+  const staticSlugs = new Set(articles.map((article) => article.slug));
+  const publishedArticles: Article[] = publishedContent
+    .filter((article) => !staticSlugs.has(article.slug))
+    .map((article) => {
+      const body = article.body_markdown ?? "";
+      const excerpt = (article.meta_description || body.replace(/[#*_\`>]/g, "").replace(/\s+/g, " ").trim()).slice(0, 200);
+      const wordCount = body.trim() ? body.trim().split(/\s+/).length : 0;
+      return {
+        slug: article.slug,
+        category: "AGRIVA নির্দেশিকা",
+        title: article.title,
+        excerpt,
+        date: article.updated_at ? new Date(article.updated_at).toLocaleDateString("bn-BD", { year: "numeric", month: "short", day: "numeric" }) : "নতুন লেখা",
+        readTime: `${Math.max(1, Math.ceil(wordCount / 200))} মিনিট`,
+        emoji: "📝",
+      };
+    });
+  const allArticles = [...articles, ...publishedArticles];
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const listingJsonLd = {
     "@context": "https://schema.org",
@@ -76,7 +96,7 @@ export default function ArticlesPage() {
     url: `${siteUrl}/blog`,
     inLanguage: "bn-BD",
     isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
-    mainEntity: { "@type": "ItemList", itemListElement: articles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/blog/${article.slug}` })) },
+    mainEntity: { "@type": "ItemList", itemListElement: allArticles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/blog/${article.slug}` })) },
   };
 
   return (
@@ -97,10 +117,10 @@ export default function ArticlesPage() {
       <section className="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Read & grow</p><h2 className="mt-2 text-2xl font-black sm:text-3xl">সাম্প্রতিক লেখা</h2><p className="mt-2 text-sm leading-6 text-slate-600">কৃষি বিষয়ে ধারণা ও অভিজ্ঞতা জানুন।</p></div>
-          <p className="text-sm font-semibold text-slate-500">{articles.length}টি লেখা</p>
+          <p className="text-sm font-semibold text-slate-500">{allArticles.length}টি লেখা</p>
         </div>
 
-        <ArticlesBrowser articles={articles} />
+        <ArticlesBrowser articles={allArticles} />
         <aside className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">মাটি, জাত, মৌসুম ও এলাকার আবহাওয়া অনুযায়ী কৃষি পরামর্শ ভিন্ন হতে পারে। নির্দিষ্ট সিদ্ধান্তের আগে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
       </section>
     </main>
