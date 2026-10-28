@@ -63,6 +63,9 @@ for (const path of [
 }
 
 const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
+assert.ok(searchIntelligencePage.includes('authorizePermission(permission)'), "search intelligence must use shared capability authorization");
+assert.ok(searchIntelligencePage.includes('requireAdmin("content.draft")'), "creating drafts from search intelligence must require content.draft");
+assert.ok(!searchIntelligencePage.includes('profile?.role !== "admin"'), "search intelligence must not rely on a legacy profile role");
 assert.ok(searchIntelligencePage.includes('from("content_opportunities")'), "search intelligence must use persisted canonical opportunities, not in-memory seed data");
 assert.ok(searchIntelligencePage.includes('rpc("create_content_draft_from_opportunity"'), "creating an opportunity draft must use the database-backed workflow");
 assert.ok(searchIntelligencePage.includes('item.status === "approved" && <form action={createDraft}'), "only approved opportunities may be converted to saved drafts from Search Intelligence");
@@ -84,10 +87,14 @@ assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboa
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
 const reportsPage = read("app/admin/reports/page.tsx");
+assert.ok(reportsPage.includes('authorizePermission("analytics.read_aggregated")'), "admin reports must require analytics.read_aggregated");
+assert.ok(!reportsPage.includes('profile?.role !== "admin"'), "admin reports must not rely on a legacy profile role");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
 
 const ordersPage = read("app/admin/orders/page.tsx");
+assert.ok(ordersPage.includes('authorizePermission("orders.support_read")'), "admin orders must require orders.support_read through the shared capability helper");
+assert.ok(!ordersPage.includes('profile?.role !== "admin"'), "admin orders must not reject membership-authorized super admins");
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
