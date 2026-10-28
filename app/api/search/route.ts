@@ -3,9 +3,11 @@ import { analyzeSearch } from "@/lib/ai/analyze";
 import { normalizeQuery } from "@/lib/ai/intent";
 import { answerAgricultureQuestion } from "@/lib/ai/respond";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const MAX_REQUEST_BYTES = 16 * 1024;
 
 function searchTerms(value: string) {
   // Keep user input from changing PostgREST .or() filter syntax.
@@ -21,7 +23,11 @@ function searchTerms(value: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => null);
+    const boundedBody = await readRequestBodyWithLimit(request, MAX_REQUEST_BYTES);
+    if (!boundedBody.ok) return NextResponse.json({ error: "অনুরোধের আকার সীমার বেশি।" }, { status: 413 });
+    let body: unknown;
+    try { body = JSON.parse(boundedBody.text); }
+    catch { return NextResponse.json({ error: "সঠিক JSON অনুরোধ পাঠান।" }, { status: 400 }); }
     const query = typeof body?.query === "string" ? body.query.trim() : "";
     if (!query) {
       return NextResponse.json({ error: "অনুসন্ধানের জন্য প্রশ্ন লিখুন।" }, { status: 400 });
