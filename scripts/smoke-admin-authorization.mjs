@@ -69,7 +69,7 @@ assert.ok(!searchIntelligencePage.includes('profile?.role !== "admin"'), "search
 assert.ok(searchIntelligencePage.includes('from("content_opportunities")'), "search intelligence must use persisted canonical opportunities, not in-memory seed data");
 assert.ok(searchIntelligencePage.includes('rpc("create_content_draft_from_opportunity"'), "creating an opportunity draft must use the database-backed workflow");
 assert.ok(searchIntelligencePage.includes('item.status === "approved" && <form action={createDraft}'), "only approved opportunities may be converted to saved drafts from Search Intelligence");
-assert.ok(searchIntelligencePage.includes("async function requireAdmin()"), "search intelligence server actions must re-check admin authorization");
+assert.ok(searchIntelligencePage.includes('async function requireAdmin(permission: "content.review" | "content.draft"'), "search intelligence server actions must re-check the specific content capability");
 assert.ok(searchIntelligencePage.includes('const transitions: Record<string, string[]>'), "search intelligence must enforce the same explicit opportunity transition map");
 assert.ok(searchIntelligencePage.includes('.eq("id", id).eq("status", current.status)'), "search intelligence updates must guard against stale opportunity state");
 assert.ok(!searchIntelligencePage.includes("score,created_at,last_seen_at"), "search intelligence query must not request a nonexistent score column");
@@ -98,6 +98,14 @@ assert.ok(!ordersPage.includes('profile?.role !== "admin"'), "admin orders must 
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
+
+const greenExchangePage = read("app/admin/green-exchange/page.tsx");
+assert.ok(greenExchangePage.includes('authorizePermission("roles.assign_scoped")'), "green exchange moderation must use the shared capability guard");
+assert.ok(!greenExchangePage.includes('profile?.role !== "admin"'), "green exchange moderation must not depend on a legacy profile-role gate");
+
+const aiContentPage = read("app/admin/ai-content/page.tsx");
+assert.ok(aiContentPage.includes('authorizePermission("roles.assign_scoped")'), "AI content admin hub must use the shared capability guard");
+assert.ok(!aiContentPage.includes('profile?.role !== "admin"'), "AI content admin hub must not depend on a legacy profile-role gate");
 
 const opportunitiesPage = read("app/admin/opportunities/page.tsx");
 assert.ok(opportunitiesPage.includes("error: opportunitiesError"), "admin opportunities page must retain query errors");
