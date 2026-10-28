@@ -202,4 +202,21 @@ assert.ok(approvalMigration.includes("FOR UPDATE"), "database draft creation mus
 assert.ok(approvalMigration.includes("create_generated_content_draft_from_opportunity"), "database must provide an atomic generated-draft RPC");
 assert.ok(approvalMigration.includes("REVOKE ALL ON FUNCTION public.create_generated_content_draft_from_opportunity"), "generated-draft RPC must revoke public execution");
 
+
+const publishedArticleData = read("lib/content/published-articles.ts");
+assert.ok(publishedArticleData.includes('.eq("status", "published")'), "public CMS article queries must expose published content only");
+assert.ok(publishedArticleData.includes('.eq("content_type", "article")'), "public CMS article queries must not expose product/tool drafts");
+assert.ok(publishedArticleData.includes("NEXT_PUBLIC_SUPABASE_ANON_KEY"), "public article reads must use the public Supabase key, not a service-role secret");
+const blogListing = read("app/blog/page.tsx");
+assert.ok(blogListing.includes("getPublishedContentArticles"), "blog listing must read published CMS articles");
+assert.ok(blogListing.includes("const allArticles = [...articles, ...publishedArticles]"), "blog listing must merge static and published CMS articles");
+const blogDetail = read("app/blog/[slug]/page.tsx");
+assert.ok(blogDetail.includes("getPublishedContentArticleBySlug"), "blog detail route must resolve published CMS articles by slug");
+assert.ok(blogDetail.includes("renderMarkdown(article.body_markdown"), "published CMS article body must be rendered on its public route");
+const sitemap = read("app/sitemap.ts");
+assert.ok(sitemap.includes("getPublishedContentArticles"), "sitemap must include published CMS articles");
+assert.ok(sitemap.includes("url: `${base}/blog/${article.slug}`"), "sitemap must include canonical public blog URLs for CMS articles");
+const legacyArticleRoute = read("app/articles/[slug]/page.tsx");
+assert.ok(legacyArticleRoute.includes("redirect(`/blog/${encodeURIComponent(slug)}`)"), "legacy article URLs must canonicalize to the blog route");
+
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
