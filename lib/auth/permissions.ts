@@ -40,7 +40,8 @@ export type AgrivaPermission =
   | "roles.assign_scoped"
   | "roles.assign_super_admin"
   | "audit.read"
-  | "transport.review";
+  | "transport.review"
+  | "content.opportunities.read";
 
 export type AgrivaKnownRole =
   | "super_admin"
@@ -96,13 +97,13 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     "content.publish", "marketing.manage_campaigns", "analytics.read_aggregated",
     "finance.read_scoped", "payout.request_own", "payout.review", "payout.approve",
     "settings.integrations.manage", "settings.secrets.rotate", "roles.assign_scoped",
-    "roles.assign_super_admin", "audit.read", "transport.review",
+    "roles.assign_super_admin", "audit.read", "transport.review", "content.opportunities.read",
   ],
   admin: [
     ...ownAccount, "catalog.create_platform", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.support_read", "users.support_read_minimal", "users.manage",
     "content.draft", "content.review", "content.publish", "analytics.read_aggregated",
-    "finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read", "transport.review",
+    "finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read", "transport.review", "content.opportunities.read",
   ],
   operations: [
     ...ownAccount, "catalog.moderate", "catalog.pause", "orders.support_read",
