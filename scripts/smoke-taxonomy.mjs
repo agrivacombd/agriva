@@ -26,7 +26,7 @@ assert.ok(taxonomy.includes("getProductTaxonomy") && taxonomy.includes("function
 assert.ok(categoryPage.includes("hasIndexableCategoryProducts") && categoryPage.includes("category_slug"), "category pages must use stable slugs and avoid indexing empty pages");
 assert.ok(subcategoryPage.includes("hasIndexableSubcategoryProducts") && subcategoryPage.includes("subcategory_slug"), "subcategory pages must use stable slugs and avoid indexing empty pages");
 assert.ok(indexability.includes('.eq("status", "active")') && indexability.includes('.eq("moderation_status", "approved")'), "indexability must include only public active and approved products");
-assert.ok(indexability.includes('select("category")'), "indexability query must use fields present in production schema");
+assert.ok(indexability.includes('select("category'), "indexability query must use fields present in production schema");
 assert.ok(sitemap.includes("categoryUrls") && sitemap.includes("matchesSubcategory"), "sitemap must include only populated taxonomy URLs");
 assert.ok(productPage.includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumb must link to category and subcategory");
 assert.ok(!adminProducts.includes('name="category"'), "admin form must no longer write free-text category");
