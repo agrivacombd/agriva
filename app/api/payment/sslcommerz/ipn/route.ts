@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
   if (!validation.ok ||
       !["VALID", "VALIDATED"].includes(gatewayStatus) ||
       String(validated?.store_id || "") !== process.env.SSLCOMMERZ_STORE_ID ||
+      String(validated?.val_id || "") !== valId ||
       validated?.tran_id !== tranId ||
       currency !== "BDT" ||
       !Number.isFinite(amount) || amount <= 0) {
