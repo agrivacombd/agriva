@@ -118,6 +118,12 @@ assert.ok(harvestPage.includes("প্রত্যাখ্যান করল�
 assert.ok(harvestPage.includes('supabase.rpc("admin_moderate_harvest_listing"'), "harvest moderation must use the audited admin-only RPC");
 assert.ok(!harvestPage.includes('.from("harvest_listings").update('), "harvest moderation must not directly update the table from the page");
 
+const contentDraftMembershipMigration = read("supabase/migrations/20261029223000_align_content_draft_rpcs_with_role_memberships.sql");
+assert.ok(contentDraftMembershipMigration.includes("create_content_draft_from_opportunity"), "content draft RPC migration must update the legacy opportunity-draft RPC");
+assert.ok(contentDraftMembershipMigration.includes("create_generated_content_draft_from_opportunity"), "content draft RPC migration must update the generated-draft RPC");
+assert.ok(contentDraftMembershipMigration.includes("public.user_role_memberships"), "content draft RPCs must recognize role memberships, not only profiles.role");
+assert.ok(contentDraftMembershipMigration.includes("'super_admin'") && contentDraftMembershipMigration.includes("'content_seo_manager'"), "content draft RPC membership guard must recognize delegated content roles");
+
 const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
 assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
 assert.ok(orderMigration.includes("v_order.buyer_id = v_uid"), "marketplace order RPC must distinguish buyer from seller permissions");
