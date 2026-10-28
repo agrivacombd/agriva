@@ -8,6 +8,8 @@ import MarketplaceCore from "@/components/marketplace/MarketplaceCore";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableSubcategoryProducts } from "@/lib/marketplace/indexability";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ categorySlug: string; subcategorySlug: string }> };
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.flatMap((category) => category.subcategories.map((subcategory) => ({ categorySlug: category.slug, subcategorySlug: subcategory.slug })));
