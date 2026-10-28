@@ -122,7 +122,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: Promi
     ["রিসেলার", resellersCount.error ? "—" : resellersCount.count ?? 0, "share-2"],
     ["পণ্য", productsCount.error ? "—" : productsCount.count ?? 0, "package"],
     ["মোট অর্ডার", ordersCount.error ? "—" : ordersCount.count ?? 0, "shopping-bag"],
-    ["রিভিউ প্রয়োজন", orderTotals.error ? "—" : pendingOrders, "clipboard-list"],
+    ["রিভিউ প্রয়োজন", pendingOrdersCount.error ? "—" : pendingOrdersCount.count ?? 0, "clipboard-list"],
     ["কমিশন রেকর্ড", commissionsCount.error ? "—" : commissionsCount.count ?? 0, "wallet"],
     ["পেআউট রেকর্ড", payoutsCount.error ? "—" : payoutsCount.count ?? 0, "banknote"],
   ];
