@@ -233,6 +233,7 @@ assert.ok(productMediaMigration.includes("AND public.is_admin()"), "product imag
 assert.ok(productMediaMigration.includes("(storage.foldername(name))[1] = auth.uid()::text"), "product image writes must be confined to the uploader's own folder");
 assert.ok(productMediaMigration.includes("admin_create_marketplace_product_with_image"), "product creation with image must use a database RPC");
 assert.ok(productMediaMigration.includes("admin_update_marketplace_product"), "product and taxonomy edits must be atomic");
+assert.ok(productMediaMigration.includes("CASE WHEN v_category_slug IS NULL THEN category ELSE subcategory_name END"), "unmapped legacy product categories must be preserved during edits");
 const productForm = read("components/admin/AdminCreateProductForm.tsx");
 assert.ok(productForm.includes('storage.from("product-images").upload'), "admin product form must upload image files to Supabase Storage");
 assert.ok(productForm.includes("MAX_IMAGE_SIZE = 5 * 1024 * 1024"), "admin product form must enforce the image size limit");
