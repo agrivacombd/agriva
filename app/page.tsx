@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -18,7 +17,7 @@ const services = [
   { icon: TrendingUp, title: "কৃষিপণ্যের বাজারদর", subtitle: "দাম যাচাই করে সিদ্ধান্ত নিন", detail: "সরকারি বাজারদরের উৎসে যান এবং বিক্রির পরিকল্পনা করুন", href: "/market-prices", tone: "bg-amber-50 text-amber-700" },
   { icon: CalendarDays, title: "ফসল ক্যালেন্ডার", subtitle: "কাজের ধাপ মনে রাখুন", detail: "ফসলভিত্তিক কাজের চেকলিস্ট ও চাষের পরিকল্পনা সাজান", href: "/crop-calendar", tone: "bg-teal-50 text-teal-700" },
   { icon: Tractor, title: "আমার খামার", subtitle: "জমি ও কাজের রেকর্ড", detail: "খামার, মৌসুম ও দৈনন্দিন কাজের রেকর্ড রাখুন", href: "/farms", tone: "bg-emerald-50 text-emerald-700" },
-  { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, চাষের খরচ ও সম্ভাব্য লাভের হিসাব করুন", href: "/tools", tone: "bg-orange-50 text-orange-700" },
+  { icon: Zap, title: "কৃষি ক্যালকুলেটর", subtitle: "দ্রুত হিসাব করুন", detail: "বীজ, সার, চাষের খরচ ও সম্ভাব্য লাভের হিসাব করুন", href: "/agriculture-calculators", tone: "bg-orange-50 text-orange-700" },
   { icon: Sprout, title: "মাটি ও সার পরিকল্পনা", subtitle: "সুপারিশ থেকে হিসাব", detail: "মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার সুপারিশ ধরে সার হিসাব করুন", href: "/soil-fertilizer", tone: "bg-green-50 text-green-800" },
   { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "নিজের খরচ ও দামের ভিত্তিতে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
   { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "ক্রেতার কাছে অফার দিন", detail: "ফসলের পরিমাণ, দাম ও অবস্থান দিয়ে বিক্রির পোস্ট তৈরি করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
@@ -35,7 +34,7 @@ const toolLinks = [
   { icon: Briefcase, label: "কৃষি চাকরি", href: "/jobs" },
   { icon: FileText, label: "CV তৈরি করুন", href: "/jobs/cv-builder" },
   { icon: Tractor, label: "আমার খামার", href: "/farms" },
-  { icon: Zap, label: "কৃষি ক্যালকুলেটর", href: "/tools" },
+  { icon: Zap, label: "কৃষি ক্যালকুলেটর", href: "/agriculture-calculators" },
 ];
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -326,7 +325,7 @@ export default async function Home() {
             {[
               { icon: CloudSun, label: "মৌসুমি পরিকল্পনা", title: "আবহাওয়া দেখে কৃষিকাজের পরিকল্পনা", text: "বপন, সেচ ও ফসল কাটার আগে পূর্বাভাস এবং স্থানীয় পরামর্শ মিলিয়ে সিদ্ধান্ত নিন।", href: "/weather", tone: "bg-sky-50 text-sky-800" },
               { icon: Leaf, label: "ফসলের যত্ন", title: "রোগের লক্ষণ দেখলে আগে কী করবেন", text: "লক্ষণ নথিবদ্ধ করুন, আক্রান্ত অংশ পর্যবেক্ষণ করুন এবং নিশ্চিত না হয়ে রাসায়নিক প্রয়োগ করবেন না।", href: "/crop-disease", tone: "bg-rose-50 text-rose-800" },
-              { icon: TrendingUp, label: "ব্যবসা ও বাজার", title: "খরচ ও বাজারদর মিলিয়ে হিসাব করুন", text: "ইনপুট খরচ, পরিবহন, সম্ভাব্য বিক্রয়মূল্য ও ঝুঁকি ধরে লাভের হিসাব সাজান।", href: "/tools", tone: "bg-amber-50 text-amber-800" },
+              { icon: TrendingUp, label: "ব্যবসা ও বাজার", title: "খরচ ও বাজারদর মিলিয়ে হিসাব করুন", text: "ইনপুট খরচ, পরিবহন, সম্ভাব্য বিক্রয়মূল্য ও ঝুঁকি ধরে লাভের হিসাব সাজান।", href: "/agriculture-calculators", tone: "bg-amber-50 text-amber-800" },
             ].map(({ icon: Icon, label, title, text, href, tone }) => <Link key={title} href={href} className="group flex h-full flex-col rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
               <span className={`grid h-11 w-11 place-items-center rounded-xl ${tone}`}><Icon size={22} /></span>
               <span className="mt-4 text-xs font-bold text-emerald-800">{label}</span>
@@ -348,7 +347,7 @@ export default async function Home() {
 
       <nav aria-label="মোবাইল নেভিগেশন" className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-950/10 bg-white/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_24px_rgba(15,50,35,0.08)] backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
-          {[{ icon: Sprout, label: "হোম", href: "/" }, { icon: Search, label: "খুঁজুন", href: "/search" }, { icon: Zap, label: "টুলস", href: "/tools" }, { icon: Briefcase, label: "চাকরি", href: "/jobs" }, { icon: ShoppingBasket, label: "বাজার", href: "/marketplace" }].map(({ icon: Icon, label, href }) => <Link key={label} href={href} aria-label={label} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-800"><Icon size={19} /><span>{label}</span></Link>)}
+          {[{ icon: Sprout, label: "হোম", href: "/" }, { icon: Search, label: "খুঁজুন", href: "/search" }, { icon: Zap, label: "টুলস", href: "/agriculture-calculators" }, { icon: Briefcase, label: "চাকরি", href: "/jobs" }, { icon: ShoppingBasket, label: "বাজার", href: "/marketplace" }].map(({ icon: Icon, label, href }) => <Link key={label} href={href} aria-label={label} className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl px-1 text-[11px] font-bold text-slate-600 transition hover:bg-emerald-50 hover:text-emerald-800"><Icon size={19} /><span>{label}</span></Link>)}
         </div>
       </nav>
       <footer className="border-t border-slate-200 bg-white">
