@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 async function requireAdmin() {
-  const auth = await authorizePermission("settings.integrations.manage");
+  const auth = await authorizePermission("settings.site.manage");
   if (!auth.ok) {
     if (auth.status === 401) redirect("/login");
     redirect("/dashboard");
