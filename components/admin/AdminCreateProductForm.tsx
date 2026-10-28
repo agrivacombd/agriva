@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
-const initial = { name: "", category_slug: "premium-superfoods", subcategory_slug: "superfoods-seeds", price: "", stock: "", commission: "10", description: "", status: "draft" };
+const initial = { name: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds", price: "", stock: "", commission: "", description: "", status: "draft" };
 
 export default function AdminCreateProductForm() {
   const [form, setForm] = useState(initial);
@@ -31,12 +31,12 @@ export default function AdminCreateProductForm() {
       <label className="text-sm font-bold">সাব-ক্যাটাগরি<select required value={form.subcategory_slug} onChange={e=>set("subcategory_slug",e.target.value)} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal">{(category?.subcategories??[]).map(item=><option key={item.slug} value={item.slug}>{item.name}</option>)}</select></label>
     </div>
     <div className="grid gap-4 md:grid-cols-3">
-      <label className="text-sm font-bold">বিক্রয়মূল্য (৳)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={e=>set("price",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="নিজের দাম লিখুন"/></label>
-      <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="বাস্তব স্টক"/></label>
+      <label className="text-sm font-bold">বিক্রয়মূল্য (৳)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={e=>set("price",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্রকৃত বিক্রয়মূল্য"/></label>
+      <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্রকৃত স্টক"/></label>
       <label className="text-sm font-bold">রিসেলার কমিশন (%)<input required type="number" min="0" max="100" step="0.01" value={form.commission} onChange={e=>set("commission",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
     </div>
-    <label className="block text-sm font-bold">বিবরণ<textarea maxLength={5000} rows={4} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্যাক সাইজ, উৎপত্তিস্থল, উপাদান, প্যাকেজিং ও মেয়াদোত্তীর্ণের তথ্য লিখুন।"/></label>
-    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">প্রতিটি প্যাক সাইজ (250g, 500g, 1kg) আলাদা পণ্য হিসেবে যোগ করুন, যদি দাম বা স্টক আলাদা হয়। উৎপত্তিস্থল পণ্যভেদে নিশ্চিত করে লিখুন।</p>
+    <label className="block text-sm font-bold">বিবরণ<textarea maxLength={5000} rows={4} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্যাক সাইজ, প্রকৃত উৎপত্তিস্থল, খাদ্য/বপনের ব্যবহার, প্যাকেজিং ও মেয়াদের তথ্য লিখুন।"/></label>
+    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">চিয়া সিডের ক্ষেত্রে নিশ্চিত করুন এটি মানুষের খাওয়ার উপযোগী। প্রতিটি প্যাক সাইজ (250g, 500g, 1kg) আলাদা পণ্য হিসেবে যোগ করুন, যদি দাম বা স্টক আলাদা হয়। উৎপত্তিস্থল পণ্যভেদে নিশ্চিত করে লিখুন।</p>
     <button disabled={loading} className="w-full rounded-xl bg-[#17452c] px-4 py-3 font-extrabold text-white disabled:opacity-50">{loading ? "তৈরি হচ্ছে..." : "Draft পণ্য তৈরি করুন"}</button>
     {message && <p role="status" className="text-sm font-semibold" aria-live="polite">{message}</p>}
   </form>;
