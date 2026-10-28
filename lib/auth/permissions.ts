@@ -97,7 +97,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     ...ownAccount, "catalog.create_platform", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.support_read", "users.support_read_minimal", "users.manage",
     "content.draft", "content.review", "content.publish", "analytics.read_aggregated",
-    "finance.read_scoped", "payout.review", "audit.read",
+    "finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read",
   ],
   operations: [
     ...ownAccount, "catalog.moderate", "catalog.pause", "orders.support_read",
