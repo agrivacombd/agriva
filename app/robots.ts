@@ -22,6 +22,8 @@ export default function robots(): MetadataRoute.Robots {
                     "/en/seed-rate-calculator",
                     "/en/farming-cost-profit-calculator",
                     "/en/crop-calendar",
+          "/en/soil-fertilizer",
+          "/en/crop-choice",
           "/jobs",
           "/jobs/cv-builder",
           "/learn",
