@@ -23,15 +23,24 @@ async function updateOpportunityStatus(formData: FormData) {
     redirect("/admin/search-intelligence?notice=invalid_action");
   }
   const { supabase, user } = await requireAdmin();
-  const { error } = await supabase.from("content_opportunities").update({
+  const { data: current, error: readError } = await supabase.from("content_opportunities").select("id,status").eq("id", id).maybeSingle();
+  if (readError || !current) redirect("/admin/search-intelligence?notice=update_error");
+  const transitions: Record<string, string[]> = {
+    open: ["review"],
+    draft: ["review"],
+    review: ["approved", "rejected"],
+    approved: ["published"],
+  };
+  if (!transitions[current.status]?.includes(status)) redirect("/admin/search-intelligence?notice=invalid_transition");
+  const { data: updated, error } = await supabase.from("content_opportunities").update({
     status,
     reviewed_at: new Date().toISOString(),
     reviewed_by: user.id,
-  }).eq("id", id);
+  }).eq("id", id).eq("status", current.status).select("id").maybeSingle();
   revalidatePath("/admin");
   revalidatePath("/admin/search-intelligence");
   revalidatePath("/admin/opportunities");
-  redirect(error ? "/admin/search-intelligence?notice=update_error" : "/admin/search-intelligence?notice=updated");
+  redirect(error || !updated ? "/admin/search-intelligence?notice=update_error" : "/admin/search-intelligence?notice=updated");
 }
 
 async function createDraft(formData: FormData) {
@@ -53,6 +62,7 @@ const noticeText: Record<string, string> = {
   draft_created: "Draft created and saved. Open Content Drafts to review it.",
   create_error: "Draft could not be created. It may already have a draft or its status may not allow conversion.",
   invalid_action: "Invalid request. Reload the page and try again.",
+  invalid_transition: "That status transition is not allowed. Reload and follow the review workflow.",
 };
 
 export default async function SearchIntelligencePage({
@@ -126,8 +136,8 @@ export default async function SearchIntelligencePage({
                 </div>
                 {item.competitor_notes && <p className="mt-3 rounded-xl bg-[#f7f9f5] p-3 text-sm text-[#647468]">Research notes: {item.competitor_notes}</p>}
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {["open", "draft", "review"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="approved"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Approve opportunity</button></form>}
-                  {!["rejected", "published"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="rejected"/><button className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-800">Reject</button></form>}
+                  {["open", "draft"].includes(item.status) && <form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="review"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Send to review</button></form>}
+                  {item.status === "review" && <><form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="approved"/><button className="rounded-lg bg-[#17351f] px-4 py-2 text-xs font-bold text-white">Approve opportunity</button></form><form action={updateOpportunityStatus}><input type="hidden" name="opportunityId" value={item.id}/><input type="hidden" name="status" value="rejected"/><button className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-800">Reject</button></form></>}
                   {["open", "approved"].includes(item.status) && <form action={createDraft}><input type="hidden" name="opportunityId" value={item.id}/><button className="rounded-lg border border-[#d8e3d4] px-4 py-2 text-xs font-bold">Create saved draft</button></form>}
                 </div>
               </article>
