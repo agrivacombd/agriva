@@ -20,6 +20,39 @@ WHERE status = 'active';
 CREATE INDEX IF NOT EXISTS products_moderation_queue_idx
   ON public.products (moderation_status, updated_at DESC);
 
+-- Staff role assignments are never self-service; this only expands the database
+-- vocabulary so trusted provisioning can assign scoped staff memberships.
+ALTER TABLE public.user_role_memberships
+  DROP CONSTRAINT IF EXISTS user_role_memberships_role_check;
+ALTER TABLE public.user_role_memberships
+  ADD CONSTRAINT user_role_memberships_role_check
+  CHECK (role IN (
+    'farmer', 'seller', 'reseller', 'buyer', 'job_seeker', 'worker',
+    'employer', 'expert', 'educator', 'transport_provider', 'organization',
+    'admin', 'transport', 'student', 'agriculturist', 'rooftop_gardener',
+    'super_admin', 'operations', 'product_moderator', 'content_seo_manager',
+    'marketing_manager', 'finance_manager', 'support_agent'
+  ));
+
+CREATE OR REPLACE FUNCTION public.has_product_moderation_permission()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+AS $function$
+  SELECT auth.uid() IS NOT NULL AND (
+    EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role = 'admin')
+    OR EXISTS (
+      SELECT 1 FROM public.user_role_memberships m
+      WHERE m.user_id = auth.uid()
+        AND m.role IN ('admin', 'super_admin', 'product_moderator')
+    )
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION public.has_product_moderation_permission() FROM PUBLIC, anon, authenticated;
+
 -- Defense in depth: public reads require both publication state and approval.
 DROP POLICY IF EXISTS products_public_active ON public.products;
 CREATE POLICY products_public_active
@@ -39,7 +72,7 @@ SECURITY DEFINER
 SET search_path TO 'pg_catalog', 'public', 'pg_temp'
 AS $function$
 DECLARE
-  v_is_admin boolean := auth.uid() IS NOT NULL AND public.is_admin();
+  v_is_admin boolean := auth.uid() IS NOT NULL AND public.has_product_moderation_permission();
   v_is_seller boolean := EXISTS (
     SELECT 1 FROM public.user_role_memberships m
     WHERE m.user_id = auth.uid() AND m.role IN ('farmer', 'seller')
@@ -122,8 +155,8 @@ DECLARE
   next_moderation_status text;
   clean_reason text := NULLIF(btrim(COALESCE(p_reason, '')), '');
 BEGIN
-  IF auth.uid() IS NULL OR NOT public.is_admin() THEN
-    RAISE EXCEPTION 'Admin moderation permission required' USING ERRCODE = '42501';
+  IF auth.uid() IS NULL OR NOT public.has_product_moderation_permission() THEN
+    RAISE EXCEPTION 'Product moderation permission required' USING ERRCODE = '42501';
   END IF;
   IF p_product_id IS NULL OR p_decision IS NULL OR p_decision NOT IN ('approve', 'reject', 'request_changes') THEN
     RAISE EXCEPTION 'Invalid moderation decision' USING ERRCODE = '22023';
