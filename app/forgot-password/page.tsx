@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
-import { ArrowLeft, Mail, Sprout } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export default function ForgotPasswordPage() {
@@ -32,7 +33,7 @@ export default function ForgotPasswordPage() {
 
   return <main className="grid min-h-screen place-items-center bg-[#f6f8f3] px-5 py-12 text-[#17351f]">
     <section className="w-full max-w-md rounded-[1.75rem] border border-[#e3e9e0] bg-white p-7 shadow-[0_18px_60px_rgba(26,65,39,0.07)] sm:p-9">
-      <div className="flex items-center justify-between"><Link href="/" className="flex items-center gap-2 text-xl font-black"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#173f2b] text-white"><Sprout size={20}/></span>AGRIVA<span className="text-[#c49a3e]">.</span></Link><button type="button" onClick={() => setLanguage(bn ? "en" : "bn")} className="rounded-full border border-[#d8e1d6] px-3 py-2 text-xs font-semibold">{bn ? "English" : "বাংলা"}</button></div>
+      <div className="flex items-center justify-between"><BrandLogo href="/" imageClassName="h-9 w-36 sm:w-44" /><button type="button" onClick={() => setLanguage(bn ? "en" : "bn")} className="rounded-full border border-[#d8e1d6] px-3 py-2 text-xs font-semibold">{bn ? "English" : "বাংলা"}</button></div>
       <div className="mt-8 grid h-12 w-12 place-items-center rounded-2xl bg-[#edf6eb] text-[#26723f]"><Mail size={23}/></div>
       <h1 className="mt-5 text-3xl font-black">{bn ? "পাসওয়ার্ড রিসেট করুন" : "Reset your password"}</h1>
       <p className="mt-2 text-sm leading-6 text-[#66776a]">{bn ? "আপনার অ্যাকাউন্টের ইমেইল দিন। রিসেট করার নির্দেশনা পাঠিয়ে দেব।" : "Enter the email for your account and we'll send password reset instructions."}</p>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import MobileDashboardNav from "@/components/MobileDashboardNav";
+import BrandLogo from "@/components/BrandLogo";
 
 type Role = "farmer" | "buyer" | "seller" | "reseller" | "transport" | "transport_provider" | "job_seeker" | "worker" | "employer" | "student" | "educator" | "expert" | "agriculturist" | "rooftop_gardener" | "organization" | "admin";
 
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[#f5f8f2] pb-24 text-[#173b2d] md:pb-0">
       <header className="sticky top-0 z-20 border-b border-[#e2e9df] bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2 text-2xl font-black tracking-tight">🌱 AGRIVA<span className="text-[#c59c3b]">.</span></Link>
+          <BrandLogo href="/" imageClassName="h-10 w-40 sm:w-48" priority />
           <div className="flex items-center gap-3">
             <Link href="/profile" className="hidden rounded-full border border-[#dce6da] px-4 py-2 text-sm font-semibold sm:block">প্রোফাইল সেটিংস</Link>
             <span className="max-w-[140px] truncate rounded-full bg-[#eaf4eb] px-4 py-2 text-sm font-bold text-[#126b4f] sm:max-w-[220px]">{name}</span>

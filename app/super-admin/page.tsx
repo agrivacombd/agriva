@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLogo from "@/components/BrandLogo";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import AdminModuleDirectory, { type AdminModule } from "./AdminModuleDirectory";
@@ -41,9 +42,7 @@ export default async function SuperAdminPage() {
     <main className="min-h-screen overflow-x-clip bg-[#f3f7f1] text-[#17351f]">
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" aria-label="AGRIVA home" className="text-2xl font-black tracking-tight">
-            AGRIVA<span className="text-[#b58b28]">.</span>
-          </Link>
+          <BrandLogo href="/" imageClassName="h-10 w-40 sm:w-48" priority />
           <nav aria-label="Main navigation" className="flex items-center gap-2 text-sm font-semibold">
             <Link href="/dashboard" className="inline-flex min-h-11 items-center rounded-xl border border-black/10 px-3 hover:bg-[#f3f7f1] sm:px-4">
               User dashboard
