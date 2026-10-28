@@ -49,4 +49,12 @@ assert.ok(staffAccessPage.includes("Grant role") && staffAccessPage.includes("Re
 assert.ok(adminOverview.includes("/admin/access"), "Super Admin console must link to staff access management");
 assert.ok(permissionCatalogue.includes('"finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read"'), "admin capability set must include scoped staff provisioning");
 
-console.log("API role and error disclosure regression checks passed.");
+
+const moderatorScopeMigration = readFileSync("supabase/migrations/20261029170000_separate_moderator_and_admin_scope.sql", "utf8");
+assert.match(moderatorScopeMigration, /v_is_platform_admin boolean[\s\S]*public\.is_admin\(\)[\s\S]*m\.role IN \('admin', 'super_admin'\)/, "only platform admin/super-admin roles may use broad product write scope");
+assert.match(moderatorScopeMigration, /Product moderators may only change moderation fields/, "moderators must not edit price, stock, commission, or ownership through direct writes");
+assert.match(moderatorScopeMigration, /OLD\.farmer_id <> auth\.uid\(\)/, "moderators must not approve their own seller listings");
+assert.match(moderatorScopeMigration, /INSERT INTO public\.admin_audit_log/, "moderator database transitions must be auditable");
+assert.match(moderatorScopeMigration, /AND \(v_is_platform_admin OR farmer_id <> auth\.uid\(\)\)/, "moderation RPC must reject self-approval");
+
+console.log("API role, moderator-scope, and error disclosure regression checks passed.");
