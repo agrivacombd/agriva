@@ -35,6 +35,7 @@ export type AgrivaPermission =
   | "jobs.apply_own"
   | "payout.review"
   | "payout.approve"
+  | "settings.site.manage"
   | "settings.integrations.manage"
   | "settings.secrets.rotate"
   | "roles.assign_scoped"
@@ -96,14 +97,14 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     "users.support_read_minimal", "users.manage", "content.draft", "content.review",
     "content.publish", "marketing.manage_campaigns", "analytics.read_aggregated",
     "finance.read_scoped", "payout.request_own", "payout.review", "payout.approve",
-    "settings.integrations.manage", "settings.secrets.rotate", "roles.assign_scoped",
+    "settings.site.manage", "settings.integrations.manage", "settings.secrets.rotate", "roles.assign_scoped",
     "roles.assign_super_admin", "audit.read", "transport.review", "content.opportunities.read",
   ],
   admin: [
     ...ownAccount, "catalog.create_platform", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.support_read", "users.support_read_minimal", "users.manage",
     "content.draft", "content.review", "content.publish", "analytics.read_aggregated",
-    "finance.read_scoped", "payout.review", "roles.assign_scoped", "audit.read", "transport.review", "content.opportunities.read",
+    "finance.read_scoped", "payout.review", "settings.site.manage", "roles.assign_scoped", "audit.read", "transport.review", "content.opportunities.read",
   ],
   operations: [
     ...ownAccount, "catalog.moderate", "catalog.pause", "orders.support_read",
