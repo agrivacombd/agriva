@@ -11,6 +11,7 @@ const ipn = readFileSync("app/api/payment/sslcommerz/ipn/route.ts", "utf8");
 const init = readFileSync("app/api/payment/sslcommerz/init/route.ts", "utf8");
 const reconciliation = readFileSync("supabase/migrations/20261029180000_atomic_sslcommerz_reconciliation.sql", "utf8");
 
+assert.match(ipn, /String\(validated\?\.val_id \|\| ""\) !== valId/, "IPN must bind the validation response to the requested validation ID");
 assert.match(ipn, /validated\?\.tran_id\s*!==\s*tranId/, "IPN must bind validated transaction ID");
 assert.match(ipn, /validated\?\.currency[\s\S]*BDT/, "IPN must require BDT currency");
 assert.match(ipn, /\["VALID",\s*"VALIDATED"\]/, "IPN must accept only validated gateway states");
