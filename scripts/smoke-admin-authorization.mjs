@@ -99,7 +99,10 @@ assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).
 const legacyArticleGenerate = read("app/api/admin/article/generate/route.ts");
 assert.ok(legacyArticleGenerate.includes('from("content_opportunities")'), "legacy article generation must verify linked opportunity state");
 assert.ok(legacyArticleGenerate.includes('opportunity.status !== "approved"'), "legacy article generation must reject unapproved opportunities");
-assert.ok(legacyArticleGenerate.includes("A valid opportunityId is required"), "legacy article generation must validate supplied opportunity IDs");
+assert.ok(legacyArticleGenerate.includes("A valid approved opportunityId is required"), "legacy article generation must require a valid opportunity ID");
+assert.ok(legacyArticleGenerate.includes('select("id,keyword,status")'), "legacy article generation must load the canonical opportunity keyword");
+assert.ok(legacyArticleGenerate.includes("suppliedKeyword !== keyword"), "legacy article generation must reject keywords that differ from the approved opportunity");
+assert.ok(legacyArticleGenerate.includes("const keyword = opportunity.keyword.trim()"), "legacy article generation must use the database-owned opportunity keyword");
 const publicationInvariant = read("supabase/migrations/20261029250000_enforce_content_draft_publication_in_database.sql");
 assert.ok(publicationInvariant.includes("BEFORE UPDATE OF status ON public.content_drafts"), "database must enforce content draft publication invariants");
 assert.ok(publicationInvariant.includes("OLD.status IS DISTINCT FROM 'approved'"), "database must reject publication unless the previous status was approved");
