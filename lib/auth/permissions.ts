@@ -18,6 +18,7 @@ export type AgrivaPermission =
   | "catalog.publish"
   | "catalog.pause"
   | "orders.read_own"
+  | "orders.create_own"
   | "orders.fulfill_own"
   | "orders.support_read"
   | "users.support_read_minimal"
@@ -113,7 +114,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
   support_agent: [...ownAccount, "orders.support_read", "users.support_read_minimal"],
   seller: sellerCatalog,
   farmer: [...sellerCatalog],
-  buyer: [...ownAccount, "orders.read_own"],
+  buyer: [...ownAccount, "orders.read_own", "orders.create_own"],
   reseller: [...ownAccount, "orders.read_own", "finance.read_scoped", "payout.request_own", "reseller.links.create_own"],
   transport: [...ownAccount, "orders.read_own", "orders.fulfill_own"],
   transport_provider: [...ownAccount, "orders.read_own", "orders.fulfill_own"],
