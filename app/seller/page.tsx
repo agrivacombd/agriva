@@ -8,15 +8,17 @@ type Product = {
   price: number | string;
   stock: number | string;
   status: "draft" | "active" | "paused" | "sold_out";
+  moderation_status: "pending" | "approved" | "rejected" | "changes_requested";
+  moderation_reason: string | null;
   category: string;
   updated_at: string;
 };
 
-const statusLabel: Record<Product["status"], string> = {
-  draft: "পর্যালোচনার অপেক্ষায়",
-  active: "প্রকাশিত",
-  paused: "সাময়িক বন্ধ",
-  sold_out: "স্টক শেষ",
+const statusLabel: Record<Product["moderation_status"], string> = {
+  pending: "পর্যালোচনার অপেক্ষায়",
+  approved: "অনুমোদিত",
+  rejected: "প্রত্যাখ্যাত",
+  changes_requested: "সংশোধন প্রয়োজন",
 };
 
 export default async function SellerDashboardPage() {
@@ -31,13 +33,13 @@ export default async function SellerDashboardPage() {
 
   const { data, error } = await auth.supabase
     .from("products")
-    .select("id,name,price,stock,status,category,updated_at")
+    .select("id,name,price,stock,status,moderation_status,moderation_reason,category,updated_at")
     .eq("farmer_id", auth.user.id)
     .order("updated_at", { ascending: false })
     .limit(100);
   const products = (data ?? []) as Product[];
-  const pending = products.filter((product) => product.status === "draft").length;
-  const live = products.filter((product) => product.status === "active").length;
+  const pending = products.filter((product) => product.moderation_status === "pending" || product.moderation_status === "changes_requested").length;
+  const live = products.filter((product) => product.moderation_status === "approved").length;
 
   return (
     <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6">
@@ -64,7 +66,7 @@ export default async function SellerDashboardPage() {
           </div>
           {error ? <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">পণ্যের তালিকা লোড করা যায়নি। অনুমতি ও database policy যাচাই করে আবার চেষ্টা করুন।</p> :
             products.length === 0 ? <div className="mt-5 rounded-2xl border border-dashed p-8 text-center"><p className="font-bold">এখনো কোনো পণ্য জমা দেননি।</p><p className="mt-2 text-sm text-[#647568]">প্রথম পণ্যটি জমা দিন। অনুমোদনের আগে এটি public marketplace-এ দেখাবে না।</p><Link href="/farmer/products/new" className="mt-4 inline-flex rounded-xl bg-[#17452c] px-5 py-3 text-sm font-bold text-white">পণ্য যোগ করুন</Link></div> :
-            <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-[#647568]"><th className="px-3 py-3">পণ্য</th><th className="px-3 py-3">ক্যাটাগরি</th><th className="px-3 py-3">মূল্য</th><th className="px-3 py-3">স্টক</th><th className="px-3 py-3">অবস্থা</th></tr></thead><tbody>{products.map((product) => <tr key={product.id} className="border-b last:border-0"><td className="px-3 py-4 font-bold">{product.name}</td><td className="px-3 py-4">{product.category}</td><td className="px-3 py-4">৳{Number(product.price).toLocaleString("en-BD")}</td><td className="px-3 py-4">{Number(product.stock).toLocaleString("en-BD")}</td><td className="px-3 py-4"><span className={product.status === "active" ? "rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-800" : "rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800"}>{statusLabel[product.status] ?? product.status}</span></td></tr>)}</tbody></table></div>}
+            <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[620px] text-left text-sm"><thead><tr className="border-b text-xs uppercase text-[#647568]"><th className="px-3 py-3">পণ্য</th><th className="px-3 py-3">ক্যাটাগরি</th><th className="px-3 py-3">মূল্য</th><th className="px-3 py-3">স্টক</th><th className="px-3 py-3">অবস্থা</th></tr></thead><tbody>{products.map((product) => <tr key={product.id} className="border-b last:border-0"><td className="px-3 py-4 font-bold">{product.name}</td><td className="px-3 py-4">{product.category}</td><td className="px-3 py-4">৳{Number(product.price).toLocaleString("en-BD")}</td><td className="px-3 py-4">{Number(product.stock).toLocaleString("en-BD")}</td><td className="px-3 py-4"><span className={product.moderation_status === "approved" ? "rounded-full bg-emerald-50 px-3 py-1 font-bold text-emerald-800" : product.moderation_status === "rejected" ? "rounded-full bg-red-50 px-3 py-1 font-bold text-red-800" : "rounded-full bg-amber-50 px-3 py-1 font-bold text-amber-800"}>{statusLabel[product.moderation_status] ?? product.moderation_status}</span>{product.moderation_reason && <p className="mt-2 max-w-xs text-xs text-red-800">{product.moderation_reason}</p>}</td></tr>)}</tbody></table></div>}
         </section>
         <p className="mt-5 text-xs leading-5 text-[#647568]">নিরাপত্তা: seller dashboard-এর তালিকা authenticated account ID দিয়ে সীমাবদ্ধ। পণ্য প্রকাশ, moderation এবং commission policy seller-এর নিজস্ব নিয়ন্ত্রণে নয়।</p>
       </div>
