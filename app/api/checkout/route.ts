@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   let body: any;
   try { body = JSON.parse(boundedBody.text); }
   catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json({ error: "অর্ডারের তথ্য সঠিক নয়।" }, { status: 400 });
   }
 
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "পরিমাণ ১ থেকে ১০০-এর মধ্যে দিন।" }, { status: 400 });
   }
 
-  const paymentMethod = body.paymentMethod === "online" ? "online" : "cod";
+  const paymentMethod = body.paymentMethod;
   if (paymentMethod !== "cod") {
     return NextResponse.json({ error: "অনলাইন পেমেন্ট এখনো চালু হয়নি। ক্যাশ অন ডেলিভারি নির্বাচন করুন।" }, { status: 400 });
   }
