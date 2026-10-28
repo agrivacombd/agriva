@@ -98,9 +98,13 @@ At the baseline commit, the repository tree contains:
 - [x] Add a scoped moderator/admin database-boundary fix and regression assertions for the discovered role-scope issue.
 - [x] Create the initial API route-to-permission matrix and document the remaining authorization gaps.
 - [x] Migrate the five inventoried admin content/catalog handlers and reseller-link API to capability-based authorization; add regression assertions.
+- [x] Add buyer-owned checkout capability and gate checkout through the shared authorization helper.
+- [x] Add employer/job-seeker capabilities and gate job posting/application Server Actions.
+- [x] Add additive RLS policies enforcing employer/job-seeker role boundaries for direct job/application inserts, with static regression assertions.
 - [x] Fix provider callback reconciliation to use a service-role-only atomic database RPC and add static regression assertions.
 - [x] Ensure public search returns only active, moderation-approved products and add regression coverage.
 - [ ] Complete route/server-action/API-to-capability mapping; initial API matrix: `docs/architecture/route-permission-matrix.md`.
+- [ ] Continue auditing public AI/search abuse limits, crop-disease Storage ownership, payment initialization concurrency, and server-action role coverage.
 - [ ] Search remaining routes and server actions for legacy `profiles.role` checks; migrate each with tests.
 - [ ] Verify moderator-scope and payment-reconciliation migrations on a disposable/staging database and run SQL transition tests.
 - [ ] Inventory all RPCs, RLS policies, and Storage policies.
