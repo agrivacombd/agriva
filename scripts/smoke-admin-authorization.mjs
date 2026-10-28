@@ -258,6 +258,7 @@ const productMarketplace = read("components/marketplace/MarketplaceCore.tsx");
 assert.ok(productMarketplace.includes("product.image_url"), "marketplace cards must display uploaded product images");
 const productDetail = read("app/marketplace/[productId]/page.tsx");
 assert.ok(productDetail.includes('.eq("status", "active")'), "public product details must expose active products only");
+assert.ok(productDetail.includes('.eq("moderation_status", "approved")'), "public product details must expose only approved listings");
 assert.ok(productDetail.includes('"@type": "Product"'), "product detail pages must include Product structured data");
 
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
