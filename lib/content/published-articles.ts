@@ -58,3 +58,40 @@ export async function getPublishedContentArticleBySlug(slug: string): Promise<Pu
   if (error || !data || !validSlug(data.slug) || typeof data.title !== "string" || !data.title.trim()) return null;
   return data as PublishedContentArticle;
 }
+
+
+export async function getPublishedContentLandingPages(): Promise<PublishedContentArticle[]> {
+  const supabase = publicSupabaseClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("content_drafts")
+    .select("slug,title,meta_title,meta_description,body_markdown,updated_at")
+    .eq("status", "published")
+    .eq("content_type", "landing_page")
+    .not("slug", "is", null)
+    .order("updated_at", { ascending: false })
+    .limit(5000);
+
+  if (error || !data) return [];
+  return (data as PublishedContentArticle[]).filter(
+    (page) => validSlug(page.slug) && typeof page.title === "string" && page.title.trim().length > 0,
+  );
+}
+
+export async function getPublishedContentLandingPageBySlug(slug: string): Promise<PublishedContentArticle | null> {
+  if (!validSlug(slug)) return null;
+  const supabase = publicSupabaseClient();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase
+    .from("content_drafts")
+    .select("slug,title,meta_title,meta_description,body_markdown,updated_at")
+    .eq("slug", slug)
+    .eq("status", "published")
+    .eq("content_type", "landing_page")
+    .maybeSingle();
+
+  if (error || !data || !validSlug(data.slug) || typeof data.title !== "string" || !data.title.trim()) return null;
+  return data as PublishedContentArticle;
+}
