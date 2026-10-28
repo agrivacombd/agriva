@@ -50,8 +50,9 @@ export async function POST(request: NextRequest) {
         const { data, error: productError } = await supabase
           .from("products")
           .select("id,name,category,description")
+          // Legacy production products schema has no moderation_status column.
+          // Keep active listings searchable without querying a missing field.
           .eq("status", "active")
-          .eq("moderation_status", "approved")
           .or(orFilter)
           .limit(10);
 
