@@ -53,7 +53,8 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
   const [yieldKg, setYieldKg] = useState("1200");
   const [pricePerKg, setPricePerKg] = useState("35");
   const [checkedTasks, setCheckedTasks] = useState<number[]>([]);
-  const taskStorageKey = "agriva-crop-checklist-v1-" + locale;
+  const [tasksLoaded, setTasksLoaded] = useState(false);
+  const taskStorageKey = "agriva-crop-checklist-v1";
 
   useEffect(() => {
     if (kind !== "calendar") return;
@@ -65,13 +66,15 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
       }
     } catch {
       // Ignore unavailable or malformed local storage data.
+    } finally {
+      setTasksLoaded(true);
     }
   }, [kind, taskStorageKey, t.tasks.length]);
 
   useEffect(() => {
-    if (kind !== "calendar") return;
+    if (kind !== "calendar" || !tasksLoaded) return;
     try { window.localStorage.setItem(taskStorageKey, JSON.stringify(checkedTasks)); } catch { /* Storage may be disabled. */ }
-  }, [kind, taskStorageKey, checkedTasks]);
+  }, [kind, taskStorageKey, checkedTasks, tasksLoaded]);
 
   const acres = Number(area || 0) * (areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01);
   const totalRate = useMemo(() => Math.max(0, acres) * Math.max(0, Number(rate || 0)), [acres, rate]);
