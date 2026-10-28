@@ -152,6 +152,7 @@ const adminMembershipMigration = read("supabase/migrations/20261029200000_align_
 assert.ok(adminMembershipMigration.includes("CREATE OR REPLACE FUNCTION public.has_platform_admin_access()"), "admin membership migration must define a shared DB governance check");
 assert.ok(adminMembershipMigration.includes("m.role IN ('admin', 'super_admin')"), "DB governance helper must accept only controlled admin memberships");
 assert.ok(adminMembershipMigration.includes("admin_set_transport_partner_verification"), "transport verification RPC must use the DB governance check");
+assert.ok(adminMembershipMigration.includes('"opportunities_admin_read" ON public.search_opportunities'), "content opportunity reads must be guarded by platform-admin RLS");
 assert.ok(adminMembershipMigration.includes("FOR SELECT TO anon, authenticated"), "public category policy must remain evaluable for anonymous catalog reads");
 assert.ok(adminMembershipMigration.includes("REVOKE ALL ON FUNCTION public.has_platform_admin_access() FROM PUBLIC, anon"), "helper must revoke default public execution before explicit grants");
 const transportCapabilityAdmin = read("app/admin/transport/page.tsx");
