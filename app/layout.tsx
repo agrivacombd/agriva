@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import PwaRegister from "./pwa-register";
 import "./globals.css";
 
@@ -14,7 +14,6 @@ export const metadata: Metadata = {
     "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য AGRIVA—কৃষি পণ্য, ফসল সহায়তা, কৃষি চাকরি, CV Builder ও ডিজিটাল টুলস এক জায়গায়।",
   applicationName: "AGRIVA",
   manifest: "/manifest.webmanifest",
-  themeColor: "#0b6b4f",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -48,6 +47,10 @@ export const metadata: Metadata = {
     title: "AGRIVA — কৃষি ও কৃষি উদ্যোক্তাদের ডিজিটাল প্ল্যাটফর্ম",
     description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য ডিজিটাল প্ল্যাটফর্ম।",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0b6b4f",
 };
 
 const organizationJsonLd = {
