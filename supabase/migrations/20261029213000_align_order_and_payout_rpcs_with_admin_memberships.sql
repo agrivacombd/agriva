@@ -1,4 +1,4 @@
--- Keep order and reseller payout mutations aligned with the controlled platform-admin
+-- Keep admin moderation, order, and reseller payout mutations aligned with the controlled platform-admin
 -- membership model. Preserve each RPC's existing validation and audit behavior.
 -- Only legacy public.is_admin() guards are rewritten; finance/staff capabilities are
 -- not implicitly elevated by this migration.
@@ -17,7 +17,10 @@ BEGIN
         'set_marketplace_order_status',
         'approve_reseller_commission',
         'approve_commission_payout',
-        'complete_commission_payout'
+        'complete_commission_payout',
+        'admin_update_marketplace_product',
+        'admin_moderate_harvest_listing',
+        'admin_moderate_job_post'
       ])
       AND p.prokind = 'f'
   LOOP
