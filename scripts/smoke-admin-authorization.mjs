@@ -228,6 +228,7 @@ assert.ok(sitemap.includes("url: `${base}/landing/${page.slug}`"), "sitemap must
 const landingPageRoute = read("app/landing/[slug]/page.tsx");
 assert.ok(landingPageRoute.includes("getPublishedContentLandingPageBySlug"), "public landing route must load published landing content");
 assert.ok(landingPageRoute.includes('"@type": "WebPage"'), "landing pages must expose WebPage structured data");
+const contentDraftsClient = read("app/admin/content-drafts/ContentDraftsClient.tsx");
 assert.ok(contentDraftsClient.includes('"landing_page"'), "admin content drafts must support landing_page content type");
 const legacyArticleRoute = read("app/articles/[slug]/page.tsx");
 assert.ok(legacyArticleRoute.includes("redirect(`/blog/${encodeURIComponent(slug)}`)"), "legacy article URLs must canonicalize to the blog route");
