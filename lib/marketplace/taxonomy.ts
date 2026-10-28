@@ -24,6 +24,12 @@ export const MARKETPLACE_CATEGORIES = [
     { slug: "poultry-feed", name: "পোলট্রি ফিড", description: "পোলট্রি পালনে ব্যবহৃত ফিডের পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["পোলট্রি", "poultry"] },
     { slug: "cattle-feed", name: "গবাদিপশুর খাদ্য", description: "গবাদিপশুর খাদ্য পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["গবাদিপশু", "cattle"] },
   ] },
+  { slug: "premium-food-grains", name: "Premium Food & Grains", description: "চিয়া সিড, কালো চাল, লাল চাল, ব্রাউন রাইস ও অন্যান্য প্রিমিয়াম খাদ্যশস্য", icon: "🌾", match: ["premium", "food grains", "food-grains", "superfood", "superfoods", "chia", "চিয়া", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
+    { slug: "premium-rice", name: "প্রিমিয়াম চাল", description: "কালো চাল, লাল চাল, ব্রাউন রাইস, বাসমতি ও অন্যান্য প্রিমিয়াম চালের পণ্য দেখুন।", match: ["rice", "চাল", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "বাসমতি", "basmati", "কালিজিরা", "চিনিগুঁড়া"] },
+    { slug: "edible-seeds", name: "খাদ্যোপযোগী সিডস", description: "খাওয়ার উপযোগী চিয়া সিড ও অন্যান্য খাদ্যবীজের প্যাকেটজাত পণ্য দেখুন; বপনের বীজ থেকে আলাদা।", match: ["chia", "চিয়া", "edible seeds", "খাদ্যোপযোগী", "flax", "ফ্ল্যাক্স", "pumpkin", "সিড", "seed"] },
+    { slug: "nuts-dried-fruit", name: "বাদাম ও শুকনো ফল", description: "বাদাম, খেজুর ও শুকনো ফলের প্যাকেটজাত পণ্য দেখুন।", match: ["বাদাম", "nuts", "almond", "cashew", "খেজুর", "dates", "dried fruit"] },
+    { slug: "honey-natural-foods", name: "মধু ও প্রাকৃতিক খাদ্য", description: "মধু ও অন্যান্য প্যাকেটজাত প্রাকৃতিক খাদ্যপণ্যের বিবরণ দেখুন।", match: ["মধু", "honey", "natural food"] },
+  ] },
 ] as const;
 
 export function slugifyProductName(value: string) {
@@ -65,8 +71,6 @@ export function getProductCategory(value: string | null) {
     if (exactSubcategory) return category;
   }
 
-  // Prefer a category + subcategory term pair over a broad category keyword.
-  // This prevents e.g. "ধানের বীজ" from being classified as both seeds and produce.
   for (const category of MARKETPLACE_CATEGORIES) {
     if (category.subcategories.some((subcategory) =>
       matchesCategory(value, category.match) && matchesCategory(value, subcategory.match)
