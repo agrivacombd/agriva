@@ -95,7 +95,8 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      router.push(requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//") ? requestedNextPath : "/dashboard");
+      const nextPath = searchParams.get("next");
+      router.push(nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard");
       router.refresh();
     } catch {
       setMessage(t.failed);
