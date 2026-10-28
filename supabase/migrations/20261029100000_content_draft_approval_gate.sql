@@ -4,6 +4,35 @@ CREATE UNIQUE INDEX IF NOT EXISTS content_drafts_published_article_slug_uidx
   ON public.content_drafts (slug)
   WHERE status = 'published' AND content_type = 'article';
 
+CREATE OR REPLACE FUNCTION public.guard_published_content_article_slug()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+AS $function$
+BEGIN
+  IF NEW.status = 'published'
+     AND NEW.content_type = 'article'
+     AND NEW.slug = ANY (ARRAY[
+       'boro-rice-season-preparation',
+       'soil-health-basics',
+       'integrated-pest-management',
+       'vegetable-garden-water-management'
+     ]) THEN
+    RAISE EXCEPTION 'This slug is reserved for a built-in AGRIVA article' USING ERRCODE = '23505';
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS content_drafts_reserved_blog_slug_guard ON public.content_drafts;
+CREATE TRIGGER content_drafts_reserved_blog_slug_guard
+BEFORE INSERT OR UPDATE OF slug, status, content_type
+ON public.content_drafts
+FOR EACH ROW
+EXECUTE FUNCTION public.guard_published_content_article_slug();
+
+REVOKE ALL ON FUNCTION public.guard_published_content_article_slug() FROM PUBLIC, anon, authenticated;
+
 CREATE OR REPLACE FUNCTION public.create_content_draft_from_opportunity(p_opportunity_id uuid)
 RETURNS public.content_drafts
 LANGUAGE plpgsql
