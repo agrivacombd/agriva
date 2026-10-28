@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 async function requireAdmin() {
-  const auth = await authorizePermission("roles.assign_scoped");
+  const auth = await authorizePermission("exchange.moderate");
   if (!auth.ok) {
     if (auth.status === 401) redirect("/login?next=%2Fadmin%2Fgreen-exchange");
     redirect("/dashboard");
