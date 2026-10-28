@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Login required" }, { status: 401 });
-
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError) return NextResponse.json({ error: "Unable to verify admin permissions" }, { status: 500 });
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+  const authorization = await authorizePermission("catalog.create_platform");
+  if (!authorization.ok) return NextResponse.json({ error: authorization.error }, { status: authorization.status });
+  const { supabase, user } = authorization;
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) {
