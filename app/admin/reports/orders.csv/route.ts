@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { authorizePermission } from "@/lib/auth/server-authorization";
 
 function csvCell(value: unknown) {
-  const text = value == null ? "" : String(value);
+  const raw = value == null ? "" : String(value);
+  // Quoting alone does not prevent spreadsheet formula execution. Prefix
+  // cells beginning with formula characters, even after leading whitespace.
+  const candidate = raw.trimStart();
+  const text = ["=", "+", "-", "@"].some((prefix) => candidate.startsWith(prefix)) ? "'" + raw : raw;
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
