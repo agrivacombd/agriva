@@ -20,7 +20,7 @@ AS $function$
 $function$;
 
 REVOKE ALL ON FUNCTION public.has_platform_admin_access() FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.has_platform_admin_access() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.has_platform_admin_access() TO anon, authenticated, service_role;
 
 -- Update known admin RPCs without changing their validation, audit, or business logic.
 DO $migration$
