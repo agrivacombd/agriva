@@ -201,6 +201,8 @@ assert.ok(approvalMigration.includes("o.status <> 'approved'"), "database RPC mu
 assert.ok(approvalMigration.includes("FOR UPDATE"), "database draft creation must lock the opportunity against concurrent requests");
 assert.ok(approvalMigration.includes("create_generated_content_draft_from_opportunity"), "database must provide an atomic generated-draft RPC");
 assert.ok(approvalMigration.includes("REVOKE ALL ON FUNCTION public.create_generated_content_draft_from_opportunity"), "generated-draft RPC must revoke public execution");
+assert.ok(approvalMigration.includes("content_drafts_published_article_slug_uidx"), "published CMS articles must have unique canonical slugs");
+assert.ok(approvalMigration.includes("guard_published_content_article_slug"), "database must reserve slugs used by built-in blog posts");
 
 
 const publishedArticleData = read("lib/content/published-articles.ts");
