@@ -1,117 +1,153 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { ReadingProgress, ShareArticle } from "../article-reading-tools";
 
-export const revalidate = 300;
+const articles = [
+  {
+    slug: "boro-rice-season-preparation",
+    category: "ফসল চাষ",
+    title: "বোরো ধান চাষের আগে জমি প্রস্তুতির গুরুত্বপূর্ণ ধাপ",
+    readTime: "৫ মিনিট",
+    emoji: "🌾",
+    intro: "বোরো ধানের ভালো ফলনের জন্য মৌসুম শুরুর আগেই জমি, সেচ এবং চারা রোপণের পরিকল্পনা গুছিয়ে নেওয়া গুরুত্বপূর্ণ। জমির অবস্থা ও স্থানীয় কৃষি পরামর্শ অনুযায়ী কাজের সময় ঠিক করুন।",
+    sections: [
+      ["জমি ও পানি ব্যবস্থাপনা যাচাই করুন", "জমির উঁচু-নিচু অংশ, পানি নিষ্কাশনের ব্যবস্থা এবং সেচের নির্ভরযোগ্যতা দেখুন। জমি সমতল হলে সেচের পানি তুলনামূলক সমানভাবে ছড়াতে পারে।"],
+      ["মানসম্মত বীজ ও সুস্থ চারা বেছে নিন", "এলাকার মৌসুম, জমির ধরন ও সুপারিশকৃত জাত অনুযায়ী বীজ নির্বাচন করুন। বীজতলায় রোগাক্রান্ত বা দুর্বল চারা থাকলে সেগুলো আলাদা করুন।"],
+      ["সময়মতো জমি প্রস্তুত করুন", "আগের ফসলের অবশিষ্টাংশ, মাটির আর্দ্রতা ও জমির গঠন বিবেচনা করে জমি তৈরি করুন। সার ব্যবহারের আগে সম্ভব হলে মাটি পরীক্ষা ও স্থানীয় সুপারিশ অনুসরণ করুন।"],
+    ],
+  },
+  {
+    slug: "soil-health-basics",
+    category: "মাটির স্বাস্থ্য",
+    title: "মাটির স্বাস্থ্য ভালো রাখতে জৈব পদার্থের ভূমিকা",
+    readTime: "৪ মিনিট",
+    emoji: "🌱",
+    intro: "উৎপাদনশীল মাটি শুধু গাছকে পুষ্টি দেয় না; পানি ধরে রাখা, শিকড়ের বৃদ্ধি এবং মাটির জীববৈচিত্র্য বজায় রাখতেও ভূমিকা রাখে। জৈব পদার্থ মাটির এই গুণগুলো উন্নত করতে সহায়তা করতে পারে।",
+    sections: [
+      ["কম্পোস্ট ও পচা জৈব সার ব্যবহার", "ভালোভাবে পচানো কম্পোস্ট মাটিতে জৈব পদার্থ যোগ করতে পারে। কাঁচা বা অপরিপক্ব উপাদান সরাসরি ব্যবহার করলে সমস্যা হতে পারে, তাই পরিপক্বতা নিশ্চিত করুন।"],
+      ["ফসলের অবশিষ্টাংশের সঠিক ব্যবস্থাপনা", "নিরাপদ ও উপযুক্ত হলে ফসলের অবশিষ্টাংশ মাটিতে ফিরিয়ে দেওয়া জৈব পদার্থ বাড়ানোর একটি উপায়। রোগাক্রান্ত অবশিষ্টাংশের ক্ষেত্রে স্থানীয় কৃষি নির্দেশনা মেনে চলুন।"],
+      ["মাটি পরীক্ষা ও ভারসাম্য বজায় রাখুন", "জৈব সারও পরিকল্পনা করে ব্যবহার করা উচিত। মাটি পরীক্ষা এবং ফসলভিত্তিক সুপারিশের মাধ্যমে পুষ্টির ঘাটতি ও অতিরিক্ত ব্যবহারের ঝুঁকি কমানো যায়।"],
+    ],
+  },
+  {
+    slug: "integrated-pest-management",
+    category: "রোগবালাই",
+    title: "সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত",
+    readTime: "৬ মিনিট",
+    emoji: "🐞",
+    intro: "সমন্বিত বালাই ব্যবস্থাপনায় নিয়মিত পর্যবেক্ষণ, প্রতিরোধমূলক চাষাবাদ, উপকারী জীব সংরক্ষণ এবং প্রয়োজন হলে লক্ষ্যভিত্তিক ব্যবস্থা একসঙ্গে বিবেচনা করা হয়।",
+    sections: [
+      ["ক্ষেত নিয়মিত পর্যবেক্ষণ করুন", "গাছের পাতা, কাণ্ড ও ফলের পরিবর্তন দেখুন। কোথায় লক্ষণ দেখা যাচ্ছে, কত গাছে ছড়িয়েছে এবং সময়ের সঙ্গে বাড়ছে কি না—এসব নোট করুন।"],
+      ["উপকারী পোকা ও জীববৈচিত্র্য রক্ষা করুন", "সব পোকা ক্ষতিকর নয়। উপকারী পোকা শনাক্ত করতে শিখুন এবং অপ্রয়োজনীয় কীটনাশক ব্যবহার এড়িয়ে চলুন।"],
+      ["প্রয়োজনে নিরাপদ ও সুপারিশকৃত ব্যবস্থা নিন", "লক্ষণ দেখে নিশ্চিত রোগ নির্ণয় সবসময় সম্ভব নয়। স্থানীয় কৃষি কর্মকর্তা বা নির্ভরযোগ্য সরকারি নির্দেশনা অনুসরণ করুন এবং যেকোনো বালাইনাশকের লেবেল ও নিরাপত্তা বিধি মেনে চলুন।"],
+    ],
+  },
+  {
+    slug: "vegetable-garden-water-management",
+    category: "সবজি",
+    title: "সবজি বাগানে সঠিক পানি ব্যবস্থাপনার সহজ কৌশল",
+    readTime: "৪ মিনিট",
+    emoji: "🥬",
+    intro: "সবজি গাছে অতিরিক্ত ও অপর্যাপ্ত—দুই ধরনের সেচই সমস্যার কারণ হতে পারে। মাটির আর্দ্রতা, আবহাওয়া এবং গাছের বৃদ্ধির ধাপ দেখে সেচ পরিকল্পনা করা ভালো।",
+    sections: [
+      ["মাটির আর্দ্রতা পরীক্ষা করুন", "শুধু উপরিভাগ শুকনো দেখেই সেচের সিদ্ধান্ত নেবেন না। শিকড়ের কাছের মাটি পরীক্ষা করুন এবং জমির ধরন অনুযায়ী পানি দেওয়ার ব্যবধান ঠিক করুন।"],
+      ["সকালের সময়কে অগ্রাধিকার দিন", "সম্ভব হলে এমন সময় সেচ দিন যাতে গাছ পানি ব্যবহার করতে পারে এবং পাতায় দীর্ঘক্ষণ আর্দ্রতা জমে না থাকে। স্থানীয় আবহাওয়া ও সেচ ব্যবস্থার উপযোগিতা বিবেচনা করুন।"],
+      ["পানি জমে থাকা ও অপচয় কমান", "নিষ্কাশনের ব্যবস্থা ঠিক রাখুন এবং গাছের গোড়ায় প্রয়োজন অনুযায়ী পানি পৌঁছানোর চেষ্টা করুন। বৃষ্টির পূর্বাভাস থাকলে সেচের পরিকল্পনা পুনর্বিবেচনা করুন।"],
+    ],
+  },
+];
 
-// Render a deliberately small, safe Markdown subset as React elements. Content is
-// always emitted as text (never injected as HTML), so authored HTML cannot execute.
-function renderMarkdown(source: string) {
-  return source.split(/\r?\n/).map((line, index) => {
-    const key = `line-${index}`;
-    const trimmed = line.trim();
-    if (!trimmed) return null;
-    const heading = /^(#{1,4})\s+(.+)$/.exec(trimmed);
-    if (heading) {
-      const level = heading[1].length;
-      const className = level === 1 ? "mt-8 text-3xl font-black" : level === 2 ? "mt-7 text-2xl font-bold" : level === 3 ? "mt-6 text-xl font-bold" : "mt-5 text-lg font-bold";
-      if (level === 1) return <h2 key={key} className={className}>{heading[2]}</h2>;
-      if (level === 2) return <h2 key={key} className={className}>{heading[2]}</h2>;
-      if (level === 3) return <h3 key={key} className={className}>{heading[2]}</h3>;
-      return <h4 key={key} className={className}>{heading[2]}</h4>;
-    }
-    if (/^[-*+]\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`• ${trimmed.replace(/^[-*+]\s+/, "")}`}</p>;
-    if (/^\d+[.)]\s+/.test(trimmed)) return <p key={key} className="my-2 pl-5">{`${trimmed.match(/^\d+/)?.[0]}. ${trimmed.replace(/^\d+[.)]\s+/, "")}`}</p>;
-    if (trimmed.startsWith("> ")) return <blockquote key={key} className="border-l-4 border-[#d8e4d3] pl-4 italic">{trimmed.slice(2)}</blockquote>;
-    if (trimmed.startsWith("---") || trimmed === "***") return <hr key={key} className="my-6 border-[#e4eadf]" />;
-    return <p key={key} className="my-4 leading-8">{trimmed}</p>;
-  });
-}
+type Article = (typeof articles)[number];
 
-type ArticleData = {
-  title: string;
-  slug: string;
-  meta_title: string | null;
-  meta_description: string | null;
-  primary_keyword: string;
-  body_markdown: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-async function getArticle(slug: string): Promise<ArticleData | null> {
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return null;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  const supabase = createClient(url, key);
-  const { data, error } = await supabase
-    .from("content_drafts")
-    .select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .eq("content_type", "article")
-    .maybeSingle();
-  if (error || !data) return null;
-  return data as ArticleData;
+export function generateStaticParams() {
+  return articles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getArticle(slug);
-  if (!article) return { title: "Article not found | AGRIVA", robots: { index: false, follow: false } };
-  const description = article.meta_description?.trim() || `Agriculture guide about ${article.primary_keyword} from AGRIVA.`;
+  const article = articles.find((item) => item.slug === slug);
+  if (!article) return { title: "লেখা পাওয়া যায়নি" };
   return {
-    title: article.meta_title?.trim() || article.title,
-    description,
+    title: article.title,
+    description: article.intro,
     alternates: { canonical: `/blog/${article.slug}` },
-    robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
-    openGraph: { type: "article", siteName: "AGRIVA", title: article.meta_title?.trim() || article.title, description, url: `/blog/${article.slug}` },
-    twitter: { card: "summary_large_image", title: article.meta_title?.trim() || article.title, description },
+    openGraph: { siteName: "AGRIVA", title: article.title, description: article.intro, url: `/blog/${article.slug}`, type: "article", locale: "bn_BD" },
+    twitter: { card: "summary_large_image", title: article.title, description: article.intro },
   };
 }
 
-export default async function ArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article = await getArticle(slug);
+  const article: Article | undefined = articles.find((item) => item.slug === slug);
   if (!article) notFound();
-
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const articleUrl = `${siteUrl}/articles/${article.slug}`;
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: article.title,
-    description: article.meta_description || `Agriculture guide about ${article.primary_keyword} from AGRIVA.`,
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}/blog/${article.slug}` },
-    url: `${siteUrl}/blog/${article.slug}`,
-    datePublished: article.created_at,
-    dateModified: article.updated_at || article.created_at,
+    description: article.intro,
+    url: articleUrl,
+    mainEntityOfPage: { "@type": "WebPage", "@id": articleUrl },
     author: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
     publisher: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    articleSection: article.category,
     inLanguage: "bn-BD",
-    keywords: article.primary_keyword,
+    isAccessibleForFree: true,
   };
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
-      { "@type": "ListItem", position: 2, name: "Agriculture Blog", item: `${siteUrl}/blog` },
-      { "@type": "ListItem", position: 3, name: article.title, item: `${siteUrl}/blog/${article.slug}` },
+      { "@type": "ListItem", position: 1, name: "হোম", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "AGRIVA Blog", item: `${siteUrl}/articles` },
+      { "@type": "ListItem", position: 3, name: article.title, item: articleUrl },
     ],
   };
 
-  return <main className="min-h-screen bg-[#f5f7f2] px-6 py-14 text-[#17351f]">
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }} />
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
-    <article className="mx-auto max-w-4xl rounded-3xl bg-white p-7 shadow-sm md:p-12">
-      <nav aria-label="Breadcrumb" className="text-sm text-[#647468]"><Link href="/" className="hover:underline">Home</Link><span aria-hidden="true"> / </span><Link href="/blog" className="hover:underline">Agriculture Blog</Link></nav>
-      <p className="mt-6 text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Agriculture Guide</p>
-      <h1 className="mt-4 text-3xl font-black md:text-5xl">{article.title}</h1>
-      <p className="mt-4 text-sm text-[#647468]">বিষয়: {article.primary_keyword}</p>
-      <div className="prose prose-lg mt-10 max-w-none break-words text-[#304936]">{article.body_markdown?.trim() ? renderMarkdown(article.body_markdown) : <p>এই নিবন্ধটি সম্পাদনা করা হচ্ছে।</p>}</div>
-      <div className="mt-10 border-t border-[#e4eadf] pt-6"><Link href="/blog" className="font-bold text-[#17613c] hover:underline">← সব কৃষি গাইড দেখুন</Link></div>
-    </article>
-  </main>;
+  return (
+    <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12">
+      <ReadingProgress />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
+      <article className="mx-auto max-w-3xl">
+        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
+          <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/blog" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
+        </nav>
+        <header className="mt-7 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm">
+          <div aria-hidden="true" className="flex min-h-48 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-7xl sm:min-h-60">{article.emoji}</div>
+          <div className="p-6 sm:p-9">
+            <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">{article.category}</span>
+            <h1 className="mt-4 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">{article.title}</h1>
+            <p className="mt-4 text-sm text-slate-500">AGRIVA Blog · আনুমানিক {article.readTime} পড়া</p>
+            <p className="mt-5 text-base leading-8 text-slate-700">{article.intro}</p>
+          </div>
+        </header>
+
+        <nav aria-label="এই লেখার বিষয়বস্তু" className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-7">
+          <h2 className="text-base font-black text-slate-900">এই লেখায় যা থাকছে</h2>
+          <ol className="mt-3 list-inside list-decimal space-y-2 text-sm leading-6 text-emerald-800">
+            {article.sections.map(([heading], index) => <li key={heading}><a className="font-semibold hover:underline" href={`#section-${index + 1}`}>{heading}</a></li>)}
+          </ol>
+        </nav>
+
+        <div className="mt-6 space-y-5 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9">
+          {article.sections.map(([heading, body], index) => (
+            <section id={`section-${index + 1}`} key={heading} className={index ? "scroll-mt-6 border-t border-slate-100 pt-5" : "scroll-mt-6"}>
+              <h2 className="text-xl font-black text-slate-900">{index + 1}. {heading}</h2>
+              <p className="mt-3 text-sm leading-8 text-slate-700 sm:text-base">{body}</p>
+            </section>
+          ))}
+          <aside className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">এই লেখা সাধারণ শিক্ষামূলক তথ্যের জন্য। ফসল, মাটি, জাত ও এলাকার পরিস্থিতি অনুযায়ী সিদ্ধান্ত নিতে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-start gap-3">
+          <ShareArticle title={article.title} />
+          <Link href="/blog" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-900">← সব লেখা</Link>
+          <Link href="/learn" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-200 bg-white px-5 py-3 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">কৃষি শেখার কেন্দ্র →</Link>
+        </div>
+      </article>
+    </main>
+  );
 }
