@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBytesWithLimit } from "@/lib/http/read-limited-request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-// Allow multipart headers/fields while rejecting oversized declared bodies before formData() buffers them.
+// Allow multipart headers/fields while enforcing the actual streamed request size.
 const MAX_REQUEST_BYTES = MAX_IMAGE_BYTES + 256 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
@@ -113,7 +114,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const form = await request.formData();
+    const boundedBody = await readRequestBytesWithLimit(request, MAX_REQUEST_BYTES);
+    if (!boundedBody.ok) {
+      return NextResponse.json(
+        { error: "আপলোডের মোট আকার সীমার বেশি। ৫ MB-এর মধ্যে একটি ছবি ও প্রয়োজনীয় তথ্য দিন।" },
+        { status: 413 },
+      );
+    }
+    const form = await new Response(boundedBody.bytes, { headers: request.headers }).formData();
     const file = form.get("photo");
     const crop = typeof form.get("crop") === "string" ? String(form.get("crop")).trim().slice(0, 80) : "";
     const location = typeof form.get("location") === "string" ? String(form.get("location")).trim().slice(0, 120) : "";
