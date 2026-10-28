@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 interface ResellerAttribution {
   reseller_id: string | null;
@@ -11,9 +11,11 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "লগইন করে অর্ডার করুন।" }, { status: 401 });
+  const authorization = await authorizePermission("orders.create_own");
+  if (!authorization.ok) {
+    return NextResponse.json({ error: authorization.error }, { status: authorization.status });
+  }
+  const { supabase, user } = authorization;
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
