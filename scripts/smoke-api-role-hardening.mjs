@@ -71,4 +71,13 @@ assert.match(contentOpportunities, /requireContentPermission\("content\.publish"
 assert.match(adminProductsApi, /authorizePermission\("catalog\.create_platform"\)/, "platform catalog creation must use catalog.create_platform capability");
 assert.match(permissionCatalogue, /reseller\.links\.create_own/, "reseller link permission must be defined in the capability catalogue");
 
-console.log("API capability, moderator-scope, and error disclosure regression checks passed.");
+
+const jobPostAction = readFileSync("app/jobs/post/actions.ts", "utf8");
+const jobApplyAction = readFileSync("app/jobs/[slug]/apply/actions.ts", "utf8");
+assert.match(jobPostAction, /authorizePermission\("jobs\.create_own"\)/, "job posting must require the employer capability");
+assert.match(jobApplyAction, /authorizePermission\("jobs\.apply_own"\)/, "job applications must require the job seeker/worker capability");
+assert.match(permissionCatalogue, /employer: \[\.\.\.ownAccount, "jobs\.create_own"\]/, "employer role must receive job creation only");
+assert.match(permissionCatalogue, /job_seeker: \[\.\.\.ownAccount, "jobs\.apply_own"\]/, "job seekers must receive application capability");
+assert.match(permissionCatalogue, /worker: \[\.\.\.ownAccount, "jobs\.apply_own"\]/, "workers must receive application capability");
+
+console.log("API and server-action capability, moderator-scope, and error disclosure regression checks passed.");
