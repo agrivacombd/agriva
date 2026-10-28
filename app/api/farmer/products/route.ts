@@ -4,10 +4,10 @@ import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "farmer") return NextResponse.json({ error: "Farmer access required" }, { status: 403 });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profileError || profile?.role !== "farmer") return NextResponse.json({ error: "Farmer access required" }, { status: 403 });
 
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   const categorySlug = String(body.category_slug || "").trim();
   const subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug);
-  const subcategory = category && getSubcategory(categorySlug, subcategorySlug);
+  const subcategory = getSubcategory(categorySlug, subcategorySlug);
 
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !Number.isFinite(commission) || commission < 0 || commission > 100 ||
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id, name, slug, category: subcategory.name,
     category_slug: category.slug, subcategory_slug: subcategory.slug,
-    price, stock, commission_percent: commission, description,
+    price, stock, reseller_commission_percent: commission, description,
     status: "draft",
   }).select("id,name,category,category_slug,subcategory_slug,status").single();
 
