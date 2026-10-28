@@ -7,6 +7,8 @@ import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketpla
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ categorySlug: string }> };
 export function generateStaticParams() {
   return MARKETPLACE_CATEGORIES.map((category) => ({ categorySlug: category.slug }));
