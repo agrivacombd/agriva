@@ -99,7 +99,7 @@ export default async function SearchIntelligencePage({
         </div>
 
         <form className="mt-6 grid gap-3 rounded-2xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto]" method="get">
-          <label className="text-xs font-bold text-[#647468]">Search keyword or title
+          <label className="text-xs font-bold text-[#647468]">Search keyword
             <input name="q" defaultValue={q} maxLength={120} placeholder="e.g. rice fertilizer" className="mt-2 w-full rounded-xl border px-3 py-3 text-sm font-normal text-[#17351f]" />
           </label>
           <label className="text-xs font-bold text-[#647468]">Workflow status
