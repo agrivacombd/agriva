@@ -19,7 +19,7 @@ function normalizeSlug(value: string) {
 
 async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null> {
   const normalized = normalizeSlug(slugOrId);
-  const sample = getSampleProduct(normalized);
+  const sample = process.env.NODE_ENV !== "production" ? getSampleProduct(normalized) : null;
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
