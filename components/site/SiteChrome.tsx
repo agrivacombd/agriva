@@ -1,24 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ArrowUp, ChevronDown, Globe2, Leaf, Menu, X } from "lucide-react";
+import { ArrowUp, ChevronDown, Globe2, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const bnLinks = [
   { href: "/", label: "হোম" },
+  { href: "/#services", label: "সেবাসমূহ" },
   { href: "/agriculture-calculators", label: "কৃষি ক্যালকুলেটর" },
   { href: "/crop-calendar", label: "ফসল ক্যালেন্ডার" },
   { href: "/learn", label: "কৃষি গাইড" },
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
+  { href: "/blog", label: "কৃষি ব্লগ" },
 ];
 
 const enLinks = [
   { href: "/en", label: "Home" },
   { href: "/en/agriculture-calculators", label: "Calculators" },
   { href: "/en/crop-calendar", label: "Crop calendar" },
-  { href: "/learn", label: "Learning guides" },
-  { href: "/marketplace", label: "Marketplace" },
 ];
 
 const bnToEn: Record<string, string> = {
@@ -78,8 +79,7 @@ export default function SiteChrome() {
       <header className={"sticky top-0 z-[60] border-b border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur transition-transform duration-200 motion-reduce:transition-none " + (visible ? "translate-y-0" : "-translate-y-full")}>
         <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
           <Link href={english ? "/en" : "/"} className="flex shrink-0 items-center gap-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label="AGRIVA home">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-800 text-white"><Leaf size={20} /></span>
-            <span className="text-lg font-black tracking-tight text-emerald-950">AGRIVA</span>
+            <Image src="/agriva-logo.svg" alt="AGRIVA" width={320} height={85} priority sizes="(max-width: 640px) 176px, 208px" className="h-10 w-40 object-contain object-left sm:w-48" />
           </Link>
           <nav aria-label={english ? "Main navigation" : "প্রধান নেভিগেশন"} className="hidden items-center gap-1 lg:flex">
             {links.map((link) => (
@@ -94,6 +94,7 @@ export default function SiteChrome() {
               <span>{english ? "বাংলা" : "English"}</span>
               <ChevronDown size={14} aria-hidden="true" />
             </Link>
+            <div className="hidden items-center gap-2 sm:flex"><Link href="/login" className="rounded-xl px-3 py-2 text-sm font-bold text-emerald-800 hover:bg-emerald-50">{english ? "Log in" : "লগইন"}</Link><Link href="/dashboard" className="rounded-xl bg-emerald-800 px-3 py-2.5 text-sm font-bold text-white hover:bg-emerald-950">{english ? "Open app" : "অ্যাপ খুলুন"}</Link></div>
             <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 lg:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
