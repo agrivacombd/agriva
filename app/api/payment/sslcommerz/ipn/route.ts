@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const boundedBody = await readRequestBytesWithLimit(request, MAX_IPN_BODY_BYTES);
   if (!boundedBody.ok) return NextResponse.json({ error: "Invalid notification" }, { status: 413 });
   let form: FormData;
-  try { form = await new Response(boundedBody.bytes, { headers: request.headers }).formData();
+  try { form = await new Response(boundedBody.bytes, { headers: request.headers }).formData(); }
   catch { return NextResponse.json({ error: "Invalid notification" }, { status: 400 }); }
 
   const tranId = String(form.get("tran_id") || "");
