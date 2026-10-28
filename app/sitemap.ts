@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { getPublishedContentArticles } from "@/lib/content/published-articles";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
@@ -40,6 +41,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
   }
+
+  const publishedArticles = await getPublishedContentArticles();
 
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
@@ -83,7 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/terms-of-service`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...staticUrls,
     ...categoryUrls,
     ...products.map((product) => ({
@@ -104,5 +107,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
+    ...publishedArticles.map((article) => ({
+      url: `${base}/blog/${article.slug}`,
+      lastModified: article.updated_at ? new Date(article.updated_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
+
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
 }
