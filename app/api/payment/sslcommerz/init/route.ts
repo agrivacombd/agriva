@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
@@ -6,7 +7,11 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
 
-  const body = await request.json().catch(() => ({}));
+  const boundedBody = await readRequestBodyWithLimit(request, 8192);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const orderId = typeof body?.orderId === "string" ? body.orderId : "";
   if (!orderId) return NextResponse.json({ error: "orderId is required" }, { status: 400 });
   if (!process.env.SSLCOMMERZ_STORE_ID || !process.env.SSLCOMMERZ_STORE_PASSWORD) {
