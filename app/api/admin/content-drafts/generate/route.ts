@@ -68,10 +68,10 @@ async function aiDraft(keyword: string, intent: string): Promise<Partial<Generat
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
         cache: "no-store",
         signal: AbortSignal.timeout(15_000),
