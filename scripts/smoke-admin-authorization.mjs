@@ -314,5 +314,8 @@ const adminRpcMigration = read("supabase/migrations/20261029213000_align_order_a
 for (const rpc of ["admin_update_marketplace_product", "admin_moderate_harvest_listing", "admin_moderate_job_post", "set_marketplace_order_status", "approve_reseller_commission", "approve_commission_payout", "complete_commission_payout"]) {
   assert.ok(adminRpcMigration.includes(rpc), `admin membership migration must include ${rpc}`);
 }
+assert.ok(adminRpcMigration.includes("SELECT public.has_platform_admin_access() INTO v_is_admin;"), "order status RPC must use membership-aware admin checks");
+assert.ok(adminRpcMigration.includes("IF v_admin IS NULL OR NOT public.has_platform_admin_access() THEN"), "harvest moderation RPC must use membership-aware admin checks");
+assert.ok(adminRpcMigration.includes("if v_admin is null or not public.has_platform_admin_access() then"), "job moderation RPC must use membership-aware admin checks");
 
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
