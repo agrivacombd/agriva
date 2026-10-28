@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const reseller = readFileSync("app/api/reseller/links/route.ts", "utf8");
+const checkout = readFileSync("app/api/checkout/route.ts", "utf8");
 assert.match(reseller, /authorizePermission\("reseller\.links\.create_own"\)/, "reseller links must use the capability guard and support role memberships");
+assert.match(checkout, /authorizePermission\("orders\.create_own"\)/, "checkout must require the buyer order-creation capability");
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 
@@ -70,6 +72,7 @@ assert.match(contentOpportunities, /requireContentPermission\("content\.review"\
 assert.match(contentOpportunities, /requireContentPermission\("content\.publish"\)/, "publishing transition must separately require content.publish capability");
 assert.match(adminProductsApi, /authorizePermission\("catalog\.create_platform"\)/, "platform catalog creation must use catalog.create_platform capability");
 assert.match(permissionCatalogue, /reseller\.links\.create_own/, "reseller link permission must be defined in the capability catalogue");
+assert.match(permissionCatalogue, /buyer: \[\.\.\.ownAccount, "orders\.read_own", "orders\.create_own"\]/, "buyer role must receive own-order creation capability");
 
 
 const jobPostAction = readFileSync("app/jobs/post/actions.ts", "utf8");
