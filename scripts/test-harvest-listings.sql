@@ -88,6 +88,7 @@ INSERT INTO public.profiles (id, role) VALUES
 
 \i supabase/migrations/20261029090000_create_harvest_listings.sql
 \i supabase/migrations/20261026233434_harden_harvest_moderation.sql
+\i supabase/migrations/20261029093000_reconcile_harvest_listing_policies.sql
 
 SET LOCAL ROLE authenticated;
 DO $test$
