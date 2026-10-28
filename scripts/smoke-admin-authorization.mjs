@@ -96,8 +96,13 @@ assert.ok(adminDashboard.includes("Content draft activity"), "Super Admin dashbo
 assert.ok(adminDashboard.includes("Legacy article drafts"), "Super Admin dashboard must surface recent legacy article drafts");
 assert.ok(adminDashboard.includes('select("id", { count: "exact", head: true }).in("status", ["pending", "processing"])'), "pending order metrics must count the full queue, not only recent orders");
 
+const permissionMap = read("lib/auth/permissions.ts");
+assert.ok(permissionMap.includes('| "finance.read_reports"'), "finance.read_reports must be part of the capability catalogue");
+assert.ok(permissionMap.includes('finance_manager: [...ownAccount, "finance.read_scoped", "finance.export_orders", "finance.read_reports"'), "finance managers must have explicit financial report access");
+assert.ok(permissionMap.includes('"finance.read_reports", "payout.review"'), "platform admin roles must have explicit financial report access");
+
 const reportsPage = read("app/admin/reports/page.tsx");
-assert.ok(reportsPage.includes('authorizePermission("analytics.read_aggregated")'), "admin reports must require analytics.read_aggregated");
+assert.ok(reportsPage.includes('authorizePermission("finance.read_reports")'), "financial reports must require the dedicated finance.read_reports capability");
 assert.ok(!reportsPage.includes('profile?.role !== "admin"'), "admin reports must not rely on a legacy profile role");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
