@@ -1,4 +1,27 @@
 -- Require explicit approval before an opportunity can become a saved content draft.
+-- Allow reviewed SEO landing pages to share the persisted content workflow.
+ALTER TABLE public.content_drafts
+  DROP CONSTRAINT IF EXISTS content_drafts_content_type_check;
+ALTER TABLE public.content_drafts
+  ADD CONSTRAINT content_drafts_content_type_check
+  CHECK (content_type = ANY (ARRAY['article'::text, 'product'::text, 'tool'::text, 'landing_page'::text]));
+
+ALTER TABLE public.content_opportunities
+  DROP CONSTRAINT IF EXISTS content_opportunities_opportunity_type_check;
+ALTER TABLE public.content_opportunities
+  ADD CONSTRAINT content_opportunities_opportunity_type_check
+  CHECK (opportunity_type = ANY (ARRAY['article'::text, 'product'::text, 'tool'::text, 'landing_page'::text, 'both'::text]));
+
+DROP POLICY IF EXISTS content_drafts_public_published_landing_pages_read ON public.content_drafts;
+CREATE POLICY content_drafts_public_published_landing_pages_read
+ON public.content_drafts FOR SELECT
+TO anon
+USING (status = 'published' AND content_type = 'landing_page');
+
+CREATE UNIQUE INDEX IF NOT EXISTS content_drafts_published_landing_page_slug_uidx
+  ON public.content_drafts (slug)
+  WHERE status = 'published' AND content_type = 'landing_page';
+
 -- The generated-content RPC keeps the insert and opportunity transition atomic.
 CREATE UNIQUE INDEX IF NOT EXISTS content_drafts_published_article_slug_uidx
   ON public.content_drafts (slug)
