@@ -29,6 +29,7 @@ export type AgrivaPermission =
   | "marketing.manage_campaigns"
   | "analytics.read_aggregated"
   | "finance.read_scoped"
+  | "finance.export_orders"
   | "payout.request_own"
   | "reseller.links.create_own"
   | "jobs.create_own"
@@ -98,7 +99,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     "orders.read_own", "orders.fulfill_own", "orders.support_read",
     "users.support_read_minimal", "users.manage", "content.draft", "content.review",
     "content.publish", "marketing.manage_campaigns", "analytics.read_aggregated",
-    "finance.read_scoped", "payout.request_own", "payout.review", "payout.approve",
+    "finance.read_scoped", "finance.export_orders", "payout.request_own", "payout.review", "payout.approve",
     "settings.site.manage", "settings.integrations.manage", "settings.secrets.rotate", "roles.assign_scoped", "jobs.moderate", "exchange.moderate",
     "roles.assign_super_admin", "audit.read", "transport.review", "content.opportunities.read",
   ],
@@ -106,7 +107,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
     ...ownAccount, "catalog.create_platform", "catalog.moderate", "catalog.publish", "catalog.pause",
     "orders.support_read", "users.support_read_minimal", "users.manage",
     "content.draft", "content.review", "content.publish", "analytics.read_aggregated",
-    "finance.read_scoped", "payout.review", "settings.site.manage", "roles.assign_scoped", "jobs.moderate", "exchange.moderate", "audit.read", "transport.review", "content.opportunities.read",
+    "finance.read_scoped", "finance.export_orders", "payout.review", "settings.site.manage", "roles.assign_scoped", "jobs.moderate", "exchange.moderate", "audit.read", "transport.review", "content.opportunities.read",
   ],
   operations: [
     ...ownAccount, "catalog.moderate", "catalog.pause", "orders.support_read",
@@ -115,7 +116,7 @@ const rolePermissions: Record<AgrivaKnownRole, readonly AgrivaPermission[]> = {
   product_moderator: [...ownAccount, "catalog.moderate", "catalog.publish", "catalog.pause"],
   content_seo_manager: [...ownAccount, "content.draft", "content.review", "content.publish", "analytics.read_aggregated"],
   marketing_manager: [...ownAccount, "marketing.manage_campaigns", "analytics.read_aggregated", "content.draft"],
-  finance_manager: [...ownAccount, "finance.read_scoped", "payout.review", "payout.approve", "orders.support_read"],
+  finance_manager: [...ownAccount, "finance.read_scoped", "finance.export_orders", "payout.review", "payout.approve", "orders.support_read"],
   support_agent: [...ownAccount, "orders.support_read", "users.support_read_minimal"],
   seller: sellerCatalog,
   farmer: [...sellerCatalog],
