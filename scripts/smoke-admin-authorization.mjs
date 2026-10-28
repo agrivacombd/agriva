@@ -100,6 +100,9 @@ const productModerationAdminHelperMigration = read("supabase/migrations/20261029
 assert.ok(productModerationAdminHelperMigration.includes("public.has_platform_admin_access();"), "product moderation must use the shared platform-admin helper for profile and membership roles");
 assert.ok(productModerationAdminHelperMigration.includes("Could not align platform-admin check in enforce_seller_product_moderation"), "product trigger migration must fail closed if its expected guard cannot be aligned");
 assert.ok(productModerationAdminHelperMigration.includes("Could not align platform-admin check in admin_moderate_marketplace_product"), "product moderation RPC migration must fail closed if its expected guard cannot be aligned");
+const auditLogRlsMigration = read("supabase/migrations/20261029290000_align_audit_log_rls_with_platform_admin_helper.sql");
+assert.ok(auditLogRlsMigration.includes("USING (public.has_platform_admin_access())"), "audit-log read RLS must use the shared platform-admin helper");
+assert.ok(!/FOR (?:INSERT|UPDATE|DELETE|ALL)/i.test(auditLogRlsMigration), "audit-log alignment migration must not introduce write policies");
 const superAdminProfileMigration = read("supabase/migrations/20261029270000_align_platform_admin_helpers_with_super_admin_profile.sql");
 assert.ok(superAdminProfileMigration.includes("p.role IN ('admin', 'super_admin')"), "database platform-admin helper must recognize a protected super_admin profile role");
 assert.ok(superAdminProfileMigration.includes("m.role IN ('admin', 'super_admin')"), "database platform-admin helper must retain membership-based platform admin access");
