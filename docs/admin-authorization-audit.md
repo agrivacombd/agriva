@@ -2,19 +2,19 @@
 
 ## Scope and current model
 
-The current application uses `profiles.role = 'admin'` as the elevated application role. The `/super-admin` page is a navigation hub, not a separate database role. Do not introduce a `super_admin` role or new business roles until the capability matrix and each affected RLS policy/RPC have been designed and tested.
+The current application uses a capability-based authorization model. Server handlers/actions resolve roles from database-backed `profiles.role` and `user_role_memberships` rows through `lib/auth/permissions.ts` and the shared server authorization helpers. `admin` and `super_admin` are distinct platform roles; scoped roles such as `product_moderator`, `content_seo_manager`, `finance_manager`, and `support_agent` receive only the capabilities explicitly mapped to them. The `/super-admin` page alone is not an authorization boundary. Any role/capability change must be paired with matching database RPC, RLS, Storage, and audit checks; never trust user-editable metadata or UI visibility as authorization.
 
 ## Role and capability matrix
 
-| Capability | Anonymous | Signed-in user | Admin |
+| Capability | Anonymous | Signed-in user | Authorized platform/scoped role |
 | --- | --- | --- | --- |
 | Browse public marketplace content | Allowed only where public policy permits | Allowed | Allowed |
 | Manage own profile/cart/orders | No | Own records only | No implicit cross-user access |
 | Create/manage own listings or job applications | No | Only where the feature's policy permits | Allowed only through documented admin workflows |
-| Moderate harvest/job/transport submissions | No | No | Yes, through guarded RPCs |
+| Moderate harvest/job/transport submissions | No | No | Only the capability granted to that role, through guarded RPCs |
 | Change another user's role | No | No | Restricted to approved non-privileged roles; never self-promote |
-| View audit logs / admin reports | No | No | Yes |
-| Change site-wide settings | No | No | Yes |
+| View audit logs / admin reports | No | No | Only with `audit.read` / relevant finance capability |
+| Change site-wide settings | No | No | Only with the matching settings capability |
 
 This is a baseline for review, not a substitute for inspecting every table policy and function. Admin status must come from a trusted server/database check, never user-editable metadata.
 
