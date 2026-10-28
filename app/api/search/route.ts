@@ -28,7 +28,10 @@ export async function POST(request: NextRequest) {
     let body: unknown;
     try { body = JSON.parse(boundedBody.text); }
     catch { return NextResponse.json({ error: "সঠিক JSON অনুরোধ পাঠান।" }, { status: 400 }); }
-    const query = typeof body?.query === "string" ? body.query.trim() : "";
+    const payload = body && typeof body === "object" && !Array.isArray(body)
+      ? body as Record<string, unknown>
+      : {};
+    const query = typeof payload.query === "string" ? payload.query.trim() : "";
     if (!query) {
       return NextResponse.json({ error: "অনুসন্ধানের জন্য প্রশ্ন লিখুন।" }, { status: 400 });
     }
