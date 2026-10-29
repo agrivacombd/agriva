@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const migration = read("../supabase/migrations/20261024001000_stable_marketplace_taxonomy.sql");
-const plantMigration = read("../supabase/migrations/20261029193000_add_plant_market_taxonomy.sql");
+const plantMigration = read("../supabase/migrations/20261029184749_add_plant_market_taxonomy.sql");
 const taxonomy = read("../lib/marketplace/taxonomy.ts");
 const selector = read("../components/admin/TaxonomyFields.tsx");
 const adminProducts = read("../app/admin/products/page.tsx");
