@@ -3,6 +3,24 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 const MIN_PLANT_DESCRIPTION_LENGTH = 80;
+const ATTRIBUTE_KEYS = new Set([
+  "brand", "crop_name", "variety", "pack_size", "germination_rate", "batch_number", "expiry_date",
+  "fertilizer_type", "composition", "usage_instructions", "active_ingredient", "registration_number",
+  "plant_size", "suitable_season", "care_instructions", "model", "material", "dimensions", "warranty",
+  "food_type", "ingredients", "origin",
+]);
+const PROFILE_LIMITS: Record<string, number> = {
+  business_name: 160,
+  business_address: 300,
+  business_district: 100,
+  trade_license_number: 100,
+  seed_registration_number: 100,
+  other_registration_details: 500,
+};
+
+function cleanString(value: unknown, max: number) {
+  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").trim().slice(0, max) : "";
+}
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
@@ -41,21 +59,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
-  if (isPlantListing && !imageUrl) {
-    return NextResponse.json({ error: "Plant Market-এর পণ্যের জন্য পরিষ্কার পণ্যের ছবি আবশ্যক।" }, { status: 400 });
+  if (!allImageUrls.length) {
+    return NextResponse.json({ error: "পণ্যের অন্তত একটি পরিষ্কার ছবি আবশ্যক।" }, { status: 400 });
   }
   if (isPlantListing && description.length < MIN_PLANT_DESCRIPTION_LENGTH) {
     return NextResponse.json({ error: `Plant Market-এর বিবরণ অন্তত ${MIN_PLANT_DESCRIPTION_LENGTH} অক্ষরের হতে হবে। গাছের ধরন, আকার, যত্ন বা পণ্যের উপাদানের মতো নির্দিষ্ট তথ্য যোগ করুন।` }, { status: 400 });
   }
-
   if (allImageUrls.length > 4) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি পণ্যের ছবি আপলোড করা যাবে।" }, { status: 400 });
-  }
-  if (isPlantListing && !imageUrl) {
-    return NextResponse.json({ error: "Plant Market-এর পণ্যের জন্য পরিষ্কার পণ্যের ছবি আবশ্যক।" }, { status: 400 });
-  }
-  if (isPlantListing && description.length < MIN_PLANT_DESCRIPTION_LENGTH) {
-    return NextResponse.json({ error: `Plant Market-এর বিবরণ অন্তত ${MIN_PLANT_DESCRIPTION_LENGTH} অক্ষরের হতে হবে। গাছের ধরন, আকার, যত্ন বা পণ্যের উপাদানের মতো নির্দিষ্ট তথ্য যোগ করুন।` }, { status: 400 });
   }
 
   if (allImageUrls.length) {
@@ -77,6 +88,43 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  const rawAttributes = body.product_attributes && typeof body.product_attributes === "object" && !Array.isArray(body.product_attributes)
+    ? body.product_attributes as Record<string, unknown>
+    : {};
+  const productAttributes: Record<string, string> = {};
+  for (const [key, rawValue] of Object.entries(rawAttributes)) {
+    if (!ATTRIBUTE_KEYS.has(key) || typeof rawValue !== "string") continue;
+    const value = cleanString(rawValue, key === "usage_instructions" || key === "care_instructions" ? 1000 : 160);
+    if (value) productAttributes[key] = value;
+  }
+  if (productAttributes.germination_rate && (!Number.isFinite(Number(productAttributes.germination_rate)) || Number(productAttributes.germination_rate) < 0 || Number(productAttributes.germination_rate) > 100)) {
+    return NextResponse.json({ error: "Germination rate ০ থেকে ১০০-এর মধ্যে দিন।" }, { status: 400 });
+  }
+
+  const profileBody = body.seller_profile && typeof body.seller_profile === "object" && !Array.isArray(body.seller_profile)
+    ? body.seller_profile as Record<string, unknown>
+    : null;
+  if (profileBody) {
+    const profileUpdate: Record<string, string | null> = {};
+    for (const [key, max] of Object.entries(PROFILE_LIMITS)) {
+      if (key in profileBody) profileUpdate[key] = cleanString(profileBody[key], max) || null;
+    }
+    if ("trade_license_expiry" in profileBody) {
+      const expiry = cleanString(profileBody.trade_license_expiry, 10);
+      if (expiry && !/^\d{4}-\d{2}-\d{2}$/.test(expiry)) {
+        return NextResponse.json({ error: "Trade licence expiry date সঠিক নয়।" }, { status: 400 });
+      }
+      profileUpdate.trade_license_expiry = expiry || null;
+    }
+    if (Object.keys(profileUpdate).length) {
+      const { error: profileError } = await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
+      if (profileError) {
+        console.error("Seller business profile update failed", { code: profileError.code || "unknown" });
+        return NextResponse.json({ error: "Seller profile তথ্য সংরক্ষণ করা যায়নি। Database migration প্রয়োগ হয়েছে কি না যাচাই করুন।" }, { status: 400 });
+      }
+    }
+  }
+
   const slugBase = name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 100) || "product";
   const slug = `${slugBase}-${crypto.randomUUID().slice(0, 8)}`;
   const { data, error } = await supabase.from("products").insert({
@@ -91,8 +139,9 @@ export async function POST(request: NextRequest) {
     description,
     image_url: imageUrl,
     image_urls: allImageUrls,
+    product_attributes: productAttributes,
     status: "draft",
-  }).select("id,name,category,category_slug,subcategory_slug,image_url,image_urls,status").single();
+  }).select("id,name,category,category_slug,subcategory_slug,image_url,image_urls,product_attributes,status").single();
 
   if (error) {
     console.error("Seller marketplace product creation failed", { code: error.code || "unknown" });
