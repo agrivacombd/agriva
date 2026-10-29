@@ -6,7 +6,7 @@ const SELECT_COLUMNS = "id,keyword,intent,opportunity_type,search_count,result_c
 
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAdminApi("content.edit");
+  const auth = await requireAdminApi("content.read");
   if (!auth.ok) return auth.response;
   const { supabase } = auth;
   const status = request.nextUrl.searchParams.get("status") ?? "all";
