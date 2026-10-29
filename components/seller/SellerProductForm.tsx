@@ -324,7 +324,7 @@ export default function ProductForm() {
         <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={(e) => set("stock", e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3" /></label>
       </div>
       <label className="block text-sm font-bold">পণ্যের বিবরণ
-        <textarea required={isPlantListing} minLength={isPlantListing ? MIN_PLANT_DESCRIPTION_LENGTH : undefined} maxLength={5000} value={form.description} onChange={(e) => set("description", e.target.value)} className="mt-2 min-h-36 w-full rounded-xl border px-4 py-3" placeholder="পণ্যের ধরন, মাপ, উপাদান, ব্যবহার, যত্ন বা ডেলিভারি-সংক্রান্ত বাস্তব তথ্য দিন..." />
+        <textarea required minLength={isPlantListing ? MIN_PLANT_DESCRIPTION_LENGTH : 30} maxLength={5000} value={form.description} onChange={(e) => set("description", e.target.value)} className="mt-2 min-h-36 w-full rounded-xl border px-4 py-3" placeholder="পণ্যের ধরন, মাপ, উপাদান, ব্যবহার, যত্ন বা ডেলিভারি-সংক্রান্ত বাস্তব তথ্য দিন..." />
       </label>
       <div className="flex justify-between gap-3 text-xs text-[#748074]"><span>{descriptionText.length}/5000 অক্ষর{isPlantListing ? ` · কমপক্ষে ${MIN_PLANT_DESCRIPTION_LENGTH}` : ""}</span><span>সত্য ও নির্দিষ্ট তথ্য দিন</span></div>
       {isPlantListing && descriptionText.length < MIN_PLANT_DESCRIPTION_LENGTH && <p className="text-xs font-semibold text-amber-800">আরও নির্দিষ্ট তথ্য যোগ করুন—শুধু keyword-এর তালিকা নয়।</p>}
