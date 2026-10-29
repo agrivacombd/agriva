@@ -14,6 +14,7 @@ async function requireAdmin(capability: AdminCapability = "catalog.read") {
 async function saveProduct(formData: FormData) {
   "use server";
   const productId = String(formData.get("productId") ?? "");
+  const productSlug = String(formData.get("slug") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const seoTitle = String(formData.get("seo_title") ?? "").trim();
@@ -52,7 +53,7 @@ async function saveProduct(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  revalidatePath(`/marketplace/${productId}`);
+  if (productSlug) revalidatePath(`/marketplace/${productSlug}`);
   redirect(productError || categoryError || seoError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
@@ -70,7 +71,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
       <AdminCreateProductForm />
       <div className="mt-6 grid gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
-        <input type="hidden" name="productId" value={p.id}/>
+        <input type="hidden" name="productId" value={p.id}/><input type="hidden" name="slug" value={p.slug}/>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p><Link href={`/marketplace/${p.slug}`} target="_blank" className="mt-2 inline-block text-xs font-bold text-emerald-800 underline">পাবলিক পণ্য পেজ দেখুন ↗</Link></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
