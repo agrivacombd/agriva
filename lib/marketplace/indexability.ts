@@ -10,7 +10,7 @@ async function getActiveProductCategories(): Promise<ProductCategoryRecord[] | n
     const { data, error } = await supabase.from("products")
       .select("category,category_slug,subcategory_slug")
       .eq("status", "active")
-      .eq("moderation_status", "approved")
+      
       .limit(5000);
     if (error || !data) return null;
     return data as ProductCategoryRecord[];
