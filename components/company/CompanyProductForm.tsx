@@ -19,6 +19,7 @@ export default function CompanyProductForm() {
       setMessage("JPG, PNG বা WebP ছবি দিন; সর্বোচ্চ ৫ MB।");
       return;
     }
+    const fileInput = event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
     setBusy(true); setMessage(""); setSuccess(false);
     try {
       const supabase = createSupabaseBrowserClient();
@@ -48,8 +49,7 @@ export default function CompanyProductForm() {
       setMessage("পণ্য moderation queue-তে জমা হয়েছে। অনুমোদনের আগে Marketplace-এ প্রকাশ হবে না।");
       setForm({ name: "", description: "", price: "", stock: "", category_slug: "seeds", subcategory_slug: "rice-seeds" });
       setFile(null);
-      const input = event.currentTarget.querySelector<HTMLInputElement>('input[type="file"]');
-      if (input) input.value = "";
+      if (fileInput) fileInput.value = "";
     } catch {
       setMessage("সংযোগে সমস্যা হয়েছে। জমা সফল হয়েছিল কি না নিশ্চিত না হওয়া পর্যন্ত একই পণ্য আবার তৈরি করবেন না; ড্যাশবোর্ডে তালিকা দেখুন।");
     } finally { setBusy(false); }
