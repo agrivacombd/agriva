@@ -16,6 +16,7 @@ assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form mus
 assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit to the seller-only endpoint");
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
+assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
 assert.match(route, /user_role_memberships/, "product API must verify persisted role membership");
 assert.match(route, /in\("role", \["seller", "organization"\]\)/, "product API must require seller or approved organization membership");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
@@ -32,4 +33,5 @@ assert.match(migration, /membership\.role IN \('seller', 'organization'\)/, "dat
 assert.match(migration, /DROP POLICY IF EXISTS "Farmers can upload own product images"/, "migration must replace farmer-only product image uploads");
 assert.match(migration, /storage\.foldername\(name\)/, "Storage policy must restrict uploads to the user's folder");
 
+assert.ok(migration.includes("m.role IN ('farmer', 'seller', 'organization')"), "database moderation guard must recognize approved organization sellers");
 console.log("Seller marketplace separation regression checks passed.");
