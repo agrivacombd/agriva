@@ -68,7 +68,37 @@ export async function POST(request: NextRequest) {
 
   let formData: FormData;
   try {
-    formData = await request.formData();
+    // Enforce the request cap while streaming too; Content-Length may be absent or untrustworthy.
+    const reader = request.body?.getReader();
+    if (!reader) return NextResponse.json({ error: "ছবির upload request খালি।" }, { status: 400 });
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_REQUEST_BYTES) {
+        await reader.cancel().catch(() => undefined);
+        return NextResponse.json({ error: "Upload request-এর মোট আকার সীমা ছাড়িয়েছে। সর্বোচ্চ ৪টি ছবি, প্রতিটি ৫ MB।" }, { status: 413 });
+      }
+      chunks.push(value);
+    }
+    const bodyBytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bodyBytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const contentType = request.headers.get("content-type");
+    if (!contentType?.toLowerCase().startsWith("multipart/form-data;")) {
+      return NextResponse.json({ error: "ছবির upload request-এর format সঠিক নয়।" }, { status: 400 });
+    }
+    formData = await new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": contentType },
+      body: bodyBytes,
+    }).formData();
   } catch {
     return NextResponse.json({ error: "ছবির upload request পড়া যায়নি।" }, { status: 400 });
   }
