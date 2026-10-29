@@ -1,6 +1,6 @@
 # AGRIVA Super Admin Console — Architecture & Audit Plan
 
-**Status:** Proposed architecture, not an implementation authorization for production data changes  
+**Status:** Architecture and phased implementation plan; production schema changes require explicit environment reconciliation  
 **Scope:** Next.js App Router, Supabase Auth/Postgres/RLS, Vercel production  
 **Last reviewed:** 2026-10-29
 
@@ -23,6 +23,21 @@ AGRIVA already has a substantial admin surface under `app/admin` (dashboard, pro
 3. The current shared admin layout checks `profiles.role === 'admin'`. The admin product API repeats a similar check. Meanwhile, the database has `user_role_memberships`, capability/role helper functions, and scoped moderator workflows. A future console must not accidentally grant staff the full admin surface or block legitimate scoped staff. Use a central capability model, while preserving existing database checks until migration parity and regression tests are proven.
 
 4. The latest listed production deployment is the Bengali SEO landing-page commit. A docs-only architecture PR should not require or trigger a database migration. Recheck the active deployment and runtime logs after fixes.
+
+## Implementation tracking
+
+### Phase 0 — Current operational status
+
+- The latest selected 1-hour Vercel runtime-error window is clear. The 24-hour error groups inspected point to earlier deployments; Smart Search, admin product RPC, and Gemini errors are not currently confirmed as active.
+- The historical runtime logs reference a different Supabase host from the separately inspected Supabase project. Environment secret values were not decrypted, and no production migration was applied. Treat the host identity as **unverified**, not resolved, until the active Production URL is compared with the intended project in Vercel settings.
+- Existing `job_posts` and `crop_disease_detections` tables are present in the project inspected from the historical host. The product moderation columns differ between the two accessible projects, so keep application compatibility with the released schema and do not add moderation-only columns without a reviewed migration.
+
+### Phase 1 — Authorization foundation in progress
+
+- A shared server-only capability guard is being introduced in `lib/admin/authz.ts` and used by the `/admin` layout, `/super-admin` hub, and admin product-creation API.
+- This first increment preserves the existing `profiles.role = 'admin'` boundary. It is **not yet full granular staff RBAC**: unconverted routes retain their own checks, and capability grants for scoped staff must not be enabled until database enforcement and capability-matrix tests are in place.
+- High-risk capabilities for payment reconciliation, refund requests, payout approval, and system recovery remain denied by default until reviewed grant and step-up flows exist.
+- No database schema, payment configuration, or user data was changed by this implementation increment.
 
 ## Product goals
 
