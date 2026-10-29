@@ -36,6 +36,8 @@ jobs:
         run: npm run test:sslcommerz-payment
       - name: Marketplace live-inventory regression test
         run: npm run test:marketplace-live-inventory
+      - name: Marketplace SEO and indexability regression test
+        run: npm run test:marketplace-seo
       - name: Checkout error disclosure regression test
         run: npm run test:checkout-error-safety
       - name: API role and error disclosure regression test
