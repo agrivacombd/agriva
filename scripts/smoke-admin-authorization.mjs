@@ -480,7 +480,6 @@ const companyDashboard = read("app/company/dashboard/page.tsx");
 const publicCompanyPage = read("app/companies/[slug]/page.tsx");
 const publicProductPage = read("app/marketplace/[slug]/page.tsx");
 const categoryLandingPage = read("app/marketplace/category/[...slug]/page.tsx");
-const sitemap = read("app/sitemap.ts");
 const robots = read("app/robots.ts");
 const companyPortalLayout = read("app/company/layout.tsx");
 assert.ok(companyCatalogueMigration.includes("ADD COLUMN IF NOT EXISTS seed_company_id"), "company products must have an explicit company owner reference");
