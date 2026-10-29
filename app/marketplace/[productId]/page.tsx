@@ -18,6 +18,17 @@ function normalizeSlug(value: string) {
   }
 }
 
+function cleanText(value: string | null | undefined) {
+  return (value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function truncate(value: string, max: number) {
+  if (value.length <= max) return value;
+  const slice = value.slice(0, max - 1);
+  const boundary = slice.lastIndexOf(" ");
+  return `${(boundary > max * 0.65 ? slice.slice(0, boundary) : slice).trim()}…`;
+}
+
 async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null> {
   const normalized = normalizeSlug(slugOrId);
   const sample = process.env.NODE_ENV !== "production" ? getSampleProduct(normalized) : null;
@@ -36,17 +47,22 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
-  const title = `${product.name} | কৃষি পণ্য`;
-  const description = typeof product.description === "string" && product.description.trim()
-    ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
-    : `AGRIVA Marketplace-এ ${product.name} পণ্যের মূল্য, বিবরণ ও মজুত দেখুন।`;
+  const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
+  const isPlantProduct = taxonomy?.category.slug === "plants-gardening";
+  const titleSuffix = isPlantProduct ? "AGRIVA Plant Market" : "AGRIVA Marketplace";
+  const title = truncate(`${product.name} | ${titleSuffix}`, 65);
+  const rawDescription = cleanText(product.description);
+  const fallbackDescription = `AGRIVA-তে ${product.name}${product.price !== null && Number.isFinite(Number(product.price)) ? ` — মূল্য ৳${Number(product.price).toLocaleString("en-BD")}` : ""}। পণ্যের ছবি, বিবরণ ও মজুতের তথ্য দেখুন।`;
+  const description = truncate(rawDescription.length >= 60 ? rawDescription : fallbackDescription, 155);
+  const canonicalPath = `/marketplace/${product.slug}`;
+  const image = product.image_url || undefined;
   return {
-    title, description,
-    alternates: { canonical: `/marketplace/${product.slug}` },
+    title,
+    description,
+    alternates: { canonical: canonicalPath },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
-    keywords: [product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
-    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
-    twitter: { card: product.image_url ? "summary_large_image" : "summary", title, description, ...(product.image_url ? { images: [product.image_url] } : {}) },
+    openGraph: { title, description, type: "website", locale: "bn_BD", url: canonicalPath, ...(image ? { images: [{ url: image, alt: product.name }] } : {}) },
+    twitter: { card: image ? "summary_large_image" : "summary", title, description, ...(image ? { images: [image] } : {}) },
   };
 }
 
@@ -58,36 +74,57 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
   const subcategory = taxonomy?.subcategory;
+  const isPlantProduct = category?.slug === "plants-gardening";
   const canonicalPath = `/marketplace/${product.slug}`;
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
-  const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
-  const jsonLd = {
-    "@context": "https://schema.org", "@type": "Product", name: product.name,
-    url: `${base}${canonicalPath}`,
-    ...(product.image_url ? { image: [product.image_url] } : {}),
-    description: typeof product.description === "string" ? product.description : undefined,
-    category: product.category || undefined,
-    ...(hasRealPrice ? {
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
+  const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) > 0;
+  const hasRealImage = !product.id.startsWith("sample-") && Boolean(product.image_url);
+  const description = cleanText(product.description);
+  const hasProductRichResultData = hasRealPrice && hasRealImage;
+  const graph = [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "হোম", item: base },
+        { "@type": "ListItem", position: 2, name: isPlantProduct ? "Plant Market" : "Marketplace", item: `${base}${isPlantProduct ? "/plant-market" : "/marketplace"}` },
+        ...(category ? [{ "@type": "ListItem", position: 3, name: category.name, item: `${base}/marketplace/category/${category.slug}` }] : []),
+        ...(subcategory ? [{ "@type": "ListItem", position: category ? 4 : 3, name: subcategory.name, item: `${base}/marketplace/category/${category?.slug}/${subcategory.slug}` }] : []),
+        { "@type": "ListItem", position: (category ? 3 : 2) + (subcategory ? 1 : 0), name: product.name, item: `${base}${canonicalPath}` },
+      ],
+    },
+    ...(hasProductRichResultData ? [{
+      "@type": "Product",
+      "@id": `${base}${canonicalPath}#product`,
+      name: product.name,
+      url: `${base}${canonicalPath}`,
+      image: [product.image_url as string],
+      ...(description ? { description } : {}),
+      ...(product.category ? { category: product.category } : {}),
       offers: {
         "@type": "Offer",
+        url: `${base}${canonicalPath}`,
         priceCurrency: "BDT",
         price: Number(product.price),
-        ...(product.stock !== null && product.stock !== undefined ? { availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" } : {}),
-        url: `${base}${canonicalPath}`,
+        availability: product.stock !== null && product.stock !== undefined
+          ? (Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock")
+          : "https://schema.org/LimitedAvailability",
       },
-    } : {}),
-  };
+    }] : []),
+  ];
+  const jsonLd = { "@context": "https://schema.org", "@graph": graph };
+  const marketHref = isPlantProduct ? "/plant-market" : "/marketplace";
+
   return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
     <div className="mx-auto max-w-5xl">
-      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link>{subcategory && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}</>}<span className="mx-2" aria-hidden="true">/</span><span className="font-semibold text-slate-700">{product.name}</span></nav>
+      <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href={marketHref} className="hover:text-emerald-800">{isPlantProduct ? "Plant Market" : "মার্কেটপ্লেস"}</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link>{subcategory && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}</>}<span className="mx-2" aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 md:min-h-[420px]">{product.image_url ? <img src={product.image_url} alt={`${product.name} — AGRIVA কৃষি পণ্য`} width={720} height={720} fetchPriority="high" className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
+        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 md:min-h-[420px]">{product.image_url ? <img src={product.image_url} alt={`${product.name} — ${isPlantProduct ? "Plant Market" : "AGRIVA"}`} width={720} height={720} fetchPriority="high" className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
           {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}
-          {typeof product.description === "string" && product.description.trim() && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{product.description}</p>}
+          {description && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{description}</p>}
           <p className="mt-6 text-3xl font-black text-emerald-900">{product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price)) ? <>{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price).toLocaleString("bn-BD")}</> : "মূল্য উল্লেখ নেই"}</p>
           <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : product.stock !== null && product.stock !== undefined ? `প্রাপ্য মজুত: ${Number(product.stock).toLocaleString("bn-BD")}` : "মজুতের তথ্য নেই"}</p>
           <div className="mt-6">{product.id.startsWith("sample-") ? <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p> : <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />}</div>
