@@ -8,9 +8,7 @@ const read = (path) => {
 };
 
 const layout = read("app/admin/layout.tsx");
-assert.match(layout, /supabase\.auth\.getUser\(\)/, "admin layout must verify the server-side session");
-assert.match(layout, /authError\s*\|\|\s*!user/, "admin layout must fail closed on auth errors");
-assert.match(layout, /profileError\s*\|\|\s*profile\?\.role\s*!==\s*"admin"/, "admin layout must fail closed on profile lookup errors and non-admin roles");
+assert.match(layout, /requireAdminCapability\("dashboard\.read"\)/, "admin layout must use the shared fail-closed capability guard");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -29,9 +27,13 @@ for (const path of [
   ...collectRouteHandlers("app/admin"),
 ]) {
   const source = read(path);
-  assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
-  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
-  assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+  if (/requireAdminCapability\(/.test(source)) {
+    assert.match(source, /requireAdminCapability\("[a-z.]+"/, `${path} must request a named capability from the shared guard`);
+  } else {
+    assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
+    assert.match(source, /profiles/, `${path} must verify the user's profile role`);
+    assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+  }
 }
 
 for (const path of [
