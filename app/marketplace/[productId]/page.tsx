@@ -69,7 +69,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const category = taxonomy?.category;
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
-  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
