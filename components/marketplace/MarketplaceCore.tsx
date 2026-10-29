@@ -14,7 +14,8 @@ export type MarketplaceProduct = {
   description: string | null;
   price: number | string | null;
   stock: number | null;
-  image_url?: string | null;\n  listing_source?: "platform" | "seller" | null;
+  image_url?: string | null;
+  listing_source?: "platform" | "seller" | null;
 };
 
 const money = (value: number | string | null) =>
