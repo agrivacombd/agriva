@@ -26,6 +26,11 @@ async function saveProduct(formData: FormData) {
   const seoFaqLines = seoFaqsText ? seoFaqsText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean) : [];
   const invalidSeoFaqLine = seoFaqLines.some((line) => { const separator = line.indexOf("|"); return separator < 1 || separator === line.length - 1; });
   const seoFaqs = seoFaqLines.map((line) => { const separator = line.indexOf("|"); return { question: line.slice(0, separator).trim(), answer: line.slice(separator + 1).trim() }; });
+  const seoImageAltTextsText = String(formData.get("seo_image_alt_texts") ?? "").trim();
+  const seoImageAltTexts = seoImageAltTextsText ? seoImageAltTextsText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean) : [];
+  const seoAttributeLines = String(formData.get("seo_attribute_suggestions") ?? "").trim().split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const seoAttributeSuggestions = seoAttributeLines.map((line) => { const parts = line.split("|").map((value) => value.trim()); return { key: parts[0] ?? "", label: parts[1] ?? "", reason: parts.slice(2).join(" | ") }; });
+  const invalidSeoAttributeLine = seoAttributeSuggestions.some((item) => !/^[a-z][a-z0-9_]{0,79}$/.test(item.key) || !item.label || !item.reason || item.label.length > 120 || item.reason.length > 300);
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
@@ -34,7 +39,7 @@ async function saveProduct(formData: FormData) {
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoKeywords.length > 10 || seoKeywords.some((keyword) => keyword.length > 60) || seoContent.length > 10000 || invalidSeoFaqLine || seoFaqs.length > 8 || seoFaqs.some((faq) => !faq.question || !faq.answer || faq.question.length > 160 || faq.answer.length > 500)) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoKeywords.length > 10 || seoKeywords.some((keyword) => keyword.length > 60) || seoContent.length > 10000 || invalidSeoFaqLine || seoFaqs.length > 8 || seoFaqs.some((faq) => !faq.question || !faq.answer || faq.question.length > 160 || faq.answer.length > 500) || seoImageAltTexts.length > 4 || seoImageAltTexts.some((alt) => alt.length > 250) || seoAttributeSuggestions.length > 24 || invalidSeoAttributeLine) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin("catalog.edit");
@@ -53,18 +58,23 @@ async function saveProduct(formData: FormData) {
     p_seo_content: seoContent || null,
     p_seo_faqs: seoFaqs,
   });
+  const { error: seoDetailsError } = productError || categoryError || seoError ? { error: productError || categoryError || seoError } : await supabase.rpc("admin_update_product_seo_assistant_details", {
+    p_product_id: productId,
+    p_seo_image_alt_texts: seoImageAltTexts,
+    p_seo_attribute_suggestions: seoAttributeSuggestions,
+  });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
   if (productSlug) revalidatePath(`/marketplace/${productSlug}`);
-  redirect(productError || categoryError || seoError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError || seoError || seoDetailsError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
+    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,image_variants,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,seo_attribute_suggestions,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
   const sellerIds = Array.from(new Set((products ?? []).map((product) => product.farmer_id).filter(Boolean)));
   const { data: sellerProfiles } = sellerIds.length
@@ -100,6 +110,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           price={p.price}
           stock={p.stock}
           productAttributes={p.product_attributes && typeof p.product_attributes === "object" && !Array.isArray(p.product_attributes) ? p.product_attributes as Record<string, string> : {}}
+          imageCount={Array.isArray(p.image_variants) && p.image_variants.length ? p.image_variants.length : Array.isArray(p.image_urls) && p.image_urls.length ? p.image_urls.length : p.image_url ? 1 : 0}
+          seoImageAltTexts={Array.isArray(p.seo_image_alt_texts) ? p.seo_image_alt_texts : []}
+          seoAttributeSuggestions={Array.isArray(p.seo_attribute_suggestions) ? p.seo_attribute_suggestions as Array<{ key: string; label: string; reason: string }> : []}
           seoTitle={p.seo_title}
           seoDescription={p.seo_description}
           seoKeywords={Array.isArray(p.seo_keywords) ? p.seo_keywords : []}
