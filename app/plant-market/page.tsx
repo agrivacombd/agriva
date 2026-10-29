@@ -146,6 +146,30 @@ export default async function PlantMarketPage() {
         </div>
       </section>
 
+      <section aria-labelledby="plant-market-grow-earn" className="bg-[#eaf4e5] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1.2fr_.8fr]">
+          <div>
+            <p className="inline-flex rounded-full border border-emerald-800/15 bg-white px-3 py-1.5 text-xs font-extrabold tracking-wide text-emerald-900">🌱 GROW MORE, EARN MORE</p>
+            <h2 id="plant-market-grow-earn" className="mt-4 max-w-3xl text-3xl font-black leading-tight text-emerald-950 sm:text-4xl">বাগান আপনার শখ, গাছ হতে পারে বাড়তি আয়ের সুযোগ</h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">ছাদবাগান, বারান্দা কিংবা ঘরের ইনডোর প্ল্যান্ট—আপনি যত্ন করে যে গাছগুলো বড় করেন, সেখান থেকেই শুরু হতে পারে ছোট্ট একটি উদ্যোগ। আপনার কাছে যদি সুস্থ চারা, কাটিং, বীজ, ফল-ফুলের গাছ, টব বা নিজে তৈরি করা প্ল্যান্টার থাকে, সেগুলো Plant Market-এ তালিকাভুক্ত করার কথা ভাবুন।</p>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">অল্প করে শুরু করুন, গাছের পরিচর্যার অভিজ্ঞতা শেয়ার করুন, আর ক্রেতার আগ্রহ বুঝে ধীরে ধীরে এগোন। বিক্রি বা আয়ের নিশ্চয়তা নেই—তবে ভালো পণ্য, সঠিক তথ্য ও নিয়মিত যত্ন আপনার উদ্যোগকে এগিয়ে নিতে সাহায্য করতে পারে।</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-900 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">আমার গাছের পণ্য জমা দিন →</Link>
+              <a href="#plant-catalogue" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50">Plant Market ঘুরে দেখুন</a>
+            </div>
+          </div>
+          <div className="rounded-3xl border border-emerald-950/10 bg-white p-6 shadow-sm sm:p-8">
+            <h3 className="text-xl font-black text-emerald-950">আপনার বাগান থেকে শুরু করার ৩টি ধাপ</h3>
+            <ol className="mt-5 space-y-5">
+              <li className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-900">১</span><div><h4 className="font-extrabold text-emerald-950">যা ভালোভাবে পরিচর্যা করতে পারেন, তা বাছুন</h4><p className="mt-1 text-sm leading-6 text-slate-600">সুস্থ চারা, সহজে যত্ন নেওয়া যায় এমন ইনডোর প্ল্যান্ট, কাটিং বা মৌসুমি ফুল-সবজির চারা দিয়ে শুরু করতে পারেন।</p></div></li>
+              <li className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-900">২</span><div><h4 className="font-extrabold text-emerald-950">নিজের তোলা পরিষ্কার ছবি ও সঠিক তথ্য দিন</h4><p className="mt-1 text-sm leading-6 text-slate-600">গাছের নাম, আকার, দাম, মজুত, আলো-পানির প্রয়োজন ও ডেলিভারির তথ্য স্পষ্ট করে লিখুন।</p></div></li>
+              <li className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-900">৩</span><div><h4 className="font-extrabold text-emerald-950">পণ্য জমা দিন, অনুমোদনের জন্য অপেক্ষা করুন</h4><p className="mt-1 text-sm leading-6 text-slate-600">Seller Centre-এ পণ্য জমা দিন। অ্যাডমিন অনুমোদনের পর পণ্য প্রকাশিত হবে; বিক্রির ফলাফল ক্রেতার চাহিদা ও পণ্যের ওপর নির্ভর করবে।</p></div></li>
+            </ol>
+            <div className="mt-6 rounded-2xl bg-[#f5f8f1] p-4"><p className="text-sm font-bold leading-6 text-emerald-950">🪴 শখের বাগান থেকে ছোট উদ্যোগ—নিজের গতিতে শুরু করুন, গাছের প্রতি ভালোবাসা ধরে রাখুন।</p></div>
+          </div>
+        </div>
+      </section>
+
       <section id="plant-catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <header className="mb-7">
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Plants & gardening supplies</p>
