@@ -15,7 +15,7 @@ LANGUAGE sql STABLE
 AS $$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
 CREATE OR REPLACE FUNCTION storage.foldername(name text) RETURNS text[]
 LANGUAGE sql IMMUTABLE
-AS $ SELECT (string_to_array(trim(both '/' from name), '/'))[1:greatest(array_length(string_to_array(trim(both '/' from name), '/'), 1) - 1, 0)] $;
+AS $$ SELECT (string_to_array(trim(both '/' from name), '/'))[1:greatest(array_length(string_to_array(trim(both '/' from name), '/'), 1) - 1, 0)] $$;
 CREATE OR REPLACE FUNCTION public.has_platform_admin_access() RETURNS boolean
 LANGUAGE sql STABLE
 AS $$ SELECT false $$;
