@@ -32,17 +32,23 @@ export default async function MarketplacePage() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
         <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold tracking-wide"><span className="h-2 w-2 rounded-full bg-lime-300" /> AGRIVA MARKETPLACE</p>
         <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight tracking-tight sm:text-5xl lg:text-6xl">বাংলাদেশের কৃষি পণ্য <span className="text-lime-300">এক জায়গায়</span></h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/85 sm:text-lg sm:leading-8">বীজ, সার, ফসল সুরক্ষা, কৃষি যন্ত্রপাতি ও তাজা কৃষিপণ্য ক্যাটাগরি অনুযায়ী খুঁজুন। পণ্যের বিবরণ, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন।</p>
+        <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/85 sm:text-lg sm:leading-8">কোম্পানি ও ব্যবসায়িক বিক্রেতাদের বীজ, সার, ফসল সুরক্ষা, কৃষি যন্ত্রপাতি এবং প্যাকেটজাত কৃষিপণ্য ক্যাটাগরি অনুযায়ী খুঁজুন। পণ্যের বিবরণ, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন।</p>
         <a href="#catalogue" className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] transition hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#145b3c]">পণ্য খুঁজুন ↓</a>
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/75 sm:text-sm"><span>✓ ক্যাটাগরি অনুযায়ী ব্রাউজ</span><span>✓ মোবাইল-ফ্রেন্ডলি</span><span>✓ অনুমোদিত পণ্য</span></div>
       </div>
     </section>
-    <section aria-label="কৃষক ও ক্রেতার দ্রুত প্রবেশ" className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:px-8">
+    <section aria-label="কৃষক ও ক্রেতার দ্রুত প্রবেশ" className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 lg:px-8">
       <article className="flex flex-col items-start rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-6">
         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">কৃষকদের জন্য</span>
         <h2 className="mt-3 text-xl font-black">নিজের ফসল সরাসরি বিক্রি করুন</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন। অনুমোদনের পর ক্রেতারা আপনার ফসল দেখতে পারবেন।</p>
         <a href="/sell-harvest" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-emerald-900">Sell Harvest-এ যান →</a>
+      </article>
+      <article className="flex flex-col items-start rounded-2xl border border-sky-200 bg-white p-5 shadow-sm sm:p-6">
+        <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-800">কোম্পানি ও ব্যবসায়ীদের জন্য</span>
+        <h2 className="mt-3 text-xl font-black">Marketplace-এ পণ্য বিক্রি করুন</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">আপনার ব্যবসার কৃষি উপকরণ ও প্যাকেটজাত পণ্য জমা দিন। যাচাই ও অনুমোদনের পর পণ্য Marketplace-এ প্রকাশ হবে।</p>
+        <a href="/seller/products/new" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">বিক্রেতা হিসেবে পণ্য যোগ করুন →</a>
       </article>
       <article className="flex flex-col items-start rounded-2xl border border-amber-200 bg-white p-5 shadow-sm sm:p-6">
         <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">ক্রেতাদের জন্য</span>
