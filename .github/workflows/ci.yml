@@ -46,6 +46,8 @@ jobs:
         run: npm run test:api-role-hardening
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
+      - name: Admin capability authorization foundation regression test
+        run: npm run test:admin-capability-authorization
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
       - name: Seller marketplace separation regression test
