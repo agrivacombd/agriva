@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import MobileDashboardNav from "@/components/MobileDashboardNav";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
