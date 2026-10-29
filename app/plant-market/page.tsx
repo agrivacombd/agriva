@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowRight, Flower2, Leaf, Search, Shovel, Sprout, Citrus, Package } from "lucide-react";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -47,14 +48,14 @@ function isPlantProduct(product: MarketplaceProduct) {
 }
 
 const plantSubcategories = [
-  { slug: "indoor-plants", name: "ইনডোর ও শোভাবর্ধক গাছ", description: "ঘর, অফিস ও বারান্দার জন্য ইনডোর প্ল্যান্ট ও শোভাবর্ধক গাছ।", icon: "🪴" },
-  { slug: "fruit-saplings", name: "ফলের গাছ ও চারা", description: "ফলজ গাছের চারা ও কলম—নিজের জায়গা ও পরিচর্যার উপযোগী গাছ বেছে নিন।", icon: "🥭" },
-  { slug: "flowering-plants", name: "ফুলের গাছ ও চারা", description: "বাগান, বারান্দা ও ছাদের জন্য ফুলের গাছ ও চারা।", icon: "🌺" },
-  { slug: "vegetable-herb-seedlings", name: "সবজি ও ভেষজ চারা", description: "ঘরোয়া সবজি, রান্নার হার্ব ও ভেষজ গাছের চারা।", icon: "🌿" },
-  { slug: "plant-pots-planters", name: "টব ও প্ল্যান্টার", description: "গাছের ধরন ও জায়গার সঙ্গে মানানসই টব ও প্ল্যান্টার।", icon: "🏺" },
-  { slug: "soil-compost-growing-media", name: "মাটি, কম্পোস্ট ও গ্রোয়িং মিডিয়া", description: "পটিং মিক্স, কোকোপিট, কম্পোস্ট ও গাছ লাগানোর মাধ্যম।", icon: "🪴" },
-  { slug: "gardening-tools", name: "বাগানের সরঞ্জাম", description: "পানি দেওয়া, ছাঁটাই ও দৈনন্দিন গাছের যত্নের সরঞ্জাম।", icon: "🧤" },
-  { slug: "plant-seeds-bulbs", name: "গাছের বীজ ও বাল্ব", description: "ফুল, সবজি ও শোভাবর্ধক গাছের বীজ ও বাল্ব।", icon: "🌱" },
+  { slug: "indoor-plants", name: "ইনডোর ও শোভাবর্ধক গাছ", description: "ঘর, অফিস ও বারান্দার জন্য ইনডোর প্ল্যান্ট ও শোভাবর্ধক গাছ।", Icon: Sprout },
+  { slug: "fruit-saplings", name: "ফলের গাছ ও চারা", description: "ফলজ গাছের চারা ও কলম—নিজের জায়গা ও পরিচর্যার উপযোগী গাছ বেছে নিন।", Icon: Citrus },
+  { slug: "flowering-plants", name: "ফুলের গাছ ও চারা", description: "বাগান, বারান্দা ও ছাদের জন্য ফুলের গাছ ও চারা।", Icon: Flower2 },
+  { slug: "vegetable-herb-seedlings", name: "সবজি ও ভেষজ চারা", description: "ঘরোয়া সবজি, রান্নার হার্ব ও ভেষজ গাছের চারা।", Icon: Leaf },
+  { slug: "plant-pots-planters", name: "টব ও প্ল্যান্টার", description: "গাছের ধরন ও জায়গার সঙ্গে মানানসই টব ও প্ল্যান্টার।", Icon: Package },
+  { slug: "soil-compost-growing-media", name: "মাটি, কম্পোস্ট ও গ্রোয়িং মিডিয়া", description: "পটিং মিক্স, কোকোপিট, কম্পোস্ট ও গাছ লাগানোর মাধ্যম।", Icon: Sprout },
+  { slug: "gardening-tools", name: "বাগানের সরঞ্জাম", description: "পানি দেওয়া, ছাঁটাই ও দৈনন্দিন গাছের যত্নের সরঞ্জাম।", Icon: Shovel },
+  { slug: "plant-seeds-bulbs", name: "গাছের বীজ ও বাল্ব", description: "ফুল, সবজি ও শোভাবর্ধক গাছের বীজ ও বাল্ব।", Icon: Sprout },
 ];
 
 export default async function PlantMarketPage() {
@@ -134,7 +135,7 @@ export default async function PlantMarketPage() {
       <section className="relative overflow-hidden bg-gradient-to-br from-[#103f2b] via-[#145b3c] to-[#34784b] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full border-[48px] border-white/10" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold tracking-wide">🌿 AGRIVA PLANT MARKET</p>
+          <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold tracking-wide"><Leaf aria-hidden="true" className="mr-2 inline-block h-4 w-4" /> AGRIVA PLANT MARKET</p>
           <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl">বাংলাদেশে <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span> খুঁজুন</h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/90 sm:text-lg sm:leading-8">ঘরের ইনডোর প্ল্যান্ট থেকে ফলের চারা, ছাদবাগানের টব, বীজ, মাটি ও কম্পোস্ট—আপনার প্রয়োজনের পণ্য এক জায়গায় খুঁজুন। পণ্যের বিবরণ, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন।</p>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -149,12 +150,12 @@ export default async function PlantMarketPage() {
       <section aria-labelledby="plant-market-grow-earn" className="bg-[#eaf4e5] px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-[1.2fr_.8fr]">
           <div>
-            <p className="inline-flex rounded-full border border-emerald-800/15 bg-white px-3 py-1.5 text-xs font-extrabold tracking-wide text-emerald-900">🌱 GROW MORE, EARN MORE</p>
+            <p className="inline-flex rounded-full border border-emerald-800/15 bg-white px-3 py-1.5 text-xs font-extrabold tracking-wide text-emerald-900"><Sprout aria-hidden="true" className="mr-2 inline-block h-4 w-4" /> GROW MORE, EARN MORE</p>
             <h2 id="plant-market-grow-earn" className="mt-4 max-w-3xl text-3xl font-black leading-tight text-emerald-950 sm:text-4xl">বাগান আপনার শখ, গাছ হতে পারে বাড়তি আয়ের সুযোগ</h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-700 sm:text-lg sm:leading-8">ছাদবাগান, বারান্দা কিংবা ঘরের ইনডোর প্ল্যান্ট—আপনি যত্ন করে যে গাছগুলো বড় করেন, সেখান থেকেই শুরু হতে পারে ছোট্ট একটি উদ্যোগ। আপনার কাছে যদি সুস্থ চারা, কাটিং, বীজ, ফল-ফুলের গাছ, টব বা নিজে তৈরি করা প্ল্যান্টার থাকে, সেগুলো Plant Market-এ তালিকাভুক্ত করার কথা ভাবুন।</p>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">অল্প করে শুরু করুন, গাছের পরিচর্যার অভিজ্ঞতা শেয়ার করুন, আর ক্রেতার আগ্রহ বুঝে ধীরে ধীরে এগোন। বিক্রি বা আয়ের নিশ্চয়তা নেই—তবে ভালো পণ্য, সঠিক তথ্য ও নিয়মিত যত্ন আপনার উদ্যোগকে এগিয়ে নিতে সাহায্য করতে পারে।</p>
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link href="/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-900 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">আমার গাছের পণ্য জমা দিন →</Link>
+              <Link href="/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-900 px-6 py-3 text-sm font-extrabold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2">আমার গাছের পণ্য জমা দিন <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" /></Link>
               <a href="#plant-catalogue" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50">Plant Market ঘুরে দেখুন</a>
             </div>
           </div>
@@ -165,7 +166,7 @@ export default async function PlantMarketPage() {
               <li className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-900">২</span><div><h4 className="font-extrabold text-emerald-950">নিজের তোলা পরিষ্কার ছবি ও সঠিক তথ্য দিন</h4><p className="mt-1 text-sm leading-6 text-slate-600">গাছের নাম, আকার, দাম, মজুত, আলো-পানির প্রয়োজন ও ডেলিভারির তথ্য স্পষ্ট করে লিখুন।</p></div></li>
               <li className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-lg font-black text-emerald-900">৩</span><div><h4 className="font-extrabold text-emerald-950">পণ্য জমা দিন, অনুমোদনের জন্য অপেক্ষা করুন</h4><p className="mt-1 text-sm leading-6 text-slate-600">Seller Centre-এ পণ্য জমা দিন। অ্যাডমিন অনুমোদনের পর পণ্য প্রকাশিত হবে; বিক্রির ফলাফল ক্রেতার চাহিদা ও পণ্যের ওপর নির্ভর করবে।</p></div></li>
             </ol>
-            <div className="mt-6 rounded-2xl bg-[#f5f8f1] p-4"><p className="text-sm font-bold leading-6 text-emerald-950">🪴 শখের বাগান থেকে ছোট উদ্যোগ—নিজের গতিতে শুরু করুন, গাছের প্রতি ভালোবাসা ধরে রাখুন।</p></div>
+            <div className="mt-6 rounded-2xl bg-[#f5f8f1] p-4"><p className="text-sm font-bold leading-6 text-emerald-950"><Sprout aria-hidden="true" className="mr-2 inline-block h-4 w-4" /> শখের বাগান থেকে ছোট উদ্যোগ—নিজের গতিতে শুরু করুন, গাছের প্রতি ভালোবাসা ধরে রাখুন।</p></div>
           </div>
         </div>
       </section>
@@ -179,7 +180,7 @@ export default async function PlantMarketPage() {
         <div className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {plantSubcategories.map((subcategory) => (
             <Link key={subcategory.slug} href={`/marketplace/category/plants-gardening/${subcategory.slug}`} className="group rounded-2xl border border-emerald-950/10 bg-white p-5 transition hover:-translate-y-0.5 hover:border-emerald-700/40 hover:shadow-sm">
-              <span aria-hidden="true" className="text-3xl">{subcategory.icon}</span>
+              <span aria-hidden="true" className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800"><subcategory.Icon className="h-7 w-7" strokeWidth={1.8} /></span>
               <h3 className="mt-3 font-extrabold text-emerald-950 group-hover:underline">{subcategory.name}</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">{subcategory.description}</p>
               <span className="mt-3 inline-flex text-sm font-bold text-emerald-800">পণ্য দেখুন →</span>
@@ -213,9 +214,9 @@ export default async function PlantMarketPage() {
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">How Plant Market works</p>
           <h2 id="plant-market-how-heading" className="mt-2 text-2xl font-black">Plant Market থেকে কীভাবে পণ্য কিনবেন</h2>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <article className="rounded-2xl bg-[#f5f8f1] p-5"><span aria-hidden="true" className="text-2xl">🪴</span><h3 className="mt-3 font-extrabold">১. পণ্য ও ক্যাটাগরি বেছে নিন</h3><p className="mt-2 text-sm leading-6 text-slate-600">ইনডোর গাছ, ফলের চারা, টব, মাটি বা বীজের ক্যাটাগরি থেকে প্রাসঙ্গিক পণ্য খুঁজুন।</p></article>
-            <article className="rounded-2xl bg-[#f5f8f1] p-5"><span aria-hidden="true" className="text-2xl">🔎</span><h3 className="mt-3 font-extrabold">২. বিবরণ, মূল্য ও মজুত দেখুন</h3><p className="mt-2 text-sm leading-6 text-slate-600">পণ্যের ছবি, বর্ণনা, মূল্য ও প্রাপ্যতার তথ্য মিলিয়ে সিদ্ধান্ত নিন।</p></article>
-            <article className="rounded-2xl bg-[#f5f8f1] p-5"><span aria-hidden="true" className="text-2xl">🛒</span><h3 className="mt-3 font-extrabold">৩. checkout-এ অর্ডার নিশ্চিত করুন</h3><p className="mt-2 text-sm leading-6 text-slate-600">অর্ডার সম্পন্ন করার আগে checkout-এ সর্বশেষ মূল্য ও মজুত যাচাই করুন।</p></article>
+            <article className="rounded-2xl bg-[#f5f8f1] p-5"><Sprout aria-hidden="true" className="h-7 w-7 text-emerald-800" strokeWidth={1.8} /><h3 className="mt-3 font-extrabold">১. পণ্য ও ক্যাটাগরি বেছে নিন</h3><p className="mt-2 text-sm leading-6 text-slate-600">ইনডোর গাছ, ফলের চারা, টব, মাটি বা বীজের ক্যাটাগরি থেকে প্রাসঙ্গিক পণ্য খুঁজুন।</p></article>
+            <article className="rounded-2xl bg-[#f5f8f1] p-5"><Search aria-hidden="true" className="h-7 w-7 text-emerald-800" strokeWidth={1.8} /><h3 className="mt-3 font-extrabold">২. বিবরণ, মূল্য ও মজুত দেখুন</h3><p className="mt-2 text-sm leading-6 text-slate-600">পণ্যের ছবি, বর্ণনা, মূল্য ও প্রাপ্যতার তথ্য মিলিয়ে সিদ্ধান্ত নিন।</p></article>
+            <article className="rounded-2xl bg-[#f5f8f1] p-5"><Package aria-hidden="true" className="h-7 w-7 text-emerald-800" strokeWidth={1.8} /><h3 className="mt-3 font-extrabold">৩. checkout-এ অর্ডার নিশ্চিত করুন</h3><p className="mt-2 text-sm leading-6 text-slate-600">অর্ডার সম্পন্ন করার আগে checkout-এ সর্বশেষ মূল্য ও মজুত যাচাই করুন।</p></article>
           </div>
           <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-emerald-900/10 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div><h3 className="font-extrabold">নার্সারি বা গাছের বিক্রেতা?</h3><p className="mt-1 text-sm leading-6 text-slate-600">পণ্যের সঠিক নাম, নিজস্ব পরিষ্কার ছবি, মূল্য, মজুত ও উপকারী বিবরণ দিন। অ্যাডমিন অনুমোদনের আগে পণ্য প্রকাশ হবে না।</p></div>
