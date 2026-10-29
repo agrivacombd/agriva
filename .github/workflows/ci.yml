@@ -50,6 +50,8 @@ jobs:
         run: npm run test:admin-product-rpc-contract
       - name: Seller marketplace separation regression test
         run: npm run test:seller-marketplace-submission
+      - name: Seller production schema compatibility regression test
+        run: npm run test:seller-schema-compat
       - name: Payment webhook hardening regression test
         run: npm run test:payment-webhook-hardening
       - name: Disabled generic payment webhook regression test
