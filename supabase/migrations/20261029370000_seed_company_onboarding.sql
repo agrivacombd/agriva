@@ -38,6 +38,16 @@ CREATE TABLE IF NOT EXISTS public.seed_companies (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.seed_company_application_reviews (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_id uuid NOT NULL REFERENCES public.seed_company_applications(id) ON DELETE RESTRICT,
+  applicant_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  reviewer_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  decision text NOT NULL CHECK (decision IN ('approve', 'reject')),
+  reason text CHECK (reason IS NULL OR char_length(reason) <= 1000),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS seed_company_applications_status_created_idx
   ON public.seed_company_applications(status, created_at);
 CREATE INDEX IF NOT EXISTS seed_companies_district_idx
@@ -45,10 +55,12 @@ CREATE INDEX IF NOT EXISTS seed_companies_district_idx
 
 ALTER TABLE public.seed_company_applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seed_companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.seed_company_application_reviews ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON public.seed_company_applications FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.seed_company_applications TO authenticated;
 GRANT SELECT ON public.seed_companies TO authenticated;
+GRANT SELECT ON public.seed_company_application_reviews TO authenticated;
 
 DROP POLICY IF EXISTS "Applicants can read their own seed company application" ON public.seed_company_applications;
 CREATE POLICY "Applicants can read their own seed company application"
@@ -84,6 +96,11 @@ CREATE POLICY "Platform admins can review seed company applications"
 ON public.seed_company_applications FOR UPDATE TO authenticated
 USING (public.has_platform_admin_access())
 WITH CHECK (public.has_platform_admin_access());
+
+DROP POLICY IF EXISTS "Platform admins can read seed company review history" ON public.seed_company_application_reviews;
+CREATE POLICY "Platform admins can read seed company review history"
+ON public.seed_company_application_reviews FOR SELECT TO authenticated
+USING (public.has_platform_admin_access());
 
 DROP POLICY IF EXISTS "Company owners and platform admins can read company profiles" ON public.seed_companies;
 CREATE POLICY "Company owners and platform admins can read company profiles"
@@ -125,6 +142,12 @@ BEGIN
   IF v_application.status <> 'pending' THEN
     RAISE EXCEPTION 'Application has already been reviewed' USING ERRCODE = '55000';
   END IF;
+
+  INSERT INTO public.seed_company_application_reviews (
+    application_id, applicant_user_id, reviewer_user_id, decision, reason
+  ) VALUES (
+    v_application.id, v_application.applicant_user_id, auth.uid(), p_decision, v_reason
+  );
 
   IF p_decision = 'approve' THEN
     INSERT INTO public.seed_companies (
