@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "users.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return { supabase, userId: user.id };
 }
 
@@ -17,7 +13,7 @@ async function changeUserRole(formData: FormData) {
   const userId = String(formData.get("userId") ?? "");
   const role = String(formData.get("role") ?? "");
   if (!userId || !["farmer", "reseller"].includes(role)) redirect("/admin/users?notice=invalid");
-  const { supabase, userId: adminId } = await requireAdmin();
+  const { supabase, userId: adminId } = await requireAdmin("roles.grant");
   if (userId === adminId) redirect("/admin/users?notice=self");
   const { error } = await supabase.rpc("admin_set_user_role", { p_user_id: userId, p_role: role });
   revalidatePath("/admin");
