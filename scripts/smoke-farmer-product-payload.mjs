@@ -9,6 +9,7 @@ assert.match(route, /if \(!body \|\| typeof body !== "object" \|\| Array\.isArra
 assert.match(route, /const payload = body as Record<string, unknown>/, "only validated object payloads may be read as product fields");
 assert.match(route, /typeof payload\.name === "string"/, "product name must be validated as a string");
 assert.match(route, /typeof payload\.description === "string"/, "product description must be validated as a string");
+assert.match(route, /invalidNumberInput\(rawPrice\) \|\| invalidNumberInput\(rawStock\)/, "null and empty price/stock values must not coerce to zero");
 assert.doesNotMatch(route, /let body: any/, "unvalidated any-typed request bodies must not be used");
 
 console.log("Seller product payload validation regression checks passed.");
