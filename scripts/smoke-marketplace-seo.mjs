@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const product = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+const adminProducts = readFileSync("app/admin/products/page.tsx", "utf8");
+const seoMigration = readFileSync("supabase/migrations/20261030103000_admin_product_seo_landing_fields.sql", "utf8");
 const marketplace = readFileSync("app/marketplace/page.tsx", "utf8");
 const category = readFileSync("app/marketplace/category/[categorySlug]/page.tsx", "utf8");
 const subcategory = readFileSync("app/marketplace/category/[categorySlug]/[subcategorySlug]/page.tsx", "utf8");
@@ -10,6 +12,19 @@ const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
+assert.match(product, /product\.seo_title/, "Product metadata must prefer the admin-managed SEO title");
+assert.match(product, /product\.seo_description/, "Product metadata must prefer the admin-managed meta description");
+assert.match(product, /product\.seo_keywords/, "Product metadata must expose configured target keywords");
+assert.match(product, /"@type": "FAQPage"/, "Configured product FAQs should be represented in structured data");
+assert.match(product, /পণ্য সম্পর্কে বিস্তারিত/, "SEO landing-page copy must render on the public product page");
+assert.match(product, /সাধারণ জিজ্ঞাসা/, "Configured product FAQs must render visibly on the public page");
+assert.match(adminProducts, /name="seo_title"/, "Admin products page must allow editing SEO titles");
+assert.match(adminProducts, /name="seo_description"/, "Admin products page must allow editing meta descriptions");
+assert.match(adminProducts, /name="seo_keywords"/, "Admin products page must allow editing target keywords");
+assert.match(adminProducts, /name="seo_content"/, "Admin products page must allow editing landing-page content");
+assert.match(adminProducts, /name="seo_faqs"/, "Admin products page must allow editing product FAQs");
+assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_title/, "SEO fields need an additive database migration");
+assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_faqs jsonb/, "FAQ data needs a database column");
 assert.match(product, /const canonicalPath = `\/marketplace\/\$\{product\.slug\}`/, "Product page must derive its canonical from the stable product slug");
 assert.match(product, /alternates:\s*\{\s*canonical:\s*canonicalPath\s*\}/, "Product page needs a slug-based canonical");
 assert.match(product, /redirect\(`\/marketplace\/\$\{product\.slug\}`\)/, "Product ID aliases must redirect to the canonical slug URL");
