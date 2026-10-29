@@ -66,14 +66,14 @@ export default async function PlantMarketPage() {
     const supabase = await createSupabaseServerClient();
     const [taxonomyResult, legacyResult] = await Promise.all([
       supabase.from("products")
-        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,image_variants,created_at")
+        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,image_variants,created_at,seo_image_alt_texts")
         .eq("status", "active")
         .eq("category_slug", PLANT_CATEGORY)
         .order("created_at", { ascending: false })
         .limit(500),
       // Keep older listings discoverable while sellers/admins gradually use stable taxonomy.
       supabase.from("products")
-        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at")
+        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at,seo_image_alt_texts")
         .eq("status", "active")
         .is("category_slug", null)
         .order("created_at", { ascending: false })
