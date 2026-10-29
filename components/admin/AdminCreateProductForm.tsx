@@ -103,7 +103,7 @@ export default function AdminCreateProductForm() {
     <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
       <div>
         <h2 className="text-xl font-black">নতুন পণ্য যোগ করুন</h2>
-        <p className="mt-1 text-sm text-[#637266]">বাস্তব মূল্য ও স্টক দিন। পণ্য প্রথমে Draft থাকবে। ছবি ঐচ্ছিক; সর্বোচ্চ ৫ MB, JPEG/PNG/WebP।</p>
+        <p className="mt-1 text-sm text-[#637266]">বাস্তব মূল্য ও স্টক দিন। পণ্য প্রথমে Draft থাকবে। ছবি বাধ্যতামূলক; সর্বোচ্চ ৫ MB, JPEG/PNG/WebP।</p>
       </div>
       <label className="block text-sm font-bold">পণ্যের নাম
         <input required maxLength={160} value={form.name} onChange={(event) => set("name", event.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="যেমন: Chia Seed — 250g" />
