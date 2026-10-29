@@ -437,3 +437,13 @@ assert.ok(moderationPage.includes("product image preview"), "moderation queue mu
 const adminProductPage = read("app/admin/products/page.tsx");
 assert.ok(adminProductPage.includes('status === "active" && currentProduct.status !== "active"'), "product edit actions must not bypass the moderation queue to publish a draft");
 assert.ok(adminProductPage.includes('notice=moderation'), "direct draft publishing attempts must be routed back to moderation guidance");
+
+const ownershipMigration = read("supabase/migrations/20261029360000_track_marketplace_product_ownership.sql");
+const marketplacePage = read("app/marketplace/page.tsx");
+const marketplaceCore = read("components/marketplace/MarketplaceCore.tsx");
+assert.ok(ownershipMigration.includes("listing_source text NOT NULL DEFAULT 'seller'"), "legacy and seller products must default to seller ownership");
+assert.ok(ownershipMigration.includes("CHECK (listing_source IN ('platform', 'seller'))"), "listing source must be constrained to known values");
+assert.ok(ownershipMigration.includes("listing_source = 'platform'"), "Super Admin product creation must explicitly mark AGRIVA Official listings");
+assert.ok(ownershipMigration.includes("public.has_platform_admin_access()"), "platform listing source assignment must remain platform-admin guarded");
+assert.ok(marketplacePage.includes("image_url,listing_source"), "public marketplace must load listing ownership");
+assert.ok(marketplaceCore.includes("AGRIVA Official") && marketplaceCore.includes("Seller product"), "marketplace cards must disclose platform vs seller listings");
