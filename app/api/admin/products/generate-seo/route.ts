@@ -17,6 +17,10 @@ function cleanString(value: unknown, max: number) {
   return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "";
 }
 
+function cleanContent(value: unknown, max: number) {
+  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[\\t ]+/g, " ").trim()).join("\n").trim().slice(0, max) : "";
+}
+
 function clampText(value: unknown, max: number) {
   const text = cleanString(value, max + 100);
   if (text.length <= max) return text;
@@ -30,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (!access.ok) return access.response;
 
   const body = await request.json().catch(() => null);
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json({ error: "সঠিক product তথ্য দিন।" }, { status: 400 });
   }
 
@@ -68,7 +72,7 @@ export async function POST(request: NextRequest) {
     seo_title: cleanString(existing.seo_title, 200),
     seo_description: cleanString(existing.seo_description, 300),
     seo_keywords: Array.isArray(existing.seo_keywords) ? existing.seo_keywords.filter((value: unknown) => typeof value === "string").slice(0, 10) : [],
-    seo_content: cleanString(existing.seo_content, 10000),
+    seo_content: cleanContent(existing.seo_content, 10000),
     seo_faqs: cleanString(existing.seo_faqs, 6000),
   } : null;
 
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
     seo_title: clampText(parsed.seo_title, 70),
     seo_description: clampText(parsed.seo_description, 160),
     seo_keywords: keywords,
-    seo_content: cleanString(parsed.seo_content, 10000),
+    seo_content: cleanContent(parsed.seo_content, 10000),
     seo_faqs: faqs,
   };
   return NextResponse.json({ content });
