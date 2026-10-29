@@ -99,6 +99,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasStock = product.stock !== null && product.stock !== undefined;
   const image = product.image_url?.trim() || undefined;
   const description = product.description?.trim() || "";
+  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
     ? "৳" + Number(product.price).toLocaleString("en-BD")
     : "মূল্য উল্লেখ নেই";
@@ -182,7 +183,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="relative flex min-h-[280px] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-5 sm:min-h-[400px] md:min-h-[520px] md:p-8">
+          <div className="relative flex min-h-[280px] items-start justify-center self-start overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-4 sm:min-h-[400px] sm:p-6 md:h-[560px] md:min-h-0 md:w-full md:p-8">
             {image ? (
               <img
                 src={image}
@@ -191,7 +192,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 height={900}
                 fetchPriority="high"
                 decoding="async"
-                className="max-h-[460px] w-full rounded-2xl object-contain"
+                className="mt-10 max-h-[480px] w-full rounded-2xl object-contain sm:mt-12"
               />
             ) : (
               <div className="flex max-w-xs flex-col items-center text-center">
@@ -251,7 +252,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">বিবরণ</dt><dd className="whitespace-pre-line text-sm leading-7 text-slate-700">{description}</dd></div>}
+                {description && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">বিবরণ</dt><dd className="min-w-0 text-sm leading-7 text-slate-700">{description.length > 260 ? <details><summary className="cursor-pointer font-bold text-emerald-800 underline underline-offset-4">সম্পূর্ণ বিবরণ পড়ুন</summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details> : <p className="whitespace-pre-line break-words">{description}</p>}</dd></div>}
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
