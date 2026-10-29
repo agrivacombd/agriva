@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !category || !subcategory || description.length > 5000) {
-    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য, স্টক ও কমিশন যাচাই করুন।" }, { status: 400 });
+    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
   if (imageUrl) {
