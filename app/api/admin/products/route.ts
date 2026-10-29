@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminCapability } from "@/lib/admin/authz";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Login required" }, { status: 401 });
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+  const authorization = await requireAdminCapability("catalog.create");
+  if (!authorization.ok) {
+    const message = authorization.status === 401 ? "Login required" : "Admin access required";
+    return NextResponse.json({ error: message }, { status: authorization.status });
+  }
+  const { supabase } = authorization;
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim(), description = String(body.description || "").trim();
   const price = Number(body.price), stock = Number(body.stock), commission = Number(body.commission);
