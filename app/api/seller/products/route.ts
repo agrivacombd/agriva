@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   const isPlantListing = categorySlug === "plants-gardening";
 
   if (!name || name.length < 3 || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !category || !subcategory || description.length > 5000) {
+      !category || !subcategory || description.length > 5000 || description.length < (isPlantListing ? MIN_PLANT_DESCRIPTION_LENGTH : 30)) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
@@ -64,6 +64,9 @@ export async function POST(request: NextRequest) {
   }
   if (isPlantListing && description.length < MIN_PLANT_DESCRIPTION_LENGTH) {
     return NextResponse.json({ error: `Plant Market-এর বিবরণ অন্তত ${MIN_PLANT_DESCRIPTION_LENGTH} অক্ষরের হতে হবে। গাছের ধরন, আকার, যত্ন বা পণ্যের উপাদানের মতো নির্দিষ্ট তথ্য যোগ করুন।` }, { status: 400 });
+  }
+  if (!isPlantListing && description.length < 30) {
+    return NextResponse.json({ error: "পণ্যের বিবরণ অন্তত ৩০ অক্ষরের হতে হবে।" }, { status: 400 });
   }
   if (allImageUrls.length > 4) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি পণ্যের ছবি আপলোড করা যাবে।" }, { status: 400 });
@@ -96,6 +99,9 @@ export async function POST(request: NextRequest) {
     if (!ATTRIBUTE_KEYS.has(key) || typeof rawValue !== "string") continue;
     const value = cleanString(rawValue, key === "usage_instructions" || key === "care_instructions" ? 1000 : 160);
     if (value) productAttributes[key] = value;
+  }
+  if (["seeds", "fertilizer", "crop-protection", "premium-food-grains"].includes(categorySlug) && !productAttributes.pack_size) {
+    return NextResponse.json({ error: "এই ক্যাটাগরির পণ্যের pack size / পরিমাণ আবশ্যক।" }, { status: 400 });
   }
   if (productAttributes.germination_rate && (!Number.isFinite(Number(productAttributes.germination_rate)) || Number(productAttributes.germination_rate) < 0 || Number(productAttributes.germination_rate) > 100)) {
     return NextResponse.json({ error: "Germination rate ০ থেকে ১০০-এর মধ্যে দিন।" }, { status: 400 });
