@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
+import CompanyProductForm from "@/components/company/CompanyProductForm";
+
+export const metadata: Metadata = { title: "কোম্পানি ড্যাশবোর্ড", robots: { index: false, follow: false } };
 
 type Application = {
   id: string; company_name: string; status: "pending" | "approved" | "rejected";
   review_reason: string | null; created_at: string; reviewed_at: string | null;
 };
 type Company = {
-  id: string; company_name: string; legal_name: string | null; registration_number: string | null;
+  id: string; slug: string; company_name: string; legal_name: string | null; registration_number: string | null;
   contact_phone: string; business_email: string; district: string; website: string | null;
   verification_status: "verified" | "suspended"; verified_at: string; product_categories: string[];
 };
@@ -22,11 +26,14 @@ export default async function CompanyDashboardPage() {
       .select("id,company_name,status,review_reason,created_at,reviewed_at")
       .eq("applicant_user_id", user.id).maybeSingle(),
     supabase.from("seed_companies")
-      .select("id,company_name,legal_name,registration_number,contact_phone,business_email,district,website,verification_status,verified_at,product_categories")
+      .select("id,slug,company_name,legal_name,registration_number,contact_phone,business_email,district,website,verification_status,verified_at,product_categories")
       .eq("owner_user_id", user.id).maybeSingle(),
   ]);
   const currentApplication = application as Application | null;
   const verifiedCompany = company as Company | null;
+  const { data: companyProducts, error: productsError } = verifiedCompany
+    ? await supabase.from("products").select("id,name,slug,price,stock,status,moderation_status,created_at").eq("seed_company_id", verifiedCompany.id).order("created_at", { ascending: false }).limit(100)
+    : { data: [], error: null };
 
   return <main className="min-h-screen bg-[#f5f8f2] px-4 py-8 text-[#173b2d] sm:px-6">
     <div className="mx-auto max-w-5xl">
@@ -45,7 +52,20 @@ export default async function CompanyDashboardPage() {
           <div><dt className="text-sm text-slate-500">যোগাযোগ</dt><dd className="mt-1 font-bold">{verifiedCompany.contact_phone} · {verifiedCompany.business_email}</dd></div>
           <div><dt className="text-sm text-slate-500">জেলা</dt><dd className="mt-1 font-bold">{verifiedCompany.district}</dd></div>
         </dl>
-        {verifiedCompany.verification_status === "verified" ? <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="font-extrabold text-blue-950">পরবর্তী ধাপ: কোম্পানির পণ্য ক্যাটালগ</p><p className="mt-2 text-sm leading-6 text-blue-900">কোম্পানির পণ্য যোগ করার আগে কোম্পানি-ভিত্তিক ownership, স্টক, মূল্য ও moderation workflow সংযুক্ত করতে হবে। এই পর্যায়ে ভুলভাবে সাধারণ Seller বা AGRIVA Official হিসেবে পণ্য প্রকাশের সুযোগ রাখা হয়নি।</p></div> : <p className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">আপনার কোম্পানির অ্যাকাউন্ট সাময়িকভাবে স্থগিত। AGRIVA সহায়তা দলের সঙ্গে যোগাযোগ করুন।</p>}
+        {verifiedCompany.verification_status === "verified" ? <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="font-extrabold text-blue-950">কোম্পানির public profile</p><p className="mt-2 text-sm leading-6 text-blue-900">অনুমোদিত কোম্পানির public landing page-এ শুধু অনুমোদিত public তথ্য দেখানো হয়; নিবন্ধন নম্বর ও ব্যক্তিগত যোগাযোগের তথ্য গোপন থাকে।</p><Link href={`/companies/${verifiedCompany.slug}`} className="mt-3 inline-flex font-bold text-blue-900 underline">কোম্পানির SEO profile দেখুন</Link></div>
+        <CompanyProductForm />
+        {productsError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">পণ্যের তালিকা লোড হয়নি। Company catalogue migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
+        <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5 sm:p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-xl font-black">আপনার পণ্যের তালিকা</h2><p className="mt-1 text-sm text-slate-600">Draft/Pending পণ্য কেবল moderation queue-তে থাকবে; অনুমোদনের পর public হবে।</p></div><span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-900">{(companyProducts ?? []).length}টি পণ্য</span></div>
+          <div className="mt-4 space-y-3">
+            {(companyProducts ?? []).map((product) => <article key={product.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 p-4">
+              <div><h3 className="font-extrabold">{product.name}</h3><p className="mt-1 text-xs text-slate-500">৳{Number(product.price).toLocaleString("bn-BD")} · স্টক {Number(product.stock).toLocaleString("bn-BD")}</p></div>
+              <div className="flex items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-bold ${product.moderation_status === "approved" ? "bg-emerald-100 text-emerald-900" : product.moderation_status === "rejected" ? "bg-rose-100 text-rose-900" : "bg-amber-100 text-amber-950"}`}>{product.moderation_status === "approved" ? "অনুমোদিত" : product.moderation_status === "rejected" ? "প্রত্যাখ্যাত" : product.moderation_status === "changes_requested" ? "সংশোধন প্রয়োজন" : "যাচাই অপেক্ষমাণ"}</span>
+              {product.moderation_status === "approved" && product.status === "active" && <Link href={`/marketplace/${product.slug}`} className="text-sm font-bold text-emerald-800 underline">Public page</Link>}</div>
+            </article>)}
+            {!(companyProducts ?? []).length && !productsError && <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">এখনো কোনো পণ্য যোগ করা হয়নি। উপরের ফর্ম দিয়ে প্রথম পণ্য জমা দিন।</p>}
+          </div>
+        </section> : <p className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">আপনার কোম্পানির অ্যাকাউন্ট সাময়িকভাবে স্থগিত। AGRIVA সহায়তা দলের সঙ্গে যোগাযোগ করুন।</p>}
       </section> : currentApplication ? <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-6 shadow-sm sm:p-8">
         <p className="text-sm font-bold text-emerald-700">Company application</p><h2 className="mt-2 text-2xl font-black">{currentApplication.company_name}</h2>
         <div className={`mt-5 rounded-xl p-4 ${currentApplication.status === "pending" ? "bg-amber-50 text-amber-950" : "bg-rose-50 text-rose-950"}`}>
