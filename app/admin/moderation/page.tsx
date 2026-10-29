@@ -21,6 +21,12 @@ async function decideModeration(formData: FormData) {
   if (!productId || !["approve", "reject", "request_changes"].includes(decision)) redirect("/admin/moderation?notice=invalid");
   if (decision !== "approve" && (reason.length < 3 || reason.length > 1000)) redirect("/admin/moderation?notice=reason");
   const auth = await requireModerator();
+  if (decision === "approve") {
+    const { data: candidate, error: candidateError } = await auth.supabase
+      .from("products").select("image_url").eq("id", productId).maybeSingle();
+    if (candidateError || !candidate) redirect("/admin/moderation?notice=error");
+    if (!candidate.image_url) redirect("/admin/moderation?notice=image");
+  }
   const { error } = await auth.supabase.rpc("admin_moderate_marketplace_product", {
     p_product_id: productId,
     p_decision: decision,
@@ -46,7 +52,7 @@ export default async function ProductModerationPage({ searchParams }: { searchPa
   const { notice } = await searchParams;
   const { data, error } = await auth.supabase
     .from("products")
-    .select("id,name,description,price,stock,category,farmer_id,moderation_status,moderation_reason,created_at")
+    .select("id,name,description,price,stock,category,image_url,farmer_id,moderation_status,moderation_reason,created_at")
     .in("moderation_status", ["pending", "changes_requested"])
     .order("created_at", { ascending: true })
     .limit(100);
@@ -56,6 +62,7 @@ export default async function ProductModerationPage({ searchParams }: { searchPa
     error: "সিদ্ধান্ত সংরক্ষণ করা যায়নি। Database migration ও admin permission যাচাই করুন।",
     invalid: "পণ্যের তথ্য বা সিদ্ধান্ত সঠিক নয়।",
     reason: "Reject বা changes request করার সময় ৩–১০০০ অক্ষরের কারণ লিখুন।",
+    image: "ছবি সংরক্ষণ না হওয়া পর্যন্ত পণ্য Approve করা যাবে না। Catalogue-এ ছবি যোগ করে আবার যাচাই করুন.",
   };
 
   return (
@@ -71,6 +78,7 @@ export default async function ProductModerationPage({ searchParams }: { searchPa
         <div className="mt-5 grid gap-4">
           {products.map((product) => <article key={product.id} className="rounded-3xl border border-[#e1e9df] bg-white p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#a67f25]">{product.category}</p><h3 className="mt-2 text-xl font-black">{product.name}</h3><p className="mt-2 text-sm text-[#647568]">Seller ID: {product.farmer_id.slice(0, 8)} · Submitted {new Date(product.created_at).toLocaleDateString("en-GB")}</p></div><span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900">{product.moderation_status}</span></div>
+            {product.image_url ? <div role="img" aria-label={`${product.name} product image preview`} className="mt-4 h-44 w-44 rounded-2xl border bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${product.image_url}")` }} /> : <p role="alert" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-amber-900">পণ্যের ছবি নেই—Approve করার আগে ছবি সংরক্ষণ করুন।</p>}
             <div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Price</p><p className="mt-1 font-black">৳{Number(product.price).toLocaleString("en-BD")}</p></div><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Stock</p><p className="mt-1 font-black">{Number(product.stock).toLocaleString("en-BD")}</p></div><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Previous reason</p><p className="mt-1 text-sm">{product.moderation_reason || "—"}</p></div></div>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[#526357]">{product.description || "বিবরণ দেওয়া হয়নি।"}</p>
             <form action={decideModeration} className="mt-5 rounded-2xl border border-[#e1e9df] p-4">
