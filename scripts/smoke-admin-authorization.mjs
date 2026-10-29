@@ -9,13 +9,13 @@ const read = (path) => {
 
 const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
-assert.match(layout, /requireAdminPage\\("dashboard\\.read"\\)/, "admin layout must use the shared capability guard");
-assert.match(authz, /supabase\\.auth\\.getUser\\(\\)/, "shared guard must verify the server-side session");
+assert.match(layout, /requireAdminPage\("dashboard\.read"\)/, "admin layout must use the shared capability guard");
+assert.match(authz, /supabase\.auth\.getUser\(\)/, "shared guard must verify the server-side session");
 assert.match(authz, /profileError/, "shared guard must fail closed when profile lookup fails");
-assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\\.has\\(capability\\)/, "shared guard must explicitly check the requested capability");
+assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\.has\(capability\)/, "shared guard must explicitly check the requested capability");
 assert.match(authz, /authorization_unavailable/, "authorization lookup failures must be distinguishable from ordinary denial");
 const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
-assert.doesNotMatch(legacyCapabilityPolicy, /payments\\.reconcile|orders\\.refund\\.request|payouts\\.approve|system\\.recovery\\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
+assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|payouts\.approve|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -35,7 +35,7 @@ for (const path of [
 ]) {
   const source = read(path);
   if (source.includes("requireAdminApi(")) {
-    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, `${path} must request an explicit capability`);
+    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, \`\${path} must request an explicit capability\`);
   } else {
     assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
     assert.match(source, /profiles/, `${path} must verify the user's profile role`);
