@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
-  const commission = Number(body.commission);
   const description = String(body.description || "").trim();
   const categorySlug = String(body.category_slug || "").trim();
   const subcategorySlug = String(body.subcategory_slug || "").trim();
@@ -22,7 +21,6 @@ export async function POST(request: NextRequest) {
   const imageUrl = typeof body.image_url === "string" && body.image_url.trim() ? body.image_url.trim() : null;
 
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !Number.isFinite(commission) || commission < 0 || commission > 100 ||
       !category || !subcategory || description.length > 5000) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য, স্টক ও কমিশন যাচাই করুন।" }, { status: 400 });
   }
@@ -47,7 +45,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id, name, slug, category: subcategory.name,
     category_slug: category.slug, subcategory_slug: subcategory.slug,
-    price, stock, reseller_commission_percent: commission, description,
+    price, stock, description,
     image_url: imageUrl, status: "draft",
   }).select("id,name,category,category_slug,subcategory_slug,image_url,status").single();
 
