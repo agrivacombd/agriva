@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "catalog.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -21,7 +17,7 @@ async function saveCategory(formData: FormData) {
   const isActive = String(formData.get("is_active") ?? "false") === "true";
   const sortOrder = Number(formData.get("sort_order") ?? 100);
   if (!name || !slug || !Number.isFinite(sortOrder) || !Number.isInteger(sortOrder) || Math.abs(sortOrder)>100000) redirect("/admin/categories?notice=invalid");
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("catalog.edit");
   const {error} = await supabase.rpc("admin_save_product_category", {
     p_category_id: id || null,p_name:name,p_slug:slug,p_description:description,p_is_active:isActive,p_sort_order:sortOrder,
   });
