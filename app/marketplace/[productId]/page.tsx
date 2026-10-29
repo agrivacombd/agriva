@@ -84,7 +84,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const productImages = Array.from(new Set([...(product.image_urls ?? []), ...(product.image_url ? [product.image_url] : [])])).slice(0, 4);
   const hasRealImage = !product.id.startsWith("sample-") && productImages.length > 0;
   const description = cleanText(product.description);
-  const seoContent = cleanText(product.seo_content);
+  const seoContent = (product.seo_content ?? "").replace(/<[^>]*>/g, " ").replace(/\r\n?/g, "\n").trim();
   const attributeLabels: Record<string, string> = { brand: "ব্র্যান্ড / প্রস্তুতকারক", crop_name: "ফসল", variety: "জাত / variety", pack_size: "প্যাক সাইজ", germination_rate: "Germination rate (%)", batch_number: "Lot / batch number", expiry_date: "মেয়াদ শেষের তারিখ", fertilizer_type: "সারের ধরন", composition: "Composition", usage_instructions: "ব্যবহারবিধি", active_ingredient: "Active ingredient", registration_number: "Registration number", plant_size: "গাছের আকার", suitable_season: "উপযুক্ত মৌসুম", care_instructions: "যত্নের নির্দেশনা", model: "Model", material: "উপাদান", dimensions: "মাপ", warranty: "Warranty", food_type: "পণ্যের ধরন", ingredients: "উপাদান", origin: "উৎপত্তিস্থল" };
   const productAttributes = Object.entries(product.product_attributes && typeof product.product_attributes === "object" ? product.product_attributes : {}).filter((entry): entry is [string, string] => typeof entry[1] === "string" && Boolean(entry[1].trim())).slice(0, 24);
   const seoFaqs = (Array.isArray(product.seo_faqs) ? product.seo_faqs : []).filter((faq) => faq && typeof faq.question === "string" && faq.question.trim() && typeof faq.answer === "string" && faq.answer.trim()).slice(0, 8);
