@@ -12,9 +12,9 @@ const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
 const seoAssistant = readFileSync("components/admin/AdminProductSeoAssistant.tsx", "utf8");
 const seoRoute = readFileSync("app/api/admin/products/generate-seo/route.ts", "utf8");
-const imageMigration = readFileSync("supabase/migrations/20261030130000_marketplace_image_seo_pipeline.sql", "utf8");
-const seoLandingMigration = readFileSync("supabase/migrations/20261030103000_admin_product_seo_landing_fields.sql", "utf8");
-const seoAssistantMigration = readFileSync("supabase/migrations/20261030140000_admin_seo_image_alt_and_attribute_suggestions.sql", "utf8");
+const imageMigration = readFileSync("supabase/migrations/20261029210631_marketplace_image_seo_pipeline.sql", "utf8");
+const seoLandingMigration = readFileSync("supabase/migrations/20261029210550_admin_product_seo_landing_fields.sql", "utf8");
+const seoAssistantMigration = readFileSync("supabase/migrations/20261029210643_admin_seo_image_alt_and_attribute_suggestions.sql", "utf8");
 
 assert.match(sellerForm, /MAX_IMAGE_SIZE = 5 \* 1024 \* 1024/, "browser must reject originals over 5 MB");
 assert.match(upload, /MAX_ORIGINAL_BYTES = 5 \* 1024 \* 1024/, "server must enforce original upload size");
