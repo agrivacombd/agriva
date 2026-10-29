@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   const requestedImageUrls = Array.isArray(body.image_urls) ? body.image_urls : [];
   const imageUrls = requestedImageUrls.filter((value: unknown): value is string => typeof value === "string" && value.trim().length > 0).map((value: string) => value.trim());
+  const requestedImageVariants = Array.isArray(body.image_variants) ? body.image_variants : [];
   const imageUrl = imageUrls[0] || (typeof body.image_url === "string" && body.image_url.trim().length > 0 ? body.image_url.trim() : null);
   const allImageUrls = imageUrls.length ? imageUrls : imageUrl ? [imageUrl] : [];
   const isPlantListing = categorySlug === "plants-gardening";
@@ -73,18 +74,53 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি পণ্যের ছবি আপলোড করা যাবে।" }, { status: 400 });
   }
 
+  const imageVariants: Array<{ image_url: string; card_url: string; thumbnail_url: string; width: number; height: number; alt: string; filename: string }> = [];
   if (allImageUrls.length) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!supabaseUrl) return NextResponse.json({ error: "ছবির storage configuration পাওয়া যায়নি।" }, { status: 500 });
     try {
       const base = new URL(supabaseUrl);
-      const validFileName = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i;
+      const generatedFileName = /^[\p{L}\p{N}-]{1,100}-[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}-(?:main|card|thumb)\.webp$/u;
+      const legacyFileName = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i;
+      const isOwnedImageUrl = (value: unknown, allowedPattern: RegExp = generatedFileName) => {
+        if (typeof value !== "string") return false;
+        try {
+          const image = new URL(value);
+          const expectedPrefix = `/storage/v1/object/public/product-images/${user.id}/`;
+          const fileName = image.pathname.startsWith(expectedPrefix) ? image.pathname.slice(expectedPrefix.length) : "";
+          return image.origin === base.origin && allowedPattern.test(fileName) && image.search.length === 0 && image.hash.length === 0 && image.protocol === "https:";
+        } catch { return false; }
+      };
       for (const imageUrlValue of allImageUrls) {
-        const image = new URL(imageUrlValue);
-        const expectedPrefix = `/storage/v1/object/public/product-images/${user.id}/`;
-        const fileName = image.pathname.startsWith(expectedPrefix) ? image.pathname.slice(expectedPrefix.length) : "";
-        if (image.origin !== base.origin || !validFileName.test(fileName) || image.search.length > 0 || image.hash.length > 0 || image.protocol !== "https:") {
-          return NextResponse.json({ error: "শুধু নিজের account থেকে আপলোড করা পণ্যের ছবি ব্যবহার করা যাবে।" }, { status: 400 });
+        if (!isOwnedImageUrl(imageUrlValue, generatedFileName) && !isOwnedImageUrl(imageUrlValue, legacyFileName)) {
+          return NextResponse.json({ error: "শুধু নিজের account থেকে upload ও validate করা পণ্যের ছবি ব্যবহার করা যাবে।" }, { status: 400 });
+        }
+      }
+      if (requestedImageVariants.length) {
+        if (requestedImageVariants.length !== allImageUrls.length || requestedImageVariants.length > 4) {
+          return NextResponse.json({ error: "Image variant-এর সংখ্যা product image-এর সঙ্গে মিলছে না।" }, { status: 400 });
+        }
+        for (let index = 0; index < requestedImageVariants.length; index += 1) {
+          const raw = requestedImageVariants[index];
+          if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+            return NextResponse.json({ error: "Image variant-এর তথ্য সঠিক নয়।" }, { status: 400 });
+          }
+          const item = raw as Record<string, unknown>;
+          const imageUrlValue = typeof item.image_url === "string" ? item.image_url : "";
+          const cardUrl = typeof item.card_url === "string" ? item.card_url : "";
+          const thumbnailUrl = typeof item.thumbnail_url === "string" ? item.thumbnail_url : "";
+          const filename = typeof item.filename === "string" ? item.filename : "";
+          const width = Number(item.width);
+          const height = Number(item.height);
+          const alt = cleanString(item.alt, 250);
+          const expectedCard = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-card.webp" : "";
+          const expectedThumb = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-thumb.webp" : "";
+          if (imageUrlValue !== allImageUrls[index] || !isOwnedImageUrl(imageUrlValue) || cardUrl !== expectedCard || thumbnailUrl !== expectedThumb ||
+              !isOwnedImageUrl(cardUrl) || !isOwnedImageUrl(thumbnailUrl) || filename !== imageUrlValue.split("/").pop() ||
+              !Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 1200 || height > 1200 || !alt) {
+            return NextResponse.json({ error: "Responsive image URL বা metadata validation ব্যর্থ হয়েছে।" }, { status: 400 });
+          }
+          imageVariants.push({ image_url: imageUrlValue, card_url: cardUrl, thumbnail_url: thumbnailUrl, width, height, alt, filename });
         }
       }
     } catch {
@@ -146,6 +182,7 @@ export async function POST(request: NextRequest) {
     description,
     image_url: imageUrl,
     image_urls: allImageUrls,
+    image_variants: imageVariants,
     product_attributes: productAttributes,
     status: "draft",
   }).select("id,name,category,category_slug,subcategory_slug,image_url,image_urls,product_attributes,status").single();
