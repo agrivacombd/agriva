@@ -8,7 +8,7 @@ type Item = { product_id: string; quantity: number; unit_price: number; name?: s
 export default function Checkout() {
   const [items, setItems] = useState<Item[]>([]);
   const [cartId, setCartId] = useState("");
-  const [form, setForm] = useState({ name: "", phone: "", address: "", city: "", area: "" });
+  const [form, setForm] = useState({ name: "", phone: "", address: "", district: "", upazila: "", area: "" });
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [codEnabled, setCodEnabled] = useState(false);
@@ -73,8 +73,8 @@ export default function Checkout() {
             shippingAddress: {
               fullName: form.name,
               phone: form.phone,
-              district: form.city,
-              address: [form.address, form.area].filter(Boolean).join(", "),
+              district: form.district,
+              address: [form.upazila, form.area, form.address, "Bangladesh"].filter(Boolean).join(", "),
             },
           }),
         });
@@ -121,21 +121,24 @@ export default function Checkout() {
   return (
     <main className="min-h-screen bg-[#f5f7f2] px-6 py-12 text-[#17351f]">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout</p>
-        <h1 className="mt-3 text-4xl font-black">Delivery & payment</h1>
+        <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout · বাংলাদেশ</p>
+        <h1 className="mt-3 text-4xl font-black">ডেলিভারির তথ্য</h1>
+        <p className="mt-2 text-sm text-[#647468]">বাংলাদেশের ভেতরে ডেলিভারির জন্য নিচের তথ্যগুলো পূরণ করুন।</p>
         {items.length > 0 && <div className="mt-6 rounded-2xl bg-white p-5">
           <p className="font-bold">{items.length} item type{items.length === 1 ? "" : "s"} in your cart</p>
           {items.map((item) => <p key={item.product_id} className="mt-2 text-sm text-[#647468]">{item.name} × {item.quantity} · ৳{(Number(item.unit_price) * item.quantity).toFixed(2)}</p>)}
         </div>}
         {message && <div role="status" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}</div>}
         {items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-7 shadow-sm">
-          <Field label="Full name" value={form.name} onChange={(value) => setForm({ ...form, name: value })} />
-          <Field label="Phone" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} />
-          <Field label="Full address" value={form.address} onChange={(value) => setForm({ ...form, address: value })} />
+          <Field label="আপনার পুরো নাম" placeholder="যেমন: মো. রহিম উদ্দিন" value={form.name} onChange={(value) => setForm({ ...form, name: value })} />
+          <Field label="মোবাইল নম্বর" placeholder="01XXXXXXXXX" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} />
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="District / City" value={form.city} onChange={(value) => setForm({ ...form, city: value })} />
-            <Field label="Area / Upazila" value={form.area} onChange={(value) => setForm({ ...form, area: value })} />
+            <Field label="জেলা" placeholder="আপনার জেলার নাম" value={form.district} onChange={(value) => setForm({ ...form, district: value })} />
+            <Field label="উপজেলা" placeholder="আপনার উপজেলার নাম" value={form.upazila} onChange={(value) => setForm({ ...form, upazila: value })} />
           </div>
+          <Field label="এলাকা / গ্রাম / ইউনিয়ন" placeholder="এলাকা, গ্রাম বা ইউনিয়নের নাম" value={form.area} onChange={(value) => setForm({ ...form, area: value })} />
+          <Field label="বাড়ি, রোড ও বিস্তারিত ঠিকানা" placeholder="বাড়ি/হোল্ডিং নম্বর, রোড, বাজার বা পরিচিত স্থান" value={form.address} onChange={(value) => setForm({ ...form, address: value })} />
+          <div className="rounded-xl bg-[#f5f7f2] px-4 py-3 text-sm text-[#647468]">দেশ: <b className="text-[#17351f]">বাংলাদেশ</b></div>
           <div className="rounded-2xl border p-4"><b>Cash on Delivery</b><p className="mt-1 text-sm text-[#647468]">{codEnabled ? "Pay when your order is delivered. Online payment will be enabled later." : "Cash on Delivery is currently disabled by the site administrator."}</p></div>
           <button disabled={busy || !codEnabled} className="w-full rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">{busy ? "Placing order…" : "Place COD order"}</button>
         </form>}
@@ -144,6 +147,4 @@ export default function Checkout() {
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <label className="block"><span className="text-sm font-bold">{label}</span><input required value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none" /></label>;
-}
+function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }) {\n  return <label className="block"><span className="text-sm font-bold">{label}</span><input required value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:border-[#3b7650] focus:ring-2 focus:ring-[#3b7650]/15" /></label>;\n}
