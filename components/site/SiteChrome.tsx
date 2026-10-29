@@ -15,6 +15,8 @@ const bnLinks = [
   { href: "/crop-calendar", label: "ফসল ক্যালেন্ডার" },
   { href: "/learn", label: "কৃষি গাইড" },
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
+  { href: "/sell-harvest", label: "ফসল বিক্রি" },
+  { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
   { href: "/blog", label: "কৃষি ব্লগ" },
 ];
 
