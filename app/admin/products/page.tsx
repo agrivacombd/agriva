@@ -1,17 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "catalog.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -31,7 +27,7 @@ async function saveProduct(formData: FormData) {
   if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
     redirect("/admin/products?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("catalog.edit");
   const { error: productError } = await supabase.rpc("admin_update_product", {
     p_product_id: productId, p_name: name, p_description: description || null,
     p_price: price, p_stock: stock, p_commission_percent: commission, p_status: status,
