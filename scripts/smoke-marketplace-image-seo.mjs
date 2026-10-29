@@ -50,6 +50,9 @@ assert.match(feed, /X-AGRIVA-Feed-Skipped/, "Merchant feed must expose skipped-i
 assert.match(sitemap, /images: Array\.from\(new Set/, "sitemap must include crawlable product images");
 assert.match(robots, /"\/seller\//, "robots.txt must disallow seller dashboard paths");
 assert.match(seoRoute, /seo_image_alt_texts/, "admin AI must suggest image alt text");
+assert.match(seoRoute, /process\.env\.GEMINI_API_KEY/, "SEO generation must support the configured Gemini provider");
+assert.match(seoRoute, /generativelanguage\.googleapis\.com\/v1beta\/models/, "Gemini fallback must call the supported generateContent API");
+assert.match(seoRoute, /responseMimeType: "application\/json"/, "Gemini SEO output must request JSON for validated parsing");
 assert.match(seoRoute, /seo_attribute_suggestions/, "admin AI must suggest missing category attributes");
 assert.match(seoAssistant, /name="seo_image_alt_texts"/, "admin must edit AI image alt text");
 assert.match(seoAssistant, /name="seo_attribute_suggestions"/, "admin must edit missing-attribute suggestions");
