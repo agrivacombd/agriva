@@ -44,3 +44,42 @@ END
 $$;
 
 COMMENT ON COLUMN public.products.image_variants IS 'Responsive, public image derivative metadata. Original source files remain in the private product-image-originals bucket.';
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Sellers can delete own processed product images'
+  ) THEN
+    CREATE POLICY "Sellers can delete own processed product images"
+      ON storage.objects FOR DELETE TO authenticated
+      USING (
+        bucket_id = 'product-images'
+        AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+        AND EXISTS (
+          SELECT 1 FROM public.user_role_memberships membership
+          WHERE membership.user_id = (SELECT auth.uid())
+            AND membership.role IN ('seller', 'organization')
+        )
+      );
+  END IF;
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Sellers can delete own private product originals'
+  ) THEN
+    CREATE POLICY "Sellers can delete own private product originals"
+      ON storage.objects FOR DELETE TO authenticated
+      USING (
+        bucket_id = 'product-image-originals'
+        AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+        AND EXISTS (
+          SELECT 1 FROM public.user_role_memberships membership
+          WHERE membership.user_id = (SELECT auth.uid())
+            AND membership.role IN ('seller', 'organization')
+        )
+      );
+  END IF;
+END
+$$;
