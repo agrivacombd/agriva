@@ -25,6 +25,12 @@ assert.match(adminProducts, /name="seo_title"/, "Admin products page must allow 
 assert.match(adminProducts, /name="seo_description"/, "Admin products page must allow editing meta descriptions");
 assert.match(adminProducts, /name="seo_keywords"/, "Admin products page must allow editing target keywords");
 assert.match(adminProducts, /name="seo_content"/, "Admin products page must allow editing landing-page content");
+assert.match(adminProducts, /AdminProductSeoAssistant/, "Admin product editor must include AI SEO assistant");
+assert.match(aiAssistant, /Generate SEO draft/, "Admin must be able to generate an SEO draft");
+assert.match(aiAssistant, /Improve existing content/, "Admin must be able to improve existing SEO content");
+assert.match(aiRoute, /requireAdminApi\("catalog.edit"\)/, "AI SEO generation must be admin-only");
+assert.match(aiRoute, /OPENAI_API_KEY/, "AI SEO generation must use a server-side API key");
+assert.match(aiRoute, /Do not invent licences/, "AI must not invent licences or unverified product claims");
 assert.match(adminProducts, /name="seo_faqs"/, "Admin products page must allow editing product FAQs");
 assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_title/, "SEO fields need an additive database migration");
 assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_faqs jsonb/, "FAQ data needs a database column");
