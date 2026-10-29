@@ -44,9 +44,13 @@ export default function ProductForm() {
     setMessage("");
     const selected = Array.from(fileList ?? []);
     if (selected.length > MAX_PRODUCT_IMAGES) {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current = [];
       setImages([]); setPreviews([]); setMessage("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।"); return;
     }
     if (selected.some((file) => !ALLOWED_IMAGE_TYPES.includes(file.type))) {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current = [];
       setImages([]); setPreviews([]); setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।"); return;
     }
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
