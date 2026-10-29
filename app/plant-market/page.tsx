@@ -27,6 +27,8 @@ const plantTerms = [
 ];
 
 function isPlantProduct(product: MarketplaceProduct) {
+  if (product.category_slug === "plants-gardening") return true;
+
   const searchable = [product.name, product.category, product.description]
     .filter(Boolean).join(" ").normalize("NFKC").toLocaleLowerCase();
   return plantTerms.some((term) => searchable.includes(term.normalize("NFKC").toLocaleLowerCase()));
