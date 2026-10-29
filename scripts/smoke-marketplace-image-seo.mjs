@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { strict as assert } from "node:assert";
+
+const upload = readFileSync("app/api/seller/product-images/route.ts", "utf8");
+const sellerForm = readFileSync("components/seller/SellerProductForm.tsx", "utf8");
+const productApi = readFileSync("app/api/seller/products/route.ts", "utf8");
+const productPage = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+const card = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+const feed = readFileSync("app/merchant-center-feed.xml/route.ts", "utf8");
+const sitemap = readFileSync("app/sitemap.ts", "utf8");
+const robots = readFileSync("app/robots.ts", "utf8");
+const seoAssistant = readFileSync("components/admin/AdminProductSeoAssistant.tsx", "utf8");
+const seoRoute = readFileSync("app/api/admin/products/generate-seo/route.ts", "utf8");
+const imageMigration = readFileSync("supabase/migrations/20261030130000_marketplace_image_seo_pipeline.sql", "utf8");
+const seoAssistantMigration = readFileSync("supabase/migrations/20261030140000_admin_seo_image_alt_and_attribute_suggestions.sql", "utf8");
+
+assert.match(sellerForm, /MAX_IMAGE_SIZE = 5 \* 1024 \* 1024/, "browser must reject originals over 5 MB");
+assert.match(upload, /MAX_ORIGINAL_BYTES = 5 \* 1024 \* 1024/, "server must enforce original upload size");
+assert.match(upload, /sharp\(buffer/, "server must decode actual image bytes");
+assert.match(upload, /metadata\.format/, "server must validate the actual file format");
+assert.match(upload, /metadata\.width \* metadata\.height > 40_000_000/, "server must limit decompression pixel count");
+assert.match(upload, /stats\.sharpness/, "server must warn about potentially blurry images");
+assert.match(upload, /resize\(\{ width: size\.width, height: size\.width, fit: "inside", withoutEnlargement: true \}\)/, "derivatives must preserve aspect ratio without forced crops");
+assert.match(upload, /\.webp\(/, "processor must generate optimized WebP derivatives");
+assert.match(upload, /-original\./, "processor must retain an original source");
+assert.match(imageMigration, /VALUES \('product-image-originals'.*false, 5242880/s, "originals must be private and capped at 5 MB");
+assert.match(imageMigration, /file_size_limit = 5242880/, "public image bucket must cap uploads at 5 MB");
+assert.match(productApi, /image_variants: imageVariants/, "product record must persist responsive variants");
+assert.match(productPage, /srcSet=/, "product detail must serve responsive images");
+assert.match(card, /srcSet=/, "marketplace cards must serve responsive images");
+assert.match(productPage, /fetchPriority="high"/, "main product image must be prioritized");
+assert.match(productPage, /loading="lazy"/, "below-the-fold gallery images must lazy load");
+assert.match(productPage, /itemCondition/, "schema must reflect the seller-selected condition");
+assert.match(productPage, /priceCurrency: "BDT"/, "Offer schema must use BDT");
+assert.match(productPage, /availability: Number\(product\.stock\) > 0/, "Offer availability must follow real stock");
+assert.match(productPage, /seo_image_alt_texts/, "reviewed alt text must be used on product pages");
+assert.match(feed, /<g:availability>/, "Merchant feed must contain availability");
+assert.match(feed, /<g:price>/, "Merchant feed must contain BDT price");
+assert.match(feed, /<g:condition>/, "Merchant feed must contain seller-confirmed condition");
+assert.match(feed, /additional_image_link/, "Merchant feed must include additional product images");
+assert.match(feed, /X-AGRIVA-Feed-Skipped/, "Merchant feed must expose skipped-item diagnostics");
+assert.match(sitemap, /images: Array\.from\(new Set/, "sitemap must include crawlable product images");
+assert.match(robots, /"\/seller\/", "robots.txt must disallow seller dashboard paths");
+assert.match(seoRoute, /seo_image_alt_texts/, "admin AI must suggest image alt text");
+assert.match(seoRoute, /seo_attribute_suggestions/, "admin AI must suggest missing category attributes");
+assert.match(seoAssistant, /name="seo_image_alt_texts"/, "admin must edit AI image alt text");
+assert.match(seoAssistant, /name="seo_attribute_suggestions"/, "admin must edit missing-attribute suggestions");
+assert.match(seoAssistantMigration, /admin_update_product_seo_assistant_details/, "SEO assistant details must save through an audited admin RPC");
+
+console.log("Marketplace image SEO, responsive image, product schema, Merchant feed and sitemap checks passed.");
