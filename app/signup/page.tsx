@@ -226,6 +226,7 @@ export default function SignupPage() {
           </form>
 
           <p className="mt-7 text-center text-sm text-slate-600">{t.haveAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href="/login">{t.signIn}</Link></p>
+          <p className="mt-4 text-center text-sm text-slate-600">{language === "bn" ? "বীজ বা কৃষি উপকরণ কোম্পানি?" : "Seed or agricultural input company?"}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href="/company/apply">{language === "bn" ? "কোম্পানি নিবন্ধন করুন" : "Register your company"}</Link></p>
         </section>
       </div>
     </main>

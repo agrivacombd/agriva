@@ -11,6 +11,7 @@ const subcategoryPage = read("../app/marketplace/category/[categorySlug]/[subcat
 const indexability = read("../lib/marketplace/indexability.ts");
 const sitemap = read("../app/sitemap.ts");
 const productPage = read("../app/marketplace/[productId]/page.tsx");
+const searchRoute = read("../app/api/search/route.ts");
 
 assert.ok(migration.includes("create table if not exists public.product_subcategories"), "subcategory table must exist");
 assert.ok(migration.includes("products_category_subcategory_slug_fkey"), "database must enforce category/subcategory parent relationship");
@@ -21,14 +22,16 @@ assert.ok(migration.includes("public.is_admin()"), "taxonomy writes must be admi
 assert.ok(migration.includes("Keep any unmapped legacy free-text category"), "unknown legacy categories must be preserved");
 assert.ok(selector.includes('name="category_slug"') && selector.includes('name="subcategory_slug"'), "admin form must submit stable taxonomy slugs");
 assert.ok(selector.includes("selectedCategory?.subcategories"), "subcategory choices must depend on selected category");
-assert.ok(adminProducts.includes("admin_set_product_taxonomy") && adminProducts.includes("category_slug,subcategory_slug"), "admin form must persist and load stable taxonomy");
+assert.ok(adminProducts.includes("admin_update_marketplace_product") && adminProducts.includes("category_slug,subcategory_slug"), "admin form must persist stable taxonomy atomically");
 assert.ok(taxonomy.includes("getProductTaxonomy") && taxonomy.includes("function matchesSubcategory"), "taxonomy resolver must support stable slugs and legacy fallback");
 assert.ok(categoryPage.includes("hasIndexableCategoryProducts") && categoryPage.includes("category_slug"), "category pages must use stable slugs and avoid indexing empty pages");
 assert.ok(subcategoryPage.includes("hasIndexableSubcategoryProducts") && subcategoryPage.includes("subcategory_slug"), "subcategory pages must use stable slugs and avoid indexing empty pages");
-assert.ok(indexability.includes('.eq("status", "active")') && !indexability.includes("moderation_status"), "indexability must use the deployed products status field");
+assert.ok(indexability.includes('.eq("status", "active")') && indexability.includes('.eq("moderation_status", "approved")'), "indexability must require active and approved products");
 assert.ok(indexability.includes('select("category'), "indexability query must use fields present in production schema");
 assert.ok(sitemap.includes("categoryUrls") && sitemap.includes("matchesSubcategory"), "sitemap must include only populated taxonomy URLs");
 assert.ok(productPage.includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumb must link to category and subcategory");
+assert.ok(productPage.includes('.eq("moderation_status", "approved")') && productPage.includes("image_url"), "product detail query must require approved listings and include product media");
+assert.ok(searchRoute.includes('.eq("moderation_status", "approved")') && searchRoute.includes('.eq("status", "active")'), "public search must exclude pending/rejected listings");
 assert.ok(!adminProducts.includes('name="category"'), "admin form must no longer write free-text category");
 
 console.log("Category taxonomy and SEO smoke checks passed.");

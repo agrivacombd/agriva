@@ -1,38 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
+  const boundedBody = await readRequestBodyWithLimit(request, 8192);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const draftId = body?.draftId;
 
   if (typeof draftId !== "string" || !draftId.trim()) {
     return NextResponse.json({ error: "draftId required" }, { status: 400 });
   }
 
-  // Use the cookie-aware server client so the caller's Supabase session is
-  // forwarded and verified. A bare supabase-js client has no request session.
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const authorization = await authorizePermission("content.publish");
+  if (!authorization.ok) {
+    return NextResponse.json({ error: authorization.error }, { status: authorization.status });
   }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profileError) {
-    return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
-  }
-  if (profile?.role !== "admin") {
-    return NextResponse.json({ error: "Admin role required" }, { status: 403 });
-  }
+  const { supabase, user } = authorization;
 
   const { data: draft, error: draftError } = await supabase
     .from("content_drafts")

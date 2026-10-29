@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 const value = (f: FormData, k: string, max = 500) => String(f.get(k) ?? "").trim().slice(0, max);
 const slugify = (s: string) => s.normalize("NFKC").trim().toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 90);
@@ -11,9 +11,12 @@ const toIsoOrInvalid = (raw: string): string | null | undefined => {
   return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 };
 export async function submitJobPost(formData: FormData) {
-  const db = await createSupabaseServerClient();
-  const { data: { user } } = await db.auth.getUser();
-  if (!user) redirect("/login?next=%2Fjobs%2Fpost");
+  const authorization = await authorizePermission("jobs.create_own");
+  if (!authorization.ok) {
+    if (authorization.status === 401) redirect("/login?next=%2Fjobs%2Fpost");
+    redirect("/jobs/post?error=permission");
+  }
+  const { supabase: db, user } = authorization;
   const title=value(formData,"title",160), description=value(formData,"description",12000), employerName=value(formData,"employer_name",160);
   const type=value(formData,"job_type",20), category=value(formData,"category_slug",40);
   const district=value(formData,"district",80), upazila=value(formData,"upazila",80);

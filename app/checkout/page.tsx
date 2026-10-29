@@ -110,7 +110,16 @@ export default function Checkout() {
         setMessage("No orders were placed. Please check the remaining items and try again.");
       }
     } catch {
-      setMessage("Checkout was interrupted. Check your Orders page before retrying to avoid duplicate orders.");
+      // Some earlier item requests may already have committed an order before a later
+      // request failed at the network layer. Keep those known-successful items out of
+      // this page's retry set and direct the buyer to verify Orders first.
+      if (placedProductIds.size) {
+        setItems((current) => current.filter((item) => !placedProductIds.has(item.product_id)));
+      }
+      const orderList = placed.map((id) => id.slice(0, 8)).join(", ");
+      setMessage(
+        `Checkout was interrupted. ${orderList ? `Orders already placed: ${orderList}. ` : ""}Check your Orders page before retrying to avoid duplicate orders.`,
+      );
     } finally {
       setBusy(false);
     }

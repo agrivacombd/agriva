@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readRequestBytesWithLimit } from "@/lib/http/read-limited-request-body";
 
 function orderIdFrom(value: string | null) {
   const raw = (value || "").replace(/^AGRIVA-/, "");
@@ -15,8 +16,10 @@ function pendingRedirect(request: NextRequest, value: string | null) {
 
 // A browser redirect is not proof of payment. Only the validated IPN updates payment_status.
 export async function POST(request: NextRequest) {
+  const boundedBody = await readRequestBytesWithLimit(request, 16 * 1024);
+  if (!boundedBody.ok) return pendingRedirect(request, null);
   let form: FormData;
-  try { form = await request.formData(); }
+  try { form = await new Response(boundedBody.bytes, { headers: request.headers }).formData(); }
   catch { return pendingRedirect(request, null); }
   return pendingRedirect(request, String(form.get("tran_id") || ""));
 }

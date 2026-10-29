@@ -12,6 +12,7 @@ DROP POLICY IF EXISTS harvest_listings_public_read ON public.harvest_listings;
 DROP POLICY IF EXISTS harvest_listings_authenticated_read ON public.harvest_listings;
 DROP POLICY IF EXISTS harvest_listings_owner_insert ON public.harvest_listings;
 DROP POLICY IF EXISTS harvest_listings_owner_status_update ON public.harvest_listings;
+DROP POLICY IF EXISTS harvest_listings_admin_delete ON public.harvest_listings;
 
 CREATE POLICY harvest_listings_public_read
   ON public.harvest_listings FOR SELECT TO anon

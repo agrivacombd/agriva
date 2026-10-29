@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export const metadata = {
   title: "Review article draft | AGRIVA Admin",
@@ -13,16 +13,12 @@ export default async function AdminArticleReviewPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const auth = await authorizePermission("content.review");
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login");
+    redirect("/dashboard");
+  }
+  const supabase = auth.supabase;
 
   const { data: article, error } = await supabase
     .from("article_drafts")

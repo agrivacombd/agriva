@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 import ContentDraftsClient from "./ContentDraftsClient";
 
 export const metadata = {
@@ -8,17 +8,11 @@ export const metadata = {
 };
 
 export default async function ContentDraftsPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=%2Fadmin%2Fcontent-drafts");
-
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error || profile?.role !== "admin") redirect("/dashboard");
+  const auth = await authorizePermission("content.draft");
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login?next=%2Fadmin%2Fcontent-drafts");
+    redirect("/dashboard");
+  }
 
   return <ContentDraftsClient />;
 }

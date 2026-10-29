@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authorization = await authorizePermission("content.draft");
+  if (!authorization.ok) return NextResponse.json({ error: authorization.error }, { status: authorization.status });
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-
-  const body = await request.json().catch(() => null);
+  const boundedBody = await readRequestBodyWithLimit(request, 16384);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
   const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
   if (!keyword) return NextResponse.json({ error: "Keyword is required" }, { status: 400 });
   if (keyword.length > 160) return NextResponse.json({ error: "Keyword must be 160 characters or fewer" }, { status: 400 });

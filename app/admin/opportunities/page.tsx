@@ -1,12 +1,13 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 import { redirect } from "next/navigation";
 
 export default async function OpportunitiesPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const auth = await authorizePermission("content.opportunities.read");
+  if (!auth.ok) {
+    if (auth.status === 401) redirect("/login");
+    redirect("/dashboard");
+  }
+  const supabase = auth.supabase;
 
   const { data: opportunities, error: opportunitiesError } = await supabase
     .from("content_opportunities")

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 interface ResellerAttribution {
   reseller_id: string | null;
@@ -11,12 +12,18 @@ function cleanText(value: unknown, maxLength: number): string {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "লগইন করে অর্ডার করুন।" }, { status: 401 });
+  const authorization = await authorizePermission("orders.create_own");
+  if (!authorization.ok) {
+    return NextResponse.json({ error: authorization.error }, { status: authorization.status });
+  }
+  const { supabase, user } = authorization;
 
-  const body = await request.json().catch(() => null);
-  if (!body || typeof body !== "object") {
+  const boundedBody = await readRequestBodyWithLimit(request, 16384);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     return NextResponse.json({ error: "অর্ডারের তথ্য সঠিক নয়।" }, { status: 400 });
   }
 
@@ -27,7 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "পরিমাণ ১ থেকে ১০০-এর মধ্যে দিন।" }, { status: 400 });
   }
 
-  const paymentMethod = body.paymentMethod === "online" ? "online" : "cod";
+  const paymentMethod = body.paymentMethod;
   if (paymentMethod !== "cod") {
     return NextResponse.json({ error: "অনলাইন পেমেন্ট এখনো চালু হয়নি। ক্যাশ অন ডেলিভারি নির্বাচন করুন।" }, { status: 400 });
   }

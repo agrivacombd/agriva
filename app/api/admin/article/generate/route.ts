@@ -1,24 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 export async function POST(request: NextRequest) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const authorization = await authorizePermission("content.draft");
+  if (!authorization.ok) return NextResponse.json({ error: authorization.error }, { status: authorization.status });
+  const { supabase, user } = authorization;
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
+  const boundedBody = await readRequestBodyWithLimit(request, 32768);
+  if (!boundedBody.ok) return NextResponse.json({ error: "Request body exceeds size limit" }, { status: 413 });
+  let body: any;
+  try { body = JSON.parse(boundedBody.text); }
+  catch { return NextResponse.json({ error: "Invalid JSON request" }, { status: 400 }); }
+  const suppliedKeyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
+  const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId.trim() : "";
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(opportunityId)) {
+    return NextResponse.json({ error: "A valid approved opportunityId is required" }, { status: 400 });
+  }
+
+  // The legacy article queue must follow the same approval gate and use the
+  // database-owned keyword so a client cannot attach unrelated content to an
+  // approved opportunity.
+  const { data: opportunity, error: opportunityError } = await supabase
+    .from("content_opportunities")
+    .select("id,keyword,status")
+    .eq("id", opportunityId)
     .maybeSingle();
-  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Admin access required" }, { status: 403 });
-
-  const body = await request.json().catch(() => null);
-  const keyword = typeof body?.keyword === "string" ? body.keyword.trim() : "";
-  const opportunityId = typeof body?.opportunityId === "string" ? body.opportunityId : null;
+  if (opportunityError) {
+    return NextResponse.json({ error: "Unable to verify opportunity approval" }, { status: 500 });
+  }
+  if (!opportunity) {
+    return NextResponse.json({ error: "Opportunity not found" }, { status: 404 });
+  }
+  if (opportunity.status !== "approved") {
+    return NextResponse.json({ error: "Only approved opportunities can be converted to article drafts" }, { status: 409 });
+  }
+  const keyword = opportunity.keyword.trim();
   if (!keyword || keyword.length > 160) {
-    return NextResponse.json({ error: "A keyword of 1–160 characters is required" }, { status: 400 });
+    return NextResponse.json({ error: "The approved opportunity has an invalid keyword" }, { status: 409 });
+  }
+  if (suppliedKeyword && suppliedKeyword !== keyword) {
+    return NextResponse.json({ error: "Keyword must match the approved opportunity" }, { status: 409 });
   }
 
   const title = `কৃষকের জন্য ${keyword}: কারণ, করণীয় ও প্রতিরোধের পূর্ণাঙ্গ গাইড`;
@@ -26,7 +48,7 @@ export async function POST(request: NextRequest) {
   const slug = keyword.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 70) || `agriva-${Date.now()}`;
   const content = `## ${title}
 
-এই খসড়াটি AGRIVA user search demand থেকে তৈরি করা হয়েছে। প্রকাশের আগে বিষয়ভিত্তিক তথ্য, স্থানীয় কৃষি-পরামর্শ এবং প্রয়োজনীয় সূত্র যাচাই করুন।
+এই খসড়াটি AGRIVA-এর সম্পাদকীয় পর্যালোচনার জন্য তৈরি করা হয়েছে। প্রকাশের আগে বিষয়ভিত্তিক তথ্য, স্থানীয় কৃষি-পরামর্শ এবং প্রয়োজনীয় সূত্র যাচাই করুন।
 
 ### ${keyword} কী?
 

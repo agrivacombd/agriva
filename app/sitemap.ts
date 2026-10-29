@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
+import { getPublishedContentArticles, getPublishedContentLandingPages } from "@/lib/content/published-articles";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
+type SitemapCompany = { slug: string; updated_at: string | null };
 const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9\u0980-\u09ff]+(?:-[a-z0-9\u0980-\u09ff]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -14,18 +16,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let products: SitemapProduct[] = [];
   let jobs: SitemapJob[] = [];
   let exchangeListings: SitemapExchangeListing[] = [];
+  let companies: SitemapCompany[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
   const now = new Date();
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [productResult, jobsResult, exchangeResult] = await Promise.all([
-      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").not("slug", "is", null).limit(5000),
+    const [productResult, jobsResult, exchangeResult, companyResult] = await Promise.all([
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("moderation_status", "approved").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
       supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").limit(5000),
+      supabase.rpc("get_public_seed_company_slugs"),
     ]);
     if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
     if (!exchangeResult.error && exchangeResult.data) exchangeListings = (exchangeResult.data as SitemapExchangeListing[]).filter((listing) => isValidSlug(listing.slug));
+    if (!companyResult.error && companyResult.data) companies = (companyResult.data as SitemapCompany[]).filter((company) => isValidSlug(company.slug));
     if (!productResult.error && productResult.data) {
       products = (productResult.data as SitemapProduct[]).filter((product) => isValidSlug(product.slug));
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
@@ -40,6 +45,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
   }
+
+  const [publishedArticles, publishedLandingPages] = await Promise.all([getPublishedContentArticles(), getPublishedContentLandingPages()]);
 
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
@@ -83,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/terms-of-service`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  return [
+  const entries: MetadataRoute.Sitemap = [
     ...staticUrls,
     ...categoryUrls,
     ...products.map((product) => ({
@@ -91,6 +98,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+    })),
+    ...companies.map((company) => ({
+      url: `${base}/companies/${company.slug}`,
+      lastModified: company.updated_at ? new Date(company.updated_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
     })),
     ...exchangeListings.map((listing) => ({
       url: `${base}/green-exchange/${encodeURIComponent(listing.slug)}`,
@@ -104,5 +117,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
+    ...publishedArticles.map((article) => ({
+      url: `${base}/blog/${article.slug}`,
+      lastModified: article.updated_at ? new Date(article.updated_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    ...publishedLandingPages.map((page) => ({
+      url: `${base}/landing/${page.slug}`,
+      lastModified: page.updated_at ? new Date(page.updated_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.75,
+    })),
   ];
+
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    if (seen.has(entry.url)) return false;
+    seen.add(entry.url);
+    return true;
+  });
 }

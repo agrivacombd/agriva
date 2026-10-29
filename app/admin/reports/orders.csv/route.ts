@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { authorizePermission } from "@/lib/auth/server-authorization";
 
 function csvCell(value: unknown) {
-  const text = value == null ? "" : String(value);
+  const raw = value == null ? "" : String(value);
+  // Quoting alone does not prevent spreadsheet formula execution. Prefix
+  // cells beginning with formula characters, even after leading whitespace.
+  const candidate = raw.trimStart();
+  const text = ["=", "+", "-", "@"].some((prefix) => candidate.startsWith(prefix)) ? "'" + raw : raw;
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
 export async function GET(request: Request) {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) return NextResponse.redirect(new URL("/login", request.url));
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError) return NextResponse.json({ error: "Unable to verify permissions" }, { status: 500 });
-  if (profile?.role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const authorization = await authorizePermission("finance.export_orders");
+  if (!authorization.ok) {
+    if (authorization.status === 401) return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.json({ error: authorization.error }, { status: authorization.status });
+  }
+  const { supabase } = authorization;
 
   const { data, error } = await supabase.from("marketplace_orders")
     .select("id,created_at,status,payment_status,payment_method,total_amount,quantity")

@@ -3,9 +3,11 @@ import { analyzeSearch } from "@/lib/ai/analyze";
 import { normalizeQuery } from "@/lib/ai/intent";
 import { answerAgricultureQuestion } from "@/lib/ai/respond";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readRequestBodyWithLimit } from "@/lib/http/read-limited-request-body";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const MAX_REQUEST_BYTES = 16 * 1024;
 
 function searchTerms(value: string) {
   // Keep user input from changing PostgREST .or() filter syntax.
@@ -21,8 +23,15 @@ function searchTerms(value: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => null);
-    const query = typeof body?.query === "string" ? body.query.trim() : "";
+    const boundedBody = await readRequestBodyWithLimit(request, MAX_REQUEST_BYTES);
+    if (!boundedBody.ok) return NextResponse.json({ error: "অনুরোধের আকার সীমার বেশি।" }, { status: 413 });
+    let body: unknown;
+    try { body = JSON.parse(boundedBody.text); }
+    catch { return NextResponse.json({ error: "সঠিক JSON অনুরোধ পাঠান।" }, { status: 400 }); }
+    const payload = body && typeof body === "object" && !Array.isArray(body)
+      ? body as Record<string, unknown>
+      : {};
+    const query = typeof payload.query === "string" ? payload.query.trim() : "";
     if (!query) {
       return NextResponse.json({ error: "অনুসন্ধানের জন্য প্রশ্ন লিখুন।" }, { status: 400 });
     }
@@ -50,9 +59,11 @@ export async function POST(request: NextRequest) {
         const { data, error: productError } = await supabase
           .from("products")
           .select("id,name,category,description")
-          // Legacy production products schema has no moderation_status column.
-          // Keep active listings searchable without querying a missing field.
+          // Fail closed: only listings approved by the canonical moderation workflow
+          // may appear in public search. If the migration is missing, the query fails
+          // and the API safely returns the AI answer without exposing unreviewed items.
           .eq("status", "active")
+          .eq("moderation_status", "approved")
           .or(orFilter)
           .limit(10);
 

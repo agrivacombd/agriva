@@ -14,8 +14,10 @@ assert.match(migration, /revoke all on function public\.resolve_reseller_attribu
   "anonymous and default PUBLIC execution must be revoked");
 assert.match(migration, /grant execute on function public\.resolve_reseller_attribution\(text, text, uuid\) to authenticated, service_role/i,
   "authenticated checkout and trusted service role must retain execution");
-assert.match(checkoutRoute, /if \(!user\)[\s\S]*?status:\s*401/i,
-  "checkout must require an authenticated user");
+assert.match(checkoutRoute, /authorizePermission\("orders\.create_own"\)/,
+  "checkout must authorize the buyer-owned order capability");
+assert.match(checkoutRoute, /if \(!authorization\.ok\)[\s\S]*?status:\s*authorization\.status/, 
+  "checkout must fail closed with the shared helper status for unauthenticated or forbidden callers");
 assert.match(checkoutRoute, /rpc\("resolve_reseller_attribution"/i,
   "authenticated checkout must continue resolving attribution");
 
