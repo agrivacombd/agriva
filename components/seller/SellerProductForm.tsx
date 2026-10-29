@@ -28,7 +28,7 @@ export default function ProductForm() {
   const selectedCategory = MARKETPLACE_CATEGORIES.find((category) => category.slug === form.category_slug);
   const isPlantListing = form.category_slug === "plants-gardening";
   const descriptionText = plainText(form.description);
-  const seoTitle = truncate(`${form.name.trim() || "আপনার পণ্যের নাম"} | ${isPlantListing ? "AGRIVA Plant Market" : "AGRIVA Marketplace"}`, 60);
+  const seoTitle = `${truncate(form.name.trim() || "আপনার পণ্যের নাম", isPlantListing ? 35 : 37)} | ${isPlantListing ? "AGRIVA Plant Market" : "AGRIVA Marketplace"}`;
   const seoDescription = truncate(
     descriptionText || (form.name.trim()
       ? `AGRIVA Plant Market-এ ${form.name.trim()} পণ্যের ছবি, মূল্য, বিবরণ ও মজুত দেখুন।`
