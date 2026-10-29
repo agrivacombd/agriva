@@ -38,7 +38,7 @@ export default async function SubcategoryPage({ params }: Props) {
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock")
+    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,image_variants,seo_image_alt_texts")
       .eq("status", "active").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesSubcategory(product.category, category, subcategory, product.category_slug, product.subcategory_slug));
   } catch (error) { console.error("Marketplace subcategory load failed:", error); }

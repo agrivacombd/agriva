@@ -24,6 +24,16 @@ export const MARKETPLACE_CATEGORIES = [
     { slug: "poultry-feed", name: "পোলট্রি ফিড", description: "পোলট্রি পালনে ব্যবহৃত ফিডের পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["পোলট্রি", "poultry"] },
     { slug: "cattle-feed", name: "গবাদিপশুর খাদ্য", description: "গবাদিপশুর খাদ্য পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["গবাদিপশু", "cattle"] },
   ] },
+  { slug: "plants-gardening", name: "গাছ ও বাগান", description: "ইনডোর গাছ, ফল ও ফুলের চারা, টব এবং বাগানের পরিচর্যার পণ্য", icon: "🪴", match: ["গাছ", "চারা", "বাগান", "টব", "plant", "tree", "sapling", "gardening", "planter"], subcategories: [
+    { slug: "indoor-plants", name: "ইনডোর ও শোভাবর্ধক গাছ", description: "ঘর, অফিস ও বারান্দার ইনডোর এবং শোভাবর্ধক গাছ", match: ["ইনডোর", "মানিপ্ল্যান্ট", "স্নেক প্ল্যান্ট", "indoor", "houseplant"] },
+    { slug: "fruit-saplings", name: "ফলের গাছ ও চারা", description: "ফলজ গাছের চারা ও কলম", match: ["ফলের চারা", "আমের চারা", "লেবুর চারা", "fruit sapling", "grafted"] },
+    { slug: "flowering-plants", name: "ফুলের গাছ ও চারা", description: "ফুলের গাছ, চারা ও মৌসুমি ফুল", match: ["ফুল", "গোলাপ", "জবা", "flowering", "rose"] },
+    { slug: "vegetable-herb-seedlings", name: "সবজি ও ভেষজ চারা", description: "সবজি, রান্নার ভেষজ ও মসলা গাছের চারা", match: ["সবজির চারা", "ভেষজ", "herb", "vegetable seedling"] },
+    { slug: "plant-pots-planters", name: "টব ও প্ল্যান্টার", description: "মাটি, সিরামিক ও প্লাস্টিকের টব এবং প্ল্যান্টার", match: ["টব", "প্ল্যান্টার", "pot", "planter"] },
+    { slug: "soil-compost-growing-media", name: "মাটি, কম্পোস্ট ও গ্রোয়িং মিডিয়া", description: "পটিং মিক্স, কোকোপিট ও বাগানের জন্য কম্পোস্ট", match: ["মাটি", "কম্পোস্ট", "কোকোপিট", "soil", "compost", "cocopeat"] },
+    { slug: "gardening-tools", name: "বাগানের সরঞ্জাম", description: "হ্যান্ড টুল, স্প্রে ও গাছের পরিচর্যার সরঞ্জাম", match: ["বাগানের সরঞ্জাম", "স্প্রে", "gardening tools", "pruner"] },
+    { slug: "plant-seeds-bulbs", name: "গাছের বীজ ও বাল্ব", description: "ফুল, সবজি ও শোভাবর্ধক গাছের বপনের বীজ ও বাল্ব", match: ["বীজ", "বাল্ব", "plant seed", "bulb"] },
+  ] },
   { slug: "premium-food-grains", name: "Premium Food & Grains", description: "চিয়া সিড, কালো চাল, লাল চাল, ব্রাউন রাইস ও অন্যান্য প্রিমিয়াম খাদ্যশস্য", icon: "🌾", match: ["premium", "food grains", "food-grains", "superfood", "superfoods", "chia", "চিয়া", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
     { slug: "premium-rice", name: "প্রিমিয়াম চাল", description: "কালো চাল, লাল চাল, ব্রাউন রাইস, বাসমতি ও অন্যান্য প্রিমিয়াম চালের পণ্য দেখুন।", match: ["rice", "চাল", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "বাসমতি", "basmati", "কালিজিরা", "চিনিগুঁড়া"] },
     { slug: "edible-seeds", name: "খাদ্যোপযোগী সিডস", description: "খাওয়ার উপযোগী চিয়া সিড ও অন্যান্য খাদ্যবীজের প্যাকেটজাত পণ্য দেখুন; বপনের বীজ থেকে আলাদা।", match: ["chia", "চিয়া", "edible seeds", "খাদ্যোপযোগী", "flax", "ফ্ল্যাক্স", "pumpkin", "সিড", "seed"] },

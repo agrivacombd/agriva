@@ -24,7 +24,7 @@ export default async function NewSellerProductPage() {
         <Link href="/marketplace" className="text-sm font-bold text-emerald-800 hover:underline">← মার্কেটপ্লেসে ফিরে যান</Link>
         <p className="mt-7 text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Marketplace · Seller Centre</p>
         <h1 className="mt-2 text-3xl font-black sm:text-4xl">ব্যবসার পণ্য যোগ করুন</h1>
-        <p className="mt-3 leading-7 text-[#647468]">কোম্পানি ও বিক্রেতারা এখানে কৃষি উপকরণ, প্যাকেটজাত পণ্য এবং অন্যান্য অনুমোদিত পণ্য জমা দিতে পারবেন। অ্যাডমিন যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না।</p>
+        <p className="mt-3 leading-7 text-[#647468]">কোম্পানি ও অনুমোদিত বিক্রেতারা এখানে কৃষি উপকরণ এবং Plant Market-এর গাছ, চারা, টব ও বাগানের পণ্য জমা দিতে পারবেন। সঠিক ক্যাটাগরি, নিজস্ব ছবি, মূল্য ও মজুত দিন। অ্যাডমিন যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না।</p>
         <SellerProductForm />
       </div>
     </main>

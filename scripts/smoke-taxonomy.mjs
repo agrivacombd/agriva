@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const migration = read("../supabase/migrations/20261024001000_stable_marketplace_taxonomy.sql");
+const plantMigration = read("../supabase/migrations/20261029184749_add_plant_market_taxonomy.sql");
 const taxonomy = read("../lib/marketplace/taxonomy.ts");
 const selector = read("../components/admin/TaxonomyFields.tsx");
 const adminProducts = read("../app/admin/products/page.tsx");
@@ -13,6 +14,9 @@ const sitemap = read("../app/sitemap.ts");
 const productPage = read("../app/marketplace/[productId]/page.tsx");
 
 assert.ok(migration.includes("create table if not exists public.product_subcategories"), "subcategory table must exist");
+assert.ok(plantMigration.includes("plants-gardening"), "database migration must add the Plant Market root category");
+for (const slug of ["indoor-plants", "fruit-saplings", "flowering-plants", "vegetable-herb-seedlings", "plant-pots-planters", "soil-compost-growing-media", "gardening-tools", "plant-seeds-bulbs"]) assert.ok(plantMigration.includes(slug), `database migration must include ${slug}`);
+assert.ok(taxonomy.includes('slug: "plants-gardening"'), "application taxonomy must include the Plant Market category");
 assert.ok(migration.includes("products_category_subcategory_slug_fkey"), "database must enforce category/subcategory parent relationship");
 assert.ok(migration.includes("create index if not exists products_category_slug_status_idx"), "category lookup should be indexed");
 assert.ok(migration.includes("alter table public.product_subcategories enable row level security"), "subcategory table must have RLS enabled");
