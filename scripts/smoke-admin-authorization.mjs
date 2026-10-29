@@ -433,3 +433,7 @@ assert.ok(productCreateRoute.includes("!subcategory || !imageUrl"), "product API
 assert.ok(moderationPage.includes('select("image_url")'), "approval must verify the saved image before publishing");
 assert.ok(moderationPage.includes('notice=image'), "moderation should route missing-image approvals to a notice");
 assert.ok(moderationPage.includes("product image preview"), "moderation queue must show the saved product image for review");
+
+const adminProductPage = read("app/admin/products/page.tsx");
+assert.ok(adminProductPage.includes('status === "active" && currentProduct.status !== "active"'), "product edit actions must not bypass the moderation queue to publish a draft");
+assert.ok(adminProductPage.includes('notice=moderation'), "direct draft publishing attempts must be routed back to moderation guidance");
