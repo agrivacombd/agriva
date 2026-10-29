@@ -6,7 +6,7 @@ ALTER TABLE public.products
   DROP CONSTRAINT IF EXISTS products_image_variants_is_array;
 ALTER TABLE public.products
   ADD CONSTRAINT products_image_variants_is_array
-  CHECK (jsonb_typeof(image_variants) = 'array' AND jsonb_array_length(image_variants) <= 4);
+  CHECK (CASE WHEN jsonb_typeof(image_variants) = 'array' THEN jsonb_array_length(image_variants) <= 4 ELSE false END);
 
 -- Original uploads are retained privately; only generated responsive derivatives are public/crawlable.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
