@@ -15,7 +15,14 @@ assert.match(form, /createSupabaseBrowserClient/, "seller form must use the cook
 assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form must upload product images to Storage");
 assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit to the seller-only endpoint");
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
-assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
+assert.match(form, /MAX_PRODUCT_IMAGES/, "seller form must enforce a maximum image count");
+assert.doesNotMatch(form, /MAX_IMAGE_SIZE/, "seller form must not impose an app-specific file-size limit");
+assert.match(form, /Product listing wizard/, "seller form must use a guided multi-step wizard");
+assert.match(form, /CATEGORY_FIELDS/, "seller form must show category-specific product fields");
+assert.match(form, /seller_profile/, "seller form must submit optional profile business/licence data");
+assert.match(form, /profiles/, "seller form must auto-fill business data from the seller profile");
+assert.match(route, /product_attributes: productAttributes/, "seller route must persist structured product attributes");
+assert.match(route, /trade_license_expiry/, "seller route must validate optional licence expiry data");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
 assert.match(route, /user_role_memberships/, "product API must verify persisted role membership");
 assert.match(route, /in\("role", \["seller", "organization"\]\)/, "product API must require seller or approved organization membership");
