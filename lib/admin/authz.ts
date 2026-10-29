@@ -1,10 +1,11 @@
+import type { User } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { roleHasAdminCapability, type AdminCapability } from "@/lib/admin/capabilities";
 
 type ServerSupabaseClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
 export type AdminAuthorization =
-  | { ok: true; supabase: ServerSupabaseClient; user: { id: string; email?: string } }
+  | { ok: true; supabase: ServerSupabaseClient; user: User }
   | { ok: false; status: 401 | 403 };
 
 /**
