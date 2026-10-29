@@ -12,7 +12,7 @@ AS $function$
   SELECT auth.uid() IS NOT NULL AND (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid() AND p.role IN ('admin', 'super_admin')
+      WHERE p.id = auth.uid() AND p.role::text IN ('admin', 'super_admin')
     )
     OR EXISTS (
       SELECT 1 FROM public.user_role_memberships m
