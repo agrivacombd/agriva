@@ -34,10 +34,12 @@ AGRIVA already has a substantial admin surface under `app/admin` (dashboard, pro
 
 ### Phase 1 — Authorization foundation in progress
 
-- A shared server-only capability guard is being introduced in `lib/admin/authz.ts` and used by the `/admin` layout, `/super-admin` hub, and admin product-creation API.
-- This first increment preserves the existing `profiles.role = 'admin'` boundary. It is **not yet full granular staff RBAC**: unconverted routes retain their own checks, and capability grants for scoped staff must not be enabled until database enforcement and capability-matrix tests are in place.
+- A shared server-only capability guard in `lib/admin/authz.ts` is merged and used by the `/admin` layout, `/super-admin` hub, all admin Route Handlers, and the core admin Server Actions. See PRs #164, #165, and #166.
+- This first increment preserves the existing `profiles.role = 'admin'` boundary. It is **not yet full granular staff RBAC**: capability names are typed in application code, but scoped staff grants are not active and database capability enforcement plus the full capability matrix remain outstanding.
 - High-risk capabilities for payment reconciliation, refund requests, payout approval, and system recovery remain denied by default until reviewed grant and step-up flows exist.
-- No database schema, payment configuration, or user data was changed by this implementation increment.
+- The `/super-admin` workspace now includes count-only review queue probes for draft products, harvest moderation, jobs, and transport applications. Query failures render as **Unavailable**, never as zero. This is a read-only operational view, not a full incident/reconciliation center.
+- Vercel production deployments for the recent code changes are currently blocked by the project build-rate limit; CI is green, but production deployment must be rechecked when Vercel allows a new build.
+- No database schema, payment configuration, or user data was changed by these implementation increments.
 
 ## Product goals
 
