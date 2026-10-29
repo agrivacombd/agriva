@@ -18,6 +18,8 @@ const seoAssistantMigration = readFileSync("supabase/migrations/20261030140000_a
 assert.match(sellerForm, /MAX_IMAGE_SIZE = 5 \* 1024 \* 1024/, "browser must reject originals over 5 MB");
 assert.match(upload, /MAX_ORIGINAL_BYTES = 5 \* 1024 \* 1024/, "server must enforce original upload size");
 assert.match(upload, /MAX_REQUEST_BYTES = MAX_IMAGES \* MAX_ORIGINAL_BYTES/, "server must define a total multipart request cap");
+assert.match(upload, /totalBytes > MAX_REQUEST_BYTES/, "server must cap multipart bodies while streaming even without Content-Length");
+assert.match(upload, /await reader\.cancel\(\)/, "oversized multipart request should be canceled before parsing");
 assert.match(upload, /Number\.isSafeInteger\(contentLength\)/, "server must reject malformed Content-Length headers");
 assert.match(upload, /error instanceof UploadError \? error\.status : 400/, "upload handler must preserve validation/storage error status codes");
 assert.match(upload, /new UploadError\(.*private storage.*503\)/, "storage outages must return a service error, not a client validation error");
