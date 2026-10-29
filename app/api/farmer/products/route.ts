@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
-  const slugBase = name.normalize("NFKC").toLowerCase().replace(/[^\\p{L}\\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 100) || "product";
+  const slugBase = name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 100) || "product";
   const slug = `${slugBase}-${crypto.randomUUID().slice(0, 8)}`;
   const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id, name, slug, category: subcategory.name,
