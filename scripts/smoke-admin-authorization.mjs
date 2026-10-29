@@ -469,3 +469,6 @@ assert.ok(seedCompanyAdminPage.includes("admin_review_seed_company_application")
 assert.ok(adminHome.includes('href="/admin/companies"'), "admin dashboard must link to company review queue");
 assert.ok(seedCompanyMigration.includes("registration_number text NOT NULL"), "company applications must retain a registration or licence number");
 assert.ok(seedCompanyApplyPage.includes('name="registration_number" required minLength={2} maxLength={100}'), "company onboarding must require a registration or seed licence number");
+assert.ok(seedCompanyMigration.includes("seed_company_application_reviews"), "company review decisions must be preserved in an audit history");
+assert.ok(seedCompanyMigration.includes("reviewer_user_id, decision, reason"), "the guarded company review RPC must write reviewer, decision, and reason to audit history");
+assert.ok(seedCompanyMigration.includes("Platform admins can read seed company review history"), "company review history must be admin-only");
