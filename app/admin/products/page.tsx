@@ -57,7 +57,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const { notice } = await searchParams;
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,updated_at")
+    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,listing_source,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
@@ -70,7 +70,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       <AdminCreateProductForm />
       <div className="mt-6 grid gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · {p.listing_source === "platform" ? "AGRIVA Official" : `Seller ${p.farmer_id.slice(0,8)}`}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
         {p.image_url && <div role="img" aria-label={`${p.name} product image`} className="mb-4 h-28 w-28 rounded-xl border bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${p.image_url}")` }} />}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
