@@ -66,7 +66,7 @@ export default async function PlantMarketPage() {
     const supabase = await createSupabaseServerClient();
     const [taxonomyResult, legacyResult] = await Promise.all([
       supabase.from("products")
-        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at")
+        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,image_variants,created_at")
         .eq("status", "active")
         .eq("category_slug", PLANT_CATEGORY)
         .order("created_at", { ascending: false })
