@@ -24,11 +24,40 @@ const modules: AdminModule[] = [
 ];
 
 export default async function SuperAdminPage() {
-  const { user, profile } = await requireAdminPage(
+  const { supabase, user, profile } = await requireAdminPage(
     "dashboard.read",
     "/login?next=%2Fsuper-admin",
   );
   const name = profile.full_name || user.email?.split("@")[0] || "Administrator";
+
+  // Read-only, count-only probes. A failed query is displayed as unavailable,
+  // never as a misleading zero, and no personal/order data is fetched here.
+  const [productsQueue, harvestQueue, jobsQueue, transportQueue] = await Promise.all([
+    supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "draft"),
+    supabase.from("harvest_listings").select("id", { count: "exact", head: true }).eq("moderation_status", "pending"),
+    supabase.from("job_posts").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("transport_partners").select("user_id", { count: "exact", head: true }).eq("verification_status", "pending"),
+  ]);
+
+  const queueResults = [productsQueue, harvestQueue, jobsQueue, transportQueue];
+  const unavailableQueues = queueResults.filter((result) => result.error).length;
+  for (const [queue, result] of [
+    ["products", productsQueue],
+    ["harvest", harvestQueue],
+    ["jobs", jobsQueue],
+    ["transport", transportQueue],
+  ] as const) {
+    if (result.error) {
+      console.error("Super Admin queue probe unavailable", { queue, code: result.error.code || "unknown" });
+    }
+  }
+
+  const queueCards = [
+    { title: "Draft products", description: "Marketplace catalogue drafts", count: productsQueue.error ? null : productsQueue.count ?? 0, href: "/admin/products", icon: "🛒" },
+    { title: "Harvest review", description: "Farmer harvest posts awaiting review", count: harvestQueue.error ? null : harvestQueue.count ?? 0, href: "/admin/harvest", icon: "🌾" },
+    { title: "Job review", description: "Agriculture jobs awaiting review", count: jobsQueue.error ? null : jobsQueue.count ?? 0, href: "/admin/jobs", icon: "💼" },
+    { title: "Transport review", description: "Transport partner applications", count: transportQueue.error ? null : transportQueue.count ?? 0, href: "/admin/transport", icon: "🚚" },
+  ];
 
   return (
     <main className="min-h-screen overflow-x-clip bg-[#f3f7f1] text-[#17351f]">
@@ -72,6 +101,31 @@ export default async function SuperAdminPage() {
             <Link href="/admin" className="col-span-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#e4c66d] px-4 py-3 text-sm font-extrabold text-[#17351f] transition hover:bg-[#f0d887] sm:col-span-1">
               Open admin overview <span aria-hidden="true" className="ml-2">↗</span>
             </Link>
+          </div>
+        </section>
+
+        <section aria-labelledby="operations-queues-title" className="mt-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-emerald-700">Live operations</p>
+              <h2 id="operations-queues-title" className="mt-2 text-xl font-black sm:text-2xl">Review queues</h2>
+              <p className="mt-1 text-sm text-[#657467]">Count-only database checks; unavailable data is never presented as zero.</p>
+            </div>
+            <p role="status" className={`rounded-xl border px-3 py-2 text-sm font-bold ${unavailableQueues === 0 ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-950"}`}>
+              {unavailableQueues === 0 ? "All queue checks succeeded" : `${unavailableQueues} queue check(s) unavailable`}
+            </p>
+          </div>
+          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {queueCards.map((queue) => (
+              <Link key={queue.href} href={queue.href} className="flex min-w-0 items-start gap-3 rounded-2xl border border-[#e0e8dd] bg-white p-4 shadow-sm transition hover:border-emerald-800/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
+                <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#edf4e9] text-2xl">{queue.icon}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block break-words text-sm font-extrabold">{queue.title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-[#657467]">{queue.description}</span>
+                  <span className="mt-3 block text-2xl font-black tabular-nums">{queue.count === null ? "Unavailable" : queue.count}</span>
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
 

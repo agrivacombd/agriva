@@ -48,6 +48,8 @@ jobs:
         run: npm run test:admin-authorization
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
+      - name: Super Admin operational queue regression test
+        run: npm run test:super-admin-operations
       - name: Seller marketplace separation regression test
         run: npm run test:seller-marketplace-submission
       - name: Seller production schema compatibility regression test
