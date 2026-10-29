@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Flower2, Leaf, Search, Shovel, Sprout, Citrus, Package } from "lucide-react";
+import { ArrowRight, Check, Flower2, Leaf, Search, Shovel, Sprout, Citrus, Package } from "lucide-react";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -143,7 +143,7 @@ export default async function PlantMarketPage() {
             <Link href="/green-exchange" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white hover:bg-white/20">গাছ বিনিময় করুন</Link>
             <Link href="/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-bold text-white hover:bg-white/10">বিক্রেতা হিসেবে পণ্য জমা দিন</Link>
           </div>
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/80 sm:text-sm"><span>✓ সক্রিয় পণ্যের তালিকা</span><span>✓ অ্যাডমিন অনুমোদনের পর প্রকাশ</span><span>✓ পণ্যের আলাদা বিস্তারিত পেজ</span></div>
+          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/80 sm:text-sm"><span className="inline-flex items-center gap-1.5"><Check aria-hidden="true" className="h-4 w-4" /> সক্রিয় পণ্যের তালিকা</span><span className="inline-flex items-center gap-1.5"><Check aria-hidden="true" className="h-4 w-4" /> অ্যাডমিন অনুমোদনের পর প্রকাশ</span><span className="inline-flex items-center gap-1.5"><Check aria-hidden="true" className="h-4 w-4" /> পণ্যের আলাদা বিস্তারিত পেজ</span></div>
         </div>
       </section>
 
@@ -200,7 +200,7 @@ export default async function PlantMarketPage() {
           <MarketplaceCore products={products} showCategories={false} />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
-            <div aria-hidden="true" className="text-5xl">🪴</div>
+            <Sprout aria-hidden="true" className="mx-auto h-12 w-12 text-emerald-700" strokeWidth={1.7} />
             <h3 className="mt-4 text-xl font-extrabold">এখনো কোনো গাছ বা বাগান-সম্পর্কিত পণ্য পাওয়া যায়নি</h3>
             <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">নতুন পণ্য বিক্রেতা জমা দেবেন এবং অ্যাডমিন অনুমোদনের পর এখানে দেখা যাবে। ক্যাটাগরিগুলো থেকে প্রয়োজনীয় পণ্য খুঁজে দেখতে পারেন।</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
