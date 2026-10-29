@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const page = readFileSync("app/plant-market/page.tsx", "utf8");
 const productPage = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
 const form = readFileSync("components/seller/SellerProductForm.tsx", "utf8");
+const core = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
 const api = readFileSync("app/api/seller/products/route.ts", "utf8");
 const home = readFileSync("app/home-client.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
@@ -18,7 +19,7 @@ assert.match(page, /plantSubcategories/, "Plant Market must render SEO-friendly 
 assert.match(page, /CollectionPage/, "Plant Market landing must describe its page type in JSON-LD");
 assert.match(page, /ItemList/, "Plant Market must expose its product list as structured data");
 assert.match(page, /BreadcrumbList/, "Plant Market must expose breadcrumb structured data");
-assert.match(page, /বাংলাদেশে গাছ, চারা, টব ও বাগান সামগ্রী/, "Plant Market must have a descriptive Bangla SEO title");
+assert.match(page, /গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ/, "Plant Market must have a descriptive Bangla SEO title");
 assert.match(page, /FAQ|সাধারণ প্রশ্ন/, "Plant Market must answer buyer questions on-page");
 assert.match(page, /canonical: "\/plant-market"/, "Plant Market must have canonical metadata");
 assert.match(page, /href="\/seller\/products\/new"/, "Plant Market must link sellers to product submission");
