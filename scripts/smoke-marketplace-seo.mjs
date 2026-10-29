@@ -4,8 +4,8 @@ import { strict as assert } from "node:assert";
 
 const product = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
 const adminProducts = readFileSync("app/admin/products/page.tsx", "utf8");
-const seoMigration = readFileSync("supabase/migrations/20261030103000_admin_product_seo_landing_fields.sql", "utf8");
-const sellerDetailsMigration = readFileSync("supabase/migrations/20261030120000_seller_product_details_and_profile_fields.sql", "utf8");
+const seoMigration = readFileSync("supabase/migrations/20261029210550_admin_product_seo_landing_fields.sql", "utf8");
+const sellerDetailsMigration = readFileSync("supabase/migrations/20261029210623_seller_product_details_and_profile_fields.sql", "utf8");
 const aiAssistant = readFileSync("components/admin/AdminProductSeoAssistant.tsx", "utf8");
 const aiRoute = readFileSync("app/api/admin/products/generate-seo/route.ts", "utf8");
 const marketplace = readFileSync("app/marketplace/page.tsx", "utf8");
@@ -30,6 +30,7 @@ assert.match(aiAssistant, /Generate SEO draft/, "Admin must be able to generate 
 assert.match(aiAssistant, /Improve existing content/, "Admin must be able to improve existing SEO content");
 assert.match(aiRoute, /requireAdminApi\("catalog.edit"\)/, "AI SEO generation must be admin-only");
 assert.match(aiRoute, /OPENAI_API_KEY/, "AI SEO generation must use a server-side API key");
+assert.match(aiRoute, /GEMINI_API_KEY/, "AI SEO generation must support the configured server-side Gemini key");
 assert.match(aiRoute, /Do not invent licences/, "AI must not invent licences or unverified product claims");
 assert.match(aiAssistant, /name="seo_faqs"/, "Admin products page must allow editing product FAQs");
 assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_title/, "SEO fields need an additive database migration");
