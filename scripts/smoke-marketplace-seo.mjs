@@ -25,6 +25,9 @@ assert.match(adminProducts, /name="seo_content"/, "Admin products page must allo
 assert.match(adminProducts, /name="seo_faqs"/, "Admin products page must allow editing product FAQs");
 assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_title/, "SEO fields need an additive database migration");
 assert.match(seoMigration, /ADD COLUMN IF NOT EXISTS seo_faqs jsonb/, "FAQ data needs a database column");
+assert.match(seoMigration, /FUNCTION public\.admin_update_product_seo/, "SEO updates must use an admin-only database function");
+assert.match(seoMigration, /product\.seo_updated/, "SEO updates must be recorded in the admin audit log");
+assert.match(adminProducts, /admin_update_product_seo/, "Admin UI must save SEO settings through the audited RPC");
 assert.match(product, /const canonicalPath = `\/marketplace\/\$\{product\.slug\}`/, "Product page must derive its canonical from the stable product slug");
 assert.match(product, /alternates:\s*\{\s*canonical:\s*canonicalPath\s*\}/, "Product page needs a slug-based canonical");
 assert.match(product, /redirect\(`\/marketplace\/\$\{product\.slug\}`\)/, "Product ID aliases must redirect to the canonical slug URL");
