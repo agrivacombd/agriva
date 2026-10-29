@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -16,6 +16,11 @@ export default function ProductForm() {
   const selectedCategory = MARKETPLACE_CATEGORIES.find((category) => category.slug === form.category_slug);
   const set = (key: keyof typeof INITIAL_FORM, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
+  useEffect(() => {
+    if (!preview) return;
+    return () => URL.revokeObjectURL(preview);
+  }, [preview]);
+
   function chooseImage(file?: File) {
     setMessage("");
     if (!file) { setImage(null); setPreview(""); return; }
@@ -31,32 +36,43 @@ export default function ProductForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true); setMessage("");
+    const supabase = createSupabaseBrowserClient();
+    let uploadedPath: string | null = null;
     try {
-      const supabase = createSupabaseBrowserClient();
       let imageUrl: string | null = null;
       if (image) {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) throw new Error("ছবি আপলোড করতে আবার লগইন করুন।");
         const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
-        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("product-images").upload(path, image, {
+        uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from("product-images").upload(uploadedPath, image, {
           contentType: image.type,
           cacheControl: "3600",
           upsert: false,
         });
         if (uploadError) {
+          uploadedPath = null;
           console.error("Product image upload failed", uploadError.message);
           throw new Error("ছবি আপলোড করা যায়নি। আপনার farmer account ও Storage policy যাচাই করুন।");
         }
-        imageUrl = supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+        imageUrl = supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl;
       }
       const res = await fetch("/api/farmer/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, image_url: imageUrl }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // The API explicitly rejected the product, so remove its just-uploaded orphan image.
+        if (uploadedPath) {
+          const { error: cleanupError } = await supabase.storage.from("product-images").remove([uploadedPath]);
+          if (cleanupError) console.warn("Could not clean up rejected product image", cleanupError.message);
+          else uploadedPath = null;
+        }
+        throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
+      }
+      uploadedPath = null;
       setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
       setForm(INITIAL_FORM);
       setImage(null);
