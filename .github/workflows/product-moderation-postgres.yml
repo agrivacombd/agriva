@@ -11,6 +11,9 @@ on:
       - "supabase/migrations/*harden_harvest_moderation.sql"
       - "scripts/test-product-insert-moderation.sql"
       - "scripts/test-harvest-listings.sql"
+      - "scripts/test-company-catalogue-migration.sql"
+      - "supabase/migrations/20261029370000_seed_company_onboarding.sql"
+      - "supabase/migrations/20261029380000_company_product_catalogue_and_public_profiles.sql"
       - ".github/workflows/product-moderation-postgres.yml"
   push:
     branches: [main]
@@ -63,3 +66,11 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: postgres
         run: psql -v ON_ERROR_STOP=1 -f scripts/test-harvest-listings.sql
+      - name: Test company catalogue migration SQL and ownership policies
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test-company-catalogue-migration.sql
