@@ -126,6 +126,11 @@ export default function ProductForm() {
       previewUrlsRef.current = [];
       setPreviews([]);
     } catch (error) {
+      if (uploadedPaths.length) {
+        const { error: cleanupError } = await supabase.storage.from("product-images").remove(uploadedPaths);
+        if (cleanupError) console.warn("Could not clean up partially uploaded product images", cleanupError.message);
+        else uploadedPaths.length = 0;
+      }
       setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setLoading(false);
