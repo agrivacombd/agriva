@@ -355,6 +355,12 @@ export default function ProductForm() {
           </label>)}
         </div>
       </div>}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="text-sm font-bold">পণ্যের অবস্থা / condition <span className="text-red-700">(আবশ্যক)</span>
+          <select required value={attributes.condition ?? ""} onChange={(e) => setAttribute("condition", e.target.value)} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="">অবস্থা নির্বাচন করুন</option><option value="new">নতুন / New</option><option value="used">ব্যবহৃত / Used</option><option value="refurbished">Refurbished</option></select>
+        </label>
+        <label className="text-sm font-bold">Seller SKU <span className="font-normal text-[#748074]">(থাকলে)</span><input maxLength={100} value={attributes.sku ?? ""} onChange={(e) => setAttribute("sku", e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="আপনার নিজস্ব stock code" /></label>
+      </div>
     </section>}
 
     {step === 2 && <section className="space-y-5">
