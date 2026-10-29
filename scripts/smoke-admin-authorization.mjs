@@ -447,3 +447,23 @@ assert.ok(ownershipMigration.includes("listing_source = 'platform'"), "Super Adm
 assert.ok(ownershipMigration.includes("public.has_platform_admin_access()"), "platform listing source assignment must remain platform-admin guarded");
 assert.ok(marketplacePage.includes("image_url,listing_source"), "public marketplace must load listing ownership");
 assert.ok(marketplaceCore.includes("AGRIVA Official") && marketplaceCore.includes("Seller product"), "marketplace cards must disclose platform vs seller listings");
+
+const seedCompanyMigration = read("supabase/migrations/20261029370000_seed_company_onboarding.sql");
+const seedCompanyApplyPage = read("app/company/apply/page.tsx");
+const seedCompanyDashboard = read("app/company/dashboard/page.tsx");
+const seedCompanyApi = read("app/api/company/applications/route.ts");
+const seedCompanyAdminPage = read("app/admin/companies/page.tsx");
+const adminHome = read("app/admin/page.tsx");
+assert.ok(seedCompanyMigration.includes("ENABLE ROW LEVEL SECURITY"), "seed company tables must enable RLS");
+assert.ok(seedCompanyMigration.includes("applicant_user_id = (SELECT auth.uid())"), "company applicants must be scoped to their authenticated user");
+assert.ok(seedCompanyMigration.includes("public.has_platform_admin_access()"), "company application review must require platform admin access");
+assert.ok(seedCompanyMigration.includes("Application has already been reviewed"), "company application review must prevent duplicate decisions");
+assert.ok(seedCompanyMigration.includes("Applicants can resubmit rejected applications"), "rejected applicants must have a controlled resubmission path");
+assert.ok(seedCompanyApi.includes("auth.getUser()"), "company application endpoint must verify the current server session");
+assert.ok(seedCompanyApi.includes("parsed.protocol !== " + '"https:"'), "company website URLs must use HTTPS");
+assert.ok(seedCompanyApi.includes(".eq(\"applicant_user_id\", user.id)"), "company application reads must be bound to the authenticated owner");
+assert.ok(seedCompanyApplyPage.includes("/api/company/applications"), "company onboarding form must use the validated application endpoint");
+assert.ok(seedCompanyDashboard.includes('.eq("owner_user_id", user.id)'), "company dashboard must only load the signed-in user's company");
+assert.ok(seedCompanyAdminPage.includes('authorizePermission("users.manage")'), "company review page must require admin capability");
+assert.ok(seedCompanyAdminPage.includes("admin_review_seed_company_application"), "company review must use the guarded database RPC");
+assert.ok(adminHome.includes('href="/admin/companies"'), "admin dashboard must link to company review queue");
