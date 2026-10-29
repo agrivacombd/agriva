@@ -18,6 +18,7 @@
     "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
     "test:admin-authorization": "node scripts/smoke-admin-authorization.mjs",
+    "test:admin-capability-authorization": "node scripts/smoke-admin-capability-authorization.mjs",
     "test:payment-webhook-hardening": "node scripts/smoke-payment-webhook-hardening.mjs",
     "test:payment-webhook-disabled": "node scripts/smoke-payment-webhook-disabled.mjs",
     "test:reseller-payout-reservation": "node scripts/smoke-reseller-payout-reservation.mjs",
