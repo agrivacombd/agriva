@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const INITIAL_FORM = { name: "", price: "", stock: "", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
+const INITIAL_FORM = { name: "", price: "", stock: "", description: "", category_slug: "", subcategory_slug: "" };
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -85,9 +85,9 @@ export default function ProductForm() {
   }
 
   return <form onSubmit={submit} className="mt-8 space-y-5 rounded-3xl bg-white p-7 shadow-sm">
-    <div><label className="text-sm font-bold">পণ্যের নাম<input required maxLength={160} value={form.name} onChange={e=>set("name",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3" placeholder="যেমন: Premium Basmati Rice / Chia Seed 250g"/></label></div>
+    <div><label className="text-sm font-bold">পণ্যের নাম<input required maxLength={160} value={form.name} onChange={e=>set("name",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3" placeholder="যেমন: মানিপ্ল্যান্ট / কলমের লেবুর চারা / মাটির টব"/></label></div>
     <div className="grid gap-5 md:grid-cols-2">
-      <label className="text-sm font-bold">ক্যাটাগরি<select required value={form.category_slug} onChange={e=>{const next=MARKETPLACE_CATEGORIES.find(c=>c.slug===e.target.value);setForm(current=>({...current,category_slug:e.target.value,subcategory_slug:next?.subcategories[0]?.slug||""}));}} className="mt-2 w-full rounded-xl border bg-white px-4 py-3">{MARKETPLACE_CATEGORIES.map(category=><option key={category.slug} value={category.slug}>{category.name}</option>)}</select></label>
+      <label className="text-sm font-bold">ক্যাটাগরি<select required value={form.category_slug} onChange={e=>{const next=MARKETPLACE_CATEGORIES.find(c=>c.slug===e.target.value);setForm(current=>({...current,category_slug:e.target.value,subcategory_slug:next?.subcategories[0]?.slug||""}));}} className="mt-2 w-full rounded-xl border bg-white px-4 py-3"><option value="" disabled>ক্যাটাগরি নির্বাচন করুন</option>{MARKETPLACE_CATEGORIES.map(category=><option key={category.slug} value={category.slug}>{category.name}</option>)}</select></label>
       <label className="text-sm font-bold">সাব-ক্যাটাগরি<select required value={form.subcategory_slug} onChange={e=>set("subcategory_slug",e.target.value)} className="mt-2 w-full rounded-xl border bg-white px-4 py-3">{(selectedCategory?.subcategories??[]).map(sub=><option key={sub.slug} value={sub.slug}>{sub.name}</option>)}</select></label>
     </div>
     <div className="grid gap-5 md:grid-cols-3">
@@ -100,8 +100,8 @@ export default function ProductForm() {
       {preview && <div className="flex items-center gap-4"><img src={preview} alt="পণ্যের ছবির preview" className="h-28 w-28 rounded-xl border object-cover"/><button type="button" onClick={()=>chooseImage()} className="text-sm font-bold text-red-700">ছবি সরান</button></div>}
       <p className="text-xs text-[#748074]">JPG, PNG বা WebP। আপনার নিজের ছবি ব্যবহার করুন।</p>
     </div>
-    <div><label className="text-sm font-bold">পণ্যের বিবরণ<textarea maxLength={5000} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-2 min-h-32 w-full rounded-xl border px-4 py-3" placeholder="ওজন, উৎপত্তিস্থল, প্যাকেজিং, উপাদান ও মেয়াদোত্তীর্ণের তথ্য দিন..."/></label></div>
-    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
+    <div><label className="text-sm font-bold">পণ্যের বিবরণ<textarea maxLength={5000} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-2 min-h-32 w-full rounded-xl border px-4 py-3" placeholder="গাছের ধরন, উচ্চতা, টবের মাপ, উপাদান, যত্ন ও ডেলিভারি-সংক্রান্ত তথ্য দিন..."/></label></div>
+    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">গাছের জন্য জাত, উচ্চতা ও যত্ন; টবের জন্য মাপ ও উপাদান; বীজ/মাটির জন্য প্যাক সাইজ ও উপাদান দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
     <button disabled={loading} className="w-full rounded-2xl bg-[#17351f] px-5 py-4 font-black text-white disabled:opacity-50">{loading ? "জমা হচ্ছে..." : "পর্যালোচনার জন্য জমা দিন"}</button>
     {message&&<p role="status" className="text-sm font-semibold text-[#1f7a45]">{message}</p>}
   </form>;
