@@ -18,7 +18,7 @@ function cleanString(value: unknown, max: number) {
 }
 
 function cleanContent(value: unknown, max: number) {
-  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[\\t ]+/g, " ").trim()).join("\n").trim().slice(0, max) : "";
+  return typeof value === "string" ? value.replace(/<[^>]*>/g, " ").replace(/\r\n?/g, "\n").split("\n").map((line) => line.replace(/[\t ]+/g, " ").trim()).join("\n").trim().slice(0, max) : "";
 }
 
 function clampText(value: unknown, max: number) {
