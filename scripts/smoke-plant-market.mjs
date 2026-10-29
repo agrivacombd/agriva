@@ -35,7 +35,7 @@ assert.match(productPage, /robots: \{ index: false, follow: false \}/, "sample p
 assert.match(form, /Google search preview/, "seller form must show a live SEO preview");
 assert.match(form, /required=\{isPlantListing\}/, "plant listings must require a product image");
 assert.match(form, /descriptionText.length < MIN_PLANT_DESCRIPTION_LENGTH/, "client must explain when a plant description is too short");
-assert.match(coreUpdate ? newCore : "", /product\.image_url/, "marketplace product cards must use uploaded product images");
+assert.match(core, /product\\.image_url/, "marketplace product cards must use uploaded product images");
 assert.match(form, /MIN_PLANT_DESCRIPTION_LENGTH = 80/, "plant listings must have useful descriptions");
 assert.match(form, /স্বয়ংক্রিয় SEO/, "form must explain SEO metadata is generated automatically");
 assert.match(api, /isPlantListing && !imageUrl/, "API must enforce a plant image, not only the client");
