@@ -503,3 +503,4 @@ assert.ok(categoryLandingPage.includes("generateMetadata") && categoryLandingPag
 assert.ok(marketplaceCore.includes('product.listing_source === "company" ? "Verified company"'), "marketplace cards must distinguish company listings");
 assert.ok(sitemap.includes('rpc("get_public_seed_company_slugs")') && sitemap.includes('${base}/companies/${company.slug}'), "verified company public profiles must be discoverable from the sitemap");
 assert.ok(robots.includes('"/company/"') && robots.includes('"/companies/"'), "robots must disallow private company portal and allow public company profiles");
+assert.ok(companyCatalogueMigration.includes("Verified companies can create own draft products"), "verified company product insertion must be scoped by RLS");
