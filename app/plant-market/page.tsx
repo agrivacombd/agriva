@@ -81,7 +81,7 @@ export default async function PlantMarketPage() {
 
     if (taxonomyResult.error) throw taxonomyResult.error;
     if (legacyResult.error) throw legacyResult.error;
-    const unique = new Map<string, MarketplaceProduct>();
+    const unique = new Map<string, PlantMarketProduct>();
     for (const row of [...(taxonomyResult.data ?? []), ...(legacyResult.data ?? [])] as PlantMarketProduct[]) {
       if (isPlantProduct(row)) unique.set(row.id, row);
     }
