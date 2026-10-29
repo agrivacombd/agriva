@@ -9,7 +9,7 @@ ALTER TABLE public.products
 
 -- Reconcile the legacy production schema where seo_keywords already exists as
 -- a nullable text field. The RPC and Admin form use a text[] consistently.
-DO $
+DO $migration$
 DECLARE
   existing_type text;
 BEGIN
@@ -30,7 +30,7 @@ BEGIN
     $sql$;
   END IF;
 END
-$;
+$migration$;
 
 UPDATE public.products SET seo_keywords = '{}'::text[] WHERE seo_keywords IS NULL;
 ALTER TABLE public.products
