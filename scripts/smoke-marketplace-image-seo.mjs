@@ -41,7 +41,7 @@ assert.match(feed, /<g:condition>/, "Merchant feed must contain seller-confirmed
 assert.match(feed, /additional_image_link/, "Merchant feed must include additional product images");
 assert.match(feed, /X-AGRIVA-Feed-Skipped/, "Merchant feed must expose skipped-item diagnostics");
 assert.match(sitemap, /images: Array\.from\(new Set/, "sitemap must include crawlable product images");
-assert.match(robots, /"\/seller\/", "robots.txt must disallow seller dashboard paths");
+assert.match(robots, /"\/seller\//, "robots.txt must disallow seller dashboard paths");
 assert.match(seoRoute, /seo_image_alt_texts/, "admin AI must suggest image alt text");
 assert.match(seoRoute, /seo_attribute_suggestions/, "admin AI must suggest missing category attributes");
 assert.match(seoAssistant, /name="seo_image_alt_texts"/, "admin must edit AI image alt text");
