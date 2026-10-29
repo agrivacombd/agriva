@@ -23,6 +23,9 @@ assert.match(page, /title: \{ absolute: "গাছ, চারা ও বাগ�
 assert.match(page, /FAQ|সাধারণ প্রশ্ন/, "Plant Market must answer buyer questions on-page");
 assert.match(page, /canonical: "\/plant-market"/, "Plant Market must have canonical metadata");
 assert.match(page, /href="\/seller\/products\/new"/, "Plant Market must link sellers to product submission");
+assert.match(page, /Grow More, Earn More/, "Plant Market must include the grow-and-earn campaign");
+assert.match(page, /বাগান আপনার শখ, গাছ হতে পারে বাড়তি আয়ের সুযোগ/, "campaign must encourage hobby gardeners without guaranteeing income");
+assert.match(page, /বিক্রি বা আয়ের নিশ্চয়তা নেই/, "campaign must not promise guaranteed earnings");
 assert.match(page, /checkout-এ অর্ডার নিশ্চিত করুন/, "Plant Market must explain the buyer journey");
 
 assert.match(productPage, /generateMetadata/, "product pages must generate per-product metadata");
