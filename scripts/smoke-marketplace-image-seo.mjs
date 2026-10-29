@@ -13,6 +13,7 @@ const robots = readFileSync("app/robots.ts", "utf8");
 const seoAssistant = readFileSync("components/admin/AdminProductSeoAssistant.tsx", "utf8");
 const seoRoute = readFileSync("app/api/admin/products/generate-seo/route.ts", "utf8");
 const imageMigration = readFileSync("supabase/migrations/20261030130000_marketplace_image_seo_pipeline.sql", "utf8");
+const seoLandingMigration = readFileSync("supabase/migrations/20261030103000_admin_product_seo_landing_fields.sql", "utf8");
 const seoAssistantMigration = readFileSync("supabase/migrations/20261030140000_admin_seo_image_alt_and_attribute_suggestions.sql", "utf8");
 
 assert.match(sellerForm, /MAX_IMAGE_SIZE = 5 \* 1024 \* 1024/, "browser must reject originals over 5 MB");
@@ -53,5 +54,7 @@ assert.match(seoRoute, /seo_attribute_suggestions/, "admin AI must suggest missi
 assert.match(seoAssistant, /name="seo_image_alt_texts"/, "admin must edit AI image alt text");
 assert.match(seoAssistant, /name="seo_attribute_suggestions"/, "admin must edit missing-attribute suggestions");
 assert.match(seoAssistantMigration, /admin_update_product_seo_assistant_details/, "SEO assistant details must save through an audited admin RPC");
+assert.match(seoLandingMigration, /ALTER COLUMN seo_keywords TYPE text\[\]/, "SEO migration must reconcile legacy text seo_keywords column");
+assert.match(seoLandingMigration, /string_to_array\(seo_keywords,/, "legacy comma-separated SEO keywords must be preserved during migration");
 
 console.log("Marketplace image SEO, responsive image, product schema, Merchant feed and sitemap checks passed.");
