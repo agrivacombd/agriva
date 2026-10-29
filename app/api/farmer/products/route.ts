@@ -21,15 +21,21 @@ export async function POST(request: NextRequest) {
   }
   const payload = body as Record<string, unknown>;
   const name = typeof payload.name === "string" ? payload.name.trim() : "";
-  const price = Number(payload.price);
-  const stock = Number(payload.stock);
+  const rawPrice = payload.price;
+  const rawStock = payload.stock;
+  const price = Number(rawPrice);
+  const stock = Number(rawStock);
+  const invalidNumberInput = (value: unknown) =>
+    (typeof value !== "number" && typeof value !== "string") ||
+    (typeof value === "string" && value.trim() === "");
   const description = typeof payload.description === "string" ? payload.description.trim() : "";
   const categorySlug = typeof payload.category_slug === "string" ? payload.category_slug.trim() : "";
   const subcategorySlug = typeof payload.subcategory_slug === "string" ? payload.subcategory_slug.trim() : "";
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
 
-  if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
+  if (!name || name.length > 160 || invalidNumberInput(rawPrice) || invalidNumberInput(rawStock) ||
+      !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !category || !subcategory || description.length > 5000) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
