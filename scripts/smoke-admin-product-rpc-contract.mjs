@@ -28,7 +28,9 @@ assert.deepEqual(
   "RPC argument names and order in the API must match the deployed SQL function contract",
 );
 
-assert.match(route, /profile\?\.role !== "admin"/, "API must authorize admins before calling RPC");
+const authz = readFileSync("lib/admin/authz.ts", "utf8");
+assert.match(route, /requireAdminApi\("catalog\.create"\)/, "API must request the catalog.create capability before calling RPC");
+assert.match(authz, /profile\?\.role !== "admin"/, "shared API guard must authorize admins before calling RPC");
 assert.match(route, /if \(error\)[\s\S]*Admin product creation failed/, "RPC errors must be logged server-side");
 assert.doesNotMatch(route, /error:\s*error\.message/, "database details must not be returned to clients");
 assert.match(migration, /auth\.uid\(\) is null or not public\.is_admin\(\)/, "RPC must independently enforce admin authorization");
