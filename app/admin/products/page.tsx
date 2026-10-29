@@ -22,7 +22,9 @@ async function saveProduct(formData: FormData) {
   const seoKeywords = String(formData.get("seo_keywords") ?? "").split(",").map((value) => value.trim()).filter(Boolean);
   const seoContent = String(formData.get("seo_content") ?? "").trim();
   const seoFaqsText = String(formData.get("seo_faqs") ?? "").trim();
-  const seoFaqs = seoFaqsText ? seoFaqsText.split(/\r?\n/).map((line) => { const separator = line.indexOf("|"); return separator < 0 ? null : { question: line.slice(0, separator).trim(), answer: line.slice(separator + 1).trim() }; }).filter((faq): faq is { question: string; answer: string } => Boolean(faq && faq.question && faq.answer)) : [];
+  const seoFaqLines = seoFaqsText ? seoFaqsText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean) : [];
+  const invalidSeoFaqLine = seoFaqLines.some((line) => { const separator = line.indexOf("|"); return separator < 1 || separator === line.length - 1; });
+  const seoFaqs = seoFaqLines.map((line) => { const separator = line.indexOf("|"); return { question: line.slice(0, separator).trim(), answer: line.slice(separator + 1).trim() }; });
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
@@ -31,7 +33,7 @@ async function saveProduct(formData: FormData) {
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoKeywords.length > 10 || seoKeywords.some((keyword) => keyword.length > 60) || seoContent.length > 10000 || seoFaqs.length > 8 || seoFaqs.some((faq) => faq.question.length > 160 || faq.answer.length > 500)) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoKeywords.length > 10 || seoKeywords.some((keyword) => keyword.length > 60) || seoContent.length > 10000 || invalidSeoFaqLine || seoFaqs.length > 8 || seoFaqs.some((faq) => !faq.question || !faq.answer || faq.question.length > 160 || faq.answer.length > 500)) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin("catalog.edit");
