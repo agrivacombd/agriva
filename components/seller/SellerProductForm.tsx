@@ -234,7 +234,7 @@ export default function ProductForm() {
         imageUrls.push(supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl);
       }
 
-      const cleanedAttributes = Object.fromEntries(Object.entries(attributes).map(([key, value]) => [key, value.trim()]).filter(([, value]) => Boolean(value)));
+      const cleanedAttributes = Object.fromEntries(Object.entries({ ...attributes, brand: form.brand }).map(([key, value]) => [key, value.trim()]).filter(([, value]) => Boolean(value)));
       const response = await fetch("/api/seller/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
