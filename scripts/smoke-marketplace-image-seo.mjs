@@ -58,6 +58,8 @@ assert.match(seoAssistant, /name="seo_image_alt_texts"/, "admin must edit AI ima
 assert.match(seoAssistant, /name="seo_attribute_suggestions"/, "admin must edit missing-attribute suggestions");
 assert.match(seoAssistantMigration, /admin_update_product_seo_assistant_details/, "SEO assistant details must save through an audited admin RPC");
 assert.match(seoLandingMigration, /ALTER COLUMN seo_keywords TYPE text\[\]/, "SEO migration must reconcile legacy text seo_keywords column");
+assert.match(seoLandingMigration, /DROP CONSTRAINT IF EXISTS products_seo_keywords_length[\s\S]*ALTER COLUMN seo_keywords TYPE text\[\]/, "SEO migration must drop the legacy text-only length constraint before converting keywords to an array");
+assert.match(seoLandingMigration, /cardinality\(seo_keywords\) <= 10/, "SEO keyword array must remain bounded after conversion");
 assert.match(seoLandingMigration, /string_to_array\(seo_keywords,/, "legacy comma-separated SEO keywords must be preserved during migration");
 
 console.log("Marketplace image SEO, responsive image, product schema, Merchant feed and sitemap checks passed.");
