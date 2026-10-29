@@ -10,7 +10,7 @@ import { getSampleProduct } from "@/lib/marketplace/sample-products";
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type SeoFaq = { question: string; answer: string };
 type ProductImageVariant = { image_url: string; card_url: string; thumbnail_url: string; width: number; height: number; alt: string; filename: string };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; image_variants?: ProductImageVariant[] | null; product_attributes?: Record<string, string> | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string[] | null; seo_content?: string | null; seo_faqs?: SeoFaq[] | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; image_variants?: ProductImageVariant[] | null; product_attributes?: Record<string, string> | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string[] | null; seo_content?: string | null; seo_faqs?: SeoFaq[] | null; seo_image_alt_texts?: string[] | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -37,7 +37,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls,image_variants,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls,image_variants,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const fallbackDescription = `AGRIVA-তে ${product.name}${product.price !== null && Number.isFinite(Number(product.price)) ? ` — মূল্য ৳${Number(product.price).toLocaleString("en-BD")}` : ""}। পণ্যের ছবি, বিবরণ ও মজুতের তথ্য দেখুন।`;
   const description = truncate(cleanText(product.seo_description) || (rawDescription.length >= 60 ? rawDescription : fallbackDescription), 155);
   const canonicalPath = `/marketplace/${product.slug}`;
-  const imageVariants = (Array.isArray(product.image_variants) ? product.image_variants : []).filter((item): item is ProductImageVariant => Boolean(item && typeof item.image_url === "string" && typeof item.card_url === "string" && typeof item.thumbnail_url === "string" && Number.isFinite(item.width) && Number.isFinite(item.height) && typeof item.alt === "string")).slice(0, 4);
+  const imageVariants = (Array.isArray(product.image_variants) ? product.image_variants : []).filter((item): item is ProductImageVariant => Boolean(item && typeof item.image_url === "string" && typeof item.card_url === "string" && typeof item.thumbnail_url === "string" && Number.isFinite(item.width) && Number.isFinite(item.height) && typeof item.alt === "string")).slice(0, 4).map((item, index) => ({ ...item, alt: product.seo_image_alt_texts?.[index] || item.alt }));
   const image = imageVariants[0]?.image_url || product.image_url || product.image_urls?.[0] || undefined;
   return {
     title: { absolute: title },
@@ -83,7 +83,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) > 0;
-  const imageVariants = (Array.isArray(product.image_variants) ? product.image_variants : []).filter((item): item is ProductImageVariant => Boolean(item && typeof item.image_url === "string" && typeof item.card_url === "string" && typeof item.thumbnail_url === "string" && Number.isFinite(item.width) && Number.isFinite(item.height) && typeof item.alt === "string")).slice(0, 4);
+  const imageVariants = (Array.isArray(product.image_variants) ? product.image_variants : []).filter((item): item is ProductImageVariant => Boolean(item && typeof item.image_url === "string" && typeof item.card_url === "string" && typeof item.thumbnail_url === "string" && Number.isFinite(item.width) && Number.isFinite(item.height) && typeof item.alt === "string")).slice(0, 4).map((item, index) => ({ ...item, alt: product.seo_image_alt_texts?.[index] || item.alt }));
   const productImages = Array.from(new Set([...(imageVariants.length ? imageVariants.map((item) => item.image_url) : product.image_urls ?? []), ...(product.image_url ? [product.image_url] : [])])).slice(0, 4);
   const hasRealImage = !product.id.startsWith("sample-") && productImages.length > 0;
   const description = cleanText(product.description);
