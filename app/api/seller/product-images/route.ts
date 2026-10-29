@@ -17,6 +17,7 @@ const EXTENSION_BY_FORMAT: Record<string, string> = { jpeg: "jpg", png: "png", w
 
 type UploadedVariant = {
   original_url: null;
+  original_path: string;
   image_url: string;
   card_url: string;
   thumbnail_url: string;
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
 
       results.push({
         original_url: null,
+        original_path: originalPath,
         image_url: urls.main,
         card_url: urls.card,
         thumbnail_url: urls.thumb,
