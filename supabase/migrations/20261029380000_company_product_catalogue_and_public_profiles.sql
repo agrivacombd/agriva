@@ -132,6 +132,24 @@ USING (
 
 -- Generate a stable public slug at approval time; append the company UUID suffix
 -- to avoid collisions between similar names.
+-- Allow only verified company owners to create company-attributed draft products.
+DROP POLICY IF EXISTS "Verified companies can create own draft products" ON public.products;
+CREATE POLICY "Verified companies can create own draft products"
+ON public.products FOR INSERT TO authenticated
+WITH CHECK (
+  farmer_id = (SELECT auth.uid())
+  AND listing_source = 'company'
+  AND status = 'draft'
+  AND moderation_status = 'pending'
+  AND seed_company_id IS NOT NULL
+  AND EXISTS (
+    SELECT 1 FROM public.seed_companies c
+    WHERE c.id = seed_company_id
+      AND c.owner_user_id = (SELECT auth.uid())
+      AND c.verification_status = 'verified'
+  )
+);
+
 CREATE OR REPLACE FUNCTION public.admin_review_seed_company_application(
   p_application_id uuid,
   p_decision text,
@@ -145,8 +163,6 @@ AS $function$
 DECLARE
   v_application public.seed_company_applications;
   v_reason text := NULLIF(trim(COALESCE(p_reason, '')), '');
-  v_company_id uuid;
-  v_company_slug text;
 BEGIN
   IF auth.uid() IS NULL OR NOT public.has_platform_admin_access() THEN
     RAISE EXCEPTION 'Platform admin role required' USING ERRCODE = '42501';
