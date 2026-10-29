@@ -30,6 +30,7 @@
     "test:green-living-platform": "node scripts/smoke-green-living-platform.mjs",
     "test:role-based-auth": "node scripts/smoke-role-based-auth.mjs",
     "test:seller-marketplace-submission": "node scripts/smoke-seller-marketplace-submission.mjs",
+    "test:seller-schema-compat": "node scripts/smoke-seller-schema-compat.mjs",
     "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs"
   },
   "dependencies": {
