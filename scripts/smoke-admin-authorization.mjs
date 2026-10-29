@@ -483,6 +483,7 @@ const categoryLandingPage = read("app/marketplace/category/[...slug]/page.tsx");
 const marketplaceCore = read("components/marketplace/MarketplaceCore.tsx");
 const sitemap = read("app/sitemap.ts");
 const robots = read("app/robots.ts");
+const companyPortalLayout = read("app/company/layout.tsx");
 assert.ok(companyCatalogueMigration.includes("ADD COLUMN IF NOT EXISTS seed_company_id"), "company products must have an explicit company owner reference");
 assert.ok(companyCatalogueMigration.includes("CHECK (listing_source IN ('platform', 'seller', 'company'))"), "company product source must be distinct from platform and independent seller listings");
 assert.ok(companyCatalogueMigration.includes("get_public_seed_company_profile(p_slug text)"), "public company page must use a narrow profile RPC");
@@ -502,5 +503,6 @@ assert.ok(publicProductPage.includes('"@type": "Product"') && publicProductPage.
 assert.ok(categoryLandingPage.includes("generateMetadata") && categoryLandingPage.includes("BreadcrumbList"), "category landing pages must include metadata and breadcrumb structured data");
 assert.ok(marketplaceCore.includes('product.listing_source === "company" ? "Verified company"'), "marketplace cards must distinguish company listings");
 assert.ok(sitemap.includes('rpc("get_public_seed_company_slugs")') && sitemap.includes('${base}/companies/${company.slug}'), "verified company public profiles must be discoverable from the sitemap");
-assert.ok(robots.includes('"/company/"') && robots.includes('"/companies/"'), "robots must disallow private company portal and allow public company profiles");
+assert.ok(companyPortalLayout.includes("index: false") && companyPortalLayout.includes("follow: false"), "private company portal pages must be noindex");
+assert.ok(robots.includes('"/companies/"') && !robots.includes('"/company/"'), "robots must allow public company profiles and let crawlers observe private portal noindex metadata");
 assert.ok(companyCatalogueMigration.includes("Verified companies can create own draft products"), "verified company product insertion must be scoped by RLS");
