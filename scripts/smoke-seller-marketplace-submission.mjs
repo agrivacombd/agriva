@@ -22,6 +22,7 @@ assert.match(route, /in\("role", \["seller", "organization"\]\)/, "product API m
 assert.match(route, /status: "draft"/, "seller products must await moderation");
 assert.match(route, /product-images/, "product API must validate product image URLs against the configured bucket");
 assert.match(route, /storage\/v1\/object\/public\/product-images\//, "only public product-images URLs should be accepted");
+assert.match(route, /validFileName[\s\S]*image\.search[\s\S]*image\.hash/, "seller image URLs must be limited to the seller folder and a UUID filename without query/hash");
 assert.match(legacyRoute, /status: 410/, "legacy farmer product API must not create marketplace products");
 assert.match(sellerPage, /in\("role", \["seller", "organization"\]\)/, "seller product page must require seller or organization membership");
 assert.match(sellerProductsPage, /in\("role", \["seller", "organization"\]\)/, "seller product management page must require seller or organization membership");
