@@ -66,6 +66,19 @@ WITH CHECK (
   AND review_reason IS NULL
 );
 
+
+DROP POLICY IF EXISTS "Applicants can resubmit rejected applications" ON public.seed_company_applications;
+CREATE POLICY "Applicants can resubmit rejected applications"
+ON public.seed_company_applications FOR UPDATE TO authenticated
+USING (applicant_user_id = (SELECT auth.uid()) AND status = 'rejected')
+WITH CHECK (
+  applicant_user_id = (SELECT auth.uid())
+  AND status = 'pending'
+  AND reviewed_by IS NULL
+  AND reviewed_at IS NULL
+  AND review_reason IS NULL
+);
+
 DROP POLICY IF EXISTS "Platform admins can review seed company applications" ON public.seed_company_applications;
 CREATE POLICY "Platform admins can review seed company applications"
 ON public.seed_company_applications FOR UPDATE TO authenticated
