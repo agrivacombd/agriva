@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
     for (let index = 0; index < files.length; index += 1) {
       const file = files[index];
       const buffer = Buffer.from(await file.arrayBuffer());
-      let metadata: sharp.Metadata;
-      let stats: sharp.Stats;
+      let metadata: import("sharp").Metadata;
+      let stats: import("sharp").Stats;
       try {
         const decoder = sharp(buffer, { failOn: "error", limitInputPixels: 40_000_000 });
         [metadata, stats] = await Promise.all([decoder.metadata(), decoder.stats()]);
