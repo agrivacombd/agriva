@@ -139,6 +139,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mt-4 text-xs leading-5 text-slate-500">মূল্য ও মজুত পরিবর্তিত হতে পারে। অর্ডার নিশ্চিত করার আগে checkout-এ তথ্য যাচাই করুন।</p>
         </div>
       </div>
+      {seoContent && <section className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8"><h2 className="text-xl font-black sm:text-2xl">পণ্য সম্পর্কে বিস্তারিত</h2><div className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-700 sm:text-base">{seoContent}</div></section>}
+      {seoFaqs.length > 0 && <section className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8"><h2 className="text-xl font-black sm:text-2xl">সাধারণ জিজ্ঞাসা</h2><div className="mt-4 divide-y divide-emerald-950/10">{seoFaqs.map((faq, index) => <details key={`${faq.question}-${index}`} className="py-4 first:pt-0 last:pb-0"><summary className="cursor-pointer font-bold text-slate-800">{faq.question}</summary><p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{faq.answer}</p></details>)}</div></section>}
     </div>
   </main>;
 }
