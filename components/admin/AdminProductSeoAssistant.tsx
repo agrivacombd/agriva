@@ -10,6 +10,7 @@ type Props = {
   category: string | null;
   price: number | string | null;
   stock: number | null;
+  productAttributes: Record<string, string> | null;
   seoTitle: string | null;
   seoDescription: string | null;
   seoKeywords: string[] | null;
@@ -42,6 +43,7 @@ export default function AdminProductSeoAssistant(props: Props) {
             category: props.category ?? "",
             price: props.price,
             stock: props.stock,
+            product_attributes: props.productAttributes ?? {},
           },
           existing: {
             seo_title: seoTitle,
