@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         const image = new URL(imageUrlValue);
         const expectedPrefix = `/storage/v1/object/public/product-images/${user.id}/`;
         const fileName = image.pathname.startsWith(expectedPrefix) ? image.pathname.slice(expectedPrefix.length) : "";
-        if (image.origin !== base.origin || !validFileName.test(fileName) || image.search || image.hash || image.protocol !== "https:") {
+        if (image.origin !== base.origin || !validFileName.test(fileName) || image.search.length > 0 || image.hash.length > 0 || image.protocol !== "https:") {
           return NextResponse.json({ error: "শুধু নিজের account থেকে আপলোড করা পণ্যের ছবি ব্যবহার করা যাবে।" }, { status: 400 });
         }
       }
