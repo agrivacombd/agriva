@@ -9,7 +9,7 @@ import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type SeoFaq = { question: string; answer: string };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string[] | null; seo_content?: string | null; seo_faqs?: SeoFaq[] | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; product_attributes?: Record<string, string> | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string[] | null; seo_content?: string | null; seo_faqs?: SeoFaq[] | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -36,7 +36,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -85,6 +85,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasRealImage = !product.id.startsWith("sample-") && productImages.length > 0;
   const description = cleanText(product.description);
   const seoContent = cleanText(product.seo_content);
+  const attributeLabels: Record<string, string> = { brand: "ব্র্যান্ড / প্রস্তুতকারক", crop_name: "ফসল", variety: "জাত / variety", pack_size: "প্যাক সাইজ", germination_rate: "Germination rate (%)", batch_number: "Lot / batch number", expiry_date: "মেয়াদ শেষের তারিখ", fertilizer_type: "সারের ধরন", composition: "Composition", usage_instructions: "ব্যবহারবিধি", active_ingredient: "Active ingredient", registration_number: "Registration number", plant_size: "গাছের আকার", suitable_season: "উপযুক্ত মৌসুম", care_instructions: "যত্নের নির্দেশনা", model: "Model", material: "উপাদান", dimensions: "মাপ", warranty: "Warranty", food_type: "পণ্যের ধরন", ingredients: "উপাদান", origin: "উৎপত্তিস্থল" };
+  const productAttributes = Object.entries(product.product_attributes && typeof product.product_attributes === "object" ? product.product_attributes : {}).filter((entry): entry is [string, string] => typeof entry[1] === "string" && Boolean(entry[1].trim())).slice(0, 24);
   const seoFaqs = (Array.isArray(product.seo_faqs) ? product.seo_faqs : []).filter((faq) => faq && typeof faq.question === "string" && faq.question.trim() && typeof faq.answer === "string" && faq.answer.trim()).slice(0, 8);
   const hasProductRichResultData = hasRealPrice && hasRealImage && product.stock !== null && product.stock !== undefined;
   const graph = [
@@ -110,6 +112,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       image: productImages,
       ...(description ? { description } : {}),
       ...(product.category ? { category: product.category } : {}),
+      ...(productAttributes.length ? { additionalProperty: productAttributes.map(([key, value]) => ({ "@type": "PropertyValue", name: attributeLabels[key] || key, value })) } : {}),
       offers: {
         "@type": "Offer",
         url: `${base}${canonicalPath}`,
@@ -139,6 +142,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <p className="mt-4 text-xs leading-5 text-slate-500">মূল্য ও মজুত পরিবর্তিত হতে পারে। অর্ডার নিশ্চিত করার আগে checkout-এ তথ্য যাচাই করুন।</p>
         </div>
       </div>
+      {productAttributes.length > 0 && <section className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8"><h2 className="text-xl font-black sm:text-2xl">পণ্যের বৈশিষ্ট্য</h2><dl className="mt-4 grid gap-3 sm:grid-cols-2">{productAttributes.map(([key, value]) => <div key={key} className="rounded-xl bg-[#f7faf5] p-3"><dt className="text-xs font-bold text-slate-500">{attributeLabels[key] || key.replace(/_/g, " ")}</dt><dd className="mt-1 whitespace-pre-line text-sm font-semibold text-slate-800">{value}</dd></div>)}</dl></section>}
       {seoContent && <section className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8"><h2 className="text-xl font-black sm:text-2xl">পণ্য সম্পর্কে বিস্তারিত</h2><div className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-700 sm:text-base">{seoContent}</div></section>}
       {seoFaqs.length > 0 && <section className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8"><h2 className="text-xl font-black sm:text-2xl">সাধারণ জিজ্ঞাসা</h2><div className="mt-4 divide-y divide-emerald-950/10">{seoFaqs.map((faq, index) => <details key={`${faq.question}-${index}`} className="py-4 first:pt-0 last:pb-0"><summary className="cursor-pointer font-bold text-slate-800">{faq.question}</summary><p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-600">{faq.answer}</p></details>)}</div></section>}
     </div>
