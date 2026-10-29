@@ -41,11 +41,11 @@ export async function POST(request: NextRequest) {
     try {
       const image = new URL(imageUrl);
       const base = new URL(supabaseUrl);
-      const expectedPrefix = `${base.origin}/storage/v1/object/public/product-images/${user.id}/`;
+      const expectedPrefix = `/storage/v1/object/public/product-images/${user.id}/`;
       const fileName = image.pathname.startsWith(expectedPrefix)
         ? image.pathname.slice(expectedPrefix.length)
         : "";
-      const validFileName = /^[0-9a-f-]{36}\.(?:jpg|png|webp)$/i.test(fileName);
+      const validFileName = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i.test(fileName);
 
       if (image.origin !== base.origin || !validFileName || image.search || image.hash || image.protocol !== "https:") {
         return NextResponse.json({ error: "শুধু নিজের account থেকে আপলোড করা পণ্যের ছবি ব্যবহার করা যাবে।" }, { status: 400 });
