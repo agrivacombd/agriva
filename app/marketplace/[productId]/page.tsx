@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const canonicalPath = `/marketplace/${product.slug}`;
   const image = product.image_url || undefined;
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: canonicalPath },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
