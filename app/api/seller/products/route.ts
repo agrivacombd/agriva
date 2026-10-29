@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   const requestedImageUrls = Array.isArray(body.image_urls) ? body.image_urls : [];
-  const imageUrls = requestedImageUrls.filter((value: unknown): value is string => typeof value === "string" && value.trim()).map((value: string) => value.trim());
+  const imageUrls = requestedImageUrls.filter((value: unknown): value is string => typeof value === "string" && value.trim().length > 0).map((value: string) => value.trim());
   const imageUrl = imageUrls[0] || (typeof body.image_url === "string" && body.image_url.trim().length > 0 ? body.image_url.trim() : null);
   const allImageUrls = imageUrls.length ? imageUrls : imageUrl ? [imageUrl] : [];
   const isPlantListing = categorySlug === "plants-gardening";
