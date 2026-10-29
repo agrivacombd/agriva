@@ -52,9 +52,13 @@ for (const path of [
   "app/admin/reports/orders.csv/route.ts",
 ]) {
   const source = read(path);
-  assert.match(source, /auth\.getUser\(\)/, `${path} must verify a server-side session`);
-  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
-  assert.match(source, /role/, `${path} must check a role`);
+  if (source.includes("requireAdminApi(")) {
+    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, `${path} must request an explicit capability`);
+  } else {
+    assert.match(source, /auth\.getUser\(\)/, `${path} must verify a server-side session`);
+    assert.match(source, /profiles/, `${path} must verify the user's profile role`);
+    assert.match(source, /role/, `${path} must check a role`);
+  }
 }
 
 for (const path of [
@@ -149,8 +153,9 @@ assert.ok(jobsMigration.includes("p_status is null or p_status not in ('publishe
 
 
 const opportunityApi = read("app/api/admin/content-opportunities/route.ts");
-assert.ok(opportunityApi.includes("async function requireAdmin()"), "content opportunity API must share an explicit admin guard");
-assert.ok(opportunityApi.includes("profileError"), "content opportunity API must fail closed on profile lookup errors");
+assert.ok(opportunityApi.includes('requireAdminApi("content.read")'), "content opportunity reads must request content.edit");
+assert.ok(opportunityApi.includes('requireAdminApi("content.publish")'), "content publication transitions must request content.publish");
+assert.ok(!opportunityApi.includes("async function requireAdmin()"), "content opportunity API must use the shared guard rather than a local duplicate");
 assert.ok(opportunityApi.includes('const transitions: Record<string, string[]>'), "opportunity status changes must use an explicit transition map");
 assert.ok(opportunityApi.includes('.eq("id", id).eq("status", current.status)'), "opportunity status update must be conditional to prevent stale writes");
 assert.ok(opportunityApi.includes("Opportunity changed; reload before trying again"), "opportunity API must reject stale status updates");
