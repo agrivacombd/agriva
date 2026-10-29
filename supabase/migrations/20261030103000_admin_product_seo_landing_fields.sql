@@ -9,6 +9,9 @@ ALTER TABLE public.products
 
 -- Reconcile the legacy production schema where seo_keywords already exists as
 -- a nullable text field. The RPC and Admin form use a text[] consistently.
+-- Remove the legacy text-length check before changing the column to an array.
+ALTER TABLE public.products DROP CONSTRAINT IF EXISTS products_seo_keywords_length;
+
 DO $migration$
 DECLARE
   existing_type text;
@@ -36,6 +39,10 @@ UPDATE public.products SET seo_keywords = '{}'::text[] WHERE seo_keywords IS NUL
 ALTER TABLE public.products
   ALTER COLUMN seo_keywords SET DEFAULT '{}'::text[],
   ALTER COLUMN seo_keywords SET NOT NULL;
+
+ALTER TABLE public.products
+  ADD CONSTRAINT products_seo_keywords_length
+  CHECK (cardinality(seo_keywords) <= 10 AND length(array_to_string(seo_keywords, ',')) <= 500);
 
 ALTER TABLE public.products
   DROP CONSTRAINT IF EXISTS products_seo_faqs_is_array;
