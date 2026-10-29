@@ -37,6 +37,21 @@ export default async function MarketplacePage() {
         <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/75 sm:text-sm"><span>✓ ক্যাটাগরি অনুযায়ী ব্রাউজ</span><span>✓ মোবাইল-ফ্রেন্ডলি</span><span>✓ অনুমোদিত পণ্য</span></div>
       </div>
     </section>
+    <section aria-label="কৃষক ও ক্রেতার দ্রুত প্রবেশ" className="mx-auto grid max-w-7xl gap-4 px-4 py-6 sm:grid-cols-2 sm:px-6 lg:px-8">
+      <article className="flex flex-col items-start rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm sm:p-6">
+        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">কৃষকদের জন্য</span>
+        <h2 className="mt-3 text-xl font-black">নিজের ফসল সরাসরি বিক্রি করুন</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন। অনুমোদনের পর ক্রেতারা আপনার ফসল দেখতে পারবেন।</p>
+        <a href="/sell-harvest" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-emerald-900">Sell Harvest-এ যান →</a>
+      </article>
+      <article className="flex flex-col items-start rounded-2xl border border-amber-200 bg-white p-5 shadow-sm sm:p-6">
+        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">ক্রেতাদের জন্য</span>
+        <h2 className="mt-3 text-xl font-black">আপনার প্রয়োজনীয় পণ্যের চাহিদা জানান</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">কোন পণ্য, কত পরিমাণ এবং কোথায় প্রয়োজন—চাহিদা বোর্ডে পোস্ট করে সরবরাহকারীদের সঙ্গে যোগাযোগের সুযোগ নিন।</p>
+        <a href="/buyer-demands" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">চাহিদা বোর্ড দেখুন →</a>
+      </article>
+    </section>
+
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
       <div className="mb-7"><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Find what you need</p><h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">কৃষি পণ্য খুঁজুন</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">ক্যাটাগরি বেছে নিন অথবা পণ্যের নাম লিখে খুঁজুন।</p></div>
       <MarketplaceCore products={products} />
