@@ -35,7 +35,7 @@ for (const path of [
 ]) {
   const source = read(path);
   if (source.includes("requireAdminApi(")) {
-    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, \`${path} must request an explicit capability\`);
+    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, `${path} must request an explicit capability`);
   } else {
     assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
     assert.match(source, /profiles/, `${path} must verify the user's profile role`);
