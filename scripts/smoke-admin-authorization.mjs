@@ -8,9 +8,14 @@ const read = (path) => {
 };
 
 const layout = read("app/admin/layout.tsx");
-assert.match(layout, /supabase\.auth\.getUser\(\)/, "admin layout must verify the server-side session");
-assert.match(layout, /authError\s*\|\|\s*!user/, "admin layout must fail closed on auth errors");
-assert.match(layout, /profileError\s*\|\|\s*profile\?\.role\s*!==\s*"admin"/, "admin layout must fail closed on profile lookup errors and non-admin roles");
+const authz = read("lib/admin/authz.ts");
+assert.match(layout, /requireAdminPage\\("dashboard\\.read"\\)/, "admin layout must use the shared capability guard");
+assert.match(authz, /supabase\\.auth\\.getUser\\(\\)/, "shared guard must verify the server-side session");
+assert.match(authz, /profileError/, "shared guard must fail closed when profile lookup fails");
+assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\\.has\\(capability\\)/, "shared guard must explicitly check the requested capability");
+assert.match(authz, /authorization_unavailable/, "authorization lookup failures must be distinguishable from ordinary denial");
+const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
+assert.doesNotMatch(legacyCapabilityPolicy, /payments\\.reconcile|orders\\.refund\\.request|payouts\\.approve|system\\.recovery\\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -29,9 +34,13 @@ for (const path of [
   ...collectRouteHandlers("app/admin"),
 ]) {
   const source = read(path);
-  assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
-  assert.match(source, /profiles/, `${path} must verify the user's profile role`);
-  assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+  if (source.includes("requireAdminApi(")) {
+    assert.match(source, /requireAdminApi\(["'][a-z.]+["']\)/, `${path} must request an explicit capability`);
+  } else {
+    assert.match(source, /auth\.getUser\(\)/, `${path} must independently verify the server-side session`);
+    assert.match(source, /profiles/, `${path} must verify the user's profile role`);
+    assert.match(source, /role/, `${path} must check authorization, not just authentication`);
+  }
 }
 
 for (const path of [
@@ -157,7 +166,7 @@ for (const route of [
 ]) {
   assert.ok(superAdminPage.includes(route), `super admin directory must link to existing admin route ${route}`);
 }
-assert.ok(superAdminPage.includes('profileError || profile?.role !== "admin"'), "super admin hub must fail closed for non-admin users");
+assert.ok(superAdminPage.includes('requireAdminPage(\n    "dashboard.read"'), "super admin hub must use the shared capability guard");
 assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must provide accessible module search");
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
