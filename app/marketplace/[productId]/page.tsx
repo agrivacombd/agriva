@@ -7,7 +7,17 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; listing_source?: "platform" | "seller" | "company" | null; seed_company_id?: string | null; commission_percent?: number | null };
+type PublicCompany = { id: string; slug: string; company_name: string; district: string; website: string | null; product_categories: string[]; public_description: string | null; logo_url: string | null };
+
+async function getPublicCompanyById(id: string | null | undefined): Promise<PublicCompany | null> {
+  if (!id) return null;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_public_seed_company_profile_by_id", { p_company_id: id });
+  if (error) return null;
+  const row = Array.isArray(data) ? data[0] : data;
+  return (row as PublicCompany | null) ?? null;
+}
 
 function normalizeSlug(value: string) {
   try {
@@ -23,11 +33,11 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,listing_source,seed_company_id";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
-  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").maybeSingle();
+  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("moderation_status", "approved").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
 }
 
@@ -35,6 +45,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
+  const company = await getPublicCompanyById(product.seed_company_id);
   const title = `${product.name} | কৃষি পণ্য`;
   const description = typeof product.description === "string" && product.description.trim()
     ? product.description.trim().replace(/\s+/g, " ").slice(0, 155)
@@ -43,8 +54,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     title, description,
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
-    keywords: [product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
-    openGraph: { title, description, type: "website", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
+    keywords: [product.name, product.category || "কৃষি পণ্য", "কৃষি পণ্য বাংলাদেশ", "AGRIVA", ...(company ? [company.company_name] : [])],
+    openGraph: { title, description, type: "website", siteName: "AGRIVA", locale: "bn_BD", url: `/marketplace/${product.slug}`, ...(product.image_url ? { images: [{ url: product.image_url, alt: product.name }] } : {}) },
+    twitter: { card: product.image_url ? "summary_large_image" : "summary", title, description, ...(product.image_url ? { images: [product.image_url] } : {}) },
   };
 }
 
@@ -52,15 +64,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
+  const company = await getPublicCompanyById(product.seed_company_id);
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = `/marketplace/${product.slug}`;
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
+  const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
   const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Product", name: product.name,
+    sku: product.id, url: `${base}${canonicalPath}`,
     description: typeof product.description === "string" ? product.description : undefined,
+    ...(company ? { brand: { "@type": "Brand", name: company.company_name } } : product.listing_source === "platform" ? { brand: { "@type": "Brand", name: "AGRIVA Official" } } : {}),
     ...(product.image_url ? { image: [product.image_url] } : {}),
     category: product.category || undefined,
     ...(hasRealPrice ? {
@@ -70,6 +85,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         price: Number(product.price),
         ...(product.stock !== null && product.stock !== undefined ? { availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" } : {}),
         url: `${base}${canonicalPath}`,
+        itemCondition: "https://schema.org/NewCondition",
       },
     } : {}),
   };
@@ -83,10 +99,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
           {product.category && <p className="mt-3 text-sm font-bold text-emerald-800">{product.category}</p>}
+          <div className="mt-3"><span className="inline-flex rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-950">{company?.company_name || (product.listing_source === "platform" ? "AGRIVA Official" : product.listing_source === "company" ? "Verified company" : "Marketplace seller")}</span></div>
           {typeof product.description === "string" && product.description.trim() && <p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600 sm:text-base">{product.description}</p>}
           <p className="mt-6 text-3xl font-black text-emerald-900">{product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price)) ? <>{product.id.startsWith("sample-") ? "নমুনা মূল্য " : ""}৳{Number(product.price).toLocaleString("bn-BD")}</> : "মূল্য উল্লেখ নেই"}</p>
           <p className="mt-2 text-sm text-slate-500">{product.id.startsWith("sample-") ? "ডেমো মজুত: বাস্তব স্টক নয়" : product.stock !== null && product.stock !== undefined ? `প্রাপ্য মজুত: ${Number(product.stock).toLocaleString("bn-BD")}` : "মজুতের তথ্য নেই"}</p>
           <div className="mt-6">{product.id.startsWith("sample-") ? <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p> : <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />}</div>
+          {company?.slug && <div className="mt-5 rounded-xl bg-emerald-50 p-4"><p className="text-sm font-extrabold">{company.company_name}</p><p className="mt-1 text-xs text-slate-600">{company.district || "বাংলাদেশ"}</p><Link href={`/companies/${company.slug}`} className="mt-2 inline-flex text-sm font-bold text-emerald-900 underline underline-offset-4">কোম্পানির প্রোফাইল দেখুন</Link></div>}
           <p className="mt-4 text-xs leading-5 text-slate-500">মূল্য ও মজুত পরিবর্তিত হতে পারে। অর্ডার নিশ্চিত করার আগে checkout-এ তথ্য যাচাই করুন।</p>
         </div>
       </div>
