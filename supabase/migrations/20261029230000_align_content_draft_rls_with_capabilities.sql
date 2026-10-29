@@ -11,10 +11,10 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.id = auth.uid()
-      AND p.role = ANY (ARRAY[
+      AND p.role::text = ANY (ARRAY[
         'admin', 'super_admin', 'content_seo_manager', 'marketing_manager',
         'educator', 'expert', 'agriculturist', 'agronomist'
-      ]::public.user_role[])
+      ]::text[])
   )
   OR EXISTS (
     SELECT 1 FROM public.user_role_memberships m
@@ -33,7 +33,7 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.id = auth.uid()
-      AND p.role = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager']::public.user_role[])
+      AND p.role::text = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager']::text[])
   )
   OR EXISTS (
     SELECT 1 FROM public.user_role_memberships m
@@ -45,7 +45,7 @@ WITH CHECK (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.id = auth.uid()
-      AND p.role = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager'])
+      AND p.role::text = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager']::text[])
   )
   OR EXISTS (
     SELECT 1 FROM public.user_role_memberships m
@@ -62,7 +62,7 @@ USING (
   EXISTS (
     SELECT 1 FROM public.profiles p
     WHERE p.id = auth.uid()
-      AND p.role = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager'])
+      AND p.role::text = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager']::text[])
   )
   OR EXISTS (
     SELECT 1 FROM public.user_role_memberships m
