@@ -4,7 +4,7 @@ import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const INITIAL_FORM = { name: "", price: "", stock: "", description: "", category_slug: "", subcategory_slug: "" };
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_PRODUCT_IMAGES = 4;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MIN_PLANT_DESCRIPTION_LENGTH = 80;
 
@@ -21,8 +21,8 @@ function truncate(value: string, max: number) {
 
 export default function ProductForm() {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((category) => category.slug === form.category_slug);
@@ -38,28 +38,36 @@ export default function ProductForm() {
   const set = (key: keyof typeof INITIAL_FORM, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
   useEffect(() => {
-    if (!preview) return;
-    return () => URL.revokeObjectURL(preview);
-  }, [preview]);
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
 
-  function chooseImage(file?: File) {
+  function chooseImages(fileList: FileList | null) {
     setMessage("");
-    if (!file) { setImage(null); setPreview(""); return; }
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setImage(null); setPreview(""); setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।"); return;
+    const selected = Array.from(fileList ?? []);
+    if (selected.length > MAX_PRODUCT_IMAGES) {
+      setImages([]); setPreviews([]); setMessage("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।"); return;
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-      setImage(null); setPreview(""); setMessage("ছবির সাইজ সর্বোচ্চ ৫ MB হতে পারবে।"); return;
+    if (selected.some((file) => !ALLOWED_IMAGE_TYPES.includes(file.type))) {
+      setImages([]); setPreviews([]); setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।"); return;
     }
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
+    setImages(selected);
+    setPreviews(selected.map((file) => URL.createObjectURL(file)));
+  }
+
+  function removeImage(index: number) {
+    setImages((current) => current.filter((_, i) => i !== index));
+    setPreviews((current) => {
+      const removed = current[index];
+      if (removed) URL.revokeObjectURL(removed);
+      return current.filter((_, i) => i !== index);
+    });
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    if (isPlantListing && !image) {
+    if (isPlantListing && images.length === 0) {
       setMessage("Plant Market-এর পণ্যের জন্য নিজের তোলা বা ব্যবহারের অধিকার থাকা পরিষ্কার ছবি আপলোড করুন।");
       setLoading(false);
       return;
@@ -70,45 +78,48 @@ export default function ProductForm() {
       return;
     }
     const supabase = createSupabaseBrowserClient();
-    let uploadedPath: string | null = null;
+    const uploadedPaths: string[] = [];
     try {
-      let imageUrl: string | null = null;
-      if (image) {
+      const imageUrls: string[] = [];
+      if (images.length) {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) throw new Error("ছবি আপলোড করতে আবার লগইন করুন।");
-        const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
-        uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("product-images").upload(uploadedPath, image, {
-          contentType: image.type,
-          cacheControl: "3600",
-          upsert: false,
-        });
-        if (uploadError) {
-          uploadedPath = null;
-          console.error("Product image upload failed", uploadError.message);
-          throw new Error("ছবি আপলোড করা যায়নি। আপনার seller account ও Storage policy যাচাই করুন।");
+        for (const image of images) {
+          const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
+          const uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
+          const { error: uploadError } = await supabase.storage.from("product-images").upload(uploadedPath, image, {
+            contentType: image.type,
+            cacheControl: "3600",
+            upsert: false,
+          });
+          if (uploadError) {
+            console.error("Product image upload failed", { message: uploadError.message, size: image.size, type: image.type });
+            throw new Error("ছবি আপলোড করা যায়নি। Storage bucket, account permission ও প্রকল্পের upload limit যাচাই করুন।");
+          }
+          uploadedPaths.push(uploadedPath);
+          imageUrls.push(supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl);
         }
-        imageUrl = supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl;
       }
+      const imageUrl = imageUrls[0] ?? null;
       const res = await fetch("/api/seller/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, description: descriptionText, image_url: imageUrl }),
+        body: JSON.stringify({ ...form, description: descriptionText, image_url: imageUrl, image_urls: imageUrls }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (uploadedPath) {
-          const { error: cleanupError } = await supabase.storage.from("product-images").remove([uploadedPath]);
-          if (cleanupError) console.warn("Could not clean up rejected product image", cleanupError.message);
-          else uploadedPath = null;
+        if (uploadedPaths.length) {
+          const { error: cleanupError } = await supabase.storage.from("product-images").remove(uploadedPaths);
+          if (cleanupError) console.warn("Could not clean up rejected product images", cleanupError.message);
+          else uploadedPaths.length = 0;
         }
         throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
       }
-      uploadedPath = null;
+      uploadedPaths.length = 0;
       setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
       setForm(INITIAL_FORM);
-      setImage(null);
-      setPreview("");
+      setImages([]);
+      setPreviews([]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -141,10 +152,10 @@ export default function ProductForm() {
       <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
     </div>
     <div className="space-y-2">
-      <label className="block text-sm font-bold" htmlFor="product-image">পণ্যের ছবি {isPlantListing ? <span className="font-normal text-red-700">(Plant Market-এর জন্য আবশ্যক)</span> : <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৫ MB)</span>}</label>
-      <input id="product-image" required={isPlantListing} type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>chooseImage(e.target.files?.[0])} className="block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>
-      {preview && <div className="flex items-center gap-4"><img src={preview} alt={`${form.name || "পণ্য"} — ছবি preview`} className="h-28 w-28 rounded-xl border object-cover"/><button type="button" onClick={()=>chooseImage()} className="text-sm font-bold text-red-700">ছবি সরান</button></div>}
-      <p className="text-xs leading-5 text-[#748074]">নিজের তোলা বা ব্যবহারের অধিকার থাকা পরিষ্কার ছবি দিন। ছবির নাম সার্চ র‍্যাঙ্কিংয়ের নিশ্চয়তা দেয় না; পণ্যের সঙ্গে মেলে এমন দৃশ্যমান ছবি ও পণ্যের নাম-ভিত্তিক alt text বেশি গুরুত্বপূর্ণ। JPG, PNG বা WebP; সর্বোচ্চ ৫ MB।</p>
+      <label className="block text-sm font-bold" htmlFor="product-images">পণ্যের ছবি {isPlantListing ? <span className="font-normal text-red-700">(Plant Market-এর জন্য আবশ্যক)</span> : <span className="font-normal text-[#748074]">(ঐচ্ছিক)</span>}</label>
+      <input id="product-images" required={isPlantListing} multiple type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>chooseImages(e.target.files)} className="block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>
+      <p className="text-xs leading-5 text-[#748074]">একসঙ্গে সর্বোচ্চ ৪টি JPG, PNG বা WebP ছবি দিন। অ্যাপে নির্দিষ্ট MB সীমা নেই; Storage প্রকল্পের নিজস্ব সীমা প্রযোজ্য হতে পারে। নিজের তোলা বা ব্যবহারের অধিকার থাকা পরিষ্কার ছবি দিন।</p>
+      {previews.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map((url, index) => <div key={url} className="space-y-1"><img src={url} alt={`${form.name || "পণ্য"} — ছবি ${index + 1}`} className="h-28 w-full rounded-xl border object-cover"/><button type="button" onClick={()=>removeImage(index)} className="text-xs font-bold text-red-700">ছবি {index + 1} সরান</button></div>)}</div>}
     </div>
     <div>
       <label className="block text-sm font-bold">পণ্যের বিবরণ
@@ -165,7 +176,7 @@ export default function ProductForm() {
       <ul className="mt-4 grid gap-2 text-xs leading-5 text-[#536456] sm:grid-cols-2">
         <li>{form.name.trim().length >= 3 ? "✓" : "○"} নির্দিষ্ট পণ্যের নাম</li>
         <li>{selectedCategory ? "✓" : "○"} সঠিক ক্যাটাগরি</li>
-        <li>{image || !isPlantListing ? "✓" : "○"} {isPlantListing ? "নিজস্ব পণ্যের ছবি" : "পণ্যের ছবি (ঐচ্ছিক)"}</li>
+        <li>{images.length > 0 || !isPlantListing ? "✓" : "○"} {isPlantListing ? "নিজস্ব পণ্যের ছবি" : "পণ্যের ছবি (ঐচ্ছিক)"}</li>
         <li>{descriptionText.length >= MIN_PLANT_DESCRIPTION_LENGTH || (!isPlantListing && descriptionText.length > 0) ? "✓" : "○"} উপকারী, অনন্য বিবরণ</li>
       </ul>
     </section>
