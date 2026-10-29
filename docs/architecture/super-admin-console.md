@@ -24,6 +24,22 @@ AGRIVA already has a substantial admin surface under `app/admin` (dashboard, pro
 
 4. The latest listed production deployment is the Bengali SEO landing-page commit. A docs-only architecture PR should not require or trigger a database migration. Recheck the active deployment and runtime logs after fixes.
 
+## Production reconciliation update — 2026-10-29
+
+The production target has now been identified: the Vercel integration metadata and historical runtime logs point to Supabase project `dhqaepsbuwhbynagfxpf` (`supabase-coral-clock`). The separate project `utytcoxpjnoanqffkqft` is not the target for production repairs.
+
+Read-only schema checks and forward-only repairs were performed against the confirmed production project:
+
+- Seeded/verified the `premium-food-grains` category and its four active subcategories.
+- Added `admin_create_marketplace_product(text,text,numeric,numeric,numeric,text,text)`; verified authenticated execution is granted and anonymous execution is denied. The RPC checks admin authorization, writes new products as drafts, and records an audit event.
+- Reconciled harvest-listing policies and refreshed the PostgREST schema cache. `job_posts`, `crop_disease_detections`, and `harvest_listings` are present in the database.
+- Applied farmer image-upload and seller Marketplace policies, then replaced the seller trigger with a main-branch-compatible guard. Seller submissions remain drafts, sellers cannot set commission or change publication status, and ownership cannot be transferred.
+- The selected Vercel runtime window of the last 30 minutes showed no runtime errors after these changes. The 24-hour view still contains historical errors from earlier deployments, including the former admin RPC failure and Smart Search missing-column report; counts are not evidence of a currently recurring error.
+
+Important release boundary: `products.moderation_status`, `moderation_reason`, `moderated_by`, and `moderated_at` remain absent in production. The richer moderation implementation is in an unmerged PR and must not be enabled by applying its migrations piecemeal. The compatibility trigger deliberately does not depend on those columns.
+
+**Migration history caveat:** Supabase MCP applied the forward-only changes with server-generated migration versions, which do not exactly match the local migration filename prefixes. The live schema and the application contract have been repaired, but the migration ledger is not yet fully reconciled. Do not run `supabase db push` against production until migration history is reconciled using the supported Supabase CLI migration-repair workflow. The ledger was not edited directly. End-to-end admin product creation with a legitimate test admin account also remains unverified.
+
 ## Product goals
 
 - One operational home for marketplace, harvest, buyers/demands, orders, payouts/commissions, users/roles, jobs, transport, crop support, content/SEO, and platform health.
