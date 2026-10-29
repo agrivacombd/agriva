@@ -7,7 +7,7 @@ const ATTRIBUTE_KEYS = new Set([
   "brand", "crop_name", "variety", "pack_size", "germination_rate", "batch_number", "expiry_date",
   "fertilizer_type", "composition", "usage_instructions", "active_ingredient", "registration_number",
   "plant_size", "suitable_season", "care_instructions", "model", "material", "dimensions", "warranty",
-  "food_type", "ingredients", "origin",
+  "food_type", "ingredients", "origin", "condition", "sku",
 ]);
 const PROFILE_LIMITS: Record<string, number> = {
   business_name: 160,
@@ -134,12 +134,16 @@ export async function POST(request: NextRequest) {
   const productAttributes: Record<string, string> = {};
   for (const [key, rawValue] of Object.entries(rawAttributes)) {
     if (!ATTRIBUTE_KEYS.has(key) || typeof rawValue !== "string") continue;
-    const value = cleanString(rawValue, key === "usage_instructions" || key === "care_instructions" ? 1000 : 160);
+    const value = cleanString(rawValue, key === "usage_instructions" || key === "care_instructions" ? 1000 : key === "sku" ? 100 : 160);
     if (value) productAttributes[key] = value;
   }
   if (["seeds", "fertilizer", "crop-protection", "premium-food-grains"].includes(categorySlug) && !productAttributes.pack_size) {
     return NextResponse.json({ error: "এই ক্যাটাগরির পণ্যের pack size / পরিমাণ আবশ্যক।" }, { status: 400 });
   }
+  if (productAttributes.condition && !["new", "used", "refurbished"].includes(productAttributes.condition.toLowerCase())) {
+    return NextResponse.json({ error: "পণ্যের condition সঠিকভাবে নির্বাচন করুন।" }, { status: 400 });
+  }
+  if (!productAttributes.condition) return NextResponse.json({ error: "পণ্যের condition নির্বাচন করা আবশ্যক।" }, { status: 400 });
   if (productAttributes.germination_rate && (!Number.isFinite(Number(productAttributes.germination_rate)) || Number(productAttributes.germination_rate) < 0 || Number(productAttributes.germination_rate) > 100)) {
     return NextResponse.json({ error: "Germination rate ০ থেকে ১০০-এর মধ্যে দিন।" }, { status: 400 });
   }
