@@ -19,7 +19,11 @@ BEGIN
     v_definition := pg_get_functiondef(v_oid);
     v_updated := replace(v_definition, 'public.is_admin()', 'public.has_platform_admin_access()');
     IF v_updated = v_definition THEN
-      RAISE EXCEPTION 'Could not align platform-admin check in %', v_signature;
+      IF v_signature = 'public.enforce_seller_product_moderation()' THEN
+        RAISE EXCEPTION 'Could not align platform-admin check in enforce_seller_product_moderation';
+      ELSE
+        RAISE EXCEPTION 'Could not align platform-admin check in admin_moderate_marketplace_product';
+      END IF;
     END IF;
     EXECUTE v_updated;
   END LOOP;
