@@ -14,9 +14,6 @@ on:
       - "scripts/test-company-catalogue-migration.sql"
       - "supabase/migrations/20261029370000_seed_company_onboarding.sql"
       - "supabase/migrations/20261029380000_company_product_catalogue_and_public_profiles.sql"
-      - "scripts/test-company-catalogue-migration.sql"
-      - "supabase/migrations/20261029370000_seed_company_onboarding.sql"
-      - "supabase/migrations/20261029380000_company_product_catalogue_and_public_profiles.sql"
       - ".github/workflows/product-moderation-postgres.yml"
   push:
     branches: [main]
