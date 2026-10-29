@@ -116,10 +116,10 @@ export async function POST(request: NextRequest) {
           const alt = cleanString(item.alt, 250);
           const expectedCard = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-card.webp" : "";
           const expectedThumb = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-thumb.webp" : "";
-          const expectedOriginalPrefix = `${user.id}/${filename.replace(/-main\\.webp$/u, "-original.")}`;
+          const expectedOriginalPrefix = `${user.id}/${filename.replace(/-main\.webp$/u, "-original.")}`;
           if (imageUrlValue !== allImageUrls[index] || !isOwnedImageUrl(imageUrlValue) || cardUrl !== expectedCard || thumbnailUrl !== expectedThumb ||
               !isOwnedImageUrl(cardUrl) || !isOwnedImageUrl(thumbnailUrl) || filename !== imageUrlValue.split("/").pop() ||
-              !originalPath.startsWith(expectedOriginalPrefix) || !/\\.(?:jpg|png|webp)$/i.test(originalPath) || originalPath.includes("..") ||
+              !originalPath.startsWith(expectedOriginalPrefix) || !/\.(?:jpg|png|webp)$/i.test(originalPath) || originalPath.includes("..") ||
               !Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 1200 || height > 1200 || !alt) {
             return NextResponse.json({ error: "Responsive image URL বা metadata validation ব্যর্থ হয়েছে।" }, { status: 400 });
           }
