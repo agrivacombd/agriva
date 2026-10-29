@@ -33,9 +33,9 @@ export async function POST(request: NextRequest) {
     !Number.isFinite(price) || price <= 0 ||
     !Number.isInteger(stock) || stock < 0 ||
     !Number.isFinite(commission) || commission < 0 || commission > 100 ||
-    description.length > 5000 || !category || !subcategory
+    description.length > 5000 || !category || !subcategory || !imageUrl
   ) {
-    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
+    return NextResponse.json({ error: "পণ্যের ছবি, নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
