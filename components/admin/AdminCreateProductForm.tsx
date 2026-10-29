@@ -44,6 +44,10 @@ export default function AdminCreateProductForm() {
 
     try {
       let imageUrl: string | null = null;
+      if (!imageFile) {
+        setMessage("Draft তৈরি করার আগে পণ্যের ছবি নির্বাচন করুন।");
+        return;
+      }
       if (imageFile) {
         supabase = createSupabaseBrowserClient();
         const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -86,8 +90,10 @@ export default function AdminCreateProductForm() {
       if (imageInputRef.current) imageInputRef.current.value = "";
       setPreviewUrl("");
     } catch {
-      if (uploadedPath && supabase) await supabase.storage.from("product-images").remove([uploadedPath]).catch(() => undefined);
-      setMessage("নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+      // Keep the uploaded object after an ambiguous network failure: the database
+      // request may have succeeded even if the response never reached this browser.
+      // Removing it here could leave a successfully-created product with a broken image.
+      setMessage("নেটওয়ার্ক সমস্যা হয়েছে। আবার জমা দেওয়ার আগে Catalogue-এ পণ্যটি আছে কি না যাচাই করুন; ছবি সংরক্ষিত রাখা হয়েছে।");
     } finally {
       setLoading(false);
     }
@@ -129,11 +135,12 @@ export default function AdminCreateProductForm() {
         </label>
       </div>
       <div className="space-y-2">
-        <label htmlFor="product-image" className="block text-sm font-bold">পণ্যের ছবি (ঐচ্ছিক)</label>
+        <label htmlFor="product-image" className="block text-sm font-bold">পণ্যের ছবি (বাধ্যতামূলক)</label>
         <input
           id="product-image"
           ref={imageInputRef}
           type="file"
+          required
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
             const selected = event.target.files?.[0] ?? null;
