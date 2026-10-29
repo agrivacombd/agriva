@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
-type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
+type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null; image_url?: string | null; image_urls?: string[] | null; image_variants?: Array<{ image_url?: string; card_url?: string; thumbnail_url?: string }> | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
 const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9\u0980-\u09ff]+(?:-[a-z0-9\u0980-\u09ff]+)*$/.test(slug);
@@ -20,7 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (url && key) {
     const supabase = createClient(url, key);
     const [productResult, jobsResult, exchangeResult] = await Promise.all([
-      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").not("slug", "is", null).limit(5000),
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug,image_url,image_urls,image_variants").eq("status", "active").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
       supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").limit(5000),
     ]);
@@ -92,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
       changeFrequency: "weekly" as const,
       priority: 0.7,
+      images: Array.from(new Set([...(Array.isArray(product.image_variants) ? product.image_variants.flatMap((variant) => [variant.image_url, variant.card_url, variant.thumbnail_url].filter((value): value is string => typeof value === "string")) : []), ...(product.image_urls ?? []), ...(product.image_url ? [product.image_url] : [])])).filter((image) => /^https:\/\//i.test(image)).slice(0, 12),
     })),
     ...exchangeListings.map((listing) => ({
       url: `${base}/green-exchange/${encodeURIComponent(listing.slug)}`,
