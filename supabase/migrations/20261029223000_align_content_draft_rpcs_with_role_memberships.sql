@@ -12,7 +12,7 @@ DECLARE
     NOT EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = auth.uid()
-        AND p.role = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager', 'marketing_manager', 'educator', 'expert', 'agriculturist', 'agronomist'])
+        AND p.role::text = ANY (ARRAY['admin', 'super_admin', 'content_seo_manager', 'marketing_manager', 'educator', 'expert', 'agriculturist', 'agronomist']::text[])
     )
     AND NOT EXISTS (
       SELECT 1 FROM public.user_role_memberships m
