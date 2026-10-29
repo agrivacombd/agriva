@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
+export const dynamic = "force-dynamic";
+
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null; image_url?: string | null; image_urls?: string[] | null; image_variants?: Array<{ image_url?: string; card_url?: string; thumbnail_url?: string }> | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
