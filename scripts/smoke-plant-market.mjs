@@ -19,7 +19,7 @@ assert.match(page, /plantSubcategories/, "Plant Market must render SEO-friendly 
 assert.match(page, /CollectionPage/, "Plant Market landing must describe its page type in JSON-LD");
 assert.match(page, /ItemList/, "Plant Market must expose its product list as structured data");
 assert.match(page, /BreadcrumbList/, "Plant Market must expose breadcrumb structured data");
-assert.match(page, /গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ/, "Plant Market must have a descriptive Bangla SEO title");
+assert.match(page, /title: \{ absolute: "গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ \| AGRIVA Plant Market" \}/, "Plant Market must set an absolute SEO title without duplicating the root title template");
 assert.match(page, /FAQ|সাধারণ প্রশ্ন/, "Plant Market must answer buyer questions on-page");
 assert.match(page, /canonical: "\/plant-market"/, "Plant Market must have canonical metadata");
 assert.match(page, /href="\/seller\/products\/new"/, "Plant Market must link sellers to product submission");
