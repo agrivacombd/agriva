@@ -233,11 +233,11 @@ export default function ProductForm() {
       }
       const processedImages = uploadResult.images as Array<{
         image_url: string; card_url: string; thumbnail_url: string; width: number; height: number;
-        alt: string; filename: string; storage_paths: Array<{ bucket: string; path: string }>; warnings?: string[];
+        alt: string; filename: string; original_path: string; storage_paths: Array<{ bucket: string; path: string }>; warnings?: string[];
       }>;
       processedImages.forEach((image) => uploadedPaths.push(...image.storage_paths));
       const imageUrls = processedImages.map((image) => image.image_url);
-      const imageVariants = processedImages.map(({ image_url, card_url, thumbnail_url, width, height, alt, filename }) => ({ image_url, card_url, thumbnail_url, width, height, alt, filename }));
+      const imageVariants = processedImages.map(({ image_url, card_url, thumbnail_url, width, height, alt, filename, original_path }) => ({ image_url, card_url, thumbnail_url, width, height, alt, filename, original_path }));
       const imageWarnings = Array.isArray(uploadResult.warnings) ? uploadResult.warnings.filter((value: unknown): value is string => typeof value === "string").slice(0, 8) : [];
 
       const cleanedAttributes = Object.fromEntries(Object.entries({ ...attributes, brand: form.brand }).map(([key, value]) => [key, value.trim()]).filter(([, value]) => Boolean(value)));
