@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 ||
       !Number.isInteger(stock) || stock < 0 || description.length > 5000 ||
       !category || !subcategory || !imagePrefix || imageUrl.length > 1000 ||
-      !imageUrl.startsWith(imagePrefix) || !/[A-Za-z0-9._-]+$/.test(imageUrl.slice(imagePrefix.length))) {
+      !imageUrl.startsWith(imagePrefix) || !/^[A-Za-z0-9._-]{1,255}$/.test(imageUrl.slice(imagePrefix.length))) {
     return NextResponse.json({ error: "ছবি, পণ্যের নাম, ক্যাটাগরি, মূল্য ও স্টকের তথ্য সঠিকভাবে দিন।" }, { status: 400 });
   }
 
