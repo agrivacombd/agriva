@@ -101,7 +101,7 @@ export default function ProductForm() {
       <p className="text-xs text-[#748074]">JPG, PNG বা WebP। আপনার নিজের ছবি ব্যবহার করুন।</p>
     </div>
     <div><label className="text-sm font-bold">পণ্যের বিবরণ<textarea maxLength={5000} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-2 min-h-32 w-full rounded-xl border px-4 py-3" placeholder="ওজন, উৎপত্তিস্থল, প্যাকেজিং, উপাদান ও মেয়াদোত্তীর্ণের তথ্য দিন..."/></label></div>
-    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
+    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
     <button disabled={loading} className="w-full rounded-2xl bg-[#17351f] px-5 py-4 font-black text-white disabled:opacity-50">{loading ? "জমা হচ্ছে..." : "পর্যালোচনার জন্য জমা দিন"}</button>
     {message&&<p role="status" className="text-sm font-semibold text-[#1f7a45]">{message}</p>}
   </form>;
