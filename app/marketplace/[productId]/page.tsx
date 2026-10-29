@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title,
     description,
-    alternates: { canonical: "/marketplace/" + product.slug },
+    alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
       title,
@@ -86,7 +86,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const { productId } = await params;
   const product = await getPublicProduct(productId);
   if (!product) notFound();
-  if (normalizeSlug(productId) !== product.slug) redirect("/marketplace/" + product.slug);
+  if (normalizeSlug(productId) !== product.slug) redirect(`/marketplace/${product.slug}`);
 
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
