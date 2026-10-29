@@ -31,6 +31,7 @@ const toolLinks = [
   { icon: Leaf, label: "ফসলের রোগ সহায়তা", href: "/crop-disease" },
   { icon: CloudSun, label: "আবহাওয়া", href: "/weather" },
   { icon: ShoppingBasket, label: "কৃষি মার্কেটপ্লেস", href: "/marketplace" },
+  { icon: TrendingUp, label: "কৃষি বাজার গাইড", href: "/krishi-bazar" },
   { icon: Briefcase, label: "কৃষি চাকরি", href: "/jobs" },
   { icon: FileText, label: "CV তৈরি করুন", href: "/jobs/cv-builder" },
   { icon: Tractor, label: "আমার খামার", href: "/farms" },
