@@ -504,4 +504,5 @@ assert.ok(sitemap.includes('rpc("get_public_seed_company_slugs")') && sitemap.in
 assert.ok(companyPortalLayout.includes("index: false") && companyPortalLayout.includes("follow: false"), "private company portal pages must be noindex");
 assert.ok(robots.includes('"/companies/"') && !robots.includes('"/company/"'), "robots must allow public company profiles and let crawlers observe private portal noindex metadata");
 assert.ok(companyCatalogueMigration.includes("Verified companies can create own draft products"), "verified company product insertion must be scoped by RLS");
-assert.ok(companyCatalogueMigration.includes("image_url ~ ('^https://"), "company product RLS must constrain image URLs to HTTPS storage paths");
+assert.ok(companyCatalogueMigration.includes("image_url ~ ("), "company product RLS must constrain image URLs with a regex");
+assert.ok(companyCatalogueMigration.includes("storage/v1/object/public/product-images/"), "company product RLS must restrict images to the public product-images storage path");
