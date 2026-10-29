@@ -64,7 +64,7 @@ async function saveProduct(formData: FormData) {
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
+    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
@@ -94,6 +94,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           category={p.category}
           price={p.price}
           stock={p.stock}
+          productAttributes={p.product_attributes && typeof p.product_attributes === "object" ? p.product_attributes : {}}
           seoTitle={p.seo_title}
           seoDescription={p.seo_description}
           seoKeywords={Array.isArray(p.seo_keywords) ? p.seo_keywords : []}
