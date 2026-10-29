@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
-export const revalidate = 900;
+export const dynamic = "force-dynamic";
 
 type FeedProduct = {
   id: string;
@@ -28,7 +28,11 @@ function plainText(value: unknown, max = 5000) {
 
 function publicHttpsUrl(value: unknown) {
   if (typeof value !== "string") return false;
-  try { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; } catch { return false; }
+  try {
+    const url = new URL(value);
+    const storageOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin : "";
+    return url.protocol === "https:" && url.origin === storageOrigin && url.pathname.startsWith("/storage/v1/object/public/product-images/") && !url.username && !url.password && !url.search && !url.hash;
+  } catch { return false; }
 }
 
 export async function GET() {
@@ -74,7 +78,7 @@ export async function GET() {
       return [];
     }
 
-    const link = base + "/marketplace/" + encodeURIComponent(product.slug);
+    const link = base + "/marketplace/" + product.slug;
     const availability = stock > 0 ? "in_stock" : "out_of_stock";
     const brand = plainText(attributes.brand, 160);
     const additionalImages = images.slice(1).map((image) => `<g:additional_image_link>${xml(image)}</g:additional_image_link>`).join("");
