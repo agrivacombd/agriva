@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const isPlantProduct = taxonomy?.category.slug === "plants-gardening";
   const titleSuffix = isPlantProduct ? "AGRIVA Plant Market" : "AGRIVA Marketplace";
-  const title = truncate(`${product.name} | ${titleSuffix}`, 65);
+  const title = `${truncate(product.name, isPlantProduct ? 40 : 43)} | ${titleSuffix}`;
   const rawDescription = cleanText(product.description);
   const fallbackDescription = `AGRIVA-তে ${product.name}${product.price !== null && Number.isFinite(Number(product.price)) ? ` — মূল্য ৳${Number(product.price).toLocaleString("en-BD")}` : ""}। পণ্যের ছবি, বিবরণ ও মজুতের তথ্য দেখুন।`;
   const description = truncate(rawDescription.length >= 60 ? rawDescription : fallbackDescription, 155);
@@ -89,7 +89,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         { "@type": "ListItem", position: 2, name: isPlantProduct ? "Plant Market" : "Marketplace", item: `${base}${isPlantProduct ? "/plant-market" : "/marketplace"}` },
         ...(category ? [{ "@type": "ListItem", position: 3, name: category.name, item: `${base}/marketplace/category/${category.slug}` }] : []),
         ...(subcategory ? [{ "@type": "ListItem", position: category ? 4 : 3, name: subcategory.name, item: `${base}/marketplace/category/${category?.slug}/${subcategory.slug}` }] : []),
-        { "@type": "ListItem", position: (category ? 3 : 2) + (subcategory ? 1 : 0), name: product.name, item: `${base}${canonicalPath}` },
+        { "@type": "ListItem", position: 3 + (category ? 1 : 0) + (subcategory ? 1 : 0), name: product.name, item: `${base}${canonicalPath}` },
       ],
     },
     ...(hasProductRichResultData ? [{
