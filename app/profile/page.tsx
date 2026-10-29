@@ -10,7 +10,7 @@ import MobileDashboardNav from "@/components/MobileDashboardNav";
 const roles = [
   { id: "farmer", bn: "কৃষক", en: "Farmer", description: "খামার ও ফসল পরিচালনা" },
   { id: "buyer", bn: "ক্রেতা", en: "Buyer", description: "কৃষিপণ্য খুঁজুন" },
-  { id: "seller", bn: "বিক্রেতা / ডিলার", en: "Seller / Dealer", description: "পণ্য ও কৃষি উপকরণ বিক্রি" },
+  { id: "seller", bn: "ব্যবসায়ী / কোম্পানি / ডিলার", en: "Business / Company / Dealer", description: "Marketplace-এ কৃষি পণ্য ও উপকরণ বিক্রি" },
   { id: "transport", bn: "পরিবহন সেবাদাতা", en: "Transport provider", description: "কৃষিপণ্য পরিবহন" },
   { id: "job_seeker", bn: "চাকরিপ্রার্থী", en: "Job seeker", description: "চাকরির সুযোগ খুঁজুন" },
   { id: "employer", bn: "নিয়োগদাতা", en: "Employer", description: "চাকরি প্রকাশ করুন" },

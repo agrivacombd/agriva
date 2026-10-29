@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const INITIAL_FORM = { name: "", price: "", stock: "", commission: "10", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
+const INITIAL_FORM = { name: "", price: "", stock: "", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -53,11 +53,11 @@ export default function ProductForm() {
         if (uploadError) {
           uploadedPath = null;
           console.error("Product image upload failed", uploadError.message);
-          throw new Error("ছবি আপলোড করা যায়নি। আপনার farmer account ও Storage policy যাচাই করুন।");
+          throw new Error("ছবি আপলোড করা যায়নি। আপনার seller account ও Storage policy যাচাই করুন।");
         }
         imageUrl = supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl;
       }
-      const res = await fetch("/api/farmer/products", {
+      const res = await fetch("/api/seller/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, image_url: imageUrl }),
@@ -93,7 +93,6 @@ export default function ProductForm() {
     <div className="grid gap-5 md:grid-cols-3">
       <label className="text-sm font-bold">মূল্য (৳)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={e=>set("price",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
       <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
-      <label className="text-sm font-bold">রিসেলার কমিশন (%)<input required type="number" min="0" max="100" step="0.01" value={form.commission} onChange={e=>set("commission",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
     </div>
     <div className="space-y-2">
       <label className="block text-sm font-bold" htmlFor="product-image">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৫ MB)</span></label>
@@ -102,7 +101,7 @@ export default function ProductForm() {
       <p className="text-xs text-[#748074]">JPG, PNG বা WebP। আপনার নিজের ছবি ব্যবহার করুন।</p>
     </div>
     <div><label className="text-sm font-bold">পণ্যের বিবরণ<textarea maxLength={5000} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-2 min-h-32 w-full rounded-xl border px-4 py-3" placeholder="ওজন, উৎপত্তিস্থল, প্যাকেজিং, উপাদান ও মেয়াদোত্তীর্ণের তথ্য দিন..."/></label></div>
-    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। অনুমোদনের আগে পণ্য প্রকাশ হবে না।</p>
+    <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
     <button disabled={loading} className="w-full rounded-2xl bg-[#17351f] px-5 py-4 font-black text-white disabled:opacity-50">{loading ? "জমা হচ্ছে..." : "পর্যালোচনার জন্য জমা দিন"}</button>
     {message&&<p role="status" className="text-sm font-semibold text-[#1f7a45]">{message}</p>}
   </form>;
