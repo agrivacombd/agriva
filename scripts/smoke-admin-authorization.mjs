@@ -467,3 +467,5 @@ assert.ok(seedCompanyDashboard.includes('.eq("owner_user_id", user.id)'), "compa
 assert.ok(seedCompanyAdminPage.includes('authorizePermission("users.manage")'), "company review page must require admin capability");
 assert.ok(seedCompanyAdminPage.includes("admin_review_seed_company_application"), "company review must use the guarded database RPC");
 assert.ok(adminHome.includes('href="/admin/companies"'), "admin dashboard must link to company review queue");
+assert.ok(seedCompanyMigration.includes("registration_number text NOT NULL"), "company applications must retain a registration or licence number");
+assert.ok(seedCompanyApplyPage.includes('name="registration_number" required minLength={2} maxLength={100}'), "company onboarding must require a registration or seed licence number");
