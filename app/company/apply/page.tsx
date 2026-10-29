@@ -89,8 +89,8 @@ export default function SeedCompanyApplyPage() {
             <label className="text-sm font-bold">আইনগত প্রতিষ্ঠানের নাম
               <input name="legal_name" maxLength={220} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="নিবন্ধিত নাম (যদি থাকে)" />
             </label>
-            <label className="text-sm font-bold">নিবন্ধন / লাইসেন্স নম্বর
-              <input name="registration_number" maxLength={100} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="প্রযোজ্য হলে" />
+            <label className="text-sm font-bold">নিবন্ধন / বীজ লাইসেন্স নম্বর *
+              <input name="registration_number" required minLength={2} maxLength={100} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="কোম্পানি নিবন্ধন বা বীজ লাইসেন্স নম্বর" />
             </label>
             <label className="text-sm font-bold">যোগাযোগের ফোন *
               <input name="contact_phone" type="tel" required minLength={6} maxLength={40} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="+880..." />
