@@ -12,7 +12,8 @@ export default async function NewSellerProductPage() {
     .from("user_role_memberships")
     .select("role")
     .eq("user_id", user.id)
-    .eq("role", "seller")
+    .in("role", ["seller", "organization"])
+    .limit(1)
     .maybeSingle();
 
   if (error || !membership) redirect("/dashboard");
