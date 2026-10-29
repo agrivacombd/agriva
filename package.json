@@ -31,7 +31,8 @@
     "test:role-based-auth": "node scripts/smoke-role-based-auth.mjs",
     "test:seller-marketplace-submission": "node scripts/smoke-seller-marketplace-submission.mjs",
     "test:seller-schema-compat": "node scripts/smoke-seller-schema-compat.mjs",
-    "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs"
+    "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs",
+    "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
