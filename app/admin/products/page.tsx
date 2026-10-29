@@ -99,7 +99,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           category={p.category}
           price={p.price}
           stock={p.stock}
-          productAttributes={p.product_attributes && typeof p.product_attributes === "object" ? p.product_attributes : {}}
+          productAttributes={p.product_attributes && typeof p.product_attributes === "object" && !Array.isArray(p.product_attributes) ? p.product_attributes as Record<string, string> : {}}
           seoTitle={p.seo_title}
           seoDescription={p.seo_description}
           seoKeywords={Array.isArray(p.seo_keywords) ? p.seo_keywords : []}
