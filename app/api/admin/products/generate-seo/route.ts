@@ -68,9 +68,10 @@ export async function POST(request: NextRequest) {
   }
   if (!savedProduct) return NextResponse.json({ error: "পণ্য পাওয়া যায়নি।" }, { status: 404 });
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "AI SEO generation চালু করতে server-এ OPENAI_API_KEY সেট করতে হবে। আপাতত manual SEO fields ব্যবহার করুন।" }, { status: 503 });
+  const openAiApiKey = process.env.OPENAI_API_KEY;
+  const geminiApiKey = process.env.GEMINI_API_KEY;
+  if (!openAiApiKey && !geminiApiKey) {
+    return NextResponse.json({ error: "AI SEO generation চালু করতে server-এ OPENAI_API_KEY অথবা GEMINI_API_KEY সেট করতে হবে। আপাতত manual SEO fields ব্যবহার করুন।" }, { status: 503 });
   }
 
   const existing = body.existing && typeof body.existing === "object" ? body.existing : {};
@@ -103,33 +104,49 @@ export async function POST(request: NextRequest) {
   ].filter(Boolean).join("\n");
 
   let upstream: Response;
+  const provider = openAiApiKey ? "openai" : "gemini";
   try {
-    upstream = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: process.env.OPENAI_SEO_MODEL || "gpt-4o-mini",
-        temperature: 0.3,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: "Generate careful, factual ecommerce SEO drafts. Output JSON only." },
-          { role: "user", content: prompt },
-        ],
-      }),
-      signal: AbortSignal.timeout(25000),
-    });
+    if (openAiApiKey) {
+      upstream = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${openAiApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.OPENAI_SEO_MODEL || "gpt-4o-mini",
+          temperature: 0.3,
+          response_format: { type: "json_object" },
+          messages: [
+            { role: "system", content: "Generate careful, factual ecommerce SEO drafts. Output JSON only." },
+            { role: "user", content: prompt },
+          ],
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+    } else {
+      const model = (process.env.GEMINI_MODEL || "gemini-2.5-flash").replace(/[^a-zA-Z0-9._-]/g, "");
+      upstream = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey as string },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.3, responseMimeType: "application/json" },
+        }),
+        signal: AbortSignal.timeout(25000),
+      });
+    }
   } catch {
     return NextResponse.json({ error: "AI service-এ সংযোগ করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।" }, { status: 502 });
   }
 
   if (!upstream.ok) {
-    console.error("Admin SEO AI request failed", { status: upstream.status });
+    console.error("Admin SEO AI request failed", { provider, status: upstream.status });
     return NextResponse.json({ error: upstream.status === 429 ? "AI service-এর request limit পূর্ণ হয়েছে। পরে আবার চেষ্টা করুন।" : "AI content তৈরি করা যায়নি। server configuration যাচাই করুন।" }, { status: upstream.status === 429 ? 429 : 502 });
   }
 
   const response = await upstream.json().catch(() => null);
-  const raw = response?.choices?.[0]?.message?.content;
-  if (typeof raw !== "string") return NextResponse.json({ error: "AI থেকে content পাওয়া যায়নি।" }, { status: 502 });
+  const raw = provider === "openai"
+    ? response?.choices?.[0]?.message?.content
+    : response?.candidates?.[0]?.content?.parts?.map((part: { text?: unknown }) => typeof part.text === "string" ? part.text : "").join("");
+  if (typeof raw !== "string" || !raw.trim()) return NextResponse.json({ error: "AI থেকে content পাওয়া যায়নি।" }, { status: 502 });
 
   let parsed: Partial<SeoDraft>;
   try {
