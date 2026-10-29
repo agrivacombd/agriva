@@ -30,6 +30,8 @@ jobs:
         run: node scripts/smoke-taxonomy.mjs
       - name: Jobs application server-binding regression test
         run: npm run test:job-application-security
+      - name: Jobs database-unavailable state regression test
+        run: npm run test:jobs-data-unavailable
       - name: Payment-event RPC grant regression test
         run: npm run test:payment-event-grants
       - name: SSLCommerz payment route regression test
