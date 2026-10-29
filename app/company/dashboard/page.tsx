@@ -52,7 +52,7 @@ export default async function CompanyDashboardPage() {
           <div><dt className="text-sm text-slate-500">যোগাযোগ</dt><dd className="mt-1 font-bold">{verifiedCompany.contact_phone} · {verifiedCompany.business_email}</dd></div>
           <div><dt className="text-sm text-slate-500">জেলা</dt><dd className="mt-1 font-bold">{verifiedCompany.district}</dd></div>
         </dl>
-        {verifiedCompany.verification_status === "verified" ? <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="font-extrabold text-blue-950">কোম্পানির public profile</p><p className="mt-2 text-sm leading-6 text-blue-900">অনুমোদিত কোম্পানির public landing page-এ শুধু অনুমোদিত public তথ্য দেখানো হয়; নিবন্ধন নম্বর ও ব্যক্তিগত যোগাযোগের তথ্য গোপন থাকে।</p><Link href={`/companies/${verifiedCompany.slug}`} className="mt-3 inline-flex font-bold text-blue-900 underline">কোম্পানির SEO profile দেখুন</Link></div>
+        {verifiedCompany.verification_status === "verified" ? <><div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4"><p className="font-extrabold text-blue-950">কোম্পানির public profile</p><p className="mt-2 text-sm leading-6 text-blue-900">অনুমোদিত কোম্পানির public landing page-এ শুধু অনুমোদিত public তথ্য দেখানো হয়; নিবন্ধন নম্বর ও ব্যক্তিগত যোগাযোগের তথ্য গোপন থাকে।</p><Link href={`/companies/${verifiedCompany.slug}`} className="mt-3 inline-flex font-bold text-blue-900 underline">কোম্পানির SEO profile দেখুন</Link></div>
         <CompanyProductForm />
         {productsError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">পণ্যের তালিকা লোড হয়নি। Company catalogue migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
         <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5 sm:p-6">
@@ -65,7 +65,7 @@ export default async function CompanyDashboardPage() {
             </article>)}
             {!(companyProducts ?? []).length && !productsError && <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">এখনো কোনো পণ্য যোগ করা হয়নি। উপরের ফর্ম দিয়ে প্রথম পণ্য জমা দিন।</p>}
           </div>
-        </section> : <p className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">আপনার কোম্পানির অ্যাকাউন্ট সাময়িকভাবে স্থগিত। AGRIVA সহায়তা দলের সঙ্গে যোগাযোগ করুন।</p>}
+        </section></> : <p className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-900">আপনার কোম্পানির অ্যাকাউন্ট সাময়িকভাবে স্থগিত। AGRIVA সহায়তা দলের সঙ্গে যোগাযোগ করুন।</p>}
       </section> : currentApplication ? <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-6 shadow-sm sm:p-8">
         <p className="text-sm font-bold text-emerald-700">Company application</p><h2 className="mt-2 text-2xl font-black">{currentApplication.company_name}</h2>
         <div className={`mt-5 rounded-xl p-4 ${currentApplication.status === "pending" ? "bg-amber-50 text-amber-950" : "bg-rose-50 text-rose-950"}`}>
