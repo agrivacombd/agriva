@@ -367,7 +367,7 @@ export default function ProductForm() {
       <div>
         <label className="block text-sm font-bold" htmlFor="product-images">পণ্যের ছবি <span className="font-normal text-red-700">(কমপক্ষে ১টি আবশ্যক)</span></label>
         <input id="product-images" required={images.length === 0} multiple type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => chooseImages(e.target.files)} className="mt-2 block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold" />
-        <p className="mt-2 text-xs leading-5 text-[#748074]">সর্বোচ্চ ৪টি JPEG, PNG বা WebP ছবি; প্রতিটি মূল ফাইল সর্বোচ্চ ৫ MB। ১২০০×১২০০ px প্রস্তাবিত। Image processor আসল file type যাচাই করে WebP main/card/thumbnail বানাবে।</p>
+        <p className="mt-2 text-xs leading-5 text-[#748074]">সর্বোচ্চ ৪টি JPEG, PNG বা WebP ছবি; প্রতিটি মূল ফাইল সর্বোচ্চ ৫ MB। ১২০০×১২০০ px প্রস্তাবিত। Preview-তে পুরো ছবি দেখা যাবে; system বাধ্যতামূলক crop করে পণ্যের অংশ কাটবে না। Processor আসল file type যাচাই করে WebP main/card/thumbnail বানাবে।</p>
         {previews.length > 0 && <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map((url, index) => <div key={url} className="space-y-1"><img src={url} alt={`${form.name || "পণ্য"} — ছবি ${index + 1}`} className="h-28 w-full rounded-xl border bg-slate-50 object-contain" /><button type="button" onClick={() => removeImage(index)} className="text-xs font-bold text-red-700">ছবি {index + 1} সরান</button></div>)}</div>}
       </div>
       <div className="rounded-2xl border border-[#dfe8dc] p-4">
