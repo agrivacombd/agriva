@@ -422,3 +422,14 @@ assert.ok(adminRpcMigration.includes("Could not fully align admin guard for RPC"
 assert.ok(adminRpcMigration.includes("v_updated_definition ~*"), "RPC migration must detect unconverted legacy guards before applying changes");
 
 console.log("Admin authorization, content workflow, Content Studio disclosure, and moderation-RPC regression checks passed.");
+
+
+const productCreateForm = read("components/admin/AdminCreateProductForm.tsx");
+const productCreateRoute = read("app/api/admin/products/route.ts");
+const moderationPage = read("app/admin/moderation/page.tsx");
+assert.ok(productCreateForm.includes('required\n          accept="image/jpeg,image/png,image/webp"'), "platform product creation must require an image file");
+assert.ok(productCreateForm.includes("Keep the uploaded object after an ambiguous network failure"), "ambiguous create failures must not delete an image that a committed product may reference");
+assert.ok(productCreateRoute.includes("!subcategory || !imageUrl"), "product API must reject products without a saved image URL");
+assert.ok(moderationPage.includes('select("image_url")'), "approval must verify the saved image before publishing");
+assert.ok(moderationPage.includes('notice= image'), "moderation should route missing-image approvals to a notice");
+assert.ok(moderationPage.includes("product image preview"), "moderation queue must show the saved product image for review");
