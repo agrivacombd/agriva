@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি পণ্যের ছবি আপলোড করা যাবে।" }, { status: 400 });
   }
 
-  const imageVariants: Array<{ image_url: string; card_url: string; thumbnail_url: string; width: number; height: number; alt: string; filename: string }> = [];
+  const imageVariants: Array<{ image_url: string; card_url: string; thumbnail_url: string; width: number; height: number; alt: string; filename: string; original_path?: string }> = [];
   if (allImageUrls.length) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!supabaseUrl) return NextResponse.json({ error: "ছবির storage configuration পাওয়া যায়নি।" }, { status: 500 });
@@ -110,17 +110,20 @@ export async function POST(request: NextRequest) {
           const cardUrl = typeof item.card_url === "string" ? item.card_url : "";
           const thumbnailUrl = typeof item.thumbnail_url === "string" ? item.thumbnail_url : "";
           const filename = typeof item.filename === "string" ? item.filename : "";
+          const originalPath = typeof item.original_path === "string" ? item.original_path : "";
           const width = Number(item.width);
           const height = Number(item.height);
           const alt = cleanString(item.alt, 250);
           const expectedCard = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-card.webp" : "";
           const expectedThumb = imageUrlValue.endsWith("-main.webp") ? imageUrlValue.slice(0, -"-main.webp".length) + "-thumb.webp" : "";
+          const expectedOriginalPrefix = `${user.id}/${filename.replace(/-main\\.webp$/u, "-original.")}`;
           if (imageUrlValue !== allImageUrls[index] || !isOwnedImageUrl(imageUrlValue) || cardUrl !== expectedCard || thumbnailUrl !== expectedThumb ||
               !isOwnedImageUrl(cardUrl) || !isOwnedImageUrl(thumbnailUrl) || filename !== imageUrlValue.split("/").pop() ||
+              !originalPath.startsWith(expectedOriginalPrefix) || !/\\.(?:jpg|png|webp)$/i.test(originalPath) || originalPath.includes("..") ||
               !Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || width > 1200 || height > 1200 || !alt) {
             return NextResponse.json({ error: "Responsive image URL বা metadata validation ব্যর্থ হয়েছে।" }, { status: 400 });
           }
-          imageVariants.push({ image_url: imageUrlValue, card_url: cardUrl, thumbnail_url: thumbnailUrl, width, height, alt, filename });
+          imageVariants.push({ image_url: imageUrlValue, card_url: cardUrl, thumbnail_url: thumbnailUrl, width, height, alt, filename, original_path: originalPath });
         }
       }
     } catch {
