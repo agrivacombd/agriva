@@ -15,7 +15,7 @@ WITH CHECK (
     SELECT 1
     FROM public.user_role_memberships membership
     WHERE membership.user_id = (SELECT auth.uid())
-      AND membership.role = 'seller'
+      AND membership.role IN ('seller', 'organization')
   )
 );
 
