@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Seller or approved organization access required. Farmers can list their crops on Sell Harvest." }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const parsedBody = await request.json().catch(() => null);
+  const body = parsedBody && typeof parsedBody === "object" && !Array.isArray(parsedBody) ? parsedBody as Record<string, unknown> : {};
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
