@@ -14,7 +14,7 @@ assert.match(page, /\.eq\("status", "active"\)/, "only active products should ap
 assert.match(page, /\.eq\("category_slug", PLANT_CATEGORY\)/, "Plant Market must query stable plant taxonomy directly");
 assert.match(page, /\.is\("category_slug", null\)/, "Plant Market must preserve a legacy-listing fallback");
 assert.match(page, /if \(product\.category_slug\) return product\.category_slug === PLANT_CATEGORY/, "stable taxonomy must prevent false-positive text matches");
-assert.match(page, /categorySlug:|plantSubcategories/, "Plant Market must render SEO-friendly subcategory links");
+assert.match(page, /plantSubcategories/, "Plant Market must render SEO-friendly subcategory links");
 assert.match(page, /CollectionPage/, "Plant Market landing must describe its page type in JSON-LD");
 assert.match(page, /ItemList/, "Plant Market must expose its product list as structured data");
 assert.match(page, /BreadcrumbList/, "Plant Market must expose breadcrumb structured data");
@@ -28,11 +28,13 @@ assert.match(productPage, /generateMetadata/, "product pages must generate per-p
 assert.match(productPage, /alternates: \{ canonical: canonicalPath \}/, "product pages must self-canonicalize");
 assert.match(productPage, /"@type": "Product"/, "product detail must include Product JSON-LD when rich-result essentials exist");
 assert.match(productPage, /"@type": "BreadcrumbList"/, "product detail must include breadcrumb JSON-LD");
-assert.match(productPage, /hasProductRichResultData/, "Product JSON-LD must be gated on real price and image");
+assert.match(productPage, /hasProductRichResultData = hasRealPrice && hasRealImage && product\.stock !== null/, "Product JSON-LD must be gated on real price, image and known availability");
 assert.match(productPage, /robots: \{ index: false, follow: false \}/, "sample product pages must not be indexed");
 
 assert.match(form, /Google search preview/, "seller form must show a live SEO preview");
 assert.match(form, /required=\{isPlantListing\}/, "plant listings must require a product image");
+assert.match(form, /descriptionText.length < MIN_PLANT_DESCRIPTION_LENGTH/, "client must explain when a plant description is too short");
+assert.match(coreUpdate ? newCore : "", /product\.image_url/, "marketplace product cards must use uploaded product images");
 assert.match(form, /MIN_PLANT_DESCRIPTION_LENGTH = 80/, "plant listings must have useful descriptions");
 assert.match(form, /স্বয়ংক্রিয় SEO/, "form must explain SEO metadata is generated automatically");
 assert.match(api, /isPlantListing && !imageUrl/, "API must enforce a plant image, not only the client");
