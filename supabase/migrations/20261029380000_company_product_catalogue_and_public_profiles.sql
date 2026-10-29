@@ -6,7 +6,7 @@ ALTER TABLE public.seed_companies
   ADD COLUMN IF NOT EXISTS public_profile_enabled boolean NOT NULL DEFAULT true;
 
 UPDATE public.seed_companies
-SET slug = trim(both '-' from regexp_replace(lower(company_name), '[^a-z0-9\u0980-\u09ff]+', '-', 'g')) || '-' || left(id::text, 8)
+SET slug = coalesce(nullif(trim(both '-' from regexp_replace(lower(company_name), '[^a-z0-9]+', '-', 'g')), ''), 'company') || '-' || left(id::text, 8)
 WHERE slug IS NULL OR trim(slug) = '';
 
 ALTER TABLE public.seed_companies ALTER COLUMN slug SET NOT NULL;
@@ -182,7 +182,7 @@ BEGIN
       v_application.legal_name, v_application.registration_number, v_application.contact_phone,
       v_application.business_email, v_application.district, v_application.website,
       v_application.product_categories,
-      trim(both '-' from regexp_replace(lower(v_application.company_name), '[^a-z0-9\u0980-\u09ff]+', '-', 'g')) || '-' || left(gen_random_uuid()::text, 8)
+      coalesce(nullif(trim(both '-' from regexp_replace(lower(v_application.company_name), '[^a-z0-9]+', '-', 'g')), ''), 'company') || '-' || left(gen_random_uuid()::text, 8)
     );
   END IF;
 
