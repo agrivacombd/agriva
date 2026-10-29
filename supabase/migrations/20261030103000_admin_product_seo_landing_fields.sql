@@ -60,8 +60,11 @@ BEGIN
     OR EXISTS (SELECT 1 FROM unnest(normalized_keywords) keyword WHERE char_length(keyword) > 60 OR nullif(trim(keyword), '') IS NULL) THEN
     RAISE EXCEPTION 'Provide at most 10 non-empty SEO keywords, each 60 characters or less';
   END IF;
-  IF jsonb_typeof(normalized_faqs) <> 'array' OR jsonb_array_length(normalized_faqs) > 8 THEN
-    RAISE EXCEPTION 'SEO FAQs must be an array with at most 8 items';
+  IF jsonb_typeof(normalized_faqs) IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'SEO FAQs must be a JSON array';
+  END IF;
+  IF jsonb_array_length(normalized_faqs) > 8 THEN
+    RAISE EXCEPTION 'SEO FAQs must contain at most 8 items';
   END IF;
   IF EXISTS (
     SELECT 1
