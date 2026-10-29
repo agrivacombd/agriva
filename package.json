@@ -28,7 +28,7 @@
     "test:plant-market": "node scripts/smoke-plant-market.mjs",
     "test:green-living-platform": "node scripts/smoke-green-living-platform.mjs",
     "test:role-based-auth": "node scripts/smoke-role-based-auth.mjs",
-    "test:farmer-product-image-upload": "node scripts/smoke-farmer-product-image-upload.mjs"
+    "test:seller-marketplace-submission": "node scripts/smoke-seller-marketplace-submission.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
