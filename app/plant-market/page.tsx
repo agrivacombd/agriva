@@ -93,6 +93,7 @@ export default async function PlantMarketPage() {
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#plant-catalogue" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
             <Link href="/green-exchange" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white hover:bg-white/20">গাছ বিনিময় করুন</Link>
+            <Link href="/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-bold text-white hover:bg-white/10">বিক্রেতা হিসেবে পণ্য জমা দিন</Link>
           </div>
           <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-emerald-50/80 sm:text-sm"><span>✓ বাস্তব পণ্য তালিকা</span><span>✓ অনুমোদিত পণ্য</span><span>✓ মোবাইল-ফ্রেন্ডলি</span></div>
         </div>
@@ -121,6 +122,35 @@ export default async function PlantMarketPage() {
             </div>
           </div>
         )}
+        <section aria-labelledby="plant-market-how-heading" className="mt-10 rounded-3xl border border-emerald-950/10 bg-white p-6 sm:p-8">
+          <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">How Plant Market works</p>
+          <h2 id="plant-market-how-heading" className="mt-2 text-2xl font-black">পণ্য থেকে কেনাকাটা—যেভাবে কাজ করে</h2>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <article className="rounded-2xl bg-[#f5f8f1] p-5">
+              <span aria-hidden="true" className="text-2xl">🪴</span>
+              <h3 className="mt-3 font-extrabold">১. পণ্য খুঁজুন</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">পণ্যের নাম দিয়ে খুঁজুন, মূল্য ও মজুত দেখুন, তারপর বিস্তারিত পেজ খুলুন।</p>
+            </article>
+            <article className="rounded-2xl bg-[#f5f8f1] p-5">
+              <span aria-hidden="true" className="text-2xl">🔎</span>
+              <h3 className="mt-3 font-extrabold">২. তথ্য যাচাই করুন</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">পণ্যের বিবরণ, প্রাপ্যতা ও checkout-এ দেখানো তথ্য মিলিয়ে নিন। শুধু সক্রিয় পণ্যই পাবলিক তালিকায় দেখানো হয়।</p>
+            </article>
+            <article className="rounded-2xl bg-[#f5f8f1] p-5">
+              <span aria-hidden="true" className="text-2xl">🛒</span>
+              <h3 className="mt-3 font-extrabold">৩. অর্ডার করুন</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">পণ্যের বিস্তারিত পেজ থেকে checkout-এ যান এবং অর্ডার নিশ্চিত করার আগে মূল্য ও মজুত আবার যাচাই করুন।</p>
+            </article>
+          </div>
+          <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-emerald-900/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-extrabold">আপনি কি বিক্রেতা?</h3>
+              <p className="mt-1 text-sm leading-6 text-slate-600">Seller Centre-এ পণ্যের নাম, ছবি, বিবরণ, মূল্য ও স্টক জমা দিন। অ্যাডমিন অনুমোদনের আগে পণ্য পাবলিক হবে না।</p>
+            </div>
+            <Link href="/seller/products/new" className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-emerald-900 px-5 py-3 text-sm font-extrabold text-white hover:bg-emerald-800">পণ্য জমা দিন</Link>
+          </div>
+          <p className="mt-4 text-xs leading-5 text-slate-500">SEO: প্রতিটি প্রকাশিত পণ্যের নিজস্ব বিস্তারিত URL থাকে। পণ্য পেজে যাওয়ার canonical URL হলো /marketplace/পণ্যের-slug; এতে একই পণ্যের duplicate SEO পেজ তৈরি হয় না।</p>
+        </section>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ঘর ও বারান্দার গাছ</h3><p className="mt-2 text-sm leading-6 text-slate-600">ইনডোর গাছ, ফুলের চারা এবং ছোট জায়গার বাগানের উপকরণ খুঁজুন।</p></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ছাদবাগান ও ফলের চারা</h3><p className="mt-2 text-sm leading-6 text-slate-600">আপনার জায়গা, আলো ও যত্নের সামর্থ্য অনুযায়ী পণ্য বেছে নিন।</p></article>
