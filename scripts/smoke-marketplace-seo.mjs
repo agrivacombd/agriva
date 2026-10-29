@@ -43,6 +43,9 @@ assert.match(product, /redirect\(`\/marketplace\/\$\{product\.slug\}`\)/, "Produ
 assert.match(product, /"@type": "Product"/, "Product detail needs Product structured data");
 assert.match(product, /priceCurrency: "BDT"/, "Offer schema must use BDT");
 assert.match(product, /product\.image_url/, "Product image should be exposed in the page and metadata");
+assert.match(product, /product_attributes/, "Public product landing page must render seller-provided structured facts");
+assert.match(sellerDetailsMigration, /ADD COLUMN IF NOT EXISTS product_attributes jsonb/, "Structured product facts need an additive migration");
+assert.match(sellerDetailsMigration, /ADD COLUMN IF NOT EXISTS trade_license_number/, "Optional private seller licence fields need a migration");
 assert.match(product, /\.eq\("status", "active"\)/, "Product detail must only return active products");
 assert.doesNotMatch(product, /moderation_status/, "Products use status='active' as the public publishing gate");
 
