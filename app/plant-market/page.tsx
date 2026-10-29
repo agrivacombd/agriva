@@ -72,7 +72,7 @@ export default async function PlantMarketPage() {
         .limit(500),
       // Keep older listings discoverable while sellers/admins gradually use stable taxonomy.
       supabase.from("products")
-        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
+        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at")
         .eq("status", "active")
         .is("category_slug", null)
         .order("created_at", { ascending: false })
@@ -150,7 +150,7 @@ export default async function PlantMarketPage() {
         <header className="mb-7">
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Plants & gardening supplies</p>
           <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">ক্যাটাগরি অনুযায়ী গাছ ও বাগানের পণ্য খুঁজুন</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">আপনার গাছের ধরন, জায়গা ও কাজ অনুযায়ী ক্যাটাগরি বেছে নিন। প্রতিটি ক্যাটাগরির পেজে সেই ধরনের পণ্যের বিস্তারিত তালিকা দেখুন।</p>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">আপনার গাছের ধরন, জায়গা ও কাজ অনুযায়ী ক্যাটাগরি বেছে নিন। প্রতিটি ক্যাটাগরির পেজে সেই ধরনের পণ্যের বিস্তারিত তালিকা দেখুন।</p><Link href="/marketplace/category/plants-gardening" className="mt-3 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">সব গাছ ও বাগান পণ্য দেখুন →</Link>
         </header>
         <div className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {plantSubcategories.map((subcategory) => (
