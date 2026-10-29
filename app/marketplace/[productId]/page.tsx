@@ -215,7 +215,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
             <h1 id="product-title" className="mt-5 break-words text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.7rem]">{product.name}</h1>
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
-              {description || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
+              {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
             </p>
 
             <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5">
@@ -252,7 +252,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">বিবরণ</dt><dd className="min-w-0 text-sm leading-7 text-slate-700">{description.length > 260 ? <details><summary className="cursor-pointer font-bold text-emerald-800 underline underline-offset-4">সম্পূর্ণ বিবরণ পড়ুন</summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details> : <p className="whitespace-pre-line break-words">{description}</p>}</dd></div>}
+                {description && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">বিবরণ</dt><dd className="min-w-0 text-sm leading-7 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-2"><summary className="inline-flex cursor-pointer list-none font-bold text-emerald-800 underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
