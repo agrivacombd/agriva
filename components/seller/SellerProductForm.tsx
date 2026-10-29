@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -23,6 +23,7 @@ export default function ProductForm() {
   const [form, setForm] = useState(INITIAL_FORM);
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const previewUrlsRef = useRef<string[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((category) => category.slug === form.category_slug);
@@ -37,9 +38,7 @@ export default function ProductForm() {
   );
   const set = (key: keyof typeof INITIAL_FORM, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
-  useEffect(() => {
-    return () => previews.forEach((url) => URL.revokeObjectURL(url));
-  }, [previews]);
+  useEffect(() => () => previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
   function chooseImages(fileList: FileList | null) {
     setMessage("");
@@ -50,8 +49,11 @@ export default function ProductForm() {
     if (selected.some((file) => !ALLOWED_IMAGE_TYPES.includes(file.type))) {
       setImages([]); setPreviews([]); setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।"); return;
     }
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    const nextPreviews = selected.map((file) => URL.createObjectURL(file));
+    previewUrlsRef.current = nextPreviews;
     setImages(selected);
-    setPreviews(selected.map((file) => URL.createObjectURL(file)));
+    setPreviews(nextPreviews);
   }
 
   function removeImage(index: number) {
@@ -59,6 +61,7 @@ export default function ProductForm() {
     setPreviews((current) => {
       const removed = current[index];
       if (removed) URL.revokeObjectURL(removed);
+      previewUrlsRef.current = current.filter((_, i) => i !== index);
       return current.filter((_, i) => i !== index);
     });
   }
@@ -119,6 +122,8 @@ export default function ProductForm() {
       setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
       setForm(INITIAL_FORM);
       setImages([]);
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current = [];
       setPreviews([]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
