@@ -6,8 +6,8 @@ export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const { data: membership, error: membershipError } = await supabase.from("user_role_memberships").select("role").eq("user_id", user.id).eq("role", "seller").maybeSingle();
-  if (membershipError || !membership) return NextResponse.json({ error: "Seller access required. Farmers can list their crops on Sell Harvest." }, { status: 403 });
+  const { data: membership, error: membershipError } = await supabase.from("user_role_memberships").select("role").eq("user_id", user.id).in("role", ["seller", "organization"]).limit(1).maybeSingle();
+  if (membershipError || !membership) return NextResponse.json({ error: "Seller or approved organization access required. Farmers can list their crops on Sell Harvest." }, { status: 403 });
 
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
