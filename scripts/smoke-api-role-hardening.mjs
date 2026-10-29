@@ -7,9 +7,13 @@ assert.match(reseller, /profile\?\.role !== "reseller"/, "reseller role must be 
 assert.match(reseller, /UUID_PATTERN\.test\(productId\)/, "product ID must be validated as UUID");
 assert.doesNotMatch(reseller, /error: error\.message/, "database details must not be exposed by reseller link API");
 
-const farmer = readFileSync("app/api/farmer/products/route.ts", "utf8");
-assert.match(farmer, /Farmer product creation failed/, "product insert failures must be logged server-side");
-assert.match(farmer, /পণ্য সংরক্ষণ করা যায়নি/, "product insert failures must return safe localized message");
-assert.doesNotMatch(farmer, /error: error\.message/, "database details must not be exposed by farmer product API");
+const seller = readFileSync("app/api/seller/products/route.ts", "utf8");
+assert.match(seller, /Seller marketplace product creation failed/, "seller product insert failures must be logged server-side");
+assert.match(seller, /পণ্য সংরক্ষণ করা যায়নি/, "product insert failures must return safe localized message");
+assert.match(seller, /user_role_memberships/, "seller product creation must verify persisted role membership");
+assert.doesNotMatch(seller, /error: error\.message/, "database details must not be exposed by seller product API");
+
+const legacyFarmer = readFileSync("app/api/farmer/products/route.ts", "utf8");
+assert.match(legacyFarmer, /status: 410/, "legacy farmer product endpoint must direct farmers to Sell Harvest");
 
 console.log("API role and error disclosure regression checks passed.");
