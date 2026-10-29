@@ -10,7 +10,7 @@ WITH CHECK (
   AND (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.id = (SELECT auth.uid()) AND p.role = 'employer'
+      WHERE p.id = (SELECT auth.uid()) AND p.role::text = 'employer'
     )
     OR EXISTS (
       SELECT 1 FROM public.user_role_memberships m
@@ -28,7 +28,7 @@ WITH CHECK (
   AND (
     EXISTS (
       SELECT 1 FROM public.profiles p
-      WHERE p.id = (SELECT auth.uid()) AND p.role IN ('job_seeker', 'worker')
+      WHERE p.id = (SELECT auth.uid()) AND p.role::text IN ('job_seeker', 'worker')
     )
     OR EXISTS (
       SELECT 1 FROM public.user_role_memberships m
