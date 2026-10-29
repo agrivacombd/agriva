@@ -80,7 +80,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) > 0;
   const hasRealImage = !product.id.startsWith("sample-") && Boolean(product.image_url);
   const description = cleanText(product.description);
-  const hasProductRichResultData = hasRealPrice && hasRealImage;
+  const hasProductRichResultData = hasRealPrice && hasRealImage && product.stock !== null && product.stock !== undefined;
   const graph = [
     {
       "@type": "BreadcrumbList",
@@ -105,9 +105,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         url: `${base}${canonicalPath}`,
         priceCurrency: "BDT",
         price: Number(product.price),
-        availability: product.stock !== null && product.stock !== undefined
-          ? (Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock")
-          : "https://schema.org/LimitedAvailability",
+        availability: Number(product.stock) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       },
     }] : []),
   ];
