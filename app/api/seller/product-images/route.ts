@@ -15,6 +15,13 @@ const MIME_BY_FORMAT: Record<string, string> = {
 };
 const EXTENSION_BY_FORMAT: Record<string, string> = { jpeg: "jpg", png: "png", webp: "webp" };
 
+class UploadError extends Error {
+  constructor(message: string, readonly status: number = 400) {
+    super(message);
+    this.name = "UploadError";
+  }
+}
+
 type UploadedVariant = {
   original_url: null;
   original_path: string;
@@ -39,8 +46,12 @@ function filenamePart(value: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > MAX_REQUEST_BYTES) {
+  const rawContentLength = request.headers.get("content-length");
+  const contentLength = rawContentLength === null ? null : Number(rawContentLength);
+  if (rawContentLength !== null && (!Number.isSafeInteger(contentLength) || (contentLength ?? 0) < 1)) {
+    return NextResponse.json({ error: "Upload request-এর Content-Length সঠিক নয়।" }, { status: 400 });
+  }
+  if (contentLength !== null && contentLength > MAX_REQUEST_BYTES) {
     return NextResponse.json({ error: "প্রতি ছবি সর্বোচ্চ ৫ MB এবং একবারে সর্বোচ্চ ৪টি ছবি আপলোড করা যাবে।" }, { status: 413 });
   }
 
@@ -89,14 +100,14 @@ export async function POST(request: NextRequest) {
         const decoder = sharp(buffer, { failOn: "error", limitInputPixels: 40_000_000 });
         [metadata, stats] = await Promise.all([decoder.metadata(), decoder.stats()]);
       } catch {
-        throw new Error(`ছবি ${index + 1} খোলা যাচ্ছে না। ফাইলটি corrupt বা সমর্থিত image নয়।`);
+        throw new UploadError(`ছবি ${index + 1} খোলা যাচ্ছে না। ফাইলটি corrupt বা সমর্থিত image নয়।`, 415);
       }
 
       const format = metadata.format || "";
       const actualMime = MIME_BY_FORMAT[format];
       if (!actualMime || actualMime !== file.type || !metadata.width || !metadata.height ||
           metadata.width < 100 || metadata.height < 100 || metadata.width * metadata.height > 40_000_000) {
-        throw new Error(`ছবি ${index + 1}-এর আসল format বা dimensions সঠিক নয়। JPEG, PNG বা WebP-এর অন্তত ১০০×১০০ পিক্সেলের ছবি দিন।`);
+        throw new UploadError(`ছবি ${index + 1}-এর আসল format বা dimensions সঠিক নয়। JPEG, PNG বা WebP-এর অন্তত ১০০×১০০ পিক্সেলের ছবি দিন।`, 415);
       }
 
       const warnings: string[] = [];
@@ -135,7 +146,7 @@ export async function POST(request: NextRequest) {
         const uploaded = await supabase.storage.from("product-images").upload(path, output.data, {
           contentType: "image/webp", cacheControl: "31536000", upsert: false,
         });
-        if (uploaded.error) throw new Error("Optimized image upload ব্যর্থ হয়েছে। Storage permission ও configuration যাচাই করুন।");
+        if (uploaded.error) throw new UploadError("Optimized image upload ব্যর্থ হয়েছে। Storage permission ও configuration যাচাই করুন।", 503);
         storagePaths.push({ bucket: "product-images", path });
         urls[size.name] = supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl;
       }
@@ -165,6 +176,7 @@ export async function POST(request: NextRequest) {
       }
     }
     const message = error instanceof Error ? error.message : "ছবি process করা যায়নি।";
-    return NextResponse.json({ error: message }, { status: 400 });
+    const status = error instanceof UploadError ? error.status : 400;
+    return NextResponse.json({ error: message }, { status });
   }
 }
