@@ -58,6 +58,8 @@ ALTER TABLE public.seed_companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seed_company_application_reviews ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON public.seed_company_applications FROM anon, authenticated;
+REVOKE ALL ON public.seed_companies FROM anon, authenticated;
+REVOKE ALL ON public.seed_company_application_reviews FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.seed_company_applications TO authenticated;
 GRANT SELECT ON public.seed_companies TO authenticated;
 GRANT SELECT ON public.seed_company_application_reviews TO authenticated;
