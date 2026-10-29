@@ -29,6 +29,7 @@ export const ADMIN_CAPABILITIES = [
   "settings.write",
   "audit.read",
   "audit.export",
+  "reports.export",
   "system.health.read",
   "payments.read",
   "payments.reconcile",
@@ -81,6 +82,7 @@ const LEGACY_ADMIN_CAPABILITIES = new Set<AdminCapability>([
   "settings.write",
   "audit.read",
   "audit.export",
+  "reports.export",
   "system.health.read",
 ]);
 
