@@ -42,13 +42,14 @@ async function saveProduct(formData: FormData) {
   const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_taxonomy", {
     p_product_id: productId, p_category_slug: categorySlug || null, p_subcategory_slug: subcategorySlug || null,
   });
-  const { error: seoError } = productError || categoryError ? { error: productError || categoryError } : await supabase.from("products").update({
-    seo_title: seoTitle || null,
-    seo_description: seoDescription || null,
-    seo_keywords: seoKeywords,
-    seo_content: seoContent || null,
-    seo_faqs: seoFaqs,
-  }).eq("id", productId);
+  const { error: seoError } = productError || categoryError ? { error: productError || categoryError } : await supabase.rpc("admin_update_product_seo", {
+    p_product_id: productId,
+    p_seo_title: seoTitle || null,
+    p_seo_description: seoDescription || null,
+    p_seo_keywords: seoKeywords,
+    p_seo_content: seoContent || null,
+    p_seo_faqs: seoFaqs,
+  });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
