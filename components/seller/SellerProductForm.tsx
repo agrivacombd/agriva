@@ -9,6 +9,7 @@ const INITIAL_FORM = {
 };
 const INITIAL_ATTRIBUTES: Record<string, string> = {};
 const MAX_PRODUCT_IMAGES = 4;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MIN_PLANT_DESCRIPTION_LENGTH = 80;
 
@@ -159,6 +160,9 @@ export default function ProductForm() {
       previewUrlsRef.current = [];
       setImages([]); setPreviews([]); setMessage("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।"); return;
     }
+    if (selected.some((file) => file.size > MAX_IMAGE_SIZE)) {
+      setImages([]); setPreviews([]); setMessage("প্রতিটি মূল ছবির আকার সর্বোচ্চ ৫ MB হতে হবে।"); return;
+    }
     if (selected.some((file) => !ALLOWED_IMAGE_TYPES.includes(file.type))) {
       previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       previewUrlsRef.current = [];
@@ -215,24 +219,26 @@ export default function ProductForm() {
     }
 
     const supabase = createSupabaseBrowserClient();
-    const uploadedPaths: string[] = [];
+    const uploadedPaths: Array<{ bucket: string; path: string }> = [];
     try {
-      const imageUrls: string[] = [];
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error("পণ্য জমা দিতে আবার লগইন করুন।");
-      for (const image of images) {
-        const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
-        const uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("product-images").upload(uploadedPath, image, {
-          contentType: image.type, cacheControl: "3600", upsert: false,
-        });
-        if (uploadError) {
-          console.error("Product image upload failed", { message: uploadError.message, size: image.size, type: image.type });
-          throw new Error("ছবি আপলোড করা যায়নি। Storage bucket, account permission ও প্রকল্পের upload limit যাচাই করুন।");
-        }
-        uploadedPaths.push(uploadedPath);
-        imageUrls.push(supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl);
+      const uploadForm = new FormData();
+      uploadForm.set("product_name", form.name);
+      uploadForm.set("variant", attributes.variety || attributes.model || "");
+      uploadForm.set("pack_size", attributes.pack_size || "");
+      images.forEach((image) => uploadForm.append("images", image));
+      const uploadResponse = await fetch("/api/seller/product-images", { method: "POST", body: uploadForm });
+      const uploadResult = await uploadResponse.json().catch(() => ({}));
+      if (!uploadResponse.ok || !Array.isArray(uploadResult.images) || uploadResult.images.length !== images.length) {
+        throw new Error(uploadResult.error || "ছবি validate ও optimize করা যায়নি।");
       }
+      const processedImages = uploadResult.images as Array<{
+        image_url: string; card_url: string; thumbnail_url: string; width: number; height: number;
+        alt: string; filename: string; storage_paths: Array<{ bucket: string; path: string }>; warnings?: string[];
+      }>;
+      processedImages.forEach((image) => uploadedPaths.push(...image.storage_paths));
+      const imageUrls = processedImages.map((image) => image.image_url);
+      const imageVariants = processedImages.map(({ image_url, card_url, thumbnail_url, width, height, alt, filename }) => ({ image_url, card_url, thumbnail_url, width, height, alt, filename }));
+      const imageWarnings = Array.isArray(uploadResult.warnings) ? uploadResult.warnings.filter((value: unknown): value is string => typeof value === "string").slice(0, 8) : [];
 
       const cleanedAttributes = Object.fromEntries(Object.entries({ ...attributes, brand: form.brand }).map(([key, value]) => [key, value.trim()]).filter(([, value]) => Boolean(value)));
       const response = await fetch("/api/seller/products", {
@@ -243,6 +249,7 @@ export default function ProductForm() {
           description: descriptionText,
           image_url: imageUrls[0] ?? null,
           image_urls: imageUrls,
+          image_variants: imageVariants,
           product_attributes: cleanedAttributes,
           seller_profile: {
             business_name: sellerProfile.business_name,
@@ -258,14 +265,20 @@ export default function ProductForm() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) {
         if (uploadedPaths.length) {
-          const { error: cleanupError } = await supabase.storage.from("product-images").remove(uploadedPaths);
-          if (cleanupError) console.warn("Could not clean up rejected product images", cleanupError.message);
-          else uploadedPaths.length = 0;
+          for (const bucket of ["product-images", "product-image-originals"]) {
+            const paths = uploadedPaths.filter((entry) => entry.bucket === bucket).map((entry) => entry.path);
+            if (paths.length) {
+              const { error: cleanupError } = await supabase.storage.from(bucket).remove(paths);
+              if (cleanupError) console.warn("Could not clean up rejected product images", { bucket, count: paths.length });
+            }
+          }
+          uploadedPaths.length = 0;
         }
         throw new Error(result.error || "পণ্য জমা দেওয়া যায়নি।");
       }
       uploadedPaths.length = 0;
-      setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
+      const warningSuffix = imageWarnings.length ? ` ছবি যাচাইয়ের পরামর্শ: ${imageWarnings.join(" ")}` : "";
+      setMessage(`পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না.${warningSuffix}`);
       setForm(INITIAL_FORM);
       setAttributes(INITIAL_ATTRIBUTES);
       setImages([]);
@@ -275,8 +288,13 @@ export default function ProductForm() {
       setStep(0);
     } catch (error) {
       if (uploadedPaths.length) {
-        const { error: cleanupError } = await supabase.storage.from("product-images").remove(uploadedPaths);
-        if (cleanupError) console.warn("Could not clean up partially uploaded product images", cleanupError.message);
+        for (const bucket of ["product-images", "product-image-originals"]) {
+          const paths = uploadedPaths.filter((entry) => entry.bucket === bucket).map((entry) => entry.path);
+          if (paths.length) {
+            const { error: cleanupError } = await supabase.storage.from(bucket).remove(paths);
+            if (cleanupError) console.warn("Could not clean up partially uploaded product images", { bucket, count: paths.length });
+          }
+        }
       }
       setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
@@ -343,8 +361,8 @@ export default function ProductForm() {
       <div>
         <label className="block text-sm font-bold" htmlFor="product-images">পণ্যের ছবি <span className="font-normal text-red-700">(কমপক্ষে ১টি আবশ্যক)</span></label>
         <input id="product-images" required={images.length === 0} multiple type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => chooseImages(e.target.files)} className="mt-2 block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold" />
-        <p className="mt-2 text-xs leading-5 text-[#748074]">সর্বোচ্চ ৪টি JPG, PNG বা WebP ছবি। অ্যাপে নির্দিষ্ট MB সীমা নেই; Storage প্রকল্পের নিজস্ব সীমা প্রযোজ্য হতে পারে।</p>
-        {previews.length > 0 && <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map((url, index) => <div key={url} className="space-y-1"><img src={url} alt={`${form.name || "পণ্য"} — ছবি ${index + 1}`} className="h-28 w-full rounded-xl border object-cover" /><button type="button" onClick={() => removeImage(index)} className="text-xs font-bold text-red-700">ছবি {index + 1} সরান</button></div>)}</div>}
+        <p className="mt-2 text-xs leading-5 text-[#748074]">সর্বোচ্চ ৪টি JPEG, PNG বা WebP ছবি; প্রতিটি মূল ফাইল সর্বোচ্চ ৫ MB। ১২০০×১২০০ px প্রস্তাবিত। Image processor আসল file type যাচাই করে WebP main/card/thumbnail বানাবে।</p>
+        {previews.length > 0 && <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map((url, index) => <div key={url} className="space-y-1"><img src={url} alt={`${form.name || "পণ্য"} — ছবি ${index + 1}`} className="h-28 w-full rounded-xl border bg-slate-50 object-contain" /><button type="button" onClick={() => removeImage(index)} className="text-xs font-bold text-red-700">ছবি {index + 1} সরান</button></div>)}</div>}
       </div>
       <div className="rounded-2xl border border-[#dfe8dc] p-4">
         <h2 className="font-extrabold">Seller ও business information</h2>
