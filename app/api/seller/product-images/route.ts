@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       const sourceUpload = await supabase.storage.from("product-image-originals").upload(originalPath, buffer, {
         contentType: actualMime, cacheControl: "3600", upsert: false,
       });
-      if (sourceUpload.error) throw new Error("মূল ছবিটি private storage-এ রাখা যায়নি। Storage migration ও permission যাচাই করুন।");
+      if (sourceUpload.error) throw new UploadError("মূল ছবিটি private storage-এ রাখা যায়নি। Storage migration ও permission যাচাই করুন।");
       storagePaths.push({ bucket: "product-image-originals", path: originalPath });
 
       const sizes = [
