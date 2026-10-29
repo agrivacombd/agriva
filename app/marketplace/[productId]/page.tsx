@@ -8,7 +8,8 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; commission_percent?: number | null };
+type SeoFaq = { question: string; answer: string };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; seo_title?: string | null; seo_description?: string | null; seo_keywords?: string[] | null; seo_content?: string | null; seo_faqs?: SeoFaq[] | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -35,7 +36,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -50,16 +51,18 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const isPlantProduct = taxonomy?.category.slug === "plants-gardening";
   const titleSuffix = isPlantProduct ? "AGRIVA Plant Market" : "AGRIVA Marketplace";
-  const title = `${truncate(product.name, isPlantProduct ? 40 : 43)} | ${titleSuffix}`;
+  const fallbackTitle = `${truncate(product.name, isPlantProduct ? 40 : 43)} | ${titleSuffix}`;
+  const title = truncate(cleanText(product.seo_title) || fallbackTitle, 70);
   const rawDescription = cleanText(product.description);
   const fallbackDescription = `AGRIVA-তে ${product.name}${product.price !== null && Number.isFinite(Number(product.price)) ? ` — মূল্য ৳${Number(product.price).toLocaleString("en-BD")}` : ""}। পণ্যের ছবি, বিবরণ ও মজুতের তথ্য দেখুন।`;
-  const description = truncate(rawDescription.length >= 60 ? rawDescription : fallbackDescription, 155);
+  const description = truncate(cleanText(product.seo_description) || (rawDescription.length >= 60 ? rawDescription : fallbackDescription), 155);
   const canonicalPath = `/marketplace/${product.slug}`;
   const image = product.image_url || product.image_urls?.[0] || undefined;
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: canonicalPath },
+    ...(product.seo_keywords?.length ? { keywords: product.seo_keywords } : {}),
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     openGraph: { title, description, type: "website", locale: "bn_BD", url: canonicalPath, ...(image ? { images: [{ url: image, alt: product.name }] } : {}) },
     twitter: { card: image ? "summary_large_image" : "summary", title, description, ...(image ? { images: [image] } : {}) },
@@ -81,6 +84,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const productImages = Array.from(new Set([...(product.image_urls ?? []), ...(product.image_url ? [product.image_url] : [])])).slice(0, 4);
   const hasRealImage = !product.id.startsWith("sample-") && productImages.length > 0;
   const description = cleanText(product.description);
+  const seoContent = cleanText(product.seo_content);
+  const seoFaqs = (Array.isArray(product.seo_faqs) ? product.seo_faqs : []).filter((faq) => faq && typeof faq.question === "string" && faq.question.trim() && typeof faq.answer === "string" && faq.answer.trim()).slice(0, 8);
   const hasProductRichResultData = hasRealPrice && hasRealImage && product.stock !== null && product.stock !== undefined;
   const graph = [
     {
@@ -93,6 +98,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         { "@type": "ListItem", position: 3 + (category ? 1 : 0) + (subcategory ? 1 : 0), name: product.name, item: `${base}${canonicalPath}` },
       ],
     },
+    ...(seoFaqs.length ? [{
+      "@type": "FAQPage",
+      mainEntity: seoFaqs.map((faq) => ({ "@type": "Question", name: faq.question, acceptedAnswer: { "@type": "Answer", text: faq.answer } })),
+    }] : []),
     ...(hasProductRichResultData ? [{
       "@type": "Product",
       "@id": `${base}${canonicalPath}#product`,
