@@ -66,6 +66,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const { data: products, error } = await supabase.from("products")
     .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,product_attributes,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
+  const sellerIds = Array.from(new Set((products ?? []).map((product) => product.farmer_id).filter(Boolean)));
+  const { data: sellerProfiles } = sellerIds.length
+    ? await supabase.from("profiles").select("id,business_name,business_address,business_district,trade_license_number,trade_license_expiry,seed_registration_number,other_registration_details").in("id", sellerIds)
+    : { data: [] };
+  const sellerProfilesById = new Map((sellerProfiles ?? []).map((profile) => [profile.id, profile]));
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
@@ -76,7 +81,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       <AdminCreateProductForm />
       <div className="mt-6 grid gap-4">{(products ?? []).map((p) => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
         <input type="hidden" name="productId" value={p.id}/><input type="hidden" name="slug" value={p.slug}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p><Link href={`/marketplace/${p.slug}`} target="_blank" className="mt-2 inline-block text-xs font-bold text-emerald-800 underline">পাবলিক পণ্য পেজ দেখুন ↗</Link></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p>{sellerProfilesById.get(p.farmer_id) && <div className="mt-2 rounded-xl bg-[#f7faf5] p-3 text-xs leading-5 text-slate-600"><p className="font-bold text-slate-800">Seller profile · Admin review only</p><p>Business: {sellerProfilesById.get(p.farmer_id)?.business_name || "দেওয়া নেই"}{sellerProfilesById.get(p.farmer_id)?.business_district ? ` · ${sellerProfilesById.get(p.farmer_id)?.business_district}` : ""}</p>{sellerProfilesById.get(p.farmer_id)?.business_address && <p>ঠিকানা: {sellerProfilesById.get(p.farmer_id)?.business_address}</p>}<p>Trade licence: {sellerProfilesById.get(p.farmer_id)?.trade_license_number || "দেওয়া নেই"}{sellerProfilesById.get(p.farmer_id)?.trade_license_expiry ? ` · মেয়াদ ${sellerProfilesById.get(p.farmer_id)?.trade_license_expiry}` : ""}</p><p>Seed registration: {sellerProfilesById.get(p.farmer_id)?.seed_registration_number || "দেওয়া নেই"}</p>{sellerProfilesById.get(p.farmer_id)?.other_registration_details && <p>Other: {sellerProfilesById.get(p.farmer_id)?.other_registration_details}</p>}<p className="mt-1 font-semibold text-amber-800">Seller-provided information; independently verify before approval.</p></div>}<Link href={`/marketplace/${p.slug}`} target="_blank" className="mt-2 inline-block text-xs font-bold text-emerald-800 underline">পাবলিক পণ্য পেজ দেখুন ↗</Link></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
