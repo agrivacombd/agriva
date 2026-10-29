@@ -42,7 +42,7 @@ async function decideModeration(formData: FormData) {
 
 type Product = {
   id: string; name: string; description: string | null; price: number | string;
-  stock: number | string; category: string; farmer_id: string;
+  stock: number | string; category: string; image_url: string | null; farmer_id: string;
   moderation_status: "pending" | "approved" | "rejected" | "changes_requested";
   moderation_reason: string | null; created_at: string;
 };
