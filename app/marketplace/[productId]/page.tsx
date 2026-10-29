@@ -8,7 +8,7 @@ import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
-type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; commission_percent?: number | null };
+type ProductRecord = { id: string; slug: string; name: string; category: string | null; category_slug?: string | null; subcategory_slug?: string | null; price: number | string | null; stock: number | null; description: string | null; image_url?: string | null; image_urls?: string[] | null; commission_percent?: number | null };
 
 function normalizeSlug(value: string) {
   try {
@@ -35,7 +35,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url,image_urls";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const fallbackDescription = `AGRIVA-তে ${product.name}${product.price !== null && Number.isFinite(Number(product.price)) ? ` — মূল্য ৳${Number(product.price).toLocaleString("en-BD")}` : ""}। পণ্যের ছবি, বিবরণ ও মজুতের তথ্য দেখুন।`;
   const description = truncate(rawDescription.length >= 60 ? rawDescription : fallbackDescription, 155);
   const canonicalPath = `/marketplace/${product.slug}`;
-  const image = product.image_url || undefined;
+  const image = product.image_url || product.image_urls?.[0] || undefined;
   return {
     title: { absolute: title },
     description,
@@ -78,7 +78,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const canonicalPath = `/marketplace/${product.slug}`;
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const hasRealPrice = !product.id.startsWith("sample-") && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) > 0;
-  const hasRealImage = !product.id.startsWith("sample-") && Boolean(product.image_url);
+  const productImages = Array.from(new Set([...(product.image_urls ?? []), ...(product.image_url ? [product.image_url] : [])])).slice(0, 4);
+  const hasRealImage = !product.id.startsWith("sample-") && productImages.length > 0;
   const description = cleanText(product.description);
   const hasProductRichResultData = hasRealPrice && hasRealImage && product.stock !== null && product.stock !== undefined;
   const graph = [
@@ -97,7 +98,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       "@id": `${base}${canonicalPath}#product`,
       name: product.name,
       url: `${base}${canonicalPath}`,
-      image: [product.image_url as string],
+      image: productImages,
       ...(description ? { description } : {}),
       ...(product.category ? { category: product.category } : {}),
       offers: {
@@ -117,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="mx-auto max-w-5xl">
       <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href={marketHref} className="hover:text-emerald-800">{isPlantProduct ? "Plant Market" : "মার্কেটপ্লেস"}</Link>{category && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}`} className="hover:text-emerald-800">{category.name}</Link>{subcategory && <><span className="mx-2" aria-hidden="true">/</span><Link href={`/marketplace/category/${category.slug}/${subcategory.slug}`} className="hover:text-emerald-800">{subcategory.name}</Link></>}</>}<span className="mx-2" aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-slate-700">{product.name}</span></nav>
       <div className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[.85fr_1.15fr]">
-        <div className="flex min-h-56 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 md:min-h-[420px]">{product.image_url ? <img src={product.image_url} alt={`${product.name} — ${isPlantProduct ? "Plant Market" : "AGRIVA"}`} width={720} height={720} fetchPriority="high" className="max-h-[420px] w-full rounded-2xl object-contain" /> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
+        <div className="flex min-h-56 flex-col justify-center bg-gradient-to-br from-emerald-50 to-lime-100 p-5 md:min-h-[420px]">{productImages.length ? <><img src={productImages[0]} alt={`${product.name} — ${isPlantProduct ? "Plant Market" : "AGRIVA"}`} width={720} height={720} fetchPriority="high" className="max-h-[420px] w-full rounded-2xl object-contain" />{productImages.length > 1 && <div className="mt-3 grid grid-cols-3 gap-2">{productImages.slice(1).map((src, index) => <img key={src} src={src} alt={`${product.name} — অতিরিক্ত ছবি ${index + 2}`} width={180} height={180} loading="lazy" className="h-20 w-full rounded-xl border border-emerald-900/10 bg-white object-cover sm:h-24" />)}</div>}</> : <div className="text-center"><span className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span><p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p></div>}</div>
         <div className="p-5 sm:p-8 md:p-10">
           <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800"><span className="h-2 w-2 rounded-full bg-emerald-600" /> {product.id.startsWith("sample-") ? "নমুনা পণ্য · প্রিভিউ" : "অনুমোদিত পণ্য"}</span>
           <h1 className="mt-4 break-words text-2xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
