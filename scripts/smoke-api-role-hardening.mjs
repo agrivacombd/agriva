@@ -155,7 +155,7 @@ assert.match(permissionCatalogue, /worker: \[\.\.\.ownAccount, "jobs\.apply_own"
 
 const jobRoleMigration = readFileSync("supabase/migrations/20261029190000_enforce_job_role_access.sql", "utf8");
 assert.match(jobRoleMigration, /CREATE POLICY "Employers can create own job drafts"/, "job creation must have a dedicated RLS policy");
-assert.match(jobRoleMigration, /p\.role = 'employer'/, "legacy employer profile role must be supported");
+assert.match(jobRoleMigration, /p\.role(?:::text)? = 'employer'/, "legacy employer profile role must be supported");
 assert.match(jobRoleMigration, /m\.role = 'employer'/, "employer membership must be checked by RLS");
 assert.match(jobRoleMigration, /CREATE POLICY "Job seekers can apply to published jobs"/, "job applications must have a dedicated role-scoped RLS policy");
 assert.match(jobRoleMigration, /m\.role IN \('job_seeker', 'worker'\)/, "application RLS must restrict applicants to job seeker/worker memberships");
