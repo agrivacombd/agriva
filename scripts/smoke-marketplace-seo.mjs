@@ -10,7 +10,8 @@ const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
-assert.match(product, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/, "Product page needs a slug-based canonical");
+assert.match(product, /const canonicalPath = `\/marketplace\/\$\{product\.slug\}`/, "Product page must derive its canonical from the stable product slug");
+assert.match(product, /alternates:\s*\{\s*canonical:\s*canonicalPath\s*\}/, "Product page needs a slug-based canonical");
 assert.match(product, /redirect\(`\/marketplace\/\$\{product\.slug\}`\)/, "Product ID aliases must redirect to the canonical slug URL");
 assert.match(product, /"@type": "Product"/, "Product detail needs Product structured data");
 assert.match(product, /priceCurrency: "BDT"/, "Offer schema must use BDT");
