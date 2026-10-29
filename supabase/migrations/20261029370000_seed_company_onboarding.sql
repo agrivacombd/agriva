@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.seed_company_applications (
   applicant_user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   company_name text NOT NULL CHECK (char_length(trim(company_name)) BETWEEN 2 AND 180),
   legal_name text CHECK (legal_name IS NULL OR char_length(trim(legal_name)) <= 220),
-  registration_number text CHECK (registration_number IS NULL OR char_length(trim(registration_number)) <= 100),
+  registration_number text NOT NULL CHECK (char_length(trim(registration_number)) BETWEEN 2 AND 100),
   contact_phone text NOT NULL CHECK (char_length(trim(contact_phone)) BETWEEN 6 AND 40),
   business_email text NOT NULL CHECK (char_length(trim(business_email)) BETWEEN 3 AND 254),
   district text NOT NULL CHECK (char_length(trim(district)) BETWEEN 2 AND 100),
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.seed_companies (
   application_id uuid NOT NULL UNIQUE REFERENCES public.seed_company_applications(id) ON DELETE RESTRICT,
   company_name text NOT NULL CHECK (char_length(trim(company_name)) BETWEEN 2 AND 180),
   legal_name text,
-  registration_number text,
+  registration_number text NOT NULL,
   contact_phone text NOT NULL,
   business_email text NOT NULL,
   district text NOT NULL,
@@ -107,7 +107,7 @@ BEGIN
   IF auth.uid() IS NULL OR NOT public.has_platform_admin_access() THEN
     RAISE EXCEPTION 'Platform admin role required' USING ERRCODE = '42501';
   END IF;
-  IF p_application_id IS NULL OR p_decision NOT IN ('approve', 'reject') THEN
+  IF p_application_id IS NULL OR p_decision IS NULL OR p_decision NOT IN ('approve', 'reject') THEN
     RAISE EXCEPTION 'Invalid application or decision' USING ERRCODE = '22023';
   END IF;
   IF p_decision = 'reject' AND (v_reason IS NULL OR char_length(v_reason) < 3 OR char_length(v_reason) > 1000) THEN
