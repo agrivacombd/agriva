@@ -18,8 +18,8 @@ assert.match(form, /fetch\("\/api\/seller\/product-images"/, "seller form must u
 assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit to the seller-only endpoint");
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /MAX_PRODUCT_IMAGES/, "seller form must enforce a maximum image count");
-assert.match(form, /MAX_IMAGE_SIZE = 5 \\* 1024 \\* 1024/, "seller form must enforce a 5 MB original-image limit");
-assert.match(imagePipeline, /MAX_ORIGINAL_BYTES = 5 \\* 1024 \\* 1024/, "server must enforce the 5 MB limit regardless of browser validation");
+assert.match(form, /MAX_IMAGE_SIZE = 5 \* 1024 \* 1024/, "seller form must enforce a 5 MB original-image limit");
+assert.match(imagePipeline, /MAX_ORIGINAL_BYTES = 5 \* 1024 \* 1024/, "server must enforce the 5 MB limit regardless of browser validation");
 assert.match(imagePipeline, /sharp\(buffer/, "server must decode and validate actual image bytes");
 assert.match(imagePipeline, /resize\(\{ width: size\.width, height: size\.width, fit: "inside", withoutEnlargement: true \}\)/, "responsive derivatives must preserve the original aspect ratio without forced crops");
 assert.match(imagePipeline, /product-image-originals/, "original images must be retained in private storage");
