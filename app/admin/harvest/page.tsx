@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "harvest.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -24,7 +16,7 @@ async function moderateHarvest(formData: FormData) {
   if (!id || !["approved", "rejected", "pending"].includes(action) || (action === "rejected" && !note)) {
     redirect("/admin/harvest?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("harvest.moderate");
   const { error } = await supabase.rpc("admin_moderate_harvest_listing", {
     p_listing_id: id,
     p_status: action,
