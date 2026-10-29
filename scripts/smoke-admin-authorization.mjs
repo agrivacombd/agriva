@@ -121,18 +121,23 @@ const articleReview = read("app/admin/articles/[id]/page.tsx");
 assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
 assert.ok(articleReview.includes('profileError || profile?.role !== "admin"'), "article review page must fail closed for non-admin users");
 
-for (const path of [
-  "app/admin/transport/page.tsx",
-  "app/admin/harvest/page.tsx",
-  "app/admin/jobs/page.tsx",
-]) {
+const sharedGuardPages = [
+  ["app/admin/page.tsx", "dashboard.read"],
+  ["app/admin/products/page.tsx", "catalog.read"],
+  ["app/admin/categories/page.tsx", "catalog.read"],
+  ["app/admin/transport/page.tsx", "transport.read"],
+  ["app/admin/harvest/page.tsx", "harvest.read"],
+  ["app/admin/jobs/page.tsx", "jobs.read"],
+  ["app/admin/users/page.tsx", "users.read"],
+  ["app/admin/settings/page.tsx", "settings.read"],
+];
+for (const [path, capability] of sharedGuardPages) {
   const source = read(path);
-  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
-  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
+  assert.ok(source.includes(`requireAdminPage(capability)`), `${path} must delegate to the shared authorization boundary`);
+  assert.ok(source.includes(`async function requireAdmin(capability: AdminCapability = "${capability}")`), `${path} must declare its default read capability`);
 }
 
 for (const path of [
-  "app/admin/categories/page.tsx",
   "app/admin/opportunities/page.tsx",
   "app/admin/audit/page.tsx",
 ]) {

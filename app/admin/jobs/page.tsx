@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "jobs.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return supabase;
 }
 async function moderateJob(formData: FormData) {
@@ -21,7 +13,7 @@ async function moderateJob(formData: FormData) {
   const status = String(formData.get("status") ?? "").trim();
   const note = String(formData.get("note") ?? "").trim().slice(0, 1000);
   if (!jobId || !["published", "rejected", "paused", "filled"].includes(status)) redirect("/admin/jobs?notice=invalid");
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("jobs.moderate");
   const { error } = await supabase.rpc("admin_moderate_job_post", { p_job_id: jobId, p_status: status, p_note: note || null });
   revalidatePath("/admin/jobs"); revalidatePath("/jobs"); revalidatePath("/sitemap.xml");
   redirect(error ? "/admin/jobs?notice=error" : "/admin/jobs?notice=updated");

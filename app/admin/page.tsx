@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
 import BrandLogo from "@/components/BrandLogo";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "dashboard.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return { supabase, user };
 }
 
@@ -21,7 +17,7 @@ async function updateOrderStatus(formData: FormData) {
   if (!orderId || !["processing", "shipped", "delivered", "completed", "cancelled", "refunded"].includes(status)) {
     redirect("/admin?notice=invalid_order");
   }
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("orders.transition");
   const { error } = await supabase.rpc("set_marketplace_order_status", { p_order_id: orderId, p_status: status });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=order_error" : "/admin?notice=order_updated");
