@@ -47,7 +47,7 @@ ALTER TABLE public.seed_company_applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.seed_companies ENABLE ROW LEVEL SECURITY;
 
 REVOKE ALL ON public.seed_company_applications FROM anon, authenticated;
-GRANT SELECT, INSERT ON public.seed_company_applications TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.seed_company_applications TO authenticated;
 GRANT SELECT ON public.seed_companies TO authenticated;
 
 DROP POLICY IF EXISTS "Applicants can read their own seed company application" ON public.seed_company_applications;
