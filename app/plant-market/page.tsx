@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const PLANT_CATEGORY = "plants-gardening";
+type PlantMarketProduct = MarketplaceProduct & { image_url?: string | null; created_at?: string | null };
 
 export const metadata: Metadata = {
-  title: "Plant Market বাংলাদেশ | গাছ, চারা, টব ও বাগান সামগ্রী | AGRIVA",
+  title: "গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ | AGRIVA Plant Market",
   description: "বাংলাদেশে ইনডোর গাছ, ফল ও ফুলের চারা, বীজ, টব, মাটি, কম্পোস্ট ও বাগানের সরঞ্জাম খুঁজুন AGRIVA Plant Market-এ। সক্রিয় পণ্য, পরিষ্কার বিবরণ ও বিক্রেতার জমা দেওয়া তথ্য দেখুন।",
   alternates: { canonical: "/plant-market" },
   keywords: ["Plant Market Bangladesh", "গাছের চারা কিনুন", "ফলের চারা", "ফুলের গাছ", "ইনডোর প্ল্যান্ট", "গাছের টব", "গাছের বীজ", "বাগানের মাটি", "gardening supplies Bangladesh"],
@@ -57,14 +58,14 @@ const plantSubcategories = [
 ];
 
 export default async function PlantMarketPage() {
-  let products: MarketplaceProduct[] = [];
+  let products: PlantMarketProduct[] = [];
   let loadFailed = false;
 
   try {
     const supabase = await createSupabaseServerClient();
     const [taxonomyResult, legacyResult] = await Promise.all([
       supabase.from("products")
-        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
+        .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at")
         .eq("status", "active")
         .eq("category_slug", PLANT_CATEGORY)
         .order("created_at", { ascending: false })
@@ -81,7 +82,7 @@ export default async function PlantMarketPage() {
     if (taxonomyResult.error) throw taxonomyResult.error;
     if (legacyResult.error) throw legacyResult.error;
     const unique = new Map<string, MarketplaceProduct>();
-    for (const row of [...(taxonomyResult.data ?? []), ...(legacyResult.data ?? [])] as MarketplaceProduct[]) {
+    for (const row of [...(taxonomyResult.data ?? []), ...(legacyResult.data ?? [])] as PlantMarketProduct[]) {
       if (isPlantProduct(row)) unique.set(row.id, row);
     }
     products = [...unique.values()].sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")));
