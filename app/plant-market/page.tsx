@@ -10,7 +10,7 @@ const PLANT_CATEGORY = "plants-gardening";
 type PlantMarketProduct = MarketplaceProduct & { image_url?: string | null; created_at?: string | null };
 
 export const metadata: Metadata = {
-  title: "গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ | AGRIVA Plant Market",
+  title: { absolute: "গাছ, চারা ও বাগান সামগ্রী বাংলাদেশ | AGRIVA Plant Market" },
   description: "বাংলাদেশে ইনডোর গাছ, ফল ও ফুলের চারা, বীজ, টব, মাটি, কম্পোস্ট ও বাগানের সরঞ্জাম খুঁজুন AGRIVA Plant Market-এ। সক্রিয় পণ্য, পরিষ্কার বিবরণ ও বিক্রেতার জমা দেওয়া তথ্য দেখুন।",
   alternates: { canonical: "/plant-market" },
   keywords: ["Plant Market Bangladesh", "গাছের চারা কিনুন", "ফলের চারা", "ফুলের গাছ", "ইনডোর প্ল্যান্ট", "গাছের টব", "গাছের বীজ", "বাগানের মাটি", "gardening supplies Bangladesh"],
