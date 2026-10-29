@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
+const MIN_PLANT_DESCRIPTION_LENGTH = 80;
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -23,16 +25,24 @@ export async function POST(request: NextRequest) {
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
-  const description = String(body.description || "").trim();
+  const description = String(body.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   const categorySlug = String(body.category_slug || "").trim();
   const subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
   const imageUrl = typeof body.image_url === "string" && body.image_url.trim() ? body.image_url.trim() : null;
+  const isPlantListing = categorySlug === "plants-gardening";
 
-  if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
+  if (!name || name.length < 3 || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !category || !subcategory || description.length > 5000) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
+  }
+
+  if (isPlantListing && !imageUrl) {
+    return NextResponse.json({ error: "Plant Market-এর পণ্যের জন্য পরিষ্কার পণ্যের ছবি আবশ্যক।" }, { status: 400 });
+  }
+  if (isPlantListing && description.length < MIN_PLANT_DESCRIPTION_LENGTH) {
+    return NextResponse.json({ error: `Plant Market-এর বিবরণ অন্তত ${MIN_PLANT_DESCRIPTION_LENGTH} অক্ষরের হতে হবে। গাছের ধরন, আকার, যত্ন বা পণ্যের উপাদানের মতো নির্দিষ্ট তথ্য যোগ করুন।` }, { status: 400 });
   }
 
   if (imageUrl) {
