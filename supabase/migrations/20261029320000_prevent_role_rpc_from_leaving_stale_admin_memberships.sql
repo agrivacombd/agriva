@@ -37,7 +37,7 @@ BEGIN
     RAISE EXCEPTION 'User not found' USING ERRCODE = 'P0002';
   END IF;
 
-  IF previous_role IN ('admin', 'super_admin') OR EXISTS (
+  IF previous_role::text IN ('admin', 'super_admin') OR EXISTS (
     SELECT 1
     FROM public.user_role_memberships m
     WHERE m.user_id = p_user_id AND m.role IN ('admin', 'super_admin')
