@@ -44,7 +44,7 @@ type Product = {
   id: string; name: string; description: string | null; price: number | string;
   stock: number | string; category: string; image_url: string | null; farmer_id: string;
   moderation_status: "pending" | "approved" | "rejected" | "changes_requested";
-  moderation_reason: string | null; created_at: string;
+  moderation_reason: string | null; created_at: string; listing_source: "platform" | "seller" | "company" | null; seed_company_id: string | null;
 };
 
 export default async function ProductModerationPage({ searchParams }: { searchParams: Promise<{ notice?: string }> }) {
@@ -52,11 +52,16 @@ export default async function ProductModerationPage({ searchParams }: { searchPa
   const { notice } = await searchParams;
   const { data, error } = await auth.supabase
     .from("products")
-    .select("id,name,description,price,stock,category,image_url,farmer_id,moderation_status,moderation_reason,created_at")
+    .select("id,name,description,price,stock,category,image_url,farmer_id,moderation_status,moderation_reason,created_at,listing_source,seed_company_id")
     .in("moderation_status", ["pending", "changes_requested"])
     .order("created_at", { ascending: true })
     .limit(100);
   const products = (data ?? []) as Product[];
+  const companyIds = [...new Set(products.map((product) => product.seed_company_id).filter((id): id is string => Boolean(id)))];
+  const { data: companyRows } = companyIds.length
+    ? await auth.supabase.from("seed_companies").select("id,company_name").in("id", companyIds)
+    : { data: [] };
+  const companyNames = new Map((companyRows ?? []).map((company) => [company.id, company.company_name]));
   const notices: Record<string, string> = {
     saved: "Moderation decision সংরক্ষণ হয়েছে।",
     error: "সিদ্ধান্ত সংরক্ষণ করা যায়নি। Database migration ও admin permission যাচাই করুন।",
@@ -77,7 +82,7 @@ export default async function ProductModerationPage({ searchParams }: { searchPa
         <section className="mt-7 flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-2xl font-black">Review queue</h2><p className="mt-1 text-sm text-[#647568]">সর্বোচ্চ ১০০টি অপেক্ষমাণ বা সংশোধন-প্রয়োজন পণ্য দেখানো হচ্ছে।</p></div><span className="rounded-full bg-white px-4 py-2 text-sm font-bold">{products.length}টি অপেক্ষমাণ</span></section>
         <div className="mt-5 grid gap-4">
           {products.map((product) => <article key={product.id} className="rounded-3xl border border-[#e1e9df] bg-white p-5 sm:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#a67f25]">{product.category}</p><h3 className="mt-2 text-xl font-black">{product.name}</h3><p className="mt-2 text-sm text-[#647568]">Seller ID: {product.farmer_id.slice(0, 8)} · Submitted {new Date(product.created_at).toLocaleDateString("en-GB")}</p></div><span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900">{product.moderation_status}</span></div>
+            <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#a67f25]">{product.category}</p><h3 className="mt-2 text-xl font-black">{product.name}</h3><p className="mt-2 text-sm text-[#647568]">{product.listing_source === "platform" ? "AGRIVA Official" : product.listing_source === "company" ? `Company: ${companyNames.get(product.seed_company_id || "") || "Verified company"}` : `Seller ID: ${product.farmer_id.slice(0, 8)}`} · Submitted {new Date(product.created_at).toLocaleDateString("en-GB")}</p></div><span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900">{product.moderation_status}</span></div>
             {product.image_url ? <div role="img" aria-label={`${product.name} product image preview`} className="mt-4 h-44 w-44 rounded-2xl border bg-contain bg-center bg-no-repeat" style={{ backgroundImage: `url("${product.image_url}")` }} /> : <p role="alert" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm font-semibold text-amber-900">পণ্যের ছবি নেই—Approve করার আগে ছবি সংরক্ষণ করুন।</p>}
             <div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Price</p><p className="mt-1 font-black">৳{Number(product.price).toLocaleString("en-BD")}</p></div><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Stock</p><p className="mt-1 font-black">{Number(product.stock).toLocaleString("en-BD")}</p></div><div className="rounded-xl bg-[#f5f7f2] p-3"><p className="text-xs text-[#647568]">Previous reason</p><p className="mt-1 text-sm">{product.moderation_reason || "—"}</p></div></div>
             <p className="mt-4 whitespace-pre-wrap text-sm leading-6 text-[#526357]">{product.description || "বিবরণ দেওয়া হয়নি।"}</p>
