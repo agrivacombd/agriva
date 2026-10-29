@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     : ["seeds"];
   if (
     companyName.length < 2 || companyName.length > 180 ||
-    legalName.length > 220 || registrationNumber.length > 100 ||
+    legalName.length > 220 || registrationNumber.length < 2 || registrationNumber.length > 100 ||
     contactPhone.length < 6 || contactPhone.length > 40 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(businessEmail) || businessEmail.length > 254 ||
     district.length < 2 || district.length > 100 || notes.length > 2000 ||
