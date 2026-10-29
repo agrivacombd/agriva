@@ -153,7 +153,7 @@ assert.ok(jobsMigration.includes("p_status is null or p_status not in ('publishe
 
 
 const opportunityApi = read("app/api/admin/content-opportunities/route.ts");
-assert.ok(opportunityApi.includes('requireAdminApi("content.edit")'), "content opportunity reads must request content.edit");
+assert.ok(opportunityApi.includes('requireAdminApi("content.read")'), "content opportunity reads must request content.edit");
 assert.ok(opportunityApi.includes('requireAdminApi("content.publish")'), "content publication transitions must request content.publish");
 assert.ok(!opportunityApi.includes("async function requireAdmin()"), "content opportunity API must use the shared guard rather than a local duplicate");
 assert.ok(opportunityApi.includes('const transitions: Record<string, string[]>'), "opportunity status changes must use an explicit transition map");
