@@ -142,6 +142,79 @@ WITH CHECK (
   AND status = 'draft'
   AND moderation_status = 'pending'
   AND seed_company_id IS NOT NULL
+  AND image_url IS NOT NULL
+  AND image_url ~ ('^https://[^/]+/storage/v1/object/public/product-images/' || (SELECT auth.uid())::text || '/[A-Za-z0-9._-]+
+    SELECT 1 FROM public.seed_companies c
+    WHERE c.id = seed_company_id
+      AND c.owner_user_id = (SELECT auth.uid())
+      AND c.verification_status = 'verified'
+  )
+);
+
+CREATE OR REPLACE FUNCTION public.admin_review_seed_company_application(
+  p_application_id uuid,
+  p_decision text,
+  p_reason text DEFAULT NULL
+)
+RETURNS public.seed_company_applications
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'auth', 'pg_temp'
+AS $function$
+DECLARE
+  v_application public.seed_company_applications;
+  v_reason text := NULLIF(trim(COALESCE(p_reason, '')), '');
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_platform_admin_access() THEN
+    RAISE EXCEPTION 'Platform admin role required' USING ERRCODE = '42501';
+  END IF;
+  IF p_application_id IS NULL OR p_decision IS NULL OR p_decision NOT IN ('approve', 'reject') THEN
+    RAISE EXCEPTION 'Invalid application or decision' USING ERRCODE = '22023';
+  END IF;
+  IF p_decision = 'reject' AND (v_reason IS NULL OR char_length(v_reason) < 3 OR char_length(v_reason) > 1000) THEN
+    RAISE EXCEPTION 'A rejection reason of 3 to 1000 characters is required' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT * INTO v_application
+  FROM public.seed_company_applications
+  WHERE id = p_application_id
+  FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Application not found' USING ERRCODE = 'P0002'; END IF;
+  IF v_application.status <> 'pending' THEN
+    RAISE EXCEPTION 'Application has already been reviewed' USING ERRCODE = '55000';
+  END IF;
+
+  INSERT INTO public.seed_company_application_reviews (
+    application_id, applicant_user_id, reviewer_user_id, decision, reason
+  ) VALUES (
+    v_application.id, v_application.applicant_user_id, auth.uid(), p_decision, v_reason
+  );
+
+  IF p_decision = 'approve' THEN
+    INSERT INTO public.seed_companies (
+      owner_user_id, application_id, company_name, legal_name, registration_number,
+      contact_phone, business_email, district, website, product_categories, slug
+    ) VALUES (
+      v_application.applicant_user_id, v_application.id, v_application.company_name,
+      v_application.legal_name, v_application.registration_number, v_application.contact_phone,
+      v_application.business_email, v_application.district, v_application.website,
+      v_application.product_categories,
+      coalesce(nullif(trim(both '-' from regexp_replace(lower(v_application.company_name), '[^a-z0-9]+', '-', 'g')), ''), 'company') || '-' || left(gen_random_uuid()::text, 8)
+    );
+  END IF;
+
+  UPDATE public.seed_company_applications
+  SET status = CASE WHEN p_decision = 'approve' THEN 'approved' ELSE 'rejected' END,
+      review_reason = v_reason, reviewed_by = auth.uid(), reviewed_at = now(), updated_at = now()
+  WHERE id = p_application_id
+  RETURNING * INTO v_application;
+  RETURN v_application;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.admin_review_seed_company_application(uuid,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_review_seed_company_application(uuid,text,text) TO authenticated;
+)
   AND EXISTS (
     SELECT 1 FROM public.seed_companies c
     WHERE c.id = seed_company_id
