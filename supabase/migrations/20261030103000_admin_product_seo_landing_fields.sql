@@ -7,6 +7,36 @@ ALTER TABLE public.products
   ADD COLUMN IF NOT EXISTS seo_content text,
   ADD COLUMN IF NOT EXISTS seo_faqs jsonb NOT NULL DEFAULT '[]'::jsonb;
 
+-- Reconcile the legacy production schema where seo_keywords already exists as
+-- a nullable text field. The RPC and Admin form use a text[] consistently.
+DO $
+DECLARE
+  existing_type text;
+BEGIN
+  SELECT data_type INTO existing_type
+  FROM information_schema.columns
+  WHERE table_schema = 'public'
+    AND table_name = 'products'
+    AND column_name = 'seo_keywords';
+
+  IF existing_type IN ('text', 'character varying', 'character') THEN
+    EXECUTE $sql$
+      ALTER TABLE public.products
+      ALTER COLUMN seo_keywords TYPE text[]
+      USING CASE
+        WHEN seo_keywords IS NULL OR btrim(seo_keywords) = '' THEN ARRAY[]::text[]
+        ELSE string_to_array(seo_keywords, ',')
+      END
+    $sql$;
+  END IF;
+END
+$;
+
+UPDATE public.products SET seo_keywords = '{}'::text[] WHERE seo_keywords IS NULL;
+ALTER TABLE public.products
+  ALTER COLUMN seo_keywords SET DEFAULT '{}'::text[],
+  ALTER COLUMN seo_keywords SET NOT NULL;
+
 ALTER TABLE public.products
   DROP CONSTRAINT IF EXISTS products_seo_faqs_is_array;
 ALTER TABLE public.products
