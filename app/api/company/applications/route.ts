@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   const websiteRaw = typeof input.website === "string" ? input.website.trim() : "";
   const notes = typeof input.notes === "string" ? input.notes.trim() : "";
   const categories = Array.isArray(input.product_categories)
-    ? [...new Set(input.product_categories.filter((value): value is string => typeof value === "string" && allowedCategories.has(value))]
+    ? [...new Set(input.product_categories.filter((value): value is string => typeof value === "string" && allowedCategories.has(value)))]
     : ["seeds"];
   if (
     companyName.length < 2 || companyName.length > 180 ||
