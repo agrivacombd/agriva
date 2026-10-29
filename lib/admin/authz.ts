@@ -1,6 +1,7 @@
 import "server-only";
 
 import { NextResponse } from "next/server";
+import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -47,7 +48,7 @@ type AdminProfile = {
 type Allowed = {
   ok: true;
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
-  user: NonNullable<Awaited<ReturnType<Awaited<ReturnType<typeof createSupabaseServerClient>>["auth"]["getUser"]>>["data"]["user"]>;
+  user: User;
   profile: AdminProfile;
 };
 
