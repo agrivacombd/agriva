@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login?next=%2Fadmin%2Ftransport");
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "transport.read") {
+  const { supabase, user } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -24,7 +16,7 @@ async function reviewTransportPartner(formData: FormData) {
   if (!userId || !["verified", "rejected", "suspended"].includes(status) || note.length > 1000) {
     redirect("/admin/transport?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("transport.moderate");
   const { error } = await supabase.rpc("admin_set_transport_partner_verification", {
     p_user_id: userId,
     p_status: status,
