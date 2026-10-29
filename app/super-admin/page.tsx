@@ -1,7 +1,6 @@
 import Link from "next/link";
 import BrandLogo from "@/components/BrandLogo";
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/admin/authz";
 import AdminModuleDirectory, { type AdminModule } from "./AdminModuleDirectory";
 
 const modules: AdminModule[] = [
@@ -25,17 +24,10 @@ const modules: AdminModule[] = [
 ];
 
 export default async function SuperAdminPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login?next=%2Fsuper-admin");
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("full_name,role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const { user, profile } = await requireAdminPage(
+    "dashboard.read",
+    "/login?next=%2Fsuper-admin",
+  );
   const name = profile.full_name || user.email?.split("@")[0] || "Administrator";
 
   return (
