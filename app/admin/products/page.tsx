@@ -32,6 +32,9 @@ async function saveProduct(formData: FormData) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin();
+  const { data: currentProduct, error: currentProductError } = await supabase.from("products").select("status").eq("id", productId).maybeSingle();
+  if (currentProductError || !currentProduct) redirect("/admin/products?notice=error");
+  if (status === "active" && currentProduct.status !== "active") redirect("/admin/products?notice=moderation");
   const { error: saveError } = await supabase.rpc("admin_update_marketplace_product", {
     p_product_id: productId,
     p_name: name,
@@ -74,7 +77,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category} />
-          <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
+          <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option>{p.status === "active" && <option value="active">Active (already published)</option>}<option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         </div>
