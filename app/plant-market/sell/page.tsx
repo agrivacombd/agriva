@@ -1,16 +1,25 @@
 "use client";
 import Link from "next/link";
-import {useState} from "react";
+import {useEffect,useState} from "react";
+import {createSupabaseBrowserClient} from "@/lib/supabase/browser";
 import type {FormEvent} from "react";
 import {ArrowLeft,LoaderCircle,PlusCircle} from "lucide-react";
 export default function PlantMarketSellPage(){
- const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState(false);
+ const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState(false),[authorized,setAuthorized]=useState(false);
+ useEffect(()=>{(async()=>{
+  const supabase=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
+  if(auth.error||!auth.data.user){window.location.href="/login?next=/plant-market/sell";return;}
+  const {data,error}=await supabase.rpc("has_module_access",{p_module:"plant_market",p_permission:"create",p_scope_type:"global",p_scope_id:null});
+  if(error||data!==true){window.location.href="/account/verification";return;}
+  setAuthorized(true);
+ })();},[]);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();const form=event.currentTarget;const data=new FormData(form);setBusy(true);setMessage("");setError(false);
   const payload={name:data.get("name"),categorySlug:data.get("categorySlug"),price:data.get("price"),stock:data.get("stock"),unit:data.get("unit"),description:data.get("description")};
   try{const response=await fetch("/api/plant-market/products",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});const result=await response.json();if(!response.ok)throw new Error(result.error||"পণ্য জমা হয়নি");form.reset();setMessage("পণ্যটি review queue-তে জমা হয়েছে। Admin অনুমোদনের আগে এটি প্রকাশিত হবে না।");}
   catch(e){setError(true);setMessage(e instanceof Error?e.message:"পণ্য জমা হয়নি");}finally{setBusy(false);}
  }
+ if(!authorized)return <main className="min-h-screen bg-[#f5f8f2] p-10 text-center text-[#173b2d]">অনুমতি যাচাই হচ্ছে…</main>;
  return <main className="min-h-screen bg-[#f5f8f2] px-4 py-10 text-[#173b2d]"><div className="mx-auto max-w-2xl">
   <Link href="/plant-market" className="inline-flex items-center gap-2 text-sm font-bold text-[#126b4f]"><ArrowLeft size={16}/> Plant Market</Link>
   <section className="mt-5 rounded-3xl border border-[#e1e9df] bg-white p-6 shadow-sm sm:p-9"><p className="text-xs font-bold uppercase tracking-widest text-[#a67f25]">Verified gardener seller</p><h1 className="mt-2 text-3xl font-black">Plant Market-এ পণ্য যোগ করুন</h1><p className="mt-3 text-sm leading-6 text-[#637568]">শুধু অনুমোদিত gardener account গাছ, চারা ও বাগানের উপকরণ জমা দিতে পারবেন। প্রতিটি পণ্য Admin review-এর পর প্রকাশিত হবে।</p>
