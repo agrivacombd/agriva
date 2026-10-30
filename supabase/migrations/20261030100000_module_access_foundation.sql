@@ -120,6 +120,96 @@ create table if not exists public.admin_user_roles (
 );
 create index if not exists admin_user_roles_user_idx on public.admin_user_roles(user_id,expires_at);
 
+create or replace function public.owns_organization(p_organization_id uuid)
+returns boolean language sql stable security definer
+set search_path = pg_catalog, public, pg_temp
+as $function$
+ select auth.uid() is not null and exists (
+  select 1 from public.organizations o where o.id = p_organization_id and o.owner_id = auth.uid()
+ );
+$function$;
+
+create or replace function public.is_organization_member(p_organization_id uuid)
+returns boolean language sql stable security definer
+set search_path = pg_catalog, public, pg_temp
+as $function$
+ select auth.uid() is not null and exists (
+  select 1 from public.organization_members m where m.organization_id = p_organization_id and m.user_id = auth.uid() and m.status = 'active'
+ );
+$function$;
+
+create or replace function public.owns_farm(p_farm_id uuid)
+returns boolean language sql stable security definer
+set search_path = pg_catalog, public, pg_temp
+as $function$
+ select auth.uid() is not null and exists (
+  select 1 from public.farms f where f.id = p_farm_id and f.owner_id = auth.uid()
+ );
+$function$;
+
+create or replace function public.guard_organization_verification()
+returns trigger language plpgsql security definer
+set search_path = pg_catalog, public, pg_temp
+as $function$
+begin
+ if auth.uid() is not null and not public.is_admin() then
+  if new.owner_id is distinct from old.owner_id or new.status is distinct from old.status then
+   raise exception 'Organization ownership and verification are admin-controlled' using errcode = '42501';
+  end if;
+ end if;
+ return new;
+end;
+$function$;
+
+drop trigger if exists organizations_verification_guard on public.organizations;
+create trigger organizations_verification_guard
+before update on public.organizations
+for each row execute function public.guard_organization_verification();
+
+create or replace function public.admin_review_module_application(p_application_id uuid,p_decision text,p_review_note text default null)
+returns void language plpgsql security definer
+set search_path = pg_catalog, public, pg_temp
+as $function$
+declare
+ v_application public.module_access_applications%rowtype;
+begin
+ if auth.uid() is null or not public.is_admin() then
+  raise exception 'Administrator access required' using errcode = '42501';
+ end if;
+ if p_decision not in ('approved','rejected') then
+  raise exception 'Invalid review decision' using errcode = '22023';
+ end if;
+ select * into v_application from public.module_access_applications
+  where id = p_application_id and status in ('pending','under_review') for update;
+ if not found then
+  raise exception 'Application not found or already reviewed' using errcode = 'P0002';
+ end if;
+ update public.module_access_applications
+  set status = p_decision,
+      review_note = nullif(left(btrim(coalesce(p_review_note,'')),1000),''),
+      reviewed_by = auth.uid(),
+      reviewed_at = now(),
+      updated_at = now()
+  where id = p_application_id;
+ if p_decision = 'approved' then
+  insert into public.user_module_grants(user_id,module,permission,scope_type,scope_id,granted_by,reason)
+  select v_application.user_id,v_application.module,permission_name,
+    case when v_application.organization_id is not null then 'organization' else 'global' end,
+    v_application.organization_id,auth.uid(),'Approved application ' || v_application.id::text
+  from (values ('read'),('create')) as requested(permission_name)
+  where not exists (
+   select 1 from public.user_module_grants existing
+   where existing.user_id = v_application.user_id
+    and existing.module = v_application.module
+    and existing.permission = requested.permission_name
+    and existing.status = 'active'
+    and existing.scope_type = case when v_application.organization_id is not null then 'organization' else 'global' end
+    and existing.scope_id is not distinct from v_application.organization_id
+  );
+ end if;
+end;
+$function$;
+
 create or replace function public.has_module_access(p_module text,p_permission text,p_scope_type text default 'global',p_scope_id uuid default null)
 returns boolean language sql stable security definer
 set search_path = pg_catalog, public, pg_temp
@@ -168,7 +258,7 @@ using (public.is_admin()) with check (public.is_admin());
 
 drop policy if exists organizations_select on public.organizations;
 create policy organizations_select on public.organizations for select to authenticated
-using (owner_id = (select auth.uid()) or exists (select 1 from public.organization_members m where m.organization_id = organizations.id and m.user_id = (select auth.uid()) and m.status = 'active') or public.is_admin());
+using (owner_id = (select auth.uid()) or public.is_organization_member(id) or public.is_admin());
 drop policy if exists organizations_insert on public.organizations;
 create policy organizations_insert on public.organizations for insert to authenticated
 with check (owner_id = (select auth.uid()) and status = 'pending');
@@ -178,14 +268,14 @@ using (owner_id = (select auth.uid()) or public.is_admin()) with check (owner_id
 
 drop policy if exists organization_members_select on public.organization_members;
 create policy organization_members_select on public.organization_members for select to authenticated
-using (user_id = (select auth.uid()) or exists (select 1 from public.organizations o where o.id = organization_members.organization_id and o.owner_id = (select auth.uid())) or public.is_admin());
+using (user_id = (select auth.uid()) or public.owns_organization(organization_id) or public.is_admin());
 drop policy if exists organization_members_owner_insert on public.organization_members;
 create policy organization_members_owner_insert on public.organization_members for insert to authenticated
-with check (exists (select 1 from public.organizations o where o.id = organization_members.organization_id and o.owner_id = (select auth.uid())) and status in ('invited','active'));
+with check (public.owns_organization(organization_id) and status in ('invited','active'));
 drop policy if exists organization_members_owner_update on public.organization_members;
 create policy organization_members_owner_update on public.organization_members for update to authenticated
-using (exists (select 1 from public.organizations o where o.id = organization_members.organization_id and o.owner_id = (select auth.uid())) or public.is_admin())
-with check (exists (select 1 from public.organizations o where o.id = organization_members.organization_id and o.owner_id = (select auth.uid())) or public.is_admin());
+using (public.owns_organization(organization_id) or public.is_admin())
+with check (public.owns_organization(organization_id) or public.is_admin());
 
 drop policy if exists farmer_profiles_select on public.farmer_profiles;
 create policy farmer_profiles_select on public.farmer_profiles for select to authenticated using (user_id = (select auth.uid()) or public.is_admin());
@@ -196,14 +286,14 @@ create policy farmer_profiles_admin_update on public.farmer_profiles for update 
 
 drop policy if exists farm_members_select on public.farm_members;
 create policy farm_members_select on public.farm_members for select to authenticated
-using (user_id = (select auth.uid()) or exists (select 1 from public.farms f where f.id = farm_members.farm_id and f.owner_id = (select auth.uid())) or public.is_admin());
+using (user_id = (select auth.uid()) or public.owns_farm(farm_id) or public.is_admin());
 drop policy if exists farm_members_owner_insert on public.farm_members;
 create policy farm_members_owner_insert on public.farm_members for insert to authenticated
-with check (exists (select 1 from public.farms f where f.id = farm_members.farm_id and f.owner_id = (select auth.uid())) and status in ('invited','active'));
+with check (public.owns_farm(farm_id) and status in ('invited','active'));
 drop policy if exists farm_members_owner_update on public.farm_members;
 create policy farm_members_owner_update on public.farm_members for update to authenticated
-using (exists (select 1 from public.farms f where f.id = farm_members.farm_id and f.owner_id = (select auth.uid())) or public.is_admin())
-with check (exists (select 1 from public.farms f where f.id = farm_members.farm_id and f.owner_id = (select auth.uid())) or public.is_admin());
+using (public.owns_farm(farm_id) or public.is_admin())
+with check (public.owns_farm(farm_id) or public.is_admin());
 
 drop policy if exists user_module_grants_select on public.user_module_grants;
 create policy user_module_grants_select on public.user_module_grants for select to authenticated using (user_id = (select auth.uid()) or public.is_admin());
@@ -220,6 +310,15 @@ grant select,insert,update on public.organizations,public.organization_members,p
 grant select,insert,update on public.farmer_profiles to authenticated;
 grant select on public.user_module_grants to authenticated;
 grant select,insert,update,delete on public.admin_roles,public.admin_role_permissions,public.admin_user_roles to authenticated;
+revoke all on function public.owns_organization(uuid) from public,anon;
+revoke all on function public.is_organization_member(uuid) from public,anon;
+revoke all on function public.owns_farm(uuid) from public,anon;
+revoke all on function public.guard_organization_verification() from public,anon;
+revoke all on function public.admin_review_module_application(uuid,text,text) from public,anon;
+grant execute on function public.owns_organization(uuid) to authenticated;
+grant execute on function public.is_organization_member(uuid) to authenticated;
+grant execute on function public.owns_farm(uuid) to authenticated;
+grant execute on function public.admin_review_module_application(uuid,text,text) to authenticated;
 revoke all on function public.has_module_access(text,text,text,uuid) from public,anon;
 revoke all on function public.has_admin_permission(text) from public,anon;
 grant execute on function public.has_module_access(text,text,text,uuid) to authenticated;
