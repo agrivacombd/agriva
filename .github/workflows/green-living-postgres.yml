@@ -1,0 +1,52 @@
+name: Green Living PostgreSQL integration
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*green_exchange_reconcile.sql"
+      - "supabase/migrations/*green_living_reconcile.sql"
+      - "supabase/migrations/*green_living_fk_indexes.sql"
+      - "scripts/test-green-living-platform.sql"
+      - ".github/workflows/green-living-postgres.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/*green_exchange_reconcile.sql"
+      - "supabase/migrations/*green_living_reconcile.sql"
+      - "supabase/migrations/*green_living_fk_indexes.sql"
+      - "scripts/test-green-living-platform.sql"
+      - ".github/workflows/green-living-postgres.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  green-living-postgres-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Test Green Exchange, Garden RLS and Green Impact RPC
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test-green-living-platform.sql
