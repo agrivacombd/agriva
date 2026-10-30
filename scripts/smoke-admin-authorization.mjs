@@ -103,9 +103,8 @@ assert.ok(orderMigration.includes("A refund does not"), "refund must not automat
 assert.ok(orderMigration.includes("REVOKE ALL ON FUNCTION public.set_marketplace_order_status(uuid, text) FROM PUBLIC, anon"), "order status RPC must not be executable by anonymous users");
 
 const harvestMigration = read("supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql");
-assert.ok(harvestMigration.includes("DROP FUNCTION IF EXISTS public.admin_moderate_harvest_listing"), "Sell My Harvest must remove the legacy admin approval RPC");
-assert.ok(harvestMigration.includes("DROP FUNCTION IF EXISTS private.admin_moderate_harvest_listing"), "Sell My Harvest must remove the legacy private moderation RPC");
 assert.ok(harvestMigration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
+assert.ok(harvestMigration.includes("CREATE OR REPLACE FUNCTION private.admin_moderate_harvest_listing"), "legacy admin UI must retain a compatible visibility RPC");
 assert.ok(harvestMigration.includes("moderation_status = 'approved'"), "legacy harvest listings must be normalized to immediately published");
 assert.ok(harvestMigration.includes("USING (status = 'available')"), "public harvest RLS must not require admin approval");
 assert.ok(harvestMigration.includes("IF NOT NEW.contact_phone_public"), "publication trigger must preserve phone-publication consent");
