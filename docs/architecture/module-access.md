@@ -10,7 +10,7 @@ Signup/profile role selections are descriptive personalization only. They never 
 - Buyer Demands remain available to authenticated users without seller verification.
 
 ## Evidence handling
-Evidence uploads go to the private \`identity-verification\` Supabase Storage bucket, under a folder named for the authenticated user ID. Accepted file types are JPG, PNG and PDF, with a 5 MB per-file limit and up to five files per application. Admin pages generate short-lived signed links only for paths under the applicant's own folder. Evidence objects are not public.
+Evidence uploads go to the private \`identity-verification\` Supabase Storage bucket, under a folder named for the authenticated user ID. Accepted file types are JPG, PNG and PDF, with a 5 MB per-file limit and up to five files per application. Admin pages generate short-lived signed links only for paths under the applicant's own folder. Evidence objects are not public. The application INSERT RLS policy also calls a database helper that verifies each referenced object exists under the authenticated applicant's own folder; bypassing the web form does not bypass this check.
 
 ## Review and audit
 Admins review applications at \`/admin/identity-verification\`. The page calls \`admin_review_module_application\`; it does not directly update application state. The review RPC, grant creation, organization verification and verification-profile synchronization run transactionally. \`module_access_application_events\` records submission and review outcomes. Client users cannot update review state or insert grants.
