@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
   }
 
   const slugInput = text(body.slug, 120) || slugifyProductName(name);
-  const slug = slugInput.toLocaleLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
+  const slug = slugInput.normalize("NFKC").toLocaleLowerCase().replace(/[^\\p{L}\\p{N}-]+/gu, "-").replace(/-+/g, "-").replace(/^-|-$/g, "").slice(0, 120);
   if (!slug) return NextResponse.json({ error: "একটি ইংরেজি URL slug দিন।" }, { status: 400 });
 
   const seoTitle = text(body.seo_title, 70) || `${name} | AGRIVA`.slice(0, 70);
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     console.error("Admin SEO product creation failed", { code: error.code || "unknown" });
     const message = error.code === "23505"
       ? "এই slug বা SKU আগে থেকেই আছে। আলাদা slug/SKU ব্যবহার করুন।"
-      : error.code === "42883"
+      : (error.code === "42883" || error.code === "PGRST202")
         ? "SEO Studio database migration এখনো প্রয়োগ হয়নি।"
         : "পণ্য সংরক্ষণ করা যায়নি। Product SEO migration ও database schema যাচাই করুন।";
     return NextResponse.json({ error: message }, { status: 400 });
