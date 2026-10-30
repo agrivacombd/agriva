@@ -178,7 +178,7 @@ export default function Checkout() {
   </main>;
 }
 
-function Field({ label, value, onChange, placeholder, type = "text", autoComplete }: {
+function Field({ label, value, onChange, placeholder, type = "text", autoComplete, required }: {
   label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; autoComplete?: string; required?: boolean;
 }) {
   return <label className="block">
