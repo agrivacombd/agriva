@@ -252,6 +252,20 @@ BEGIN
 END
 $admin_reject$;
 
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
+DO $owner_cannot_republish$
+DECLARE affected integer;
+BEGIN
+  UPDATE public.harvest_listings SET status = 'available'
+  WHERE id='20000000-0000-0000-0000-000000000002';
+  GET DIAGNOSTICS affected = ROW_COUNT;
+  IF affected <> 0 THEN
+    RAISE EXCEPTION 'FAIL: owner must not republish an admin-rejected listing';
+  END IF;
+END
+$owner_cannot_republish$;
+
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
 DO $admin_can_read_paused$
 BEGIN
   IF (SELECT count(*) FROM public.harvest_listings WHERE id='20000000-0000-0000-0000-000000000002') <> 1 THEN
