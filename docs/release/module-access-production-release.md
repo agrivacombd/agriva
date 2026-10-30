@@ -1,22 +1,22 @@
 # Production Release Runbook — Module Access & Identity Verification
 
-Status: **Prepared, not approved/applied to Production**  
+Status: **Eight feature migrations and Global Super Admin assignment applied to Production; follow-up Advisor hardening pending CI/release**  
 Target Supabase project: `dhqaepsbuwhbynagfxpf`  
 Feature branch: `feat/security-performance-advisor-hardening`
 
 ## Production preflight observed on 2026-10-30
 
-- Production migration history currently ends at `20261030094756 add_marketplace_product_unit`.
+- Production migration history now includes the eight feature migrations through `20261030140500 make_admin_role_scope_nullable`.
 - The required feature migrations are newer than that head and are not applied in Production.
 - Existing prerequisites verified: `public.farms`, `public.products`, `public.harvest_listings`, and `public.profiles` exist.
 - `products.farmer_id`, `harvest_listings.owner_id`, `harvest_listings.moderation_status`, and `harvest_listings.moderation_note` exist.
 - Production harvest moderation trigger exists as `harvest_listings_guard_moderation`; it calls `guard_harvest_listing_moderation()`. Preserve it.
 - Production `is_admin()` still uses `profiles.role = 'admin'`. The new delegated RBAC permission function is additive and does not replace this legacy check.
-- A currently existing Production profile with `role='admin'` is `agriva.com.bd@gmail.com`. Do not grant the new global Super Admin role to any account until the owner confirms the intended email.
+- `agriva.com.bd@gmail.com` has been assigned the `super_admin` role globally with all 15 capabilities. The existing `profiles.role='admin'` flag remains intact.
 
-## Migration sequence
+## Previously applied feature migrations
 
-Apply only these repository migrations, in filename order, after taking a verified database backup/PITR restore point:
+The following eight repository migrations have already been applied to Production in filename order:
 
 1. `20261030100000_module_access_foundation.sql`
 2. `20261030110000_identity_verification_workflow.sql`
@@ -29,7 +29,7 @@ Apply only these repository migrations, in filename order, after taking a verifi
 
 Do **not** replay Test-only fixture migrations (`test_fixture_core_schema`, `test_fixture_profiles_rls_hardening`, `test_fixture_signup_trigger`, `test_fixture_owner_select_policies`) to Production. They exist only to build the isolated test schema.
 
-The last two migrations repair the global-scope Super Admin assignment model: `admin_user_roles.scope_id` must be nullable, and the table needs a surrogate primary key rather than a composite primary key that forces `scope_id` to NOT NULL.
+The last two migrations repair the global-scope Super Admin assignment model: `admin_user_roles.scope_id` is nullable and the table uses a surrogate primary key.
 
 ## Security and Performance Advisor hardening (follow-up release)
 
@@ -49,16 +49,15 @@ The migration was dry-run inside a transaction on Production and rolled back aft
 ## Release gates
 
 1. Confirm a fresh backup/PITR restore point and verify restore access.
-2. Confirm the feature branch SHA and all migration filenames match this runbook.
-3. Apply migrations one at a time; stop immediately on any SQL error.
-4. Verify migration history contains all eight feature migrations.
-5. Verify RLS is enabled on all newly created public tables and the private `identity-verification` bucket remains private.
-6. Verify `guard_organization_verification()` is not directly executable by `anon` or `authenticated`.
-7. Verify authenticated clients cannot INSERT/UPDATE/DELETE `user_module_grants` or mutate `module_access_application_events`.
-8. Verify an ordinary authenticated user cannot self-assign admin roles or module grants.\n9. Apply the follow-up Advisor hardening migration only after its CI and database dry-run checks pass; confirm `private` remains unexposed, all public RPC wrappers retain their original grants, and both Advisors are rerun.
-10. Seed the `super_admin` role and all 15 declared capabilities, then assign it to the owner-confirmed account only. Keep the existing `profiles.role='admin'` legacy flag intact until a separately tested RBAC cutover.
-11. Run smoke tests for Plant Market, Marketplace, Sell Harvest, buyer demands, identity evidence upload/review, and admin permission checks.
-12. Promote the application only after the Preview build and production smoke checks pass.
+2. Confirm the hardening migration on `feat/security-performance-advisor-hardening` matches the reviewed commit.
+3. Confirm `private` is absent from the PostgREST exposed-schema allowlist.
+4. Apply `20261030150000_security_performance_advisor_hardening.sql`; stop immediately on any SQL error.
+5. Verify the 41 public RPC facades are `SECURITY INVOKER`, their private implementations retain their original guards, and the trigger-only function is no longer client-executable.
+6. Verify all 11 foreign-key indexes exist and the job SELECT policy pairs are consolidated without changing access.
+7. Rerun Security and Performance Advisors and review every remaining finding.
+8. Verify the 15 Global Super Admin capabilities remain active and an ordinary user cannot self-assign admin roles or module grants.
+9. Run smoke tests for Plant Market, Marketplace, Sell Harvest, buyer demands, identity evidence upload/review, and admin permission checks.
+10. Promote the application only if a code deployment is actually required and the Preview build plus production smoke checks pass.
 
 ## Rollback strategy
 
@@ -84,8 +83,8 @@ Do not use a blanket `DROP TABLE`, `DROP COLUMN`, or full database restore as th
 
 ## Known release blockers / caveats
 
-- Production Super Admin identity is awaiting owner confirmation.
-- The latest Vercel Preview remains on commit `d720928c63d983d67de2264e87423f2656cb354e`; newer SQL-only commits have not received a new Preview deployment because Vercel reported a build-rate-limit failure.
-- Test Supabase has the eight feature migrations plus four Test-only fixture entries. Feature migration version IDs were reconciled to repository filenames; fixture entries intentionally remain test-only.
+- The follow-up Advisor hardening migration is pending its CI/release gate.
+- No Vercel Production environment or deployment has been changed as part of the database review.
+- The isolated Test Supabase retains its own fixture schema; do not replay those fixture migrations into Production.
 - The follow-up Production Advisor hardening migration is prepared on `feat/security-performance-advisor-hardening`; it has not yet been applied to Production.
-- Test Performance Advisor reports existing/unindexed FK and RLS-initplan warnings. These are not migration blockers by themselves, but should be tracked.
+- INFO-level unused-index notices are intentionally retained until representative workload statistics are available; see the follow-up Advisor section.
