@@ -22,7 +22,7 @@ assert.match(migration, /before update of status on public\.commission_payouts/i
 assert.match(migration, /payout\.mfa_approved/);
 assert.match(migration, /payout\.mfa_settled/);
 assert.match(migration, /public\.admin_audit_log/);
-assert.match(admin, /MFA verification required/i);
+assert.match(admin, /AAL2 verification/i);
 assert.match(admin, /payout_mfa_required/);
 
 assert.match(exchange, /green_exchange_listings/);
