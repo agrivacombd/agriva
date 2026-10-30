@@ -131,7 +131,8 @@ export default function Checkout() {
         {message && <div role="status" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}</div>}
         {items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-7 shadow-sm">
           <Field label="আপনার পুরো নাম *" placeholder="যেমন: মো. রহিম উদ্দিন" value={form.name} onChange={(value) => setForm({ ...form, name: value })} />
-          <Field label="মোবাইল নম্বর *" placeholder="01XXXXXXXXX" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} type="tel" />\n          <p className="-mt-2 text-xs text-[#647468]">১১ সংখ্যার সচল মোবাইল নম্বর দিন।</p>
+          <Field label="মোবাইল নম্বর *" placeholder="01XXXXXXXXX" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} type="tel" />
+          <p className="-mt-2 text-xs text-[#647468]">১১ সংখ্যার সচল মোবাইল নম্বর দিন।</p>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="জেলা *" placeholder="আপনার জেলার নাম" value={form.district} onChange={(value) => setForm({ ...form, district: value })} />
             <Field label="উপজেলা *" placeholder="আপনার উপজেলার নাম" value={form.upazila} onChange={(value) => setForm({ ...form, upazila: value })} />
@@ -147,4 +148,11 @@ export default function Checkout() {
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: "text" | "tel" }) {\n  return (\n    <label className="block">\n      <span className="text-sm font-bold">{label}</span>\n      <input required type={type} inputMode={type === "tel" ? "tel" : "text"} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-xl border border-[#dce5dc] bg-white px-4 py-3 outline-none transition focus:border-[#3b7650] focus:ring-2 focus:ring-[#3b7650]/15" />\n    </label>\n  );\n}
+function Field({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: "text" | "tel" }) {
+  return (
+    <label className="block">
+      <span className="text-sm font-bold">{label}</span>
+      <input required type={type} inputMode={type === "tel" ? "tel" : "text"} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-xl border border-[#dce5dc] bg-white px-4 py-3 outline-none transition focus:border-[#3b7650] focus:ring-2 focus:ring-[#3b7650]/15" />
+    </label>
+  );
+}
