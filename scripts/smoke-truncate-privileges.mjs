@@ -6,6 +6,12 @@ const migration = readFileSync("supabase/migrations/20261030181320_revoke_client
 assert.match(migration, /REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM anon, authenticated/i);
 assert.match(migration, /ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public[\s\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
 
+const defaultsMigration = readFileSync("supabase/migrations/20261030235300_revoke_client_truncate_privileges.sql", "utf8");
+assert.match(defaultsMigration, /ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public[\\s\\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
+assert.match(defaultsMigration, /ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql[\\s\\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
+assert.match(defaultsMigration, /ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA graphql_public[\\s\\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
+assert.match(defaultsMigration, /ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA storage[\\s\\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
+
 const sql = readFileSync("supabase/tests/security_truncate_privileges.sql", "utf8");
 assert.match(sql, /FROM pg_tables\s+WHERE schemaname = 'public'/i);
 assert.match(sql, /has_table_privilege\('anon'/i);
