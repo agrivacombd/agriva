@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const migration = readFileSync("supabase/migrations/20261030235210_green_living_reconcile.sql", "utf8");
-const indexesMigration = readFileSync("supabase/migrations/20261030235220_green_living_fk_indexes.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030183617_green_living_reconcile.sql", "utf8");
+const indexesMigration = readFileSync("supabase/migrations/20261030183622_green_living_fk_indexes.sql", "utf8");
 const gardenPage = readFileSync("app/garden/page.tsx", "utf8");
 const gardenClient = readFileSync("app/garden/GardenClient.tsx", "utf8");
 const impactPage = readFileSync("app/impact/page.tsx", "utf8");

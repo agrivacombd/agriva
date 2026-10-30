@@ -51,9 +51,9 @@ $$;
 GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
 
-\i supabase/migrations/20261030235200_green_exchange_reconcile.sql
-\i supabase/migrations/20261030235210_green_living_reconcile.sql
-\i supabase/migrations/20261030235220_green_living_fk_indexes.sql
+\i supabase/migrations/20261030183610_green_exchange_reconcile.sql
+\i supabase/migrations/20261030183617_green_living_reconcile.sql
+\i supabase/migrations/20261030183622_green_living_fk_indexes.sql
 
 -- Every new private table is RLS-protected.
 DO $rls$
