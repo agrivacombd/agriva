@@ -1,7 +1,7 @@
 name: AGRIVA CI
 on:
   push:
-    branches: [main, feat/module-access-architecture]
+    branches: [main, feat/module-access-architecture, feat/security-performance-advisor-hardening]
   pull_request:
     branches: [main]
 
