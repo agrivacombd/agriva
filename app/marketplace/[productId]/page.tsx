@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
+import AddToCartButton from "@/components/marketplace/AddToCartButton";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 
@@ -234,6 +235,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
+                <AddToCartButton product={{ id: product.id, slug: product.slug, name: product.name, category: product.category, price: product.price, stock: product.stock }} className="mb-3" />
                 <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
               )}
             </div>

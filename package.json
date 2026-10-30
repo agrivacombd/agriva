@@ -36,7 +36,8 @@
     "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs",
     "test:sell-harvest-publication": "node scripts/smoke-sell-harvest-publication.mjs",
     "test:auth-refresh-token": "node scripts/smoke-auth-refresh-token.mjs",
-    "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs"
+    "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs",
+    "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

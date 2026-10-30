@@ -1,0 +1,21 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
+const api=read("../app/api/checkout/cart/route.ts"), checkout=read("../app/checkout/page.tsx");
+const cart=read("../app/cart/page.tsx"), migration=read("../supabase/migrations/20261031110000_cod_cart_collection_audit.sql");
+const admin=read("../app/admin/orders/page.tsx"), add=read("../components/marketplace/AddToCartButton.tsx");
+for (const field of ["division","district","upazila","unionOrArea","villageRoadHouse"]) { assert.ok(api.includes(field)); assert.ok(checkout.includes(field)); }
+for (const token of ["normalizeBangladeshPhone","p_idempotency_key","cod_enabled"]) assert.ok(api.includes(token));
+assert.ok(checkout.includes("crypto.randomUUID"));
+assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-quoted body");
+assert.ok(migration.includes("ensure_cart_active_for_item"));
+assert.ok(migration.includes("grant select on public.marketplace_checkouts to authenticated"));
+assert.ok(migration.includes("grant select on public.cod_collection_events to authenticated"));
+for (const token of ["pg_advisory_xact_lock","finalize_marketplace_cod_order","record_cod_collection","public.is_admin()","cod_collection_events","add_marketplace_cart_item","ensure_cart_active_for_item"]) assert.ok(migration.includes(token));
+assert.ok(add.includes('rpc("add_marketplace_cart_item"'));
+assert.ok(cart.includes("changeQuantity") && cart.includes("remove(item)"));
+assert.ok(admin.includes("record_cod_collection") && admin.includes("COD collection audit"));
+const packageJson = JSON.parse(read("../package.json"));
+assert.ok(packageJson.scripts["test:analytics-instrumentation"]);
+assert.ok(packageJson.scripts["test:cod-cart"]);
+console.log("COD cart workflow static contract checks passed.");
