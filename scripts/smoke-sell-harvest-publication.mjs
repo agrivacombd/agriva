@@ -17,8 +17,12 @@ assert.match(page, /if \(!mineOnly && item\.status !== "available"\)/, "Public f
 assert.doesNotMatch(adminPage, /admin_moderate_harvest_listing|name="action"/, "Admin harvest page must be read-only");
 assert.match(migration, /moderation_status = 'approved'/, "Legacy listings must be normalized to the published compatibility state");
 assert.match(migration, /USING \(status = 'available'\)/, "Public RLS must expose available listings without a moderation gate");
-assert.match(migration, /DROP FUNCTION IF EXISTS public\.admin_moderate_harvest_listing/, "Legacy admin approval RPC must be removed");
 assert.ok(migration.includes("IF NOT NEW.contact_phone_public") && migration.includes("NEW.contact_phone := NULL"), "Immediate publication must preserve phone consent privacy");
-assert.match(migration, /DROP FUNCTION IF EXISTS private\.admin_moderate_harvest_listing/, "Legacy private moderation RPC must be removed");
 assert.ok(migration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
+assert.match(migration, /IF NOT private\.is_admin\(\)/, "Only admins may change moderation state; farmers publish immediately");
+assert.match(migration, /CREATE OR REPLACE FUNCTION private\.admin_moderate_harvest_listing/, "Legacy admin UI must retain a compatible visibility RPC");
+assert.match(migration, /CREATE OR REPLACE FUNCTION public\.admin_moderate_harvest_listing/, "Public RPC must forward to the compatibility visibility implementation");
+assert.match(migration, /harvest_listing\.visibility_changed/, "Admin visibility changes must remain audited");
+const ownerUpdatePolicy = migration.split("CREATE POLICY harvest_listings_owner_status_update")[1] ?? "";
+assert.match(ownerUpdatePolicy, /moderation_status = 'approved'/, "Owners must not republish listings rejected by admins");
 console.log("Sell My Harvest immediate publication regression checks passed.");

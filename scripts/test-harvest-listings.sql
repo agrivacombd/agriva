@@ -174,11 +174,11 @@ BEGIN
   PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
 
   INSERT INTO public.harvest_listings (
-    owner_id, seller_name, crop_name, description, quantity, unit,
+    id, owner_id, seller_name, crop_name, description, quantity, unit,
     price_per_unit, district, contact_phone, contact_phone_public,
     image_urls, status, moderation_status, moderation_note
   ) VALUES (
-    auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
+    '20000000-0000-0000-0000-000000000002', auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
     30, 'Naogaon', '01700000000', false,
     ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/test.jpg'], 'available', 'rejected', 'client-forged'
   ) RETURNING id, moderation_status, moderation_note, contact_phone
@@ -234,20 +234,74 @@ DECLARE
   listing_id uuid;
 BEGIN
   PERFORM set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
-  SELECT id INTO listing_id FROM public.harvest_listings WHERE owner_id = auth.uid() LIMIT 1;
+  SELECT id INTO listing_id FROM public.harvest_listings WHERE owner_id = auth.uid() AND crop_name = 'Rice' LIMIT 1;
   UPDATE public.harvest_listings SET status = 'available' WHERE id = listing_id;
 END
 $owner$;
 
-RESET ROLE;
-DO $no_moderation_rpc$
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
+SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-000000000002', 'rejected', 'test moderation compatibility');
+
+DO $admin_reject$
 BEGIN
-  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL
-    OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: legacy admin moderation RPCs must be removed';
+  IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'paused'
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'rejected'
+    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'test moderation compatibility' THEN
+    RAISE EXCEPTION 'FAIL: legacy admin reject action must pause and audit a rejected listing';
   END IF;
 END
-$no_moderation_rpc$;
+$admin_reject$;
+
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
+DO $owner_cannot_republish$
+DECLARE affected integer;
+BEGIN
+  UPDATE public.harvest_listings SET status = 'available'
+  WHERE id='20000000-0000-0000-0000-000000000002';
+  GET DIAGNOSTICS affected = ROW_COUNT;
+  IF affected <> 0 THEN
+    RAISE EXCEPTION 'FAIL: owner must not republish an admin-rejected listing';
+  END IF;
+END
+$owner_cannot_republish$;
+
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
+DO $admin_can_read_paused$
+BEGIN
+  IF (SELECT count(*) FROM public.harvest_listings WHERE id='20000000-0000-0000-0000-000000000002') <> 1 THEN
+    RAISE EXCEPTION 'FAIL: admin must be able to read paused harvest listings';
+  END IF;
+END
+$admin_can_read_paused$;
+
+SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-000000000002', 'approved', NULL);
+
+DO $admin_approve$
+BEGIN
+  IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'available'
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved'
+    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin approve action must restore listing visibility';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admin_audit_log WHERE action = 'harvest_listing.visibility_changed') THEN
+    RAISE EXCEPTION 'FAIL: compatibility admin visibility changes must be audited';
+  END IF;
+END
+$admin_approve$;
+
+RESET ROLE;
+DO $compatibility_rpc$
+BEGIN
+  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NULL
+    OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin visibility RPC compatibility must remain during rollout';
+  END IF;
+  IF has_function_privilege('anon', 'public.admin_moderate_harvest_listing(uuid,text,text)', 'EXECUTE')
+    OR NOT has_function_privilege('authenticated', 'public.admin_moderate_harvest_listing(uuid,text,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'FAIL: only authenticated admins may invoke the compatibility RPC';
+  END IF;
+END
+$compatibility_rpc$;
 SET LOCAL ROLE anon;
 DO $public$
 DECLARE visible_count integer;
