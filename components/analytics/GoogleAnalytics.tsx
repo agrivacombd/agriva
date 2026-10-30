@@ -23,7 +23,7 @@ export default function GoogleAnalytics() {
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
         strategy="afterInteractive"
       />
-      <Script id="google-analytics" strategy="afterInteractive">
+      <Script id="google-analytics" strategy="afterInteractive" onReady={() => setReady(true)}>
         {`
           window.dataLayer = window.dataLayer || [];
           window.gtag = function(){window.dataLayer.push(arguments);};
@@ -33,7 +33,6 @@ export default function GoogleAnalytics() {
             send_page_view: false
           });
         `}
-        onReady={() => setReady(true)}
       </Script>
     </>
   );
