@@ -1,39 +1,33 @@
-# AGRIVA Module Access Architecture (Feature Branch)
+# AGRIVA Module Access and Identity Verification
 
-## Security model
-A profile role or signup selection describes a user's interests; it is not an authorization grant. Access to a seller module is granted only after a separately reviewed application. Backend handlers and Supabase RLS must enforce the same grant.
+## Identity model
+Signup/profile role selections are descriptive personalization only. They never grant seller permissions. Every selling module requires a separately submitted application, admin review, a verified identity profile where applicable, and an active row in \`user_module_grants\`.
 
-## Module access matrix
-| Module | Required grant | Approval evidence |
-| --- | --- | --- |
-| Plant Market | plant_market:create | Gardener identity and ornamental/plant activity review |
-| Marketplace | marketplace:create | Verified company/shop/dealer organization |
-| Sell Harvest | sell_harvest:create | Verified farmer profile |
-| Buyer Demands | buyer_demands:create | Any authenticated account; no seller verification |
-| Transport | transport:create / manage_orders | Transport partner verification |
-| Farms | farm_management:* | Farm ownership or explicit farm membership |
+## Seller application paths
+- Plant Market: hobby/ornamental gardener application; admin approval creates a verified \`gardener_profiles\` record and global \`plant_market\` grants.
+- Marketplace: company/shop/dealer application; approval verifies the applicant-owned organization and creates organization-scoped \`marketplace\` grants.
+- Sell Harvest: farmer application; approval creates a verified \`farmer_profiles\` record and global \`sell_harvest\` grants.
+- Buyer Demands remain available to authenticated users without seller verification.
 
-## Tables introduced
-- module_access_applications: self-submitted, pending-only applications; admins review.
-- user_module_grants: approved permissions with global, organization, or farm scope and expiry/revocation.
-- organizations / organization_members: business tenancy and staff membership.
-- farmer_profiles: farmer verification record.
-- farm_members: scoped farm staff.
-- admin_roles, admin_role_permissions, admin_user_roles: delegated admin capabilities.
+## Evidence handling
+Evidence uploads go to the private \`identity-verification\` Supabase Storage bucket, under a folder named for the authenticated user ID. Accepted file types are JPG, PNG and PDF, with a 5 MB per-file limit and up to five files per application. Admin pages generate short-lived signed links only for paths under the applicant's own folder. Evidence objects are not public.
 
-## Rollout notes
-1. This migration is additive and is not applied by this branch.
-2. Existing role memberships are preserved. No role is automatically converted into an approved module grant.
-3. Existing API routes are not yet switched to the new helper. Migrate one module at a time after integration tests and data backfill rules are approved.
-4. Buyer Demands remains open to authenticated users.
-5. Add organization/farm ownership checks to every resource query in addition to checking module access.
-6. Do not seed admin grants from legacy profiles.role without an explicit, audited administrator mapping.
-7. Review existing broad table grants/default privileges separately; RLS does not protect TRUNCATE.
+## Review and audit
+Admins review applications at \`/admin/identity-verification\`. The page calls \`admin_review_module_application\`; it does not directly update application state. The review RPC, grant creation, organization verification and verification-profile synchronization run transactionally. \`module_access_application_events\` records submission and review outcomes. Client users cannot update review state or insert grants.
 
-## Required validation before production
-- Apply migration only to an isolated Supabase test project.
-- Verify anonymous access denied to all new tables.
-- Verify users cannot approve applications or insert/update their own grants.
-- Verify global grants, scoped grants, expired grants, revoked grants, and cross-tenant denial.
-- Verify delegated admin capabilities and expiry.
-- Add per-module API and RLS integration tests before switching existing endpoints.
+## Channel and backend enforcement
+- Products now carry \`marketplace_channel\` (\`plant_market\` or \`marketplace\`).
+- Plant Market catalogue reads only the Plant Market channel; business Marketplace reads only the Marketplace channel.
+- Product INSERT/UPDATE/DELETE has restrictive RLS policies requiring a matching module grant, so older permissive role-based policies cannot grant seller access.
+- Harvest listing INSERT/UPDATE has restrictive RLS policies requiring a verified farmer profile and an active Sell Harvest grant.
+- API routes independently check the authenticated session and module grants.
+
+## Rollout sequence
+1. Run the static regression checks and type/lint/build checks on this branch.
+2. Apply both module-access migrations only to an isolated Supabase test project.
+3. Run RLS integration tests for anonymous access, self-approval, self-grant, cross-user evidence paths, pending/rejected/approved states, expired/revoked grants, channel isolation and harvest ownership.
+4. Confirm existing product data defaults to the business Marketplace channel; reclassify any known hobby-gardener listings only after an audited owner review.
+5. Only after tests and data review, prepare a production rollout plan. No production database, secrets, deployment or main branch changes are part of this feature branch.
+
+## Important
+The branch is not production-ready until migrations have been applied and tested in an isolated project. Existing seller/harvest code outside the routes explicitly integrated here must be inventoried before production rollout. Do not infer that a signup role means a verified seller.
