@@ -42,7 +42,7 @@ RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, public, private, pg_temp
-AS $
+AS $$
 DECLARE
   v_admin uuid;
   v_previous_status text;
@@ -96,7 +96,7 @@ BEGIN
     )
   );
 END;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION private.admin_moderate_harvest_listing(uuid, text, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION private.admin_moderate_harvest_listing(uuid, text, text) TO authenticated, service_role;
