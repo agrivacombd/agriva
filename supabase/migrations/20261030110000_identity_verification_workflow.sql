@@ -76,7 +76,9 @@ create unique index if not exists organizations_one_pending_per_owner_idx on pub
 create unique index if not exists module_access_one_open_application_idx
  on public.module_access_applications(user_id,module) where status in ('pending','under_review');
 alter table public.module_access_applications add constraint module_access_applicant_data_object_check
- check (jsonb_typeof(applicant_data)='object' and pg_column_size(applicant_data)<=32768);
+ check (jsonb_typeof(applicant_data)='object' and pg_column_size(applicant_data)<=32768
+  and case when jsonb_typeof(applicant_data->'evidence_paths')='array'
+   then jsonb_array_length(applicant_data->'evidence_paths') between 1 and 5 else false end);
 drop policy if exists module_access_applications_admin_update on public.module_access_applications;
 revoke update,delete,truncate,references,trigger on public.module_access_applications from authenticated;
 grant select,insert on public.module_access_applications to authenticated;
