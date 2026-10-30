@@ -1,10 +1,12 @@
-# Production Release Runbook — Module Access & Identity Verification
+# Production Release Runbook — Broad Feature Branch Release
 
 Status: **All nine feature migrations applied to Production; Global Super Admin assignment verified; RPC and FK/policy Advisor fixes verified**  
 Target Supabase project: `dhqaepsbuwhbynagfxpf`  
 Feature branch: `feat/security-performance-advisor-hardening`
 
-## Production preflight observed on 2026-10-30
+## Release scope and Production preflight observed on 2026-10-30
+
+This is a broad application-and-database release, not a database-only Advisor patch. The feature branch is 108 commits ahead of `main` and changes 35 files. Scope includes module access and identity verification, Plant Market / business Marketplace seller separation, direct Sell Harvest posting for authenticated users, Admin moderation/RBAC, security and performance hardening, CI, regression scripts, and release documentation. Production rollout therefore requires both the database state checks below and a Vercel application release with post-deployment smoke tests. The current Preview is not a Production deployment.
 
 - Production migration history includes all nine feature migrations through `20261030150000 security_performance_advisor_hardening`.
 - The eight feature migrations are applied in Production; only the follow-up Advisor hardening migration remains pending.
@@ -54,9 +56,9 @@ The migration was dry-run inside a transaction on Production, then applied after
 5. Security Advisor: no anonymous/authenticated SECURITY DEFINER RPC findings remain; only leaked-password protection is outstanding.
 6. Performance Advisor: no unindexed-FK or duplicate permissive-policy findings remain; 85 INFO unused-index candidates are retained pending workload evidence.
 7. Verify the 15 Global Super Admin capabilities remain active and ordinary users cannot self-assign admin roles or module grants.
-8. Feature-branch CI passed on commit `0087899bf315c85e2792e41ad9ecb95dbf91d37e` (run 1727).
+8. Historical CI run 1727 passed on commit `0087899bf315c85e2792e41ad9ecb95dbf91d37e`; this is not evidence of CI passing on the latest Preview commit. Reconfirm the exact Preview SHA's GitHub Actions run and required checks before release.
 9. Run smoke tests for Plant Market, Marketplace, Sell Harvest, buyer demands, identity evidence upload/review, and admin permission checks.
-10. No Vercel Production deployment was needed for this database-only hardening change.
+10. Deploy the reviewed application branch to Production only after the exact Preview commit passes CI, release scope is approved, and explicit user authorization is obtained; then run authenticated and public post-deployment smoke tests.
 
 ## Rollback strategy
 
@@ -83,7 +85,7 @@ Do not use a blanket `DROP TABLE`, `DROP COLUMN`, or full database restore as th
 ## Known release blockers / caveats
 
 - One Auth warning remains because leaked-password protection is disabled; the Supabase dashboard setting requires Pro or above.
-- No Vercel Production environment or deployment has been changed as part of the database review.
+- No Vercel Production environment or deployment has been changed as part of this review; the application branch remains a separate, pending Production release.
 - The isolated Test Supabase retains its own fixture schema; do not replay those fixture migrations into Production.
 - The Advisor hardening migration is applied and reconciled to version `20261030150000` in Production.
 - 85 INFO-level unused-index notices are intentionally retained until representative workload statistics are available; see the follow-up Advisor section.
