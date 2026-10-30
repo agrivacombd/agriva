@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import SellerProductForm from "@/components/seller/SellerProductForm";
-
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
 const pageUrl = siteUrl + "/seller/products/new";
 
