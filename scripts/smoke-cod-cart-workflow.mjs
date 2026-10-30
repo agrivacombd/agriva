@@ -9,7 +9,7 @@ for (const token of ["normalizeBangladeshPhone","p_idempotency_key","cod_enabled
 assert.ok(checkout.includes("crypto.randomUUID"));
 assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-quoted body");
 assert.ok(migration.includes("ensure_cart_active_for_item"));
-assert.match(migration, /create or replace function public\\.ensure_cart_active_for_item\\(\\)[\\s\\S]*?as \\\$\\\\\\$[\\s\\S]*?end;\\n\\$\\$;/, "active-cart trigger must use a valid dollar-quoted body");
+assert.ok(migration.includes("as $$\ndeclare target_cart_id") && migration.includes("return new;\nend;\n$$;"), "active-cart trigger must use a valid dollar-quoted body");
 assert.ok(migration.includes("grant select on public.marketplace_checkouts to authenticated"));
 assert.ok(migration.includes("grant select on public.cod_collection_events to authenticated"));
 for (const token of ["pg_advisory_xact_lock","finalize_marketplace_cod_order","record_cod_collection","public.is_admin()","cod_collection_events","add_marketplace_cart_item","ensure_cart_active_for_item"]) assert.ok(migration.includes(token));
