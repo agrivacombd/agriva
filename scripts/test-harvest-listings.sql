@@ -239,15 +239,44 @@ BEGIN
 END
 $owner$;
 
-RESET ROLE;
-DO $no_moderation_rpc$
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
+SELECT public.admin_moderate_harvest_listing(id, 'rejected', 'test moderation compatibility')
+FROM public.harvest_listings WHERE crop_name = 'Rice';
+
+DO $admin_reject$
 BEGIN
-  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL
-    OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: legacy admin moderation RPCs must be removed';
+  IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'paused'
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved'
+    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin reject action must pause the listing without restoring moderation gates';
   END IF;
 END
-$no_moderation_rpc$;
+$admin_reject$;
+
+SELECT public.admin_moderate_harvest_listing(id, 'approved', NULL)
+FROM public.harvest_listings WHERE crop_name = 'Rice';
+
+DO $admin_approve$
+BEGIN
+  IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'available'
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: legacy admin approve action must restore listing visibility';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admin_audit_log WHERE action = 'harvest_listing.visibility_changed') THEN
+    RAISE EXCEPTION 'FAIL: compatibility admin visibility changes must be audited';
+  END IF;
+END
+$admin_approve$;
+
+RESET ROLE;
+DO $compatibility_rpc$
+BEGIN
+  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NULL
+    OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin visibility RPC compatibility must remain during rollout';
+  END IF;
+END
+$compatibility_rpc$;
 SET LOCAL ROLE anon;
 DO $public$
 DECLARE visible_count integer;
