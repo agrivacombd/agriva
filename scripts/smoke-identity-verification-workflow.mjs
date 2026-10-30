@@ -17,7 +17,7 @@ assert.match(migration,/values \('identity-verification','identity-verification'
 assert.match(migration,/storage\.foldername\(name\)\)\[1\]=\(select auth\.uid\(\)\)::text/,"evidence upload is scoped to current user");
 assert.match(migration,/drop policy if exists module_access_applications_admin_update/,"client-side review updates are removed");
 assert.match(migration,/after insert or update of status/,"application lifecycle audit trigger exists");
-assert.match(functionGrants,/revoke all on function public\\.guard_organization_verification\\(\\) from public, anon, authenticated/i,"trigger-only security definer function cannot be invoked through the Data API");
+assert.ok(functionGrants.toLowerCase().includes("revoke all on function public.guard_organization_verification() from public, anon, authenticated"),"trigger-only security definer function cannot be invoked through the Data API");
 assert.match(migration,/new\.reviewed_by/,"reviewer identity is written to verification profile");
 assert.match(migration,/case when new\.status='approved' then 'verified' else 'rejected' end/,"approved status maps to verified profile state");
 assert.match(migration,/products_module_access_insert_guard[\s\S]*?as restrictive for insert/,"legacy permissive product policies cannot bypass module approval");
