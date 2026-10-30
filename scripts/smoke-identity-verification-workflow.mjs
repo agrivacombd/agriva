@@ -9,7 +9,7 @@ const admin=read("app/admin/identity-verification/page.tsx");
 const signup=read("app/signup/page.tsx");
 const seller=read("app/api/seller/products/route.ts");
 const gardener=read("app/api/plant-market/products/route.ts");
-const harvest=read("supabase/migrations/20261030110000_identity_verification_workflow.sql");
+const harvest=read("supabase/migrations/20261030120000_harvest_direct_posting.sql");
 assert.match(migration,/create table if not exists public\.gardener_profiles/);
 assert.match(migration,/create table if not exists public\.module_access_application_events/);
 assert.match(migration,/values \('identity-verification','identity-verification',false,5242880/,"identity evidence bucket must be private and size-limited");
