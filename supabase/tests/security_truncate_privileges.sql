@@ -21,7 +21,7 @@ BEGIN
     SELECT 1
     FROM pg_default_acl d
     CROSS JOIN LATERAL aclexplode(d.defaclacl) a
-    WHERE d.defaclrole IN ('postgres'::regrole, 'supabase_admin'::regrole)
+    WHERE d.defaclrole = 'postgres'::regrole
       AND d.defaclnamespace = 'public'::regnamespace
       AND d.defaclobjtype = 'r'
       AND a.grantee IN ('anon'::regrole, 'authenticated'::regrole)
