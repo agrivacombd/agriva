@@ -18,6 +18,7 @@ assert.match(api, /https:/);
 assert.match(migration, /public\.is_admin\(\)/);
 assert.match(migration, /'draft'/);
 assert.match(migration, /seo_review_status/);
+assert.match(migration, /admin_update_product_seo/);
 assert.match(productPage, /seo_title/);
 assert.match(productPage, /meta_description/);
 assert.match(productPage, /seo_faqs/);
