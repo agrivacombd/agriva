@@ -168,7 +168,6 @@ DECLARE
   listing_status text;
   listing_note text;
   listing_phone text;
-  denied boolean := false;
 BEGIN
   PERFORM set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
   PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
