@@ -60,6 +60,11 @@ create policy "Owners can read own exchange listings"
   on public.green_exchange_listings for select to authenticated
   using ((select auth.uid()) = owner_id);
 
+drop policy if exists "Admins can read all exchange listings" on public.green_exchange_listings;
+create policy "Admins can read all exchange listings"
+  on public.green_exchange_listings for select to authenticated
+  using (private.is_admin());
+
 drop policy if exists "Owners can create exchange listings" on public.green_exchange_listings;
 create policy "Owners can create exchange listings"
   on public.green_exchange_listings for insert to authenticated
