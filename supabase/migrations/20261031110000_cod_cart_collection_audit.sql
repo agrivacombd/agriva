@@ -150,7 +150,22 @@ begin
 
   -- Enforce the same bounds at the database boundary because authenticated
   -- clients can invoke this RPC directly and bypass the HTTP route validator.
-  if (p_shipping_address->>'phone') !~ '^\+8801[3-9][0-9]{8}
+  if (p_shipping_address->>'phone') !~ '^\+8801[3-9][0-9]{8}'
+     or length(p_shipping_address->>'phone') <> 14
+     or length(p_shipping_address->>'fullName') > 100
+     or length(p_shipping_address->>'division') > 80
+     or length(p_shipping_address->>'district') > 80
+     or length(p_shipping_address->>'upazila') > 100
+     or length(p_shipping_address->>'unionOrArea') > 120
+     or length(p_shipping_address->>'villageRoadHouse') > 250
+     or length(p_shipping_address->>'landmark') > 200
+     or length(p_shipping_address->>'postalCode') > 20
+     or length(p_shipping_address->>'deliveryInstructions') > 500
+     or length(p_shipping_address->>'address') > 470 then
+    raise exception 'Invalid Bangladesh shipping details';
+  end if;
+
+  -- Serialize retries for the same buyer/key before looking up or creating the checkout.
   perform pg_advisory_xact_lock(hashtextextended(uid::text || ':' || p_idempotency_key, 0));
   select * into checkout_row from public.marketplace_checkouts
    where buyer_id = uid and idempotency_key = p_idempotency_key;
