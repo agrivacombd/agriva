@@ -6,10 +6,10 @@ Feature branch: `feat/security-performance-advisor-hardening`
 
 ## Release scope and Production preflight observed on 2026-10-30
 
-This is a broad application-and-database release, not a database-only Advisor patch. The feature branch is 108 commits ahead of `main` and changes 35 files. Scope includes module access and identity verification, Plant Market / business Marketplace seller separation, direct Sell Harvest posting for authenticated users, Admin moderation/RBAC, security and performance hardening, CI, regression scripts, and release documentation. Production rollout therefore requires both the database state checks below and a Vercel application release with post-deployment smoke tests. The current Preview is not a Production deployment.
+This is a broad application-and-database release, not a database-only Advisor patch. The feature branch is 110 commits ahead of `main` and changes 35 files. Scope includes module access and identity verification, Plant Market / business Marketplace seller separation, direct Sell Harvest posting for authenticated users, Admin moderation/RBAC, security and performance hardening, CI, regression scripts, and release documentation. Production rollout therefore requires both the database state checks below and a Vercel application release with post-deployment smoke tests. The current Preview is not a Production deployment.
 
 - Production migration history includes all nine feature migrations through `20261030150000 security_performance_advisor_hardening`.
-- The eight feature migrations are applied in Production; only the follow-up Advisor hardening migration remains pending.
+- All nine feature migrations, including the follow-up Advisor hardening migration, are recorded as applied in Production.
 - Existing prerequisites verified: `public.farms`, `public.products`, `public.harvest_listings`, and `public.profiles` exist.
 - `products.farmer_id`, `harvest_listings.owner_id`, `harvest_listings.moderation_status`, and `harvest_listings.moderation_note` exist.
 - Production harvest moderation trigger exists as `harvest_listings_guard_moderation`; it calls `guard_harvest_listing_moderation()`. Preserve it.
@@ -45,7 +45,7 @@ The follow-up migration `20261030150000_security_performance_advisor_hardening.s
 - Do not drop the 85 INFO-level unused-index candidates solely because current scan counters are zero. The count includes the 11 newly added FK indexes and indexes on recently added modules, low-volume tables, uniqueness constraints, and expected queue/query paths. Review after a representative 30-day workload window and query-plan evidence.
 - One Security Advisor warning remains: leaked-password protection is disabled. This is an Auth setting, not SQL. Supabase documents it as available on Pro and above; enable it in Auth settings if the project plan supports it and verify signup UX. See https://supabase.com/docs/guides/auth/password-security.
 
-The migration was dry-run inside a transaction on Production, then applied after feature-branch CI passed. Post-apply checks confirmed 0 public API-callable SECURITY DEFINER functions, 42 private implementations, 41 public invoker RPC facades, all 11 FK indexes, and consolidated SELECT policies. Security Advisor now reports only the leaked-password Auth setting; Performance Advisor reports only INFO-level unused-index candidates (85).
+The migration was dry-run inside a transaction on Production, then applied. The historical CI run cited below is not the current branch-head CI gate. Post-apply checks confirmed 0 public API-callable SECURITY DEFINER functions, 42 private implementations, 41 public invoker RPC facades, all 11 FK indexes, and consolidated SELECT policies. Security Advisor now reports only the leaked-password Auth setting; Performance Advisor reports only INFO-level unused-index candidates (85).
 
 ## Release gates
 
