@@ -50,6 +50,7 @@ create policy identity_evidence_delete_own_pending on storage.objects for delete
   and coalesce(a.applicant_data->'evidence_paths','[]'::jsonb) ? name
  )
 );
+create unique index if not exists organizations_one_pending_per_owner_idx on public.organizations(owner_id) where status='pending';
 create unique index if not exists module_access_one_open_application_idx
  on public.module_access_applications(user_id,module) where status in ('pending','under_review');
 alter table public.module_access_applications add constraint module_access_applicant_data_object_check
@@ -71,7 +72,7 @@ begin
   v_data:=coalesce(new.applicant_data,'{}'::jsonb);
   if new.module='plant_market' then
    insert into public.gardener_profiles(user_id,verification_status,district,gardening_types,experience_note,evidence_paths,reviewed_by,reviewed_at)
-   values(new.user_id,new.status,nullif(v_data->>'district',''),
+   values(new.user_id,case when new.status='approved' then 'verified' else 'rejected' end,nullif(v_data->>'district',''),
     case when jsonb_typeof(v_data->'gardening_types')='array' then array(select jsonb_array_elements_text(v_data->'gardening_types')) else '{}'::text[] end,
     nullif(v_data->>'experience_note',''),
     case when jsonb_typeof(v_data->'evidence_paths')='array' then array(select jsonb_array_elements_text(v_data->'evidence_paths')) else '{}'::text[] end,
@@ -81,7 +82,7 @@ begin
     reviewed_by=excluded.reviewed_by,reviewed_at=excluded.reviewed_at,updated_at=now();
   elsif new.module='sell_harvest' then
    insert into public.farmer_profiles(user_id,verification_status,district,upazila,farming_types,evidence,reviewed_by,reviewed_at)
-   values(new.user_id,new.status,nullif(v_data->>'district',''),nullif(v_data->>'upazila',''),
+   values(new.user_id,case when new.status='approved' then 'verified' else 'rejected' end,nullif(v_data->>'district',''),nullif(v_data->>'upazila',''),
     case when jsonb_typeof(v_data->'farming_types')='array' then array(select jsonb_array_elements_text(v_data->'farming_types')) else '{}'::text[] end,
     jsonb_build_object('farm_description',coalesce(v_data->>'farm_description',''),'evidence_paths',coalesce(v_data->'evidence_paths','[]'::jsonb)),
     new.reviewed_by,new.reviewed_at)
