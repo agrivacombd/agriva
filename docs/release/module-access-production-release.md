@@ -7,7 +7,7 @@ Feature branch: `feat/security-performance-advisor-hardening`
 ## Production preflight observed on 2026-10-30
 
 - Production migration history now includes the eight feature migrations through `20261030140500 make_admin_role_scope_nullable`.
-- The required feature migrations are newer than that head and are not applied in Production.
+- The eight feature migrations are applied in Production; only the follow-up Advisor hardening migration remains pending.
 - Existing prerequisites verified: `public.farms`, `public.products`, `public.harvest_listings`, and `public.profiles` exist.
 - `products.farmer_id`, `harvest_listings.owner_id`, `harvest_listings.moderation_status`, and `harvest_listings.moderation_note` exist.
 - Production harvest moderation trigger exists as `harvest_listings_guard_moderation`; it calls `guard_harvest_listing_moderation()`. Preserve it.
