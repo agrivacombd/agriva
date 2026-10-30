@@ -22,8 +22,8 @@ for (const [label, source] of [["marketplace", marketplace], ["category", catego
   assert.match(source, /\.eq\("status", "active"\)/, `${label} must only list active products`);
   assert.doesNotMatch(source, /moderation_status/, `${label} must use the deployed products schema`);
 }
-assert.match(sitemap, /\.eq\("status", "active"\)/, "Product sitemap must exclude non-active products");
-assert.doesNotMatch(sitemap, /moderation_status/, "Sitemap must use the deployed products schema");
+assert.match(sitemap, /from\("products"\)\.select\("slug,updated_at,category,category_slug,subcategory_slug"\)\.eq\("status", "active"\)/, "Product sitemap must use the deployed products schema and exclude non-active products");
+assert.match(sitemap, /from\("green_exchange_listings"\)\.select\("slug,updated_at"\)\.eq\("status", "active"\)\.eq\("moderation_status", "approved"\)/, "Green Exchange sitemap must only expose approved active listings");
 assert.match(indexability, /\.eq\("status", "active"\)/, "Category indexability must use public active inventory");
 assert.doesNotMatch(indexability, /moderation_status/, "Category indexability must use the deployed products schema");
 
