@@ -19,4 +19,6 @@ assert.match(migration, /moderation_status = 'approved'/, "Legacy listings must 
 assert.match(migration, /USING \(status = 'available'\)/, "Public RLS must expose available listings without a moderation gate");
 assert.match(migration, /DROP FUNCTION IF EXISTS public\.admin_moderate_harvest_listing/, "Legacy admin approval RPC must be removed");
 assert.ok(migration.includes("IF NOT NEW.contact_phone_public") && migration.includes("NEW.contact_phone := NULL"), "Immediate publication must preserve phone consent privacy");
+assert.match(migration, /DROP FUNCTION IF EXISTS private\\.admin_moderate_harvest_listing/, "Legacy private moderation RPC must be removed");
+assert.match(migration, /private\\.is_admin\\(\\)/, "Harvest admin policies must use the Production private admin helper");
 console.log("Sell My Harvest immediate publication regression checks passed.");
