@@ -35,7 +35,8 @@
     "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs",
     "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs",
     "test:sell-harvest-publication": "node scripts/smoke-sell-harvest-publication.mjs",
-    "test:auth-refresh-token": "node scripts/smoke-auth-refresh-token.mjs"
+    "test:auth-refresh-token": "node scripts/smoke-auth-refresh-token.mjs",
+    "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

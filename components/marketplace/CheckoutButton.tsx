@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export default function CheckoutButton({ productId, disabled }: { productId: string; disabled?: boolean }) {
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,13 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
       if (!res.ok) setMessage(data.error || "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।");
       else {
         setOrderId(String(data.orderId || ""));
+        const orderTotal = Number(data.total);
+        trackAnalyticsEvent("marketplace_order_placed", {
+          currency: "BDT",
+          ...(Number.isFinite(orderTotal) ? { value: orderTotal } : {}),
+          item_id: productId,
+          quantity: 1,
+        });
         setMessage(`অর্ডার তৈরি হয়েছে। মোট মূল্য ৳${Number(data.total).toLocaleString("bn-BD")}।`);
       }
     } catch {

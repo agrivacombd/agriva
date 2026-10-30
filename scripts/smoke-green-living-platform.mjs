@@ -39,6 +39,7 @@ assert.match(impactPage, /canonical: "\/impact"/);
 assert.match(impactPage, /get_green_impact_metrics/);
 assert.match(impactPage, /No inflated impact claims|যাচাইযোগ্য planting record/i);
 assert.match(sitemap, /\$\{base\}\/impact/, "public impact page must be in the sitemap");
+assert.match(sitemap, /from\("green_exchange_listings"\)[\s\S]*?\.eq\("status", "active"\)[\s\S]*?\.eq\("moderation_status", "approved"\)/, "sitemap must only expose approved active Green Exchange listings, matching the public impact metric definition");
 assert.match(robots, /"\/impact"/, "public impact page must be crawlable");
 assert.match(robots, /"\/garden"/, "private garden must be excluded from crawling");
 assert.match(dashboard, /href: "\/garden"/, "dashboard must expose Personal Garden");
