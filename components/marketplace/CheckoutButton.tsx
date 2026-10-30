@@ -42,9 +42,10 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
       if (!res.ok) setMessage(data.error || "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।");
       else {
         setOrderId(String(data.orderId || ""));
+        const orderTotal = Number(data.total);
         trackAnalyticsEvent("marketplace_order_placed", {
           currency: "BDT",
-          value: Number(data.total),
+          ...(Number.isFinite(orderTotal) ? { value: orderTotal } : {}),
           item_id: productId,
           quantity: 1,
         });
