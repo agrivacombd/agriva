@@ -127,6 +127,7 @@ GRANT EXECUTE ON FUNCTION public.admin_create_product_with_seo(jsonb) TO authent
 
 CREATE OR REPLACE FUNCTION public.admin_update_product_seo(
   p_product_id uuid,
+  p_description text,
   p_short_description text,
   p_seo_title text,
   p_meta_description text,
@@ -159,7 +160,7 @@ BEGIN
       seo_review_status = CASE
         WHEN length(trim(coalesce(p_seo_title, ''))) BETWEEN 1 AND 70
          AND length(trim(coalesce(p_meta_description, ''))) >= 70
-         AND length(trim(coalesce(description, ''))) >= 80
+         AND length(trim(coalesce(p_description, description, ''))) >= 80
          AND cardinality(coalesce(p_image_urls, ARRAY[]::text[])) > 0
          AND nullif(trim(coalesce(p_image_alt_text, '')), '') IS NOT NULL
         THEN 'ready'
@@ -179,5 +180,5 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text[],text[],jsonb) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text[],text[],jsonb) TO authenticated;
+REVOKE ALL ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text,text[],text[],jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text,text[],text[],jsonb) TO authenticated;
