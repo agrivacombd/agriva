@@ -26,8 +26,10 @@ assert.match(route, /product-images/, "product API must validate product image U
 assert.match(route, /storage\/v1\/object\/public\/product-images\//, "only public product-images URLs should be accepted");
 assert.match(route, /validFileName[\s\S]*image\.search[\s\S]*image\.hash/, "seller image URLs must be limited to the seller folder and a UUID filename without query/hash");
 assert.match(legacyRoute, /status: 410/, "legacy farmer product API must not create marketplace products");
-assert.match(sellerPage, /in\("role", \["seller", "organization"\]\)/, "seller product page must require seller or organization membership");
-assert.match(sellerProductsPage, /in\("role", \["seller", "organization"\]\)/, "seller product management page must require seller or organization membership");
+assert.match(sellerPage, /from\("organizations"\)/, "seller product page must require a verified business organization");
+assert.match(sellerPage, /checkModuleAccess\("marketplace", "create"/, "new product page must require Marketplace create grant");
+assert.match(sellerProductsPage, /from\("organizations"\)/, "seller product management must require a verified business organization");
+assert.match(sellerProductsPage, /checkModuleAccess\("marketplace", "read"/, "seller product management must require Marketplace read grant");
 assert.match(sellerProductsPage, /eq\("farmer_id", user\.id\)/, "seller product management must show only the signed-in seller's products");
 assert.match(dashboard, /href: "\/seller\/products"/, "seller dashboard must link to seller product management");
 assert.match(farmerPage, /redirect\("\/sell-harvest"\)/, "farmer product route must direct farmers to Sell Harvest");
