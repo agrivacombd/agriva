@@ -51,7 +51,7 @@ export async function middleware(request: NextRequest) {
     const { error } = await supabase.auth.getUser();
     if (isInvalidRefreshToken(error)) response = clearSupabaseAuthCookies(request);
   } catch (error) {
-    if (isInvalidRefreshToken(error)) clearSupabaseAuthCookies(request, response);
+    if (isInvalidRefreshToken(error)) response = clearSupabaseAuthCookies(request);
   }
 
   return response;
