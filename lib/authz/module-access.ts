@@ -1,7 +1,7 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export type AgrivaModule = "plant_market" | "marketplace" | "sell_harvest" | "buyer_demands" | "transport" | "farm_management";
+export type AgrivaModule = "plant_market" | "marketplace" | "employer" | "transport" | "sell_harvest" | "buyer_demands" | "transport" | "farm_management";
 export type ModulePermission = "read" | "create" | "update" | "delete" | "moderate" | "manage_members" | "manage_orders" | "manage_inventory";
 export type ModuleScope = { type: "global"; id?: null } | { type: "organization" | "farm"; id: string };
 export type ModuleAccessResult =
