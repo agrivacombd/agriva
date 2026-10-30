@@ -42,14 +42,6 @@ create policy identity_evidence_select_own_or_admin on storage.objects for selec
  bucket_id='identity-verification' and ((storage.foldername(name))[1]=(select auth.uid())::text or public.is_admin())
 );
 drop policy if exists identity_evidence_delete_own_pending on storage.objects;
-create policy identity_evidence_delete_own_pending on storage.objects for delete to authenticated using (
- bucket_id='identity-verification' and (storage.foldername(name))[1]=(select auth.uid())::text
- and not exists (
-  select 1 from public.module_access_applications a where a.user_id=(select auth.uid())
-  and a.status in ('pending','under_review')
-  and coalesce(a.applicant_data->'evidence_paths','[]'::jsonb) ? name
- )
-);
 create unique index if not exists organizations_one_pending_per_owner_idx on public.organizations(owner_id) where status='pending';
 create unique index if not exists module_access_one_open_application_idx
  on public.module_access_applications(user_id,module) where status in ('pending','under_review');
