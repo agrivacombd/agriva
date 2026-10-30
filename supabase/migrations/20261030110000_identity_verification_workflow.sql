@@ -61,6 +61,18 @@ begin
   return new;
  end if;
  if old.status is distinct from new.status and new.status in ('approved','rejected') then
+  if new.status='approved' then
+   update public.user_module_grants set status='active',granted_by=new.reviewed_by,granted_at=now(),
+    revoked_by=null,revoked_at=null,reason='Reactivated after approved application ' || new.id::text
+   where user_id=new.user_id and module=new.module and status='revoked'
+    and ((new.organization_id is null and scope_type='global' and scope_id is null)
+      or (new.organization_id is not null and scope_type='organization' and scope_id=new.organization_id));
+   insert into public.user_module_grants(user_id,module,permission,scope_type,scope_id,granted_by,reason)
+   values(new.user_id,new.module,'update',
+    case when new.organization_id is not null then 'organization' else 'global' end,
+    new.organization_id,new.reviewed_by,'Approved application ' || new.id::text)
+   on conflict do nothing;
+  end if;
   if new.status='rejected' then
    update public.user_module_grants set status='revoked',revoked_by=new.reviewed_by,revoked_at=now(),
     reason='Revoked after rejected application ' || new.id::text
