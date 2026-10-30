@@ -100,7 +100,8 @@ BEGIN
     END LOOP;
   END LOOP;
 
-  -- PostgreSQL triggers retain the moved function OID; it is not an RPC.
+  -- This trigger-returning guard has no current trigger dependency; move it out of
+  -- public and revoke all client EXECUTE grants so it cannot be invoked as an RPC.
   IF to_regprocedure('public.enforce_seller_product_moderation()') IS NOT NULL THEN
     ALTER FUNCTION public.enforce_seller_product_moderation() SET SCHEMA private;
     REVOKE ALL ON FUNCTION private.enforce_seller_product_moderation()
