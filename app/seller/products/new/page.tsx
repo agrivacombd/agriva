@@ -152,7 +152,7 @@ export default async function NewSellerProductPage() {
           ["অনুমোদনের পর প্রকাশ", "অনুমোদিত পণ্য Marketplace-এ দেখা যাবে, যেখানে ক্রেতারা পণ্যের তথ্য ও মূল্য দেখতে পারবেন।"],
         ].map(([title, description], index) => (
           <article key={title} className="rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-sm">
-            <span className="text-sm font-black text-emerald-700">০{index + ১}</span>
+            <span className="text-sm font-black text-emerald-700">{"০" + (index + 1).toLocaleString("bn-BD")}</span>
             <h2 className="mt-3 text-xl font-black">{title}</h2>
             <p className="mt-2 text-sm leading-7 text-[#637467]">{description.replace(/\.$/, "।")}</p>
           </article>
