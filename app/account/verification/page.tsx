@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect,useState } from "react";
+import { useCallback,useEffect,useState } from "react";
+import type { FormEvent } from "react";
 import { ArrowLeft,FileUp,LoaderCircle,ShieldCheck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
@@ -11,16 +12,17 @@ export default function IdentityVerificationPage(){
  const [module,setModule]=useState<Module>("plant_market"),[applications,setApplications]=useState<Application[]>([]);
  const [files,setFiles]=useState<File[]>([]),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
  const [message,setMessage]=useState(""),[error,setError]=useState(false);
- async function load(){
+ const load=useCallback(async()=>{
   const response=await fetch("/api/identity/applications",{cache:"no-store"});
   if(response.status===401){window.location.href="/login?next=/account/verification";return;}
   const data=await response.json();if(!response.ok)throw new Error(data.error||"আবেদন লোড করা যায়নি");
   setApplications(data.applications||[]);
- }
- useEffect(()=>{load().catch(e=>{setError(true);setMessage(e.message)}).finally(()=>setLoading(false));},[]);
- async function submit(event:React.FormEvent<HTMLFormElement>){
+ },[]);
+ useEffect(()=>{load().catch(e=>{setError(true);setMessage(e.message)}).finally(()=>setLoading(false));},[load]);
+ async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();const formElement=event.currentTarget;setBusy(true);setError(false);setMessage("");
   const form=new FormData(formElement);
+  if(files.length>5){setBusy(false);setError(true);setMessage("সর্বোচ্চ ৫টি প্রমাণপত্র আপলোড করতে পারবেন।");return;}
   try{
    const supabase=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
    if(auth.error||!auth.data.user){window.location.href="/login?next=/account/verification";return;}
