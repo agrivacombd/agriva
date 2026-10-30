@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
 import {useState} from "react";
+import type {FormEvent} from "react";
 import {ArrowLeft,LoaderCircle,PlusCircle} from "lucide-react";
 export default function PlantMarketSellPage(){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState(false);
- async function submit(event:React.FormEvent<HTMLFormElement>){
+ async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();const form=event.currentTarget;const data=new FormData(form);setBusy(true);setMessage("");setError(false);
   const payload={name:data.get("name"),categorySlug:data.get("categorySlug"),price:data.get("price"),stock:data.get("stock"),unit:data.get("unit"),description:data.get("description")};
   try{const response=await fetch("/api/plant-market/products",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});const result=await response.json();if(!response.ok)throw new Error(result.error||"পণ্য জমা হয়নি");form.reset();setMessage("পণ্যটি review queue-তে জমা হয়েছে। Admin অনুমোদনের আগে এটি প্রকাশিত হবে না।");}
