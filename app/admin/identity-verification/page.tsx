@@ -8,6 +8,7 @@ async function reviewApplication(formData:FormData){
  const decision=String(formData.get("decision")||"");
  const note=String(formData.get("reviewNote")||"").slice(0,1000);
  if(!/^[0-9a-f-]{36}$/i.test(id)||!["approved","rejected"].includes(decision))return;
+ if(decision==="rejected"&&!note)throw new Error("A rejection reason is required.");
  const {supabase}=await requireAdminPage("identity.review");
  const {error}=await supabase.rpc("admin_review_module_application",{p_application_id:id,p_decision:decision,p_review_note:note});
  if(error)throw new Error("Application review failed. Check migration and admin authorization.");
