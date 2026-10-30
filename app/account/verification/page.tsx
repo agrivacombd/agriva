@@ -19,8 +19,8 @@ export default function IdentityVerificationPage(){
  }
  useEffect(()=>{load().catch(e=>{setError(true);setMessage(e.message)}).finally(()=>setLoading(false));},[]);
  async function submit(event:React.FormEvent<HTMLFormElement>){
-  event.preventDefault();setBusy(true);setError(false);setMessage("");
-  const form=new FormData(event.currentTarget);
+  event.preventDefault();const formElement=event.currentTarget;setBusy(true);setError(false);setMessage("");
+  const form=new FormData(formElement);
   try{
    const supabase=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
    if(auth.error||!auth.data.user){window.location.href="/login?next=/account/verification";return;}
@@ -39,7 +39,7 @@ export default function IdentityVerificationPage(){
    if(module==="marketplace")Object.assign(payload,{organizationName:form.get("organizationName"),organizationType:form.get("organizationType"),tradeLicense:form.get("tradeLicense"),businessAddress:form.get("businessAddress"),website:form.get("website")});
    const response=await fetch("/api/identity/applications",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
    const result=await response.json();if(!response.ok)throw new Error(result.error||"আবেদন জমা হয়নি");
-   setFiles([]);event.currentTarget.reset();
+   setFiles([]);formElement.reset();
    setMessage("আপনার আবেদন জমা হয়েছে। Admin review শেষ না হওয়া পর্যন্ত বিক্রির অনুমতি সক্রিয় হবে না।");await load();
   }catch(e){setError(true);setMessage(e instanceof Error?e.message:"আবেদন জমা হয়নি");}
   finally{setBusy(false);}
