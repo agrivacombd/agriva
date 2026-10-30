@@ -9,6 +9,7 @@ const adminPage = readFileSync("app/admin/green-exchange/page.tsx", "utf8");
 
 assert.match(migration, /alter table public\.green_exchange_listings enable row level security/i);
 assert.match(migration, /alter table public\.green_exchange_requests enable row level security/i);
+assert.match(migration, /using \(private\.is_admin\(\)\)/i, "admins must be able to read pending listings for moderation");
 assert.equal(migration.split("as " + "$$" + "\nbegin").length - 1, 3, "SQL function bodies must use valid dollar quoting");
 assert.equal(migration.split("\n" + "$$" + ";\n").length - 1, 3, "SQL function bodies must close dollar quotes");
 assert.match(migration, /moderation_status = 'pending'/i, "new user listings must start pending");
