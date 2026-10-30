@@ -12,8 +12,8 @@ assert.match(migration, /alter function %s set schema private/i, "original SECUR
 assert.match(migration, /security invoker/i, "public RPC facades must be SECURITY INVOKER");
 assert.match(migration, /pg_get_function_arguments/i, "RPC argument defaults and names must be preserved");
 assert.match(migration, /aclexplode\(v_acl\)/i, "original EXECUTE ACL must be copied");
-assert.match(migration, /enforce_seller_product_moderation/i, "trigger-only function must be moved out of public");
-assert.match(migration, /revoke all on function private\.enforce_seller_product_moderation/i, "trigger-only function must not be directly executable by clients");
+assert.match(migration, /enforce_seller_product_moderation/i, "trigger-returning guard must be moved out of public");
+assert.match(migration, /revoke all on function private\.enforce_seller_product_moderation/i, "trigger-returning guard must not be directly executable by clients");
 
 for (const index of [
   "admin_user_roles_granted_by_idx",
