@@ -16,6 +16,13 @@ create table if not exists public.module_access_applications (
  constraint module_access_review_consistency check (
   (status in ('approved','rejected') and reviewed_by is not null and reviewed_at is not null)
   or status not in ('approved','rejected')
+ ),
+ constraint module_access_applicant_type_matches_module check (
+  (module = 'plant_market' and applicant_type = 'gardener')
+  or (module = 'marketplace' and applicant_type = 'business')
+  or (module = 'sell_harvest' and applicant_type = 'farmer')
+  or (module = 'transport' and applicant_type = 'transport_partner')
+  or (module = 'farm_management' and applicant_type = 'farm_operator')
  )
 );
 create index if not exists module_access_applications_user_status_idx on public.module_access_applications(user_id,status,created_at desc);
@@ -44,6 +51,15 @@ create table if not exists public.organization_members (
  unique (organization_id,user_id)
 );
 create index if not exists organization_members_user_idx on public.organization_members(user_id,status);
+do $block$
+begin
+ if not exists (select 1 from pg_constraint where conname = 'module_access_applications_organization_fk') then
+  alter table public.module_access_applications
+   add constraint module_access_applications_organization_fk
+   foreign key (organization_id) references public.organizations(id) on delete set null;
+ end if;
+end;
+$block$;
 
 create table if not exists public.farmer_profiles (
  user_id uuid primary key references auth.users(id) on delete cascade,
@@ -251,7 +267,10 @@ create policy module_access_applications_select on public.module_access_applicat
 using (user_id = (select auth.uid()) or public.is_admin());
 drop policy if exists module_access_applications_insert on public.module_access_applications;
 create policy module_access_applications_insert on public.module_access_applications for insert to authenticated
-with check (user_id = (select auth.uid()) and status = 'pending' and reviewed_by is null and reviewed_at is null);
+with check (
+ user_id = (select auth.uid()) and status = 'pending' and reviewed_by is null and reviewed_at is null
+ and (organization_id is null or public.owns_organization(organization_id))
+);
 drop policy if exists module_access_applications_admin_update on public.module_access_applications;
 create policy module_access_applications_admin_update on public.module_access_applications for update to authenticated
 using (public.is_admin()) with check (public.is_admin());
