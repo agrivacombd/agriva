@@ -282,6 +282,10 @@ BEGIN
     OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NULL THEN
     RAISE EXCEPTION 'FAIL: legacy admin visibility RPC compatibility must remain during rollout';
   END IF;
+  IF has_function_privilege('anon', 'public.admin_moderate_harvest_listing(uuid,text,text)', 'EXECUTE')
+    OR NOT has_function_privilege('authenticated', 'public.admin_moderate_harvest_listing(uuid,text,text)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'FAIL: only authenticated admins may invoke the compatibility RPC';
+  END IF;
 END
 $compatibility_rpc$;
 SET LOCAL ROLE anon;
