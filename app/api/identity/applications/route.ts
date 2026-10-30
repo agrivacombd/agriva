@@ -23,7 +23,7 @@ export async function POST(request:NextRequest) {
  const {data:{user},error:authError}=await supabase.auth.getUser();
  if(authError||!user) return NextResponse.json({error:"Login required"},{status:401});
  const body=await request.json().catch(()=>null);
- if(!body||typeof body!=="object"||!MODULES.includes(body.module as Module)) return NextResponse.json({error:"Invalid application"},{status:400});
+ if(!body||typeof body!=="object"||!(["plant_market","marketplace"] as const).includes(body.module as "plant_market"|"marketplace")) return NextResponse.json({error:"Invalid application. Sell Harvest does not require identity approval; log in and post directly."},{status:400});
  const module=body.module as Module;
  const {data:openApplication,error:openError}=await supabase.from("module_access_applications")
   .select("id,status").eq("user_id",user.id).eq("module",module).in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
