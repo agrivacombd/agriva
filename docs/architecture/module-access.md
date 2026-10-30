@@ -19,7 +19,7 @@ Admins review applications at \`/admin/identity-verification\`. The page calls \
 - Products now carry \`marketplace_channel\` (\`plant_market\` or \`marketplace\`).
 - Plant Market catalogue reads only the Plant Market channel; business Marketplace reads only the Marketplace channel.
 - Product INSERT/UPDATE/DELETE has restrictive RLS policies requiring a matching module grant, so older permissive role-based policies cannot grant seller access.
-- Harvest listing INSERT/UPDATE has restrictive RLS policies requiring a verified farmer profile and an active Sell Harvest grant.
+- Harvest listing INSERT/UPDATE remains owner-scoped for authenticated users; direct posting does not require a farmer profile or Sell Harvest grant. Admin moderation protections remain in force.
 - API routes independently check the authenticated session and module grants.
 
 ## Rollout sequence
