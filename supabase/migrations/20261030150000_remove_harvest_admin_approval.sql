@@ -20,6 +20,9 @@ AS $$
 BEGIN
   NEW.moderation_status := 'approved';
   NEW.moderation_note := NULL;
+  IF NOT NEW.contact_phone_public THEN
+    NEW.contact_phone := NULL;
+  END IF;
   NEW.updated_at := now();
   RETURN NEW;
 END;
