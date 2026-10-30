@@ -20,5 +20,6 @@ assert.match(migration, /USING \(status = 'available'\)/, "Public RLS must expos
 assert.ok(migration.includes("IF NOT NEW.contact_phone_public") && migration.includes("NEW.contact_phone := NULL"), "Immediate publication must preserve phone consent privacy");
 assert.ok(migration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
 assert.match(migration, /CREATE OR REPLACE FUNCTION private\.admin_moderate_harvest_listing/, "Legacy admin UI must retain a compatible visibility RPC");
+assert.match(migration, /CREATE OR REPLACE FUNCTION public\.admin_moderate_harvest_listing/, "Public RPC must forward to the compatibility visibility implementation");
 assert.match(migration, /harvest_listing\.visibility_changed/, "Admin visibility changes must remain audited");
 console.log("Sell My Harvest immediate publication regression checks passed.");
