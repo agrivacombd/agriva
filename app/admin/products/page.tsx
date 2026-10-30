@@ -52,7 +52,7 @@ async function saveProduct(formData: FormData) {
   let seoStatus = "needs_review";
   if (seoEnabled) {
     const { data: seoData, error } = await supabase.rpc("admin_update_product_seo", {
-      p_product_id: productId, p_short_description: shortDescription,
+      p_product_id: productId, p_description: description, p_short_description: shortDescription,
       p_seo_title: seoTitle, p_meta_description: metaDescription,
       p_image_alt_text: imageAltText, p_image_urls: imageUrls,
       p_search_keywords: searchKeywords,
