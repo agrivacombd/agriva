@@ -182,7 +182,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
         })}
         {!error && filtered.length === 0 && <div className="rounded-2xl bg-white p-8 text-center text-sm text-[#647468]">এই ফিল্টারে কোনো অর্ডার নেই।</div>}
       </section>
-      <p className="mt-6 text-xs leading-5 text-[#7b887d]">নোট: বর্তমান database schema-তে COD collection-এর আলাদা actor/time/audit field নেই। তাই এই প্যানেল Delivered status থেকে টাকা আদায় হয়েছে বলে ধরে নেয় না; collection confirmation feature migration ও audit design শেষ না হওয়া পর্যন্ত যোগ করা হয়নি।</p>
+
     </div>
   </main>;
 }
