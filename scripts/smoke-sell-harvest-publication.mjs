@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Guard Sell My Harvest's no-approval publication contract.
+ * Run against the current main baseline, including marketplace SEO checks.
  */
 import { readFileSync } from "node:fs";
 import assert from "node:assert/strict";
