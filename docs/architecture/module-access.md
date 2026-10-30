@@ -1,12 +1,12 @@
 # AGRIVA Module Access and Identity Verification
 
 ## Identity model
-Signup/profile role selections are descriptive personalization only. They never grant seller permissions. Every selling module requires a separately submitted application, admin review, a verified identity profile where applicable, and an active row in \`user_module_grants\`.
+Signup/profile role selections are descriptive personalization only. They never grant seller permissions. Plant Market and business Marketplace selling require their respective applications, admin review, and active module grants. Sell Harvest is intentionally different: any authenticated user may create their own harvest listing directly; farmer identity verification and a Sell Harvest grant are not prerequisites.
 
 ## Seller application paths
 - Plant Market: hobby/ornamental gardener application; admin approval creates a verified \`gardener_profiles\` record and global \`plant_market\` grants.
 - Marketplace: company/shop/dealer application; approval verifies the applicant-owned organization and creates organization-scoped \`marketplace\` grants.
-- Sell Harvest: farmer application; approval creates a verified \`farmer_profiles\` record and global \`sell_harvest\` grants.
+- Sell Harvest: no seller-verification application is required for direct posting. Any logged-in user may create an owner-scoped harvest listing; admin moderation controls publication.
 - Buyer Demands remain available to authenticated users without seller verification.
 
 ## Evidence handling
