@@ -208,11 +208,14 @@ begin
       order by a.created_at desc limit 1;
     end if;
 
-    select * into order_row from public.finalize_marketplace_cod_order(
+    -- Use the validated 7-argument private RPC. The legacy 6-argument
+    -- wrapper intentionally rejects caller-supplied attribution fields.
+    select * into order_row from private.finalize_marketplace_cod_order(
       cart_item.product_id, cart_item.quantity, p_shipping_address,
       attribution_reseller_id,
       case when attribution_reseller_id is not null then p_attribution_code else null end,
-      case when attribution_reseller_id is not null then attribution_expires_at else null end
+      case when attribution_reseller_id is not null then attribution_expires_at else null end,
+      case when attribution_reseller_id is not null then p_visitor_token else null end
     );
     update public.marketplace_orders set checkout_id = checkout_row.id where id = order_row.id;
     created_order_ids := array_append(created_order_ids, order_row.id);
