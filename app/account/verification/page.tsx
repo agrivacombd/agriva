@@ -35,7 +35,8 @@ export default function IdentityVerificationPage(){
     const path=auth.data.user.id+"/"+crypto.randomUUID()+"."+ext;
     const uploaded=await supabase.storage.from("identity-verification").upload(path,file,{upsert:false,contentType:file.type});
     if(uploaded.error){
-     const status=uploaded.error.statusCode?String(uploaded.error.statusCode):"unknown";
+     const statusValue=(uploaded.error as unknown as {statusCode?:string|number}).statusCode;
+     const status=statusValue?String(statusValue):"unknown";
      const code="error" in uploaded.error&&typeof uploaded.error.error==="string"?uploaded.error.error:"";
      throw new Error("Storage upload ব্যর্থ (HTTP "+status+(code?", "+code:"")+"): "+uploaded.error.message);
     }
