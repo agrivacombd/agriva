@@ -56,10 +56,10 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   const load = async (columnSet: string) => supabase.from("products").select(columnSet).eq("slug", normalized).eq("status", "active").maybeSingle();
   let { data: bySlug, error } = await load(seoColumns);
   if (error) ({ data: bySlug } = await load(legacyColumns));
-  if (bySlug) return bySlug as ProductRecord;
+  if (bySlug) return bySlug as unknown as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
   const byIdSeo = await supabase.from("products").select(seoColumns).eq("id", normalized).eq("status", "active").maybeSingle();
-  if (byIdSeo.data) return byIdSeo.data as ProductRecord;
+  if (byIdSeo.data) return byIdSeo.data as unknown as ProductRecord;
   const byIdLegacy = await supabase.from("products").select(legacyColumns).eq("id", normalized).eq("status", "active").maybeSingle();
   return (byIdLegacy.data as ProductRecord | null) ?? null;
 }
