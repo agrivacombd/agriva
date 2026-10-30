@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
-const migration = readFileSync("supabase/migrations/20261027230000_revoke_client_truncate_privileges.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030235000_revoke_client_truncate_privileges.sql", "utf8");
 assert.match(migration, /REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM anon, authenticated/i);
 assert.match(migration, /ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public[\s\S]*REVOKE TRUNCATE ON TABLES FROM anon, authenticated/i);
 
