@@ -34,6 +34,6 @@ assert.match(admin,/startsWith\(app\.user_id\+"\/"\)/,"signed evidence URLs are 
 assert.match(signup,/বিশেষ অনুমতি বা verified status দেয় না/,"signup roles are descriptive only");
 assert.match(seller,/checkModuleAccess/,"business marketplace API checks approved module grant");
 assert.match(gardener,/checkModuleAccess/,"Plant Market API checks gardener grant");
-assert.match(migration,/public\\.has_identity_evidence\\(applicant_data->\x27evidence_paths\x27\\)/,"database requires owned evidence files");
-assert.match(migration,/submitted\\.path !~ /,"evidence path validation is bound to the caller");
+assert.match(migration,/public\.has_identity_evidence\(applicant_data->'evidence_paths'\)/,"database requires owned evidence files");
+assert.match(migration,/submitted\.path !~ /,"evidence path validation is bound to the caller");
 console.log("AGRIVA identity verification workflow regression checks passed.");
