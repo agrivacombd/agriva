@@ -23,8 +23,10 @@ export default function IdentityVerificationPage(){
   event.preventDefault();const formElement=event.currentTarget;setBusy(true);setError(false);setMessage("");
   const form=new FormData(formElement);
   if(files.length>5){setBusy(false);setError(true);setMessage("সর্বোচ্চ ৫টি প্রমাণপত্র আপলোড করতে পারবেন।");return;}
+  let supabaseClient:ReturnType<typeof createSupabaseBrowserClient>|undefined;
+  const uploadedPaths:string[]=[];
   try{
-   const supabase=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
+   const supabase=supabaseClient=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
    if(auth.error||!auth.data.user){window.location.href="/login?next=/account/verification";return;}
    const evidencePaths:string[]=[];
    for(const file of files){
@@ -32,7 +34,12 @@ export default function IdentityVerificationPage(){
     if(!["jpg","jpeg","png","pdf"].includes(ext)||file.size>5*1024*1024)throw new Error("প্রতি ফাইল JPG, PNG বা PDF হতে হবে এবং ৫ MB-এর মধ্যে হতে হবে।");
     const path=auth.data.user.id+"/"+crypto.randomUUID()+"."+ext;
     const uploaded=await supabase.storage.from("identity-verification").upload(path,file,{upsert:false,contentType:file.type});
-    if(uploaded.error)throw new Error("প্রমাণপত্র আপলোড হয়নি। Identity workflow migration প্রয়োগ হয়েছে কি না যাচাই করুন।");
+    if(uploaded.error){
+     const status=uploaded.error.statusCode?String(uploaded.error.statusCode):"unknown";
+     const code="error" in uploaded.error&&typeof uploaded.error.error==="string"?uploaded.error.error:"";
+     throw new Error("Storage upload ব্যর্থ (HTTP "+status+(code?", "+code:"")+"): "+uploaded.error.message);
+    }
+    uploadedPaths.push(path);
     evidencePaths.push(path);
    }
    const payload:Record<string,unknown>={module,evidencePaths};
@@ -41,9 +48,16 @@ export default function IdentityVerificationPage(){
    if(module==="marketplace")Object.assign(payload,{organizationName:form.get("organizationName"),organizationType:form.get("organizationType"),tradeLicense:form.get("tradeLicense"),businessAddress:form.get("businessAddress"),website:form.get("website")});
    const response=await fetch("/api/identity/applications",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
    const result=await response.json();if(!response.ok)throw new Error(result.error||"আবেদন জমা হয়নি");
+   uploadedPaths.length=0;
    setFiles([]);formElement.reset();
    setMessage("আপনার আবেদন জমা হয়েছে। Admin review শেষ না হওয়া পর্যন্ত বিক্রির অনুমতি সক্রিয় হবে না।");await load();
-  }catch(e){setError(true);setMessage(e instanceof Error?e.message:"আবেদন জমা হয়নি");}
+  }catch(e){
+   if(supabaseClient&&uploadedPaths.length){
+    const cleanup=await supabaseClient.storage.from("identity-verification").remove(uploadedPaths);
+    if(cleanup.error)console.error("Identity evidence cleanup failed:",cleanup.error.message);
+   }
+   setError(true);setMessage(e instanceof Error?e.message:"আবেদন জমা হয়নি");
+  }
   finally{setBusy(false);}
  }
  const hasOpen=applications.some(a=>a.module===module&&["pending","under_review","approved"].includes(a.status));
