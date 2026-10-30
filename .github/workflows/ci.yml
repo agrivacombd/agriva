@@ -2,8 +2,8 @@ name: AGRIVA CI
 on:
   push:
     branches: [main]
+  # Run validation for stacked feature PRs too (e.g. checkout form based on cart PR).
   pull_request:
-    branches: [main]
 
 # Keep only the newest run for each branch/PR to avoid stale queued jobs.
 concurrency:
