@@ -163,6 +163,9 @@ BEGIN
          AND length(trim(coalesce(p_description, description, ''))) >= 80
          AND cardinality(coalesce(p_image_urls, ARRAY[]::text[])) > 0
          AND nullif(trim(coalesce(p_image_alt_text, '')), '') IS NOT NULL
+         AND cardinality(coalesce(p_search_keywords, ARRAY[]::text[])) > 0
+         AND nullif(trim(coalesce(origin_district, '')), '') IS NOT NULL
+         AND category_slug IS NOT NULL
         THEN 'ready'
         ELSE 'needs_review'
       END,
