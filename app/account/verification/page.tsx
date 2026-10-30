@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useCallback,useEffect,useState } from "react";
 import type { FormEvent } from "react";
-import { ArrowLeft,FileUp,LoaderCircle,ShieldCheck } from "lucide-react";
+import { ArrowLeft,FileUp,LoaderCircle,ShieldCheck,Sprout,Store } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
 type Module="plant_market"|"marketplace"|"employer"|"transport"|"sell_harvest";
@@ -73,8 +73,8 @@ export default function IdentityVerificationPage(){
     <p className="mt-4 text-sm leading-7 text-[#637568]">একটি account-এ একাধিক পরিচয় থাকতে পারে। যে module-এ বিক্রি করতে চান সেটির জন্য আলাদা আবেদন করুন। role নির্বাচন বা profile পরিবর্তন করে বিক্রির অনুমতি পাওয়া যাবে না। অনুমোদন না পাওয়া পর্যন্ত সংশ্লিষ্ট বিক্রির সুবিধা বন্ধ থাকবে।</p>
     {loading?<div className="py-8 text-sm text-slate-500"><LoaderCircle className="mr-2 inline animate-spin" size={17}/>আবেদন লোড হচ্ছে…</div>:<>
      <div className="mt-7 grid gap-3 sm:grid-cols-2">
-      <button type="button" onClick={()=>setModule("plant_market")} className={"rounded-xl border p-4 text-left "+(module==="plant_market"?"border-[#167453] bg-[#eef7ef]":"border-slate-200")}><b>🪴 Plant Market</b><span className="mt-1 block text-xs text-slate-500">শখের / ornamental gardener</span></button>
-      <button type="button" onClick={()=>setModule("marketplace")} className={"rounded-xl border p-4 text-left "+(module==="marketplace"?"border-[#167453] bg-[#eef7ef]":"border-slate-200")}><b>🏪 Marketplace</b><span className="mt-1 block text-xs text-slate-500">কোম্পানি / দোকান / ডিলার</span></button>
+      <button type="button" onClick={()=>setModule("plant_market")} className={"flex items-center gap-3 rounded-xl border p-4 text-left "+(module==="plant_market"?"border-[#167453] bg-[#eef7ef]":"border-slate-200")}><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e4f2e6] text-[#167453]"><Sprout size={25} strokeWidth={2.2} aria-hidden="true"/></span><span><b className="block">Plant Market</b><span className="mt-1 block text-xs text-slate-500">শখের / ornamental gardener</span></span></button>
+      <button type="button" onClick={()=>setModule("marketplace")} className={"flex items-center gap-3 rounded-xl border p-4 text-left "+(module==="marketplace"?"border-[#167453] bg-[#eef7ef]":"border-slate-200")}><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#e4f2e6] text-[#167453]"><Store size={25} strokeWidth={2.2} aria-hidden="true"/></span><span><b className="block">Marketplace</b><span className="mt-1 block text-xs text-slate-500">কোম্পানি / দোকান / ডিলার</span></span></button>
       
      </div>
      {applications.length>0&&<div className="mt-6 rounded-xl border border-[#e5ece2] p-4"><h2 className="font-bold">আপনার আবেদনের অবস্থা</h2><div className="mt-3 space-y-2">{applications.map(a=><div key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f8faf6] p-3 text-sm"><span>{a.module==="plant_market"?"Plant Market":a.module==="marketplace"?"Marketplace":a.module==="employer"?"নিয়োগদাতা (পুরোনো আবেদন)":a.module==="transport"?"পরিবহন সেবাদাতা (পুরোনো আবেদন)":"Sell Harvest"}</span><span className="rounded-full bg-[#eaf4eb] px-3 py-1 text-xs font-bold">{statusLabel[a.status]||a.status}</span>{a.review_note&&<p className="w-full text-xs text-[#8b4a35]">Admin note: {a.review_note}</p>}</div>)}</div></div>}
