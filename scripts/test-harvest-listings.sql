@@ -234,7 +234,7 @@ DECLARE
   listing_id uuid;
 BEGIN
   PERFORM set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
-  SELECT id INTO listing_id FROM public.harvest_listings WHERE owner_id = auth.uid() LIMIT 1;
+  SELECT id INTO listing_id FROM public.harvest_listings WHERE owner_id = auth.uid() AND crop_name = 'Rice' LIMIT 1;
   UPDATE public.harvest_listings SET status = 'available' WHERE id = listing_id;
 END
 $owner$;
