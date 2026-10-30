@@ -69,6 +69,17 @@ begin
   return new;
  end if;
  if old.status is distinct from new.status and new.status in ('approved','rejected') then
+  if new.status='rejected' then
+   update public.user_module_grants set status='revoked',revoked_by=new.reviewed_by,revoked_at=now(),
+    reason='Revoked after rejected application ' || new.id::text
+   where user_id=new.user_id and module=new.module and status='active'
+    and ((new.organization_id is null and scope_type='global' and scope_id is null)
+      or (new.organization_id is not null and scope_type='organization' and scope_id=new.organization_id));
+   if new.module='marketplace' and new.organization_id is not null then
+    update public.organizations set status='rejected',updated_at=now()
+     where id=new.organization_id and owner_id=new.user_id;
+   end if;
+  end if;
   v_data:=coalesce(new.applicant_data,'{}'::jsonb);
   if new.module='plant_market' then
    insert into public.gardener_profiles(user_id,verification_status,district,gardening_types,experience_note,evidence_paths,reviewed_by,reviewed_at)
@@ -122,7 +133,7 @@ create policy products_module_access_insert_guard on public.products
  as restrictive for insert to authenticated with check (
   public.is_admin() or (
    farmer_id=(select auth.uid()) and (
-    (marketplace_channel='plant_market' and public.has_module_access('plant_market','create','global',null::uuid))
+    (marketplace_channel='plant_market' and exists (select 1 from public.gardener_profiles gp where gp.user_id=(select auth.uid()) and gp.verification_status='verified') and public.has_module_access('plant_market','create','global',null::uuid))
     or
     (marketplace_channel='marketplace' and exists (
       select 1 from public.organizations o
@@ -138,7 +149,7 @@ create policy products_module_access_update_guard on public.products
  using (
   public.is_admin() or (
    farmer_id=(select auth.uid()) and (
-    (marketplace_channel='plant_market' and public.has_module_access('plant_market','update','global',null::uuid))
+    (marketplace_channel='plant_market' and exists (select 1 from public.gardener_profiles gp where gp.user_id=(select auth.uid()) and gp.verification_status='verified') and public.has_module_access('plant_market','update','global',null::uuid))
     or
     (marketplace_channel='marketplace' and exists (
       select 1 from public.organizations o
