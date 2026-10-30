@@ -33,7 +33,8 @@
     "test:seller-schema-compat": "node scripts/smoke-seller-schema-compat.mjs",
     "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs",
     "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs",
-    "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs"
+    "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs",
+    "test:sell-harvest-publication": "node scripts/smoke-sell-harvest-publication.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
