@@ -45,6 +45,8 @@ export default function IdentityVerificationPage(){
    }
    const payload:Record<string,unknown>={module,evidencePaths};
    if(module==="plant_market")Object.assign(payload,{district:form.get("district"),gardeningTypes:[form.get("gardeningType")],experienceNote:form.get("experienceNote")});
+   if(module==="employer")Object.assign(payload,{organizationName:form.get("organizationName"),organizationType:form.get("organizationType"),tradeLicense:form.get("tradeLicense"),businessAddress:form.get("businessAddress"),website:form.get("website"),contactName:form.get("contactName"),contactPhone:form.get("contactPhone"),industry:form.get("industry")});
+   if(module==="transport")Object.assign(payload,{providerName:form.get("providerName"),contactPhone:form.get("contactPhone"),district:form.get("district"),serviceArea:form.get("serviceArea"),vehicleTypes:form.get("vehicleTypes"),licenseNumber:form.get("licenseNumber"),experienceNote:form.get("experienceNote")});
    if(module==="sell_harvest")Object.assign(payload,{district:form.get("district"),upazila:form.get("upazila"),farmingTypes:[form.get("farmingType")],farmDescription:form.get("farmDescription")});
    if(module==="marketplace")Object.assign(payload,{organizationName:form.get("organizationName"),organizationType:form.get("organizationType"),tradeLicense:form.get("tradeLicense"),businessAddress:form.get("businessAddress"),website:form.get("website")});
    const response=await fetch("/api/identity/applications",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
