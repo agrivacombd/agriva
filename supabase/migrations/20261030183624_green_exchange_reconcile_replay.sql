@@ -1,0 +1,2 @@
+-- This Production migration-history entry duplicates the Green Exchange reconciliation already recorded at 20261030183610.
+-- Intentionally empty so fresh environments do not repeat the schema change.
