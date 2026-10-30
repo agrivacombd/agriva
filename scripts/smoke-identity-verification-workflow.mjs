@@ -26,6 +26,7 @@ assert.match(harvest,/harvest_module_access_insert_guard[\s\S]*?as restrictive f
 assert.match(api,/supabase\.auth\.getUser\(\)/,"application API binds to authenticated user");
 assert.match(api,/evidencePaths/,"API validates evidence paths");
 assert.match(api,/status:"pending"/,"applications start pending");
+assert.match(api,/\["pending","under_review","approved"\]/,"approved users cannot create duplicate module applications");
 assert.doesNotMatch(api,/service_role|SUPABASE_SERVICE_ROLE_KEY/,"user API does not use service-role credentials");
 assert.match(ui,/identity-verification/,"applicant can upload private evidence");
 assert.match(ui,/Admin review শেষ না হওয়া পর্যন্ত/,"UI makes approval prerequisite clear");
