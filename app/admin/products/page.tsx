@@ -6,6 +6,16 @@ import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
+type AdminProductRow = {
+  id: string; name: string; description: string | null; price: number; stock: number;
+  reseller_commission_percent: number; status: string; farmer_id: string; category: string | null;
+  category_slug: string | null; subcategory_slug: string | null; updated_at: string;
+  seo_review_status?: string | null; seo_title?: string | null; meta_description?: string | null;
+  short_description?: string | null; image_url?: string | null; image_urls?: string[] | null;
+  image_alt_text?: string | null; search_keywords?: string[] | null;
+  seo_faqs?: { question: string; answer: string }[] | null;
+};
+
 async function requireAdmin(capability: AdminCapability = "catalog.read") {
   const { supabase, user } = await requireAdminPage(capability);
   return supabase;
@@ -73,8 +83,14 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const supabase = await requireAdmin();
   const legacyColumns = "id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at";
   const seoColumns = legacyColumns + ",seo_review_status,seo_title,meta_description,short_description,image_url,image_urls,image_alt_text,search_keywords,seo_faqs";
-  let { data: products, error } = await supabase.from("products").select(seoColumns).order("updated_at", { ascending: false }).limit(100);
-  if (error) ({ data: products, error } = await supabase.from("products").select(legacyColumns).order("updated_at", { ascending: false }).limit(100));
+  const seoResult = await supabase.from("products").select(seoColumns).order("updated_at", { ascending: false }).limit(100);
+  let products = seoResult.data as unknown as AdminProductRow[] | null;
+  let error = seoResult.error;
+  if (error) {
+    const legacyResult = await supabase.from("products").select(legacyColumns).order("updated_at", { ascending: false }).limit(100);
+    products = legacyResult.data as unknown as AdminProductRow[] | null;
+    error = legacyResult.error;
+  }
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
