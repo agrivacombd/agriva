@@ -24,6 +24,15 @@ export const MARKETPLACE_CATEGORIES = [
     { slug: "poultry-feed", name: "পোলট্রি ফিড", description: "পোলট্রি পালনে ব্যবহৃত ফিডের পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["পোলট্রি", "poultry"] },
     { slug: "cattle-feed", name: "গবাদিপশুর খাদ্য", description: "গবাদিপশুর খাদ্য পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["গবাদিপশু", "cattle"] },
   ] },
+  { slug: "plants-gardening", name: "গাছ ও বাগান", description: "ইনডোর গাছ, ফুল ও ফলের চারা, বীজ, টব, মাটি এবং বাগানের সরঞ্জাম", icon: "🪴", match: ["গাছ", "চারা", "বাগান", "nursery", "plant", "plants", "gardening", "garden"], subcategories: [
+    { slug: "indoor-plants", name: "ইনডোর গাছ", description: "ঘর ও অফিসের ভেতরে রাখার উপযোগী গাছের পণ্য দেখুন।", match: ["ইনডোর", "indoor", "houseplant"] },
+    { slug: "flowering-plants", name: "ফুলের গাছ", description: "ফুলের গাছ, চারা ও মৌসুমি শোভাবর্ধক উদ্ভিদ দেখুন।", match: ["ফুল", "flower", "flowering", "ornamental"] },
+    { slug: "fruit-saplings", name: "ফলের চারা", description: "বাড়ি, ছাদ ও বাগানের জন্য ফলের চারা দেখুন।", match: ["ফলের চারা", "fruit sapling", "fruit tree", "orchard"] },
+    { slug: "seeds-cuttings", name: "বীজ ও কাটিং", description: "বাগান ও শোভাবর্ধক গাছের বীজ এবং কাটিং দেখুন।", match: ["কাটিং", "cutting", "cuttings", "seedling"] },
+    { slug: "pots-planters", name: "টব ও প্ল্যান্টার", description: "গাছ লাগানো ও স্থানান্তরের জন্য টব ও প্ল্যান্টার দেখুন।", match: ["টব", "প্ল্যান্টার", "pot", "planter"] },
+    { slug: "soil-growing-media", name: "মাটি ও গ্রোয়িং মিডিয়া", description: "টব ও বাগানের জন্য মাটি, কম্পোস্ট ও গ্রোয়িং মিডিয়া দেখুন।", match: ["মাটি", "কম্পোস্ট", "soil", "compost", "growing media"] },
+    { slug: "garden-tools", name: "বাগানের সরঞ্জাম", description: "ছাঁটাই, পানি দেওয়া ও পরিচর্যার সরঞ্জাম দেখুন।", match: ["বাগানের সরঞ্জাম", "pruning", "watering can", "garden tool"] },
+  ] },
   { slug: "premium-food-grains", name: "Premium Food & Grains", description: "চিয়া সিড, কালো চাল, লাল চাল, ব্রাউন রাইস ও অন্যান্য প্রিমিয়াম খাদ্যশস্য", icon: "🌾", match: ["premium", "food grains", "food-grains", "superfood", "superfoods", "chia", "চিয়া", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
     { slug: "premium-rice", name: "প্রিমিয়াম চাল", description: "কালো চাল, লাল চাল, ব্রাউন রাইস, বাসমতি ও অন্যান্য প্রিমিয়াম চালের পণ্য দেখুন।", match: ["rice", "চাল", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "বাসমতি", "basmati", "কালিজিরা", "চিনিগুঁড়া"] },
     { slug: "edible-seeds", name: "খাদ্যোপযোগী সিডস", description: "খাওয়ার উপযোগী চিয়া সিড ও অন্যান্য খাদ্যবীজের প্যাকেটজাত পণ্য দেখুন; বপনের বীজ থেকে আলাদা।", match: ["chia", "চিয়া", "edible seeds", "খাদ্যোপযোগী", "flax", "ফ্ল্যাক্স", "pumpkin", "সিড", "seed"] },
