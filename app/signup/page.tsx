@@ -2,20 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Store, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
+import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Store, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
 
-type RoleId = "farmer" | "buyer" | "seller" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
+type RoleId = "farmer" | "buyer" | "seller" | "job_seeker" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
 
 const roles: { id: RoleId; icon: typeof Sprout; bn: string; en: string; bnDesc: string; enDesc: string }[] = [
   { id: "farmer", icon: Sprout, bn: "কৃষক", en: "Farmer", bnDesc: "ফসল ও খামার পরিচালনা", enDesc: "Crops and farm management" },
   { id: "buyer", icon: ShoppingCart, bn: "ক্রেতা", en: "Buyer", bnDesc: "কৃষিপণ্য খুঁজুন ও কিনুন", enDesc: "Discover and buy produce" },
   { id: "seller", icon: Store, bn: "ব্যবসায়ী / কোম্পানি / ডিলার", en: "Business / Company / Dealer", bnDesc: "Marketplace-এ কৃষি পণ্য ও উপকরণ বিক্রি", enDesc: "Sell agricultural products and supplies on Marketplace" },
-  { id: "transport", icon: Truck, bn: "পরিবহন সেবাদাতা", en: "Transport provider", bnDesc: "কৃষিপণ্য পরিবহন", enDesc: "Transport agricultural goods" },
   { id: "job_seeker", icon: BriefcaseBusiness, bn: "চাকরিপ্রার্থী", en: "Job seeker", bnDesc: "কৃষি খাতে চাকরি খুঁজুন", enDesc: "Find agriculture jobs" },
-  { id: "employer", icon: BriefcaseBusiness, bn: "নিয়োগদাতা", en: "Employer", bnDesc: "চাকরি প্রকাশ ও কর্মী খোঁজা", enDesc: "Post jobs and find talent" },
   { id: "student", icon: GraduationCap, bn: "কৃষি শিক্ষার্থী", en: "Agriculture student", bnDesc: "শিখুন, অনুশীলন করুন", enDesc: "Learn and build skills" },
   { id: "agriculturist", icon: BookOpen, bn: "কৃষিবিদ / বিশেষজ্ঞ", en: "Agriculture expert", bnDesc: "জ্ঞান ও পরামর্শ শেয়ার", enDesc: "Share expertise and guidance" },
   { id: "rooftop_gardener", icon: Flower2, bn: "ছাদবাগানকারী", en: "Rooftop gardener", bnDesc: "নিজের বাগান পরিচর্যা", enDesc: "Manage your home garden" },
