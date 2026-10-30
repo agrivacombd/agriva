@@ -1,7 +1,7 @@
 name: AGRIVA CI
 on:
   push:
-    branches: [main]
+    branches: [main, feat/module-access-architecture]
   pull_request:
     branches: [main]
 
@@ -70,6 +70,10 @@ jobs:
         run: npm run test:role-based-auth
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
+      - name: Module access architecture regression test
+        run: npm run test:module-access-architecture
+      - name: Identity verification and seller approval regression test
+        run: npm run test:identity-verification-workflow
       - name: Green Exchange security and route regression test
         run: npm run test:green-exchange-security
       - name: Plant Market live inventory and SEO regression test
