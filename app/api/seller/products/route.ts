@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
     description,
     image_url: imageUrl,
     status: "draft",
+    marketplace_channel: "marketplace",
   }).select("id,name,category,category_slug,subcategory_slug,image_url,status,unit").single();
 
   if (error) {
