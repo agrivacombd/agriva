@@ -183,6 +183,6 @@ function Field({ label, value, onChange, placeholder, type = "text", autoComplet
 }) {
   return <label className="block">
     <span className="text-sm font-bold">{label}</span>
-    <input required value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} type={type} autoComplete={autoComplete} required={required ?? true} maxLength={200} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" />
+    <input value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} type={type} autoComplete={autoComplete} required={required ?? true} maxLength={200} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" />
   </label>;
 }
