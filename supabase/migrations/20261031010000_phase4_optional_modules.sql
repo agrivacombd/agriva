@@ -16,6 +16,20 @@ values
   ('plants-gardening', 'garden-tools', 'বাগানের সরঞ্জাম', 'ছাঁটাই, পানি দেওয়া ও পরিচর্যার সরঞ্জাম দেখুন।', true, 70)
 on conflict (category_slug, slug) do update set name = excluded.name, description = excluded.description, is_active = true, sort_order = excluded.sort_order, updated_at = now();
 
+-- Keep trusted service-role payout transitions attributable even though they
+-- intentionally bypass the human-session AAL2 requirement. This private ledger
+-- avoids pretending a service token is a human admin (admin_id may be null).
+create table if not exists private.commission_payout_service_audit (
+  id bigint generated always as identity primary key,
+  payout_id uuid not null,
+  from_status text not null,
+  to_status text not null check (to_status in ('approved', 'paid')),
+  actor_role text not null default 'service_role',
+  request_id text,
+  created_at timestamptz not null default now()
+);
+revoke all on table private.commission_payout_service_audit from public, anon, authenticated;
+
 -- Payout approval and settlement are high-risk state transitions. This trigger
 -- is the final database boundary and protects against direct status updates.
 create or replace function private.enforce_mfa_for_commission_payout_transition()
@@ -37,6 +51,12 @@ begin
   -- Trusted server-side service-role operations may proceed. Human admin
   -- sessions must present an AAL2 claim issued after MFA verification.
   if v_jwt_role = 'service_role' then
+    insert into private.commission_payout_service_audit(
+      payout_id, from_status, to_status, actor_role, request_id
+    ) values (
+      new.id, old.status, new.status, 'service_role',
+      nullif(auth.jwt() ->> 'request_id', '')
+    );
     return new;
   end if;
 
