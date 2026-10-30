@@ -87,3 +87,34 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  farm-crop-cycle-rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: ci-only-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client when the regression fixture is present
+        if: ${{ hashFiles('scripts/test-farm-crop-cycle-rls.sql') != '' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Test farm/crop-cycle RLS migration against disposable PostgreSQL
+        if: ${{ hashFiles('scripts/test-farm-crop-cycle-rls.sql') != '' }}
+        env:
+          PGPASSWORD: ci-only-password
+        run: psql -h localhost -U postgres -d postgres -v ON_ERROR_STOP=1 -f scripts/test-farm-crop-cycle-rls.sql
+      - name: Explain skipped integration fixture
+        if: ${{ hashFiles('scripts/test-farm-crop-cycle-rls.sql') == '' }}
+        run: echo "Farm/crop-cycle SQL fixture is not present on this branch; no database test was run."
