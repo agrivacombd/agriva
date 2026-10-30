@@ -11,6 +11,7 @@ const seller=read("app/api/seller/products/route.ts");
 const gardener=read("app/api/plant-market/products/route.ts");
 const harvest=read("supabase/migrations/20261030120000_harvest_direct_posting.sql");
 const functionGrants=read("supabase/migrations/20261030134732_revoke_trigger_only_function_execute.sql");
+const tableGrants=read("supabase/migrations/20261030134847_revoke_client_writes_to_grants_and_audit_events.sql");
 assert.match(migration,/create table if not exists public\.gardener_profiles/);
 assert.match(migration,/create table if not exists public\.module_access_application_events/);
 assert.match(migration,/values \('identity-verification','identity-verification',false,5242880/,"identity evidence bucket must be private and size-limited");
@@ -18,6 +19,8 @@ assert.match(migration,/storage\.foldername\(name\)\)\[1\]=\(select auth\.uid\(\
 assert.match(migration,/drop policy if exists module_access_applications_admin_update/,"client-side review updates are removed");
 assert.match(migration,/after insert or update of status/,"application lifecycle audit trigger exists");
 assert.ok(functionGrants.toLowerCase().includes("revoke all on function public.guard_organization_verification() from public, anon, authenticated"),"trigger-only security definer function cannot be invoked through the Data API");
+assert.ok(tableGrants.includes("revoke insert, update, delete, truncate, references, trigger on public.module_access_application_events from authenticated"),"application audit events are append-only for server-side triggers");
+assert.ok(tableGrants.includes("revoke insert, update, delete, truncate, references, trigger on public.user_module_grants from authenticated"),"users cannot issue or alter module grants directly");
 assert.match(migration,/new\.reviewed_by/,"reviewer identity is written to verification profile");
 assert.match(migration,/case when new\.status='approved' then 'verified' else 'rejected' end/,"approved status maps to verified profile state");
 assert.match(migration,/products_module_access_insert_guard[\s\S]*?as restrictive for insert/,"legacy permissive product policies cannot bypass module approval");
