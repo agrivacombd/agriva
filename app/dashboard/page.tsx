@@ -34,6 +34,7 @@ const commonLinks = [
   { label: "Green Impact", href: "/impact", icon: "🌱", description: "যাচাইযোগ্য সবুজ কার্যক্রমের প্রভাব দেখুন" },
   { label: "চাকরি", href: "/jobs", icon: "💼", description: "কৃষি খাতের কাজের সুযোগ" },
   { label: "প্রোফাইল সেটিংস", href: "/profile", icon: "⚙️", description: "আপনার তথ্য ও পছন্দ আপডেট করুন" },
+  { label: "পরিচয় যাচাই / Seller Approval", href: "/account/verification", icon: "🛡️", description: "Plant Market, Marketplace বা Sell Harvest বিক্রির অনুমোদন নিন" },
 ];
 
 export default async function DashboardPage() {
