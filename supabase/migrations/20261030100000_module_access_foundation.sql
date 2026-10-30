@@ -338,7 +338,8 @@ create policy admin_role_permissions_admin_all on public.admin_role_permissions 
 drop policy if exists admin_user_roles_admin_all on public.admin_user_roles;
 create policy admin_user_roles_admin_all on public.admin_user_roles for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
-revoke all on public.module_access_applications,public.organizations,public.organization_members,public.farmer_profiles,public.farm_members,public.user_module_grants,public.admin_roles,public.admin_role_permissions,public.admin_user_roles from anon;
+revoke all on public.module_access_applications,public.organizations,public.organization_members,public.farmer_profiles,public.farm_members,public.user_module_grants,public.admin_roles,public.admin_role_permissions,public.admin_user_roles from public,anon;
+revoke truncate,references,trigger on public.module_access_applications,public.organizations,public.organization_members,public.farmer_profiles,public.farm_members,public.user_module_grants,public.admin_roles,public.admin_role_permissions,public.admin_user_roles from authenticated;
 grant select,insert,update on public.module_access_applications to authenticated;
 grant select,insert,update on public.organizations,public.organization_members,public.farm_members to authenticated;
 grant select,insert,update on public.farmer_profiles to authenticated;
