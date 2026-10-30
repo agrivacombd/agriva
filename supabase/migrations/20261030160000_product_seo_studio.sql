@@ -123,3 +123,61 @@ $$;
 
 REVOKE ALL ON FUNCTION public.admin_create_product_with_seo(jsonb) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_create_product_with_seo(jsonb) TO authenticated;
+
+
+CREATE OR REPLACE FUNCTION public.admin_update_product_seo(
+  p_product_id uuid,
+  p_short_description text,
+  p_seo_title text,
+  p_meta_description text,
+  p_image_alt_text text,
+  p_image_urls text[],
+  p_search_keywords text[],
+  p_seo_faqs jsonb
+)
+RETURNS public.products
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp
+AS $$
+DECLARE
+  result public.products;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Admin role required' USING ERRCODE = '42501';
+  END IF;
+
+  UPDATE public.products
+  SET short_description = nullif(trim(coalesce(p_short_description, '')), ''),
+      seo_title = nullif(trim(coalesce(p_seo_title, '')), ''),
+      meta_description = nullif(trim(coalesce(p_meta_description, '')), ''),
+      image_alt_text = nullif(trim(coalesce(p_image_alt_text, '')), ''),
+      image_urls = coalesce(p_image_urls, ARRAY[]::text[]),
+      image_url = coalesce(p_image_urls[1], image_url),
+      search_keywords = coalesce(p_search_keywords, ARRAY[]::text[]),
+      seo_faqs = coalesce(p_seo_faqs, '[]'::jsonb),
+      seo_review_status = CASE
+        WHEN length(trim(coalesce(seo_title, p_seo_title, ''))) BETWEEN 1 AND 70
+         AND length(trim(coalesce(meta_description, p_meta_description, ''))) >= 70
+         AND length(trim(coalesce(description, ''))) >= 80
+         AND cardinality(coalesce(p_image_urls, ARRAY[]::text[])) > 0
+         AND nullif(trim(coalesce(p_image_alt_text, '')), '') IS NOT NULL
+        THEN 'ready'
+        ELSE 'needs_review'
+      END,
+      updated_at = now()
+  WHERE id = p_product_id
+  RETURNING * INTO result;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'Product not found'; END IF;
+
+  INSERT INTO public.admin_audit_log(admin_id, action, entity_type, entity_id, metadata)
+  VALUES (auth.uid(), 'product.seo_updated', 'product', result.id,
+    jsonb_build_object('slug', result.slug, 'seo_review_status', result.seo_review_status));
+
+  RETURN result;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text[],text[],jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.admin_update_product_seo(uuid,text,text,text,text,text[],text[],jsonb) TO authenticated;
