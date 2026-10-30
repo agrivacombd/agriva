@@ -134,7 +134,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "@type": "Product",
     name: product.name,
     url: productUrl,
-    ...(image ? { image: [image] } : {}),
+    ...((product.image_urls?.length ? product.image_urls : image ? [image] : []).length ? { image: product.image_urls?.length ? product.image_urls : [image!] } : {}),
     ...(description ? { description } : {}),
     category: product.category || undefined,
     ...(product.brand_name ? { brand: { "@type": "Brand", name: product.brand_name } } : {}),
