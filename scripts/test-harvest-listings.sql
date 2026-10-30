@@ -128,7 +128,7 @@ INSERT INTO public.harvest_listings (
   ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/legacy.jpg'], 'paused', 'pending'
 );
 
-\i supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql
+\i supabase/migrations/20261030183612_reconcile_harvest_immediate_publication.sql
 
 DO $legacy_normalization$
 BEGIN
