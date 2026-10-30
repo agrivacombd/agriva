@@ -23,7 +23,8 @@ create table if not exists public.module_access_applications (
   or (module = 'sell_harvest' and applicant_type = 'farmer')
   or (module = 'transport' and applicant_type = 'transport_partner')
   or (module = 'farm_management' and applicant_type = 'farm_operator')
- )
+ ),
+ constraint marketplace_application_requires_organization check (module <> 'marketplace' or organization_id is not null)
 );
 create index if not exists module_access_applications_user_status_idx on public.module_access_applications(user_id,status,created_at desc);
 create index if not exists module_access_applications_queue_idx on public.module_access_applications(module,status,created_at) where status in ('pending','under_review');
@@ -108,6 +109,8 @@ create table if not exists public.user_module_grants (
 );
 create index if not exists user_module_grants_lookup_idx on public.user_module_grants(user_id,module,permission,status,scope_type,scope_id);
 create index if not exists user_module_grants_expiry_idx on public.user_module_grants(expires_at) where status = 'active' and expires_at is not null;
+create unique index if not exists user_module_grants_unique_scope_idx
+ on public.user_module_grants(user_id,module,permission,scope_type,coalesce(scope_id,'00000000-0000-0000-0000-000000000000'::uuid));
 
 create table if not exists public.admin_roles (
  id uuid primary key default gen_random_uuid(),
@@ -135,6 +138,8 @@ create table if not exists public.admin_user_roles (
  constraint admin_role_scope_consistency check ((scope_type = 'global' and scope_id is null) or (scope_type in ('organization','farm') and scope_id is not null))
 );
 create index if not exists admin_user_roles_user_idx on public.admin_user_roles(user_id,expires_at);
+create unique index if not exists admin_user_roles_unique_scope_idx
+ on public.admin_user_roles(user_id,role_id,scope_type,coalesce(scope_id,'00000000-0000-0000-0000-000000000000'::uuid));
 
 create or replace function public.owns_organization(p_organization_id uuid)
 returns boolean language sql stable security definer
@@ -208,6 +213,16 @@ begin
       updated_at = now()
   where id = p_application_id;
  if p_decision = 'approved' then
+  if v_application.module = 'marketplace' then
+   update public.organizations
+    set status = 'verified', updated_at = now()
+    where id = v_application.organization_id
+      and owner_id = v_application.user_id
+      and status in ('pending','verified');
+   if not found then
+    raise exception 'Business organization must exist and belong to the applicant' using errcode = '42501';
+   end if;
+  end if;
   insert into public.user_module_grants(user_id,module,permission,scope_type,scope_id,granted_by,reason)
   select v_application.user_id,v_application.module,permission_name,
     case when v_application.organization_id is not null then 'organization' else 'global' end,
