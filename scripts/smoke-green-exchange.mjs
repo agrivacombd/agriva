@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const migration = readFileSync("supabase/migrations/20261030235200_green_exchange_reconcile.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030183610_green_exchange_reconcile.sql", "utf8");
 const board = readFileSync("app/green-exchange/board/board-client.tsx", "utf8");
 const page = readFileSync("app/green-exchange/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
