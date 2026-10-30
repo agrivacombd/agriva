@@ -22,6 +22,9 @@ assert.match(migration, /before update of status on public\.commission_payouts/i
 assert.match(migration, /payout\.mfa_approved/);
 assert.match(migration, /payout\.mfa_settled/);
 assert.match(migration, /public\.admin_audit_log/);
+assert.match(migration, /private\.commission_payout_service_audit/);
+assert.match(migration, /actor_role, request_id/);
+assert.match(migration, /nullif\(auth\.jwt\(\) ->> 'request_id', ''\)/);
 assert.match(admin, /AAL2 verification/i);
 assert.match(admin, /payout_mfa_required/);
 
