@@ -7,7 +7,7 @@ BEGIN
   FOR table_row IN
     SELECT schemaname, tablename
     FROM pg_tables
-    WHERE schemaname = 'public'
+    WHERE schemaname IN ('public', 'storage', 'graphql', 'graphql_public')
   LOOP
     IF has_table_privilege('anon', format('%I.%I', table_row.schemaname, table_row.tablename), 'TRUNCATE') THEN
       RAISE EXCEPTION 'anon must not have TRUNCATE on public.%', table_row.tablename;
@@ -21,8 +21,8 @@ BEGIN
     SELECT 1
     FROM pg_default_acl d
     CROSS JOIN LATERAL aclexplode(d.defaclacl) a
-    WHERE d.defaclrole = 'postgres'::regrole
-      AND d.defaclnamespace = 'public'::regnamespace
+    WHERE d.defaclrole IN ('postgres'::regrole, 'supabase_admin'::regrole)
+      AND d.defaclnamespace IN ('public'::regnamespace, 'storage'::regnamespace, 'graphql'::regnamespace, 'graphql_public'::regnamespace)
       AND d.defaclobjtype = 'r'
       AND a.grantee IN ('anon'::regrole, 'authenticated'::regrole)
       AND a.privilege_type = 'TRUNCATE'
