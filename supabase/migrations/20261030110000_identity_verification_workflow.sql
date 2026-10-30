@@ -166,7 +166,7 @@ create policy products_module_access_update_guard on public.products
  with check (
   public.is_admin() or (
    farmer_id=(select auth.uid()) and (
-    (marketplace_channel='plant_market' and public.has_module_access('plant_market','create','global',null::uuid))
+    (marketplace_channel='plant_market' and exists (select 1 from public.gardener_profiles gp where gp.user_id=(select auth.uid()) and gp.verification_status='verified') and public.has_module_access('plant_market','create','global',null::uuid))
     or
     (marketplace_channel='marketplace' and exists (
       select 1 from public.organizations o
