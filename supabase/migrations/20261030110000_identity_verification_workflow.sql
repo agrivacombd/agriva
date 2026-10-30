@@ -178,3 +178,33 @@ create policy products_module_access_delete_guard on public.products
  );
 create index if not exists products_marketplace_channel_status_created_idx
  on public.products(marketplace_channel,status,created_at desc);
+
+
+-- Harvest listings require a reviewed farmer identity and an active module grant.
+-- RESTRICTIVE policy prevents older permissive owner-only policies from bypassing approval.
+drop policy if exists harvest_module_access_insert_guard on public.harvest_listings;
+create policy harvest_module_access_insert_guard on public.harvest_listings
+ as restrictive for insert to authenticated with check (
+  public.is_admin() or (
+   owner_id=(select auth.uid())
+   and exists (select 1 from public.farmer_profiles f where f.user_id=(select auth.uid()) and f.verification_status='verified')
+   and public.has_module_access('sell_harvest','create','global',null::uuid)
+  )
+ );
+drop policy if exists harvest_module_access_update_guard on public.harvest_listings;
+create policy harvest_module_access_update_guard on public.harvest_listings
+ as restrictive for update to authenticated
+ using (
+  public.is_admin() or (
+   owner_id=(select auth.uid())
+   and exists (select 1 from public.farmer_profiles f where f.user_id=(select auth.uid()) and f.verification_status='verified')
+   and public.has_module_access('sell_harvest','update','global',null::uuid)
+  )
+ )
+ with check (
+  public.is_admin() or (
+   owner_id=(select auth.uid())
+   and exists (select 1 from public.farmer_profiles f where f.user_id=(select auth.uid()) and f.verification_status='verified')
+   and public.has_module_access('sell_harvest','update','global',null::uuid)
+  )
+ );
