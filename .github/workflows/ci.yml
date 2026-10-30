@@ -26,6 +26,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Invalid Supabase refresh-token cookie regression test
         run: npm run test:auth-refresh-token
+      - name: GA4 analytics instrumentation regression test
+        run: npm run test:analytics-instrumentation
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
       - name: Category taxonomy SEO smoke test
