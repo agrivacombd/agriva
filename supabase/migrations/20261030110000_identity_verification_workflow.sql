@@ -62,9 +62,9 @@ begin
  end if;
  if old.status is distinct from new.status and new.status in ('approved','rejected') then
   if new.status='approved' then
-   update public.user_module_grants set status='active',granted_by=new.reviewed_by,granted_at=now(),
+   update public.user_module_grants set status='active',granted_by=new.reviewed_by,granted_at=now(),expires_at=null,
     revoked_by=null,revoked_at=null,reason='Reactivated after approved application ' || new.id::text
-   where user_id=new.user_id and module=new.module and status='revoked'
+   where user_id=new.user_id and module=new.module and status in ('active','revoked','expired')
     and ((new.organization_id is null and scope_type='global' and scope_id is null)
       or (new.organization_id is not null and scope_type='organization' and scope_id=new.organization_id));
    insert into public.user_module_grants(user_id,module,permission,scope_type,scope_id,granted_by,reason)
