@@ -49,11 +49,12 @@ export async function POST(request: NextRequest) {
     fullName: cleanText(rawAddress.fullName, 100),
     phone: cleanText(rawAddress.phone, 20),
     district: cleanText(rawAddress.district, 80),
+    upazila: cleanText(rawAddress.upazila, 100),
     address: cleanText(rawAddress.address, 500),
   };
 
-  if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.district || !shippingAddress.address) {
-    return NextResponse.json({ error: "নাম, মোবাইল নম্বর, জেলা ও সম্পূর্ণ ঠিকানা দিন।" }, { status: 400 });
+  if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.district || !shippingAddress.upazila || !shippingAddress.address) {
+    return NextResponse.json({ error: "নাম, মোবাইল নম্বর, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা দিন।" }, { status: 400 });
   }
   const phoneDigits = shippingAddress.phone.replace(/[\s()-]/g, "");
   if (!/^\+?\d{10,14}$/.test(phoneDigits)) {
