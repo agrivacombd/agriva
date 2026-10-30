@@ -26,8 +26,9 @@ export async function POST(request:NextRequest) {
  if(!body||typeof body!=="object"||!MODULES.includes(body.module as Module)) return NextResponse.json({error:"Invalid application"},{status:400});
  const module=body.module as Module;
  const {data:openApplication,error:openError}=await supabase.from("module_access_applications")
-  .select("id").eq("user_id",user.id).eq("module",module).in("status",["pending","under_review"]).limit(1).maybeSingle();
+  .select("id,status").eq("user_id",user.id).eq("module",module).in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
  if(openError)return NextResponse.json({error:"Application status unavailable"},{status:503});
+ if(openApplication?.status==="approved")return NextResponse.json({error:"You already have approved access for this module"},{status:409});
  if(openApplication)return NextResponse.json({error:"An application is already under review"},{status:409});
  const paths=evidencePaths(body.evidencePaths,user.id);
  if(!paths||paths.length===0) return NextResponse.json({error:"At least one identity evidence file is required"},{status:400});
