@@ -11,6 +11,7 @@ $roles$;
 
 CREATE SCHEMA IF NOT EXISTS auth;
 CREATE SCHEMA IF NOT EXISTS storage;
+CREATE SCHEMA IF NOT EXISTS private;
 
 CREATE OR REPLACE FUNCTION auth.uid()
 RETURNS uuid
@@ -56,6 +57,18 @@ AS $$
   SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
 $$;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp
+AS $$
+  SELECT public.is_admin();
+$$;
+GRANT USAGE ON SCHEMA private TO authenticated;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
 
 CREATE TABLE storage.buckets (
   id text PRIMARY KEY,
@@ -104,7 +117,30 @@ CREATE POLICY "Users can read approved or own harvest listings"
   USING (owner_id = (SELECT auth.uid()) OR (moderation_status = 'approved' AND status = 'available'));
 
 \i supabase/migrations/20261029093000_reconcile_harvest_listing_policies.sql
-\i supabase/migrations/20261030150000_remove_harvest_admin_approval.sql
+
+-- Seed a legacy pending listing; the forward migration must publish it.
+INSERT INTO public.harvest_listings (
+  owner_id, seller_name, crop_name, description, quantity, unit,
+  price_per_unit, district, image_urls, status, moderation_status
+) VALUES (
+  '10000000-0000-0000-0000-000000000001', 'Legacy farmer', 'Wheat',
+  'Legacy pending listing', 50, 'kg', 25, 'Rajshahi',
+  ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/legacy.jpg'], 'paused', 'pending'
+);
+
+\i supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql
+
+DO $legacy_normalization$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM public.harvest_listings
+    WHERE crop_name = 'Wheat'
+      AND (moderation_status <> 'approved' OR moderation_note IS NOT NULL)
+  ) THEN
+    RAISE EXCEPTION 'FAIL: legacy pending listings must be normalized to published';
+  END IF;
+END
+$legacy_normalization$;
 
 DO $policy_cleanup$
 BEGIN
@@ -153,15 +189,28 @@ BEGIN
     RAISE EXCEPTION 'FAIL: listing must publish immediately while preserving phone privacy';
   END IF;
 
-  UPDATE public.harvest_listings SET status = 'paused' WHERE id = listing_id;
-
+  denied := false;
   BEGIN
-    UPDATE public.harvest_listings SET moderation_status = 'approved' WHERE id = listing_id;
+    UPDATE public.harvest_listings
+    SET moderation_status = 'rejected', moderation_note = 'client-forged'
+    WHERE id = listing_id;
   EXCEPTION WHEN insufficient_privilege THEN
     denied := true;
   END;
   IF NOT denied THEN
-    RAISE EXCEPTION 'FAIL: owner could update moderation status directly';
+    RAISE EXCEPTION 'FAIL: owner must not write moderation fields directly';
+  END IF;
+  SELECT moderation_status, moderation_note
+  INTO listing_status, listing_note
+  FROM public.harvest_listings WHERE id = listing_id;
+  IF listing_status <> 'approved' OR listing_note IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: owner moderation fields must remain server controlled';
+  END IF;
+
+  UPDATE public.harvest_listings SET status = 'paused' WHERE id = listing_id;
+  SELECT moderation_status INTO listing_status FROM public.harvest_listings WHERE id = listing_id;
+  IF listing_status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: ordinary owner updates must preserve published moderation state';
   END IF;
 
   INSERT INTO storage.objects(bucket_id, name)
@@ -193,8 +242,9 @@ $owner$;
 RESET ROLE;
 DO $no_moderation_rpc$
 BEGIN
-  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: legacy admin moderation RPC must be removed';
+  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL
+    OR to_regprocedure('private.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin moderation RPCs must be removed';
   END IF;
 END
 $no_moderation_rpc$;

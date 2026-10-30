@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 
 const page = readFileSync("components/marketplace/SellHarvestMarketplace.tsx", "utf8");
 const adminPage = readFileSync("app/admin/harvest/page.tsx", "utf8");
-const migration = readFileSync("supabase/migrations/20261030150000_remove_harvest_admin_approval.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql", "utf8");
 
 assert.match(page, /image_urls: imageUrls, status: "available"/, "New harvest listings must be inserted as available");
 assert.doesNotMatch(page, /moderation_status|অ্যাডমিন অনুমোদন|অনুমোদনের অপেক্ষায়|অনুমোদনের জন্য/, "Public Sell My Harvest UI must not depend on admin approval");
@@ -19,4 +19,6 @@ assert.match(migration, /moderation_status = 'approved'/, "Legacy listings must 
 assert.match(migration, /USING \(status = 'available'\)/, "Public RLS must expose available listings without a moderation gate");
 assert.match(migration, /DROP FUNCTION IF EXISTS public\.admin_moderate_harvest_listing/, "Legacy admin approval RPC must be removed");
 assert.ok(migration.includes("IF NOT NEW.contact_phone_public") && migration.includes("NEW.contact_phone := NULL"), "Immediate publication must preserve phone consent privacy");
+assert.match(migration, /DROP FUNCTION IF EXISTS private\.admin_moderate_harvest_listing/, "Legacy private moderation RPC must be removed");
+assert.ok(migration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
 console.log("Sell My Harvest immediate publication regression checks passed.");
