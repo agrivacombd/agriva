@@ -25,9 +25,9 @@ export async function POST(request:NextRequest) {
  if(authError||!user) return NextResponse.json({error:"Login required"},{status:401});
  const body=await request.json().catch(()=>null);
  if(!body||typeof body!=="object"||!(SUBMIT_MODULES as readonly string[]).includes(body.module)) return NextResponse.json({error:"Invalid application. Sell Harvest does not require identity approval; log in and post directly."},{status:400});
- const module=body.module as NewApplicationModule;
+ const selectedModule=body.module as NewApplicationModule;
  const {data:openApplication,error:openError}=await supabase.from("module_access_applications")
-  .select("id,status").eq("user_id",user.id).eq("module",module).in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
+  .select("id,status").eq("user_id",user.id).eq("module",selectedModule).in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
  if(openError)return NextResponse.json({error:"Application status unavailable"},{status:503});
  if(openApplication?.status==="approved")return NextResponse.json({error:"You already have approved access for this module"},{status:409});
  if(openApplication)return NextResponse.json({error:"An application is already under review"},{status:409});
@@ -40,7 +40,7 @@ export async function POST(request:NextRequest) {
   if(!paths.every(path=>existing.has(path))) return NextResponse.json({error:"Evidence file missing"},{status:400});
  }
  let applicantType:string, applicantData:Record<string,unknown>, organizationId:string|null=null;
- if(module==="plant_market") {
+ if(selectedModule==="plant_market") {
   applicantType="gardener";
   const district=clean(body.district,80), experience=clean(body.experienceNote,2000);
   const types=Array.isArray(body.gardeningTypes)?body.gardeningTypes.filter((v:unknown)=>typeof v==="string").map((v:string)=>v.slice(0,40)).slice(0,8):[];
@@ -65,7 +65,7 @@ export async function POST(request:NextRequest) {
   applicantData={organization_name:name,organization_type:type,trade_license:tradeLicense,business_address:address,website,evidence_paths:paths};
  }
  const {data:application,error}=await supabase.from("module_access_applications").insert({
-  user_id:user.id,module,applicant_type:applicantType,organization_id:organizationId,applicant_data:applicantData,status:"pending"
+  user_id:user.id,module:selectedModule,applicant_type:applicantType,organization_id:organizationId,applicant_data:applicantData,status:"pending"
  }).select("id,module,status,created_at").single();
  if(error||!application) return NextResponse.json({error:error?.code==="23505"?"An application is already open":"Application could not be submitted"},{status:409});
  return NextResponse.json({application},{status:201});
