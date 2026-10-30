@@ -218,6 +218,7 @@ export default function SignupPage() {
               <span>{language === "bn" ? <>আমি AGRIVA-র <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms-of-service">শর্তাবলি</Link> ও <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy-policy">গোপনীয়তা নীতি</Link>-তে সম্মত।</> : <>I agree to AGRIVA's <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/terms-of-service">Terms</Link> and <Link className="font-semibold text-[#167453] underline underline-offset-2" href="/privacy-policy">Privacy Policy</Link>.</>}</span>
             </label>
             <p className="text-xs leading-5 text-slate-500">{t.privacy}</p>
+            <p className="text-sm leading-6 text-[#52705d]">বিক্রেতা হতে চাইলে account সক্রিয় করার পর <Link href="/account/verification" className="font-bold text-[#126b4f] underline underline-offset-2">পরিচয় যাচাই ও Seller Approval</Link> সম্পন্ন করুন। Signup-এর role নির্বাচন বিক্রির অনুমতি নয়।</p>
 
             <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">
               {busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}
