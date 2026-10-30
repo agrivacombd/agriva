@@ -33,7 +33,8 @@
     "test:seller-schema-compat": "node scripts/smoke-seller-schema-compat.mjs",
     "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs",
     "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs",
-    "test:module-access-architecture": "node scripts/smoke-module-access-architecture.mjs"
+    "test:module-access-architecture": "node scripts/smoke-module-access-architecture.mjs",
+    "test:identity-verification-workflow": "node scripts/smoke-identity-verification-workflow.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
