@@ -48,6 +48,8 @@ jobs:
         run: npm run test:api-role-hardening
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
+      - name: Sell My Harvest immediate publication regression test
+        run: npm run test:sell-harvest-publication
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
       - name: Super Admin operational queue regression test
