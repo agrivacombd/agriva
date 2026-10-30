@@ -14,12 +14,15 @@ function isInvalidRefreshToken(error: unknown): boolean {
     /invalid refresh token|refresh token (not found|expired)/i.test(message);
 }
 
-function clearSupabaseAuthCookies(request: NextRequest, response: NextResponse) {
-  for (const cookie of request.cookies.getAll()) {
-    if (!cookie.name.startsWith("sb-")) continue;
-    request.cookies.delete(cookie.name);
-    response.cookies.delete(cookie.name);
-  }
+function clearSupabaseAuthCookies(request: NextRequest): NextResponse {
+  const authCookieNames = request.cookies.getAll()
+    .filter((cookie) => cookie.name.startsWith("sb-"))
+    .map((cookie) => cookie.name);
+
+  authCookieNames.forEach((name) => request.cookies.delete(name));
+  const response = NextResponse.next({ request });
+  authCookieNames.forEach((name) => response.cookies.delete(name));
+  return response;
 }
 
 export async function middleware(request: NextRequest) {
@@ -46,7 +49,7 @@ export async function middleware(request: NextRequest) {
   // cookies so every subsequent request does not retry the same invalid token.
   try {
     const { error } = await supabase.auth.getUser();
-    if (isInvalidRefreshToken(error)) clearSupabaseAuthCookies(request, response);
+    if (isInvalidRefreshToken(error)) response = clearSupabaseAuthCookies(request);
   } catch (error) {
     if (isInvalidRefreshToken(error)) clearSupabaseAuthCookies(request, response);
   }
