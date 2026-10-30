@@ -10,6 +10,7 @@ END
 $roles$;
 
 CREATE SCHEMA IF NOT EXISTS auth;
+CREATE SCHEMA IF NOT EXISTS private;
 CREATE TABLE auth.users (id uuid PRIMARY KEY);
 CREATE OR REPLACE FUNCTION auth.uid()
 RETURNS uuid
@@ -37,6 +38,18 @@ INSERT INTO public.profiles(id, role) VALUES
   ('10000000-0000-0000-0000-000000000002', 'admin'),
   ('10000000-0000-0000-0000-000000000003', 'farmer');
 INSERT INTO public.products(name, category, status) VALUES ('Plant seed', 'plants-gardening', 'active');
+
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $
+  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
+$;
+GRANT USAGE ON SCHEMA private TO authenticated;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
 
 \i supabase/migrations/20261030235200_green_exchange_reconcile.sql
 \i supabase/migrations/20261030235210_green_living_reconcile.sql
@@ -96,6 +109,18 @@ BEGIN
   END IF;
 END
 $non_owner$;
+
+-- Admins can review pending listings, but ordinary users and anonymous visitors cannot.
+RESET ROLE;
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
+DO $admin_read$
+BEGIN
+  IF (SELECT count(*) FROM public.green_exchange_listings) <> 1 THEN
+    RAISE EXCEPTION 'FAIL: admin must be able to read pending exchange listings';
+  END IF;
+END
+$admin_read$;
 
 -- Anonymous users cannot see a pending exchange listing.
 RESET ROLE;
