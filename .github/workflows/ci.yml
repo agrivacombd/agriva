@@ -74,6 +74,8 @@ jobs:
         run: npm run test:module-access-architecture
       - name: Identity verification and seller approval regression test
         run: npm run test:identity-verification-workflow
+      - name: Security and Performance Advisor hardening regression test
+        run: npm run test:security-performance-advisor-hardening
       - name: Green Exchange security and route regression test
         run: npm run test:green-exchange-security
       - name: Plant Market live inventory and SEO regression test
