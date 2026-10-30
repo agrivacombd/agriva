@@ -23,4 +23,6 @@ assert.match(migration, /IF NOT private\.is_admin\(\)/, "Only admins may change 
 assert.match(migration, /CREATE OR REPLACE FUNCTION private\.admin_moderate_harvest_listing/, "Legacy admin UI must retain a compatible visibility RPC");
 assert.match(migration, /CREATE OR REPLACE FUNCTION public\.admin_moderate_harvest_listing/, "Public RPC must forward to the compatibility visibility implementation");
 assert.match(migration, /harvest_listing\.visibility_changed/, "Admin visibility changes must remain audited");
+const ownerUpdatePolicy = migration.split("CREATE POLICY harvest_listings_owner_status_update")[1] ?? "";
+assert.match(ownerUpdatePolicy, /moderation_status = 'approved'/, "Owners must not republish listings rejected by admins");
 console.log("Sell My Harvest immediate publication regression checks passed.");
