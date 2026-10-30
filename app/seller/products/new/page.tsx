@@ -3,13 +3,14 @@ import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import SellerProductForm from "@/components/seller/SellerProductForm";
 
-const pageUrl = "https://agriva.com.bd/seller/products/new";
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+const pageUrl = siteUrl + "/seller/products/new";
 
 export const metadata: Metadata = {
   title: "কৃষিপণ্য বিক্রি করুন | AGRIVA Seller Marketplace",
   description:
     "AGRIVA-তে আপনার ব্যবসার বীজ, সার, কৃষি উপকরণ ও প্যাকেটজাত পণ্য বিক্রির জন্য জমা দিন। পণ্যের ছবি, দাম, স্টক ও বিক্রয় একক যোগ করে ক্রেতাদের কাছে পৌঁছান।",
-  alternates: { canonical: pageUrl },
+  alternates: { canonical: "/seller/products/new" },
   openGraph: {
     type: "website",
     locale: "bn_BD",
@@ -57,7 +58,7 @@ const sellerLandingJsonLd = {
   description:
     "ব্যবসার কৃষিপণ্য AGRIVA Marketplace-এ তালিকাভুক্তির জন্য জমা দেওয়ার নির্দেশনা ও ফর্ম।",
   inLanguage: "bn-BD",
-  isPartOf: { "@type": "WebSite", name: "AGRIVA", url: "https://agriva.com.bd" },
+  isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
   mainEntity: {
     "@type": "FAQPage",
     mainEntity: faqs.map((faq) => ({
