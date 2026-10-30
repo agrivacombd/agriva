@@ -34,3 +34,8 @@ AGRIVA combines agriculture tools, AI assistance, smart search, marketplace, far
 Environment variables belong in `.env.local` and must never be committed.
 
 See `.env.example` for the required configuration shape.
+
+
+## Analytics (optional)
+
+Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` to your Google Analytics 4 measurement ID (`G-XXXXXXXXXX`) to enable page views and the privacy-conscious `seller_product_submitted` and `marketplace_order_placed` events. Leave it empty to disable Google Analytics. Event payloads must not contain personal information.
