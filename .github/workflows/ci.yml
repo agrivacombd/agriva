@@ -24,6 +24,8 @@ jobs:
         run: npm run lint -- --no-cache
       - name: TypeScript check
         run: npx tsc --noEmit
+      - name: Invalid Supabase refresh-token cookie regression test
+        run: npm run test:auth-refresh-token
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
       - name: Category taxonomy SEO smoke test
