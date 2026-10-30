@@ -189,17 +189,29 @@ BEGIN
     RAISE EXCEPTION 'FAIL: listing must publish immediately while preserving phone privacy';
   END IF;
 
-  UPDATE public.harvest_listings
-  SET moderation_status = 'rejected', moderation_note = 'client-forged'
-  WHERE id = listing_id;
+  denied := false;
+  BEGIN
+    UPDATE public.harvest_listings
+    SET moderation_status = 'rejected', moderation_note = 'client-forged'
+    WHERE id = listing_id;
+  EXCEPTION WHEN insufficient_privilege THEN
+    denied := true;
+  END;
+  IF NOT denied THEN
+    RAISE EXCEPTION 'FAIL: owner must not write moderation fields directly';
+  END IF;
   SELECT moderation_status, moderation_note
   INTO listing_status, listing_note
   FROM public.harvest_listings WHERE id = listing_id;
   IF listing_status <> 'approved' OR listing_note IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: owner must not change the publication state or moderation note';
+    RAISE EXCEPTION 'FAIL: owner moderation fields must remain server controlled';
   END IF;
 
   UPDATE public.harvest_listings SET status = 'paused' WHERE id = listing_id;
+  SELECT moderation_status INTO listing_status FROM public.harvest_listings WHERE id = listing_id;
+  IF listing_status <> 'approved' THEN
+    RAISE EXCEPTION 'FAIL: ordinary owner updates must preserve published moderation state';
+  END IF;
 
   INSERT INTO storage.objects(bucket_id, name)
   VALUES ('harvest-images', auth.uid()::text || '/own.jpg');
