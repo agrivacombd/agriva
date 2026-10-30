@@ -66,7 +66,6 @@ for (const path of [
   "app/admin/products/page.tsx",
   "app/admin/categories/page.tsx",
   "app/admin/transport/page.tsx",
-  "app/admin/harvest/page.tsx",
   "app/admin/jobs/page.tsx",
   "app/admin/users/page.tsx",
   "app/admin/settings/page.tsx",
@@ -91,10 +90,9 @@ assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page 
 assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
 
 const harvestPage = read("app/admin/harvest/page.tsx");
-assert.ok(harvestPage.includes('(action === "rejected" && !note)'), "harvest moderation must require a reason when rejecting a listing");
-assert.ok(harvestPage.includes("প্রত্যাখ্যান করলে আবশ্যক"), "harvest moderation UI must explain that rejection requires a reason");
-assert.ok(harvestPage.includes('supabase.rpc("admin_moderate_harvest_listing"'), "harvest moderation must use the audited admin-only RPC");
-assert.ok(!harvestPage.includes('.from("harvest_listings").update('), "harvest moderation must not directly update the table from the page");
+assert.ok(harvestPage.includes('requireAdminPage("harvest.read")'), "harvest admin page must remain read-only");
+assert.ok(!harvestPage.includes("admin_moderate_harvest_listing"), "Sell My Harvest must not expose admin approval actions");
+assert.ok(!harvestPage.includes('name="action"'), "Sell My Harvest admin overview must not offer moderation decisions");
 
 const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
 assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
@@ -104,14 +102,11 @@ assert.ok(orderMigration.includes("p_status = 'cancelled' AND v_old_status IN ('
 assert.ok(orderMigration.includes("A refund does not"), "refund must not automatically restock inventory");
 assert.ok(orderMigration.includes("REVOKE ALL ON FUNCTION public.set_marketplace_order_status(uuid, text) FROM PUBLIC, anon"), "order status RPC must not be executable by anonymous users");
 
-const harvestMigration = read("supabase/migrations/20261026233434_harden_harvest_moderation.sql");
-assert.ok(harvestMigration.includes("NEW.moderation_note IS DISTINCT FROM OLD.moderation_note"), "harvest trigger must prevent non-admin moderation-note changes");
-assert.ok(harvestMigration.includes("admin_moderate_harvest_listing"), "harvest moderation must provide an admin-only RPC");
-assert.ok(harvestMigration.includes("INSERT INTO public.admin_audit_log"), "harvest moderation RPC must write an audit record");
-assert.ok(harvestMigration.includes("p_status IS NULL OR p_status NOT IN ('approved', 'rejected', 'pending')"), "harvest moderation RPC must reject null and unsupported statuses");
-assert.ok(harvestMigration.includes("p_status = 'rejected' AND v_note IS NULL"), "harvest moderation RPC must require a rejection reason");
-assert.ok(harvestMigration.includes("char_length(coalesce(v_note, '')) > 500"), "harvest moderation RPC must enforce the note length server-side");
-assert.ok(harvestMigration.includes("REVOKE ALL ON FUNCTION public.admin_moderate_harvest_listing(uuid, text, text) FROM PUBLIC, anon"), "harvest moderation RPC must revoke public and anonymous execution");
+const harvestMigration = read("supabase/migrations/20261030150000_remove_harvest_admin_approval.sql");
+assert.ok(harvestMigration.includes("DROP FUNCTION IF EXISTS public.admin_moderate_harvest_listing"), "Sell My Harvest must remove the legacy admin approval RPC");
+assert.ok(harvestMigration.includes("moderation_status = 'approved'"), "legacy harvest listings must be normalized to immediately published");
+assert.ok(harvestMigration.includes("USING (status = 'available')"), "public harvest RLS must not require admin approval");
+assert.ok(harvestMigration.includes("IF NOT NEW.contact_phone_public"), "publication trigger must preserve phone-publication consent");
 
 const articleGenerator = read("app/api/admin/article/generate/route.ts");
 assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug generation must normalize actual whitespace");
@@ -126,7 +121,6 @@ const sharedGuardPages = [
   ["app/admin/products/page.tsx", "catalog.read"],
   ["app/admin/categories/page.tsx", "catalog.read"],
   ["app/admin/transport/page.tsx", "transport.read"],
-  ["app/admin/harvest/page.tsx", "harvest.read"],
   ["app/admin/jobs/page.tsx", "jobs.read"],
   ["app/admin/users/page.tsx", "users.read"],
   ["app/admin/settings/page.tsx", "settings.read"],
@@ -181,4 +175,4 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
-console.log("Admin Route Handler discovery, Server Action, article-review, and moderation-RPC regression checks passed.");
+console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
