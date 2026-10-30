@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
-const MODULES = ["plant_market","marketplace","sell_harvest"] as const;
+const MODULES = ["plant_market","marketplace","employer","transport","sell_harvest"] as const;
 type Module = (typeof MODULES)[number];
 const clean = (v: unknown, n: number) => typeof v === "string" ? v.trim().slice(0,n) : "";
 function evidencePaths(value: unknown, userId: string): string[] | null {
@@ -23,7 +23,7 @@ export async function POST(request:NextRequest) {
  const {data:{user},error:authError}=await supabase.auth.getUser();
  if(authError||!user) return NextResponse.json({error:"Login required"},{status:401});
  const body=await request.json().catch(()=>null);
- if(!body||typeof body!=="object"||!(["plant_market","marketplace"] as const).includes(body.module as "plant_market"|"marketplace")) return NextResponse.json({error:"Invalid application. Sell Harvest does not require identity approval; log in and post directly."},{status:400});
+ if(!body||typeof body!=="object"||!(["plant_market","marketplace","employer","transport"] as const).includes(body.module as "plant_market"|"marketplace"|"employer"|"transport")) return NextResponse.json({error:"Invalid application. Sell Harvest does not require identity approval; log in and post directly."},{status:400});
  const module=body.module as Module;
  const {data:openApplication,error:openError}=await supabase.from("module_access_applications")
   .select("id,status").eq("user_id",user.id).eq("module",module).in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
@@ -45,6 +45,16 @@ export async function POST(request:NextRequest) {
   const types=Array.isArray(body.gardeningTypes)?body.gardeningTypes.filter((v:unknown)=>typeof v==="string").map((v:string)=>v.slice(0,40)).slice(0,8):[];
   if(!district||!experience||experience.length<20||!types.length) return NextResponse.json({error:"District, gardening type and experience are required"},{status:400});
   applicantData={district,gardening_types:types,experience_note:experience,evidence_paths:paths};
+ } else if(module==="transport") {
+  applicantType="transport_partner";
+  const providerName=clean(body.providerName,180),phone=clean(body.contactPhone,30),district=clean(body.district,80),serviceArea=clean(body.serviceArea,160),vehicleTypes=clean(body.vehicleTypes,200),licenseNumber=clean(body.licenseNumber,100),experience=clean(body.experienceNote,2000);
+  if(!providerName||!phone||!district||!serviceArea||!vehicleTypes||experience.length<20) return NextResponse.json({error:"Provider name, contact, service area, vehicle types and experience are required"},{status:400});
+  applicantData={provider_name:providerName,contact_phone:phone,district,service_area:serviceArea,vehicle_types:vehicleTypes,license_number:licenseNumber,experience_note:experience,evidence_paths:paths};
+ } else if(module==="employer") {
+  applicantType="employer";
+  const name=clean(body.organizationName,180),type=clean(body.organizationType,30),address=clean(body.businessAddress,300),contactName=clean(body.contactName,120),contactPhone=clean(body.contactPhone,30),industry=clean(body.industry,120),tradeLicense=clean(body.tradeLicense,100),website=clean(body.website,300);
+  if(!name||!address||!contactName||!contactPhone||!industry||!["company","shop","dealer","cooperative","other"].includes(type)) return NextResponse.json({error:"Employer organization, address, contact person, phone and industry are required"},{status:400});
+  applicantData={organization_name:name,organization_type:type,business_address:address,contact_name:contactName,contact_phone:contactPhone,industry,trade_license:tradeLicense,website,evidence_paths:paths};
  } else if(module==="sell_harvest") {
   applicantType="farmer";
   const district=clean(body.district,80),upazila=clean(body.upazila,80),description=clean(body.farmDescription,2000);
