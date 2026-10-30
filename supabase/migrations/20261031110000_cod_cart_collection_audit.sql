@@ -40,7 +40,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 declare target_cart_id uuid; cart_status text;
 begin
   target_cart_id := case when tg_op = 'DELETE' then old.cart_id else new.cart_id end;
@@ -51,7 +51,7 @@ begin
   if tg_op = 'DELETE' then return old; end if;
   return new;
 end;
-$;
+$$;
 revoke all on function public.ensure_cart_active_for_item() from public, anon, authenticated;
 drop trigger if exists cart_items_require_active_cart on public.cart_items;
 create trigger cart_items_require_active_cart
