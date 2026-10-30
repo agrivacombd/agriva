@@ -2,10 +2,13 @@
 -- Existing transport applications already use the transport_partner applicant type.
 alter table public.module_access_applications
  drop constraint if exists module_access_applications_module_check,
+ drop constraint if exists module_access_applications_applicant_type_check,
  drop constraint if exists module_access_applicant_type_matches_module;
 alter table public.module_access_applications
  add constraint module_access_applications_module_check
  check (module in ('plant_market','marketplace','sell_harvest','transport','farm_management','employer')),
+ add constraint module_access_applications_applicant_type_check
+ check (applicant_type in ('gardener','business','farmer','transport_partner','farm_operator','employer')),
  add constraint module_access_applicant_type_matches_module
  check (
   (module='plant_market' and applicant_type='gardener')
