@@ -9,6 +9,8 @@ for (const token of ["normalizeBangladeshPhone","p_idempotency_key","cod_enabled
 assert.ok(checkout.includes("crypto.randomUUID"));
 assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-quoted body");
 assert.ok(migration.includes("ensure_cart_active_for_item"));
+assert.ok(migration.includes("private.finalize_marketplace_cod_order("), "checkout must use the referral-aware private order RPC");
+assert.ok(migration.includes("then p_visitor_token else null end"), "checkout must forward the validated referral visitor token");
 assert.ok(migration.includes("as $$\ndeclare target_cart_id") && migration.includes("return new;\nend;\n$$;"), "active-cart trigger must use a valid dollar-quoted body");
 assert.ok(migration.includes("grant select on public.marketplace_checkouts to authenticated"));
 assert.ok(migration.includes("grant select on public.cod_collection_events to authenticated"));
