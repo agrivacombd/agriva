@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const migration = readFileSync("supabase/migrations/20261027173503_green_exchange.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030235200_green_exchange_reconcile.sql", "utf8");
 const board = readFileSync("app/green-exchange/board/board-client.tsx", "utf8");
 const page = readFileSync("app/green-exchange/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
@@ -9,6 +9,7 @@ const adminPage = readFileSync("app/admin/green-exchange/page.tsx", "utf8");
 
 assert.match(migration, /alter table public\.green_exchange_listings enable row level security/i);
 assert.match(migration, /alter table public\.green_exchange_requests enable row level security/i);
+assert.match(migration, /using \(private\.is_admin\(\)\)/i, "admins must be able to read pending listings for moderation");
 assert.equal(migration.split("as " + "$$" + "\nbegin").length - 1, 3, "SQL function bodies must use valid dollar quoting");
 assert.equal(migration.split("\n" + "$$" + ";\n").length - 1, 3, "SQL function bodies must close dollar quotes");
 assert.match(migration, /moderation_status = 'pending'/i, "new user listings must start pending");

@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const migration = readFileSync("supabase/migrations/20261027182446_green_living_platform.sql", "utf8");
-const indexesMigration = readFileSync("supabase/migrations/20261027182720_green_living_fk_indexes.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030235210_green_living_reconcile.sql", "utf8");
+const indexesMigration = readFileSync("supabase/migrations/20261030235220_green_living_fk_indexes.sql", "utf8");
 const gardenPage = readFileSync("app/garden/page.tsx", "utf8");
 const gardenClient = readFileSync("app/garden/GardenClient.tsx", "utf8");
 const impactPage = readFileSync("app/impact/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
 const dashboard = readFileSync("app/dashboard/page.tsx", "utf8");
+const integration = readFileSync("scripts/test-green-living-platform.sql", "utf8");
 
 for (const table of ["garden_plants", "garden_care_tasks", "garden_activity_logs"]) {
   assert.match(migration, new RegExp(`create table if not exists public\\.${table}`, "i"), `${table} table must exist`);
@@ -42,5 +43,7 @@ assert.match(robots, /"\/impact"/, "public impact page must be crawlable");
 assert.match(robots, /"\/garden"/, "private garden must be excluded from crawling");
 assert.match(dashboard, /href: "\/garden"/, "dashboard must expose Personal Garden");
 assert.match(dashboard, /href: "\/impact"/, "dashboard must expose Green Impact");
+assert.match(integration, /another user can read private Garden records/i, "SQL integration must cover Garden owner isolation");
+assert.match(integration, /both participant confirmations must complete/i, "SQL integration must require both exchange participants to confirm completion");
 
 console.log("Green Living platform schema, privacy, and SEO smoke tests passed.");
