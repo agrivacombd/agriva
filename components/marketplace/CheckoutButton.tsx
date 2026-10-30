@@ -10,11 +10,12 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [district, setDistrict] = useState("");
+  const [upazila, setUpazila] = useState("");
   const [address, setAddress] = useState("");
 
   async function checkout() {
-    if (!fullName.trim() || !phone.trim() || !district.trim() || !address.trim()) {
-      setMessage("অর্ডার করতে নাম, মোবাইল নম্বর, জেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
+    if (!fullName.trim() || !phone.trim() || !district.trim() || !upazila.trim() || !address.trim()) {
+      setMessage("অর্ডার করতে নাম, মোবাইল নম্বর, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
       return;
     }
     const normalizedPhone = phone.trim().replace(/[\s()-]/g, "");
@@ -33,7 +34,7 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
         body: JSON.stringify({
           productId,
           quantity: 1,
-          shippingAddress: { fullName: fullName.trim(), phone: phone.trim(), district: district.trim(), address: address.trim() },
+          shippingAddress: { fullName: fullName.trim(), phone: phone.trim(), district: district.trim(), upazila: upazila.trim(), address: address.trim() },
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -63,6 +64,9 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
           </label>
           <label className="text-sm font-bold text-[#17351f] sm:col-span-2">জেলা নির্বাচন করুন
             <select value={district} onChange={e => setDistrict(e.target.value)} autoComplete="address-level1" required className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"><option value="">জেলা বেছে নিন</option>{["ঢাকা","গাজীপুর","নারায়ণগঞ্জ","নরসিংদী","মুন্সিগঞ্জ","মানিকগঞ্জ","টাঙ্গাইল","কিশোরগঞ্জ","ফরিদপুর","গোপালগঞ্জ","মাদারীপুর","শরীয়তপুর","রাজবাড়ী","চট্টগ্রাম","কক্সবাজার","কুমিল্লা","ফেনী","নোয়াখালী","লক্ষ্মীপুর","চাঁদপুর","ব্রাহ্মণবাড়িয়া","রাঙামাটি","খাগড়াছড়ি","বান্দরবান","রাজশাহী","বগুড়া","পাবনা","সিরাজগঞ্জ","নাটোর","নওগাঁ","জয়পুরহাট","চাঁপাইনবাবগঞ্জ","রংপুর","দিনাজপুর","গাইবান্ধা","কুড়িগ্রাম","লালমনিরহাট","নীলফামারী","পঞ্চগড়","ঠাকুরগাঁও","খুলনা","যশোর","সাতক্ষীরা","বাগেরহাট","নড়াইল","মাগুরা","ঝিনাইদহ","কুষ্টিয়া","চুয়াডাঙ্গা","মেহেরপুর","বরিশাল","পটুয়াখালী","ভোলা","পিরোজপুর","বরগুনা","ঝালকাঠি","সিলেট","মৌলভীবাজার","হবিগঞ্জ","সুনামগঞ্জ","ময়মনসিংহ","জামালপুর","শেরপুর","নেত্রকোণা"].map(name => <option key={name} value={name}>{name}</option>)}</select>
+          </label>
+          <label className="text-sm font-bold text-[#17351f] sm:col-span-2">উপজেলা / থানা
+            <input value={upazila} onChange={e => setUpazila(e.target.value)} autoComplete="address-level2" maxLength={100} required placeholder="আপনার উপজেলা বা থানা লিখুন" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
           </label>
           <label className="text-sm font-bold text-[#17351f] sm:col-span-2">সম্পূর্ণ ঠিকানা
             <textarea value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" maxLength={500} required rows={3} placeholder="গ্রাম/এলাকা + উপজেলা + বাড়ি/রোড (এক লাইনে লিখুন)" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
