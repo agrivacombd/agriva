@@ -157,8 +157,8 @@ BEGIN
       search_keywords = coalesce(p_search_keywords, ARRAY[]::text[]),
       seo_faqs = coalesce(p_seo_faqs, '[]'::jsonb),
       seo_review_status = CASE
-        WHEN length(trim(coalesce(seo_title, p_seo_title, ''))) BETWEEN 1 AND 70
-         AND length(trim(coalesce(meta_description, p_meta_description, ''))) >= 70
+        WHEN length(trim(coalesce(p_seo_title, ''))) BETWEEN 1 AND 70
+         AND length(trim(coalesce(p_meta_description, ''))) >= 70
          AND length(trim(coalesce(description, ''))) >= 80
          AND cardinality(coalesce(p_image_urls, ARRAY[]::text[])) > 0
          AND nullif(trim(coalesce(p_image_alt_text, '')), '') IS NOT NULL
