@@ -22,8 +22,14 @@ assert.match(migration,/products_module_access_insert_guard[\s\S]*?as restrictiv
 assert.match(migration,/products_module_access_update_guard[\s\S]*?as restrictive for update/,"product updates require active module grants");
 assert.match(migration,/marketplace_channel='plant_market'/,"Plant Market channel is enforced");
 assert.match(migration,/marketplace_channel='marketplace'/,"Business marketplace channel is enforced");
-assert.match(harvest,/harvest_module_access_insert_guard[\s\S]*?as restrictive for insert/,"harvest insertion requires farmer approval");
+assert.match(migration,/harvest_module_access_insert_guard[\s\S]*?as restrictive for insert/,"legacy harvest guard is present in the initial identity migration");
+assert.ok(harvest.includes("drop policy if exists harvest_module_access_insert_guard"),"direct harvest posting removes the insert approval guard");
+assert.ok(harvest.includes("drop policy if exists harvest_module_access_update_guard"),"direct harvest posting removes the update approval guard");
 assert.match(api,/supabase\.auth\.getUser\(\)/,"application API binds to authenticated user");
+assert.ok(api.includes('const SUBMIT_MODULES = ["plant_market","marketplace"] as const;'),"only the two seller verification modules accept new applications");
+assert.doesNotMatch(ui,/setModule\("(employer|transport|sell_harvest)"\)/,"legacy modules are not selectable in seller verification UI");
+assert.ok(signup.includes('id: "employer"'),"Employer remains available at signup");
+assert.ok(signup.includes('id: "transport"'),"Transport Provider remains available at signup");
 assert.match(api,/evidencePaths/,"API validates evidence paths");
 assert.match(api,/status:"pending"/,"applications start pending");
 assert.match(api,/\["pending","under_review","approved"\]/,"approved users cannot create duplicate module applications");
