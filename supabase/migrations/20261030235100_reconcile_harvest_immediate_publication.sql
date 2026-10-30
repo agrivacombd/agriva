@@ -20,8 +20,10 @@ SECURITY INVOKER
 SET search_path = pg_catalog, public, pg_temp
 AS $$
 BEGIN
-  NEW.moderation_status := 'approved';
-  NEW.moderation_note := NULL;
+  IF NOT private.is_admin() THEN
+    NEW.moderation_status := 'approved';
+    NEW.moderation_note := NULL;
+  END IF;
   IF NOT NEW.contact_phone_public THEN
     NEW.contact_phone := NULL;
   END IF;
@@ -78,7 +80,9 @@ BEGIN
 
   v_target_status := CASE WHEN p_status = 'approved' THEN 'available' ELSE 'paused' END;
   UPDATE public.harvest_listings
-  SET status = v_target_status
+  SET status = v_target_status,
+      moderation_status = p_status,
+      moderation_note = v_note
   WHERE id = p_listing_id;
 
   INSERT INTO public.admin_audit_log (
