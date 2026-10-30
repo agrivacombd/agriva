@@ -235,8 +235,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
-                <AddToCartButton product={{ id: product.id, slug: product.slug, name: product.name, category: product.category, price: product.price, stock: product.stock }} className="mb-3" />
-                <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
+                <>
+                  <AddToCartButton product={{ id: product.id, slug: product.slug, name: product.name, category: product.category, price: product.price, stock: product.stock }} className="mb-3" />
+                  <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
+                </>
               )}
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
