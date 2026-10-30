@@ -34,7 +34,8 @@
     "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs",
     "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs",
     "test:module-access-architecture": "node scripts/smoke-module-access-architecture.mjs",
-    "test:identity-verification-workflow": "node scripts/smoke-identity-verification-workflow.mjs"
+    "test:identity-verification-workflow": "node scripts/smoke-identity-verification-workflow.mjs",
+    "test:security-performance-advisor-hardening": "node scripts/smoke-security-performance-advisor-hardening.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
