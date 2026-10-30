@@ -102,3 +102,79 @@ create trigger module_access_application_identity_sync after insert or update of
 revoke all on function public.sync_module_identity_review() from public,anon,authenticated;
 comment on table public.gardener_profiles is 'Verified hobby/ornamental gardener identity for Plant Market seller access.';
 comment on table public.module_access_application_events is 'Append-only audit trail for identity and module-access application lifecycle.';
+
+
+-- Split Plant Market from the general business marketplace at the data layer.
+alter table public.products add column if not exists marketplace_channel text not null default 'marketplace';
+do $block$
+begin
+ if not exists (select 1 from pg_constraint where conname='products_marketplace_channel_check') then
+  alter table public.products add constraint products_marketplace_channel_check
+   check (marketplace_channel in ('marketplace','plant_market'));
+ end if;
+end;
+$block$;
+
+-- Restrictive policies AND with every existing permissive policy, so a legacy
+-- self-selected seller/farmer role cannot bypass module-specific approval.
+drop policy if exists products_module_access_insert_guard on public.products;
+create policy products_module_access_insert_guard on public.products
+ as restrictive for insert to authenticated with check (
+  public.is_admin() or (
+   farmer_id=(select auth.uid()) and (
+    (marketplace_channel='plant_market' and public.has_module_access('plant_market','create','global',null::uuid))
+    or
+    (marketplace_channel='marketplace' and exists (
+      select 1 from public.organizations o
+      where o.owner_id=(select auth.uid()) and o.status='verified'
+       and public.has_module_access('marketplace','create','organization',o.id)
+    ))
+   )
+  )
+ );
+drop policy if exists products_module_access_update_guard on public.products;
+create policy products_module_access_update_guard on public.products
+ as restrictive for update to authenticated
+ using (
+  public.is_admin() or (
+   farmer_id=(select auth.uid()) and (
+    (marketplace_channel='plant_market' and public.has_module_access('plant_market','update','global',null::uuid))
+    or
+    (marketplace_channel='marketplace' and exists (
+      select 1 from public.organizations o
+      where o.owner_id=(select auth.uid()) and o.status='verified'
+       and public.has_module_access('marketplace','update','organization',o.id)
+    ))
+   )
+  )
+ )
+ with check (
+  public.is_admin() or (
+   farmer_id=(select auth.uid()) and (
+    (marketplace_channel='plant_market' and public.has_module_access('plant_market','create','global',null::uuid))
+    or
+    (marketplace_channel='marketplace' and exists (
+      select 1 from public.organizations o
+      where o.owner_id=(select auth.uid()) and o.status='verified'
+       and public.has_module_access('marketplace','create','organization',o.id)
+    ))
+   )
+  )
+ );
+drop policy if exists products_module_access_delete_guard on public.products;
+create policy products_module_access_delete_guard on public.products
+ as restrictive for delete to authenticated using (
+  public.is_admin() or (
+   farmer_id=(select auth.uid()) and (
+    (marketplace_channel='plant_market' and public.has_module_access('plant_market','delete','global',null::uuid))
+    or
+    (marketplace_channel='marketplace' and exists (
+      select 1 from public.organizations o
+      where o.owner_id=(select auth.uid()) and o.status='verified'
+       and public.has_module_access('marketplace','delete','organization',o.id)
+    ))
+   )
+  )
+ );
+create index if not exists products_marketplace_channel_status_created_idx
+ on public.products(marketplace_channel,status,created_at desc);
