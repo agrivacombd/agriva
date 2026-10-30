@@ -164,8 +164,14 @@ CREATE POLICY harvest_listings_owner_insert
 
 CREATE POLICY harvest_listings_owner_status_update
   ON public.harvest_listings FOR UPDATE TO authenticated
-  USING (owner_id = (SELECT auth.uid()) OR private.is_admin())
-  WITH CHECK (owner_id = (SELECT auth.uid()) OR private.is_admin());
+  USING (
+    (SELECT private.is_admin())
+    OR (owner_id = (SELECT auth.uid()) AND moderation_status = 'approved')
+  )
+  WITH CHECK (
+    (SELECT private.is_admin())
+    OR (owner_id = (SELECT auth.uid()) AND moderation_status = 'approved')
+  );
 
 DROP INDEX IF EXISTS public.harvest_listings_public_feed_idx;
 CREATE INDEX harvest_listings_public_feed_idx
