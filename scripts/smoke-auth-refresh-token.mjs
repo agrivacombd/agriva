@@ -8,8 +8,9 @@ assert.match(middleware, /refresh_token_not_found/, "known missing refresh-token
 assert.match(middleware, /invalid_refresh_token/, "invalid refresh-token errors must be recognized");
 assert.match(middleware, /Invalid Refresh Token|invalid refresh token/i, "provider error messages must be recognized");
 assert.match(middleware, /cookie\.name\.startsWith\("sb-"\)/, "only Supabase auth cookies may be cleared");
-assert.match(middleware, /request\.cookies\.delete\(cookie\.name\)/, "cleared cookies must be removed from the request view");
-assert.match(middleware, /response\.cookies\.delete\(cookie\.name\)/, "cleared cookies must be expired in the response");
+assert.match(middleware, /request\.cookies\.delete\(name\)/, "cleared cookies must be removed from the request view");
+assert.match(middleware, /response\.cookies\.delete\(name\)/, "cleared cookies must be expired in the response");
+assert.match(middleware, /NextResponse\.next\(\{ request \}\)/, "downstream Server Components must receive the cleaned request cookie view");
 assert.doesNotMatch(middleware, /request\.cookies\.delete\([^)]*\*|response\.cookies\.delete\([^)]*\*/, "cookie clearing must not use broad wildcard deletion");
 
 console.log("Invalid Supabase refresh-token cookie regression checks passed.");
