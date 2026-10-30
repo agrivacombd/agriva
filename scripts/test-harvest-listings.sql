@@ -125,7 +125,7 @@ INSERT INTO public.harvest_listings (
 ) VALUES (
   '10000000-0000-0000-0000-000000000001', 'Legacy farmer', 'Wheat',
   'Legacy pending listing', 50, 'kg', 25, 'Rajshahi',
-  ARRAY[]::text[], 'paused', 'pending'
+  ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/legacy.jpg'], 'paused', 'pending'
 );
 
 \i supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql
