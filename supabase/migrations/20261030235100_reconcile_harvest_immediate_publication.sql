@@ -98,6 +98,19 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.admin_moderate_harvest_listing(
+  p_listing_id uuid,
+  p_status text,
+  p_note text DEFAULT NULL
+)
+RETURNS void
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = pg_catalog, public, private, pg_temp
+AS $$
+  SELECT private.admin_moderate_harvest_listing($1, $2, $3);
+$$;
+
 REVOKE ALL ON FUNCTION private.admin_moderate_harvest_listing(uuid, text, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION private.admin_moderate_harvest_listing(uuid, text, text) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.admin_moderate_harvest_listing(uuid, text, text) FROM PUBLIC, anon;
