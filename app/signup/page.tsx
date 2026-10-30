@@ -121,8 +121,11 @@ export default function SignupPage() {
           data: { full_name: fullName.trim(), selected_roles: selectedRoles },
         },
       });
+      const rateLimited=Boolean(error&&(error.status===429||/rate.?limit|over_email_send_rate_limit/i.test(error.message+" "+(error.code||""))));
       setIsError(Boolean(error));
-      setMessage(error ? error.message : t.success);
+      setMessage(error ? (rateLimited
+        ? (language==="bn" ? "Supabase Auth-এর ইমেইল পাঠানোর সীমা পূর্ণ হয়েছে। বারবার চেষ্টা করবেন না; কিছুক্ষণ অপেক্ষা করুন অথবা AGRIVA Admin-কে SMTP email provider কনফিগার করতে বলুন।" : "The authentication email sending limit has been reached. Please wait before retrying, or ask an AGRIVA admin to configure a custom SMTP email provider.")
+        : error.message) : t.success);
     } catch {
       setIsError(true);
       setMessage(t.error);
