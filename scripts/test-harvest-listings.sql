@@ -174,11 +174,11 @@ BEGIN
   PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
 
   INSERT INTO public.harvest_listings (
-    owner_id, seller_name, crop_name, description, quantity, unit,
+    id, owner_id, seller_name, crop_name, description, quantity, unit,
     price_per_unit, district, contact_phone, contact_phone_public,
     image_urls, status, moderation_status, moderation_note
   ) VALUES (
-    auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
+    '20000000-0000-0000-0000-000000000002', auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
     30, 'Naogaon', '01700000000', false,
     ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/test.jpg'], 'available', 'rejected', 'client-forged'
   ) RETURNING id, moderation_status, moderation_note, contact_phone
@@ -240,8 +240,7 @@ END
 $owner$;
 
 SELECT set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
-SELECT public.admin_moderate_harvest_listing(id, 'rejected', 'test moderation compatibility')
-FROM public.harvest_listings WHERE crop_name = 'Rice';
+SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-000000000002', 'rejected', 'test moderation compatibility');
 
 DO $admin_reject$
 BEGIN
@@ -253,8 +252,15 @@ BEGIN
 END
 $admin_reject$;
 
-SELECT public.admin_moderate_harvest_listing(id, 'approved', NULL)
-FROM public.harvest_listings WHERE crop_name = 'Rice';
+DO $admin_can_read_paused$
+BEGIN
+  IF (SELECT count(*) FROM public.harvest_listings WHERE id='20000000-0000-0000-0000-000000000002') <> 1 THEN
+    RAISE EXCEPTION 'FAIL: admin must be able to read paused harvest listings';
+  END IF;
+END
+$admin_can_read_paused$;
+
+SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-000000000002', 'approved', NULL);
 
 DO $admin_approve$
 BEGIN
