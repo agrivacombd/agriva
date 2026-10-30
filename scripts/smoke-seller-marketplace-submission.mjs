@@ -17,8 +17,10 @@ assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit 
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
-assert.match(route, /user_role_memberships/, "product API must verify persisted role membership");
-assert.match(route, /in\("role", \["seller", "organization"\]\)/, "product API must require seller or approved organization membership");
+assert.match(route, /from\("organizations"\)/, "business seller must be linked to a verified organization");
+assert.match(route, /eq\("status", "verified"\)/, "business organization must be verified before product creation");
+assert.match(route, /checkModuleAccess\("marketplace", "create"/, "product API must require an approved Marketplace module grant");
+assert.doesNotMatch(route, /user_role_memberships/, "self-selected roles must not authorize Marketplace product creation");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
 assert.match(route, /product-images/, "product API must validate product image URLs against the configured bucket");
 assert.match(route, /storage\/v1\/object\/public\/product-images\//, "only public product-images URLs should be accepted");
