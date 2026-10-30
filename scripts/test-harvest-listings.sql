@@ -245,9 +245,9 @@ SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-0000000000
 DO $admin_reject$
 BEGIN
   IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'paused'
-    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved'
-    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: legacy admin reject action must pause the listing without restoring moderation gates';
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'rejected'
+    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'test moderation compatibility' THEN
+    RAISE EXCEPTION 'FAIL: legacy admin reject action must pause and audit a rejected listing';
   END IF;
 END
 $admin_reject$;
@@ -265,7 +265,8 @@ SELECT public.admin_moderate_harvest_listing('20000000-0000-0000-0000-0000000000
 DO $admin_approve$
 BEGIN
   IF (SELECT status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'available'
-    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved' THEN
+    OR (SELECT moderation_status FROM public.harvest_listings WHERE crop_name = 'Rice') <> 'approved'
+    OR (SELECT moderation_note FROM public.harvest_listings WHERE crop_name = 'Rice') IS NOT NULL THEN
     RAISE EXCEPTION 'FAIL: legacy admin approve action must restore listing visibility';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.admin_audit_log WHERE action = 'harvest_listing.visibility_changed') THEN
