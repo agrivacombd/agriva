@@ -148,6 +148,7 @@ BEGIN
   ) RETURNING id, moderation_status, moderation_note, contact_phone
   INTO listing_id, listing_status, listing_note, listing_phone;
 
+  RAISE NOTICE 'Immediate publication check: status=%, note=%, phone=%', listing_status, listing_note, listing_phone;
   IF listing_status <> 'approved' OR listing_note IS NOT NULL OR listing_phone IS NOT NULL THEN
     RAISE EXCEPTION 'FAIL: listing must publish immediately while preserving phone privacy';
   END IF;
