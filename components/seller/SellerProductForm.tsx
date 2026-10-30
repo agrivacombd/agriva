@@ -3,9 +3,17 @@ import { useEffect, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-const INITIAL_FORM = { name: "", price: "", stock: "", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
+const INITIAL_FORM = { name: "", price: "", stock: "", unit: "kg", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const UNIT_OPTIONS = [
+  { value: "kg", label: "কেজি (kg)" },
+  { value: "g", label: "গ্রাম (g)" },
+  { value: "piece", label: "পিস (piece)" },
+  { value: "pack", label: "প্যাকেট (pack)" },
+  { value: "liter", label: "লিটার (liter)" },
+  { value: "bag", label: "বস্তা (bag)" },
+];
 
 export default function ProductForm() {
   const [form, setForm] = useState(INITIAL_FORM);
@@ -64,7 +72,6 @@ export default function ProductForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        // The API explicitly rejected the product, so remove its just-uploaded orphan image.
         if (uploadedPath) {
           const { error: cleanupError } = await supabase.storage.from("product-images").remove([uploadedPath]);
           if (cleanupError) console.warn("Could not clean up rejected product image", cleanupError.message);
@@ -91,9 +98,11 @@ export default function ProductForm() {
       <label className="text-sm font-bold">সাব-ক্যাটাগরি<select required value={form.subcategory_slug} onChange={e=>set("subcategory_slug",e.target.value)} className="mt-2 w-full rounded-xl border bg-white px-4 py-3">{(selectedCategory?.subcategories??[]).map(sub=><option key={sub.slug} value={sub.slug}>{sub.name}</option>)}</select></label>
     </div>
     <div className="grid gap-5 md:grid-cols-3">
-      <label className="text-sm font-bold">মূল্য (৳)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={e=>set("price",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
-      <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
+      <label className="text-sm font-bold">বিক্রয় একক<select required value={form.unit} onChange={e=>set("unit",e.target.value)} className="mt-2 w-full rounded-xl border bg-white px-4 py-3">{UNIT_OPTIONS.map(unit=><option key={unit.value} value={unit.value}>{unit.label}</option>)}</select></label>
+      <label className="text-sm font-bold">প্রতি এককের মূল্য (৳)<input required type="number" min="0.01" step="0.01" value={form.price} onChange={e=>set("price",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
+      <label className="text-sm font-bold">স্টক (একক অনুযায়ী)<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3"/></label>
     </div>
+    <p className="rounded-xl bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">আপনার নির্বাচিত একক অনুযায়ী মূল্য ও স্টক গণনা হবে। যেমন: ৳500 / কেজি এবং স্টক 100 কেজি।</p>
     <div className="space-y-2">
       <label className="block text-sm font-bold" htmlFor="product-image">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৫ MB)</span></label>
       <input id="product-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>chooseImage(e.target.files?.[0])} className="block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>

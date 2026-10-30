@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
+const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
+
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -23,6 +25,7 @@ export async function POST(request: NextRequest) {
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
+  const unit = String(body.unit || "").trim();
   const description = String(body.description || "").trim();
   const categorySlug = String(body.category_slug || "").trim();
   const subcategorySlug = String(body.subcategory_slug || "").trim();
@@ -31,8 +34,8 @@ export async function POST(request: NextRequest) {
   const imageUrl = typeof body.image_url === "string" && body.image_url.trim() ? body.image_url.trim() : null;
 
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !category || !subcategory || description.length > 5000) {
-    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
+      !(ALLOWED_UNITS as readonly string[]).includes(unit) || !category || !subcategory || description.length > 5000) {
+    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, বিক্রয় একক, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
   if (imageUrl) {
@@ -66,10 +69,11 @@ export async function POST(request: NextRequest) {
     subcategory_slug: subcategory.slug,
     price,
     stock,
+    unit,
     description,
     image_url: imageUrl,
     status: "draft",
-  }).select("id,name,category,category_slug,subcategory_slug,image_url,status").single();
+  }).select("id,name,category,category_slug,subcategory_slug,image_url,status,unit").single();
 
   if (error) {
     console.error("Seller marketplace product creation failed", { code: error.code || "unknown" });
