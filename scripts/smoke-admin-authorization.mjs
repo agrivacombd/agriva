@@ -102,7 +102,7 @@ assert.ok(orderMigration.includes("p_status = 'cancelled' AND v_old_status IN ('
 assert.ok(orderMigration.includes("A refund does not"), "refund must not automatically restock inventory");
 assert.ok(orderMigration.includes("REVOKE ALL ON FUNCTION public.set_marketplace_order_status(uuid, text) FROM PUBLIC, anon"), "order status RPC must not be executable by anonymous users");
 
-const harvestMigration = read("supabase/migrations/20261030235100_reconcile_harvest_immediate_publication.sql");
+const harvestMigration = read("supabase/migrations/20261030183612_reconcile_harvest_immediate_publication.sql");
 assert.ok(harvestMigration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
 assert.ok(harvestMigration.includes("CREATE OR REPLACE FUNCTION private.admin_moderate_harvest_listing"), "legacy admin UI must retain a compatible visibility RPC");
 assert.ok(harvestMigration.includes("CREATE OR REPLACE FUNCTION public.admin_moderate_harvest_listing"), "public RPC must forward to the compatibility implementation");
