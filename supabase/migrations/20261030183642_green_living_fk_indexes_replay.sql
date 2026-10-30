@@ -1,0 +1,2 @@
+-- This Production migration-history entry duplicates the Green Living index migration already recorded at 20261030183622.
+-- Intentionally empty so fresh environments do not repeat the schema change.
