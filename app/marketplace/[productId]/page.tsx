@@ -183,7 +183,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="relative flex min-h-[280px] items-start justify-center self-start overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-4 sm:min-h-[400px] sm:p-6 md:h-[560px] md:min-h-0 md:w-full md:p-8">
+          <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-5 sm:min-h-[420px] sm:p-8 md:h-[560px] md:min-h-0 md:p-10">
             {image ? (
               <img
                 src={image}
@@ -192,7 +192,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 height={900}
                 fetchPriority="high"
                 decoding="async"
-                className="mt-10 max-h-[480px] w-full rounded-2xl object-contain sm:mt-12"
+                className="block h-[260px] w-full max-w-[560px] rounded-2xl object-contain sm:h-[360px] md:h-[480px]"
               />
             ) : (
               <div className="flex max-w-xs flex-col items-center text-center">
@@ -252,7 +252,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">বিবরণ</dt><dd className="min-w-0 text-sm leading-7 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-2"><summary className="inline-flex cursor-pointer list-none font-bold text-emerald-800 underline underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
+                {description && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">বিবরণ</dt><dd className="mt-3 min-w-0 text-sm leading-8 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-3"><summary className="inline-flex min-h-10 cursor-pointer items-center rounded-lg font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
