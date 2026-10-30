@@ -17,6 +17,7 @@ type ProductRecord = {
   subcategory_slug?: string | null;
   price: number | string | null;
   stock: number | null;
+  unit?: string | null;
   description: string | null;
   image_url?: string | null;
   commission_percent?: number | null;
@@ -36,7 +37,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,description,image_url";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -100,8 +101,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const image = product.image_url?.trim() || undefined;
   const description = product.description?.trim() || "";
   const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
+  const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
+  const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
-    ? "৳" + Number(product.price).toLocaleString("en-BD")
+    ? "৳" + Number(product.price).toLocaleString("en-BD") + (unitLabel ? " / " + unitLabel : "")
     : "মূল্য উল্লেখ নেই";
   const stockLabel = isSample
     ? "নমুনা তথ্য · বাস্তব স্টক নয়"
@@ -223,7 +226,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="mt-1 text-3xl font-black text-emerald-950">{isSample && product.price !== null ? "নমুনা মূল্য · " : ""}{formattedPrice}</p>
               <div className="mt-3 flex flex-wrap gap-2 text-sm">
                 <span className="rounded-lg bg-white px-3 py-2 font-semibold text-slate-700">{stockLabel}</span>
-                {hasStock && !isSample && <span className="rounded-lg bg-white px-3 py-2 text-slate-600">পরিমাণ: {Number(product.stock).toLocaleString("en-BD")}</span>}
+                {hasStock && !isSample && <span className="rounded-lg bg-white px-3 py-2 text-slate-600">স্টক: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : " (একক উল্লেখ নেই)"}</span> }
               </div>
             </div>
 
