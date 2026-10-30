@@ -15,6 +15,13 @@ assert.match(migration,/status = 'pending' and reviewed_by is null and reviewed_
 assert.match(migration,/user_module_grants_select[\s\S]*?using \(user_id = \(select auth\.uid\(\)\) or public\.is_admin\(\)\)/,"users only read own grants");
 assert.doesNotMatch(migration,/create policy user_module_grants_.*for insert/i,"users cannot self-issue grants");
 assert.match(migration,/set search_path = pg_catalog, public, pg_temp/i,"security definer search_path pinned");
+assert.match(migration,/module_access_applicant_type_matches_module/,"application identity must match requested module");
+assert.match(migration,/marketplace_application_requires_organization/,"marketplace seller approval must be tied to an organization");
+assert.match(migration,/public\.owns_organization\(organization_id\)/,"organization application must be owned by applicant");
+assert.match(migration,/admin_review_module_application/,"admin review must be performed through a controlled RPC");
+assert.match(migration,/set status = 'verified'/,"marketplace approval must verify the organization");
+assert.match(migration,/public\.is_organization_member\(id\)/,"organization RLS must use a non-recursive helper");
+assert.match(migration,/public\.owns_farm\(farm_id\)/,"farm RLS must use an owner helper");
 assert.match(moduleAccess,/supabase\.auth\.getUser\(\)/,"server helper authenticates session");
 assert.match(moduleAccess,/supabase\.rpc\("has_module_access"/,"module authorization uses DB grant check");
 assert.doesNotMatch(moduleAccess,/p_user_id|body\.userId/,"caller cannot nominate authorized user");
