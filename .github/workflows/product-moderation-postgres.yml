@@ -67,7 +67,6 @@ jobs:
           PGDATABASE: postgres
         run: psql -v ON_ERROR_STOP=1 -f scripts/test-harvest-listings.sql
       - name: Test client TRUNCATE privilege revocation
-        if: contains(github.event.pull_request.changed_files || '', 'revoke_client_truncate_privileges')
         env:
           PGHOST: localhost
           PGPORT: 5432
@@ -75,6 +74,6 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: postgres
         run: |
-          psql -v ON_ERROR_STOP=1 -c "CREATE ROLE anon; CREATE ROLE authenticated;"
+          psql -v ON_ERROR_STOP=1 -c "CREATE ROLE anon; CREATE ROLE authenticated; CREATE TABLE public.buyer_demands(id bigint); CREATE TABLE public.transport_bookings(id bigint); GRANT TRUNCATE ON ALL TABLES IN SCHEMA public TO anon, authenticated; ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT TRUNCATE ON TABLES TO anon, authenticated;"
           psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261030235000_revoke_client_truncate_privileges.sql
           psql -v ON_ERROR_STOP=1 -f supabase/tests/security_truncate_privileges.sql
