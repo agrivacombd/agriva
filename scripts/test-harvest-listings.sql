@@ -104,6 +104,7 @@ CREATE POLICY "Users can read approved or own harvest listings"
   USING (owner_id = (SELECT auth.uid()) OR (moderation_status = 'approved' AND status = 'available'));
 
 \i supabase/migrations/20261029093000_reconcile_harvest_listing_policies.sql
+\i supabase/migrations/20261030150000_remove_harvest_admin_approval.sql
 
 DO $policy_cleanup$
 BEGIN
@@ -143,12 +144,12 @@ BEGIN
   ) VALUES (
     auth.uid(), 'Test farmer', 'Rice', 'Test listing', 100, 'kg',
     30, 'Naogaon', '01700000000', false,
-    ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/test.jpg'], 'available', 'approved', 'client-forged'
+    ARRAY['https://example.supabase.co/storage/v1/object/public/harvest-images/10000000-0000-0000-0000-000000000001/test.jpg'], 'available', 'rejected', 'client-forged'
   ) RETURNING id, moderation_status, moderation_note, contact_phone
   INTO listing_id, listing_status, listing_note, listing_phone;
 
-  IF listing_status <> 'pending' OR listing_note IS NOT NULL OR listing_phone IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: insert trigger did not enforce pending moderation and phone privacy';
+  IF listing_status <> 'approved' OR listing_note IS NOT NULL OR listing_phone IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: listing must publish immediately while preserving phone privacy';
   END IF;
 
   UPDATE public.harvest_listings SET status = 'paused' WHERE id = listing_id;
@@ -188,33 +189,21 @@ BEGIN
 END
 $owner$;
 
-DO $admin$
-DECLARE
-  listing_id uuid;
-  status_value text;
+RESET ROLE;
+DO $no_moderation_rpc$
 BEGIN
-  PERFORM set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000002', true);
-  PERFORM set_config('request.jwt.claim.role', 'authenticated', true);
-  SELECT id INTO listing_id FROM public.harvest_listings LIMIT 1;
-  PERFORM public.admin_moderate_harvest_listing(listing_id, 'approved', NULL);
-  SELECT moderation_status INTO status_value FROM public.harvest_listings WHERE id = listing_id;
-  IF status_value <> 'approved' THEN
-    RAISE EXCEPTION 'FAIL: admin moderation RPC did not approve listing';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.admin_audit_log WHERE action = 'harvest_listing.moderated') THEN
-    RAISE EXCEPTION 'FAIL: moderation action was not audited';
+  IF to_regprocedure('public.admin_moderate_harvest_listing(uuid,text,text)') IS NOT NULL THEN
+    RAISE EXCEPTION 'FAIL: legacy admin moderation RPC must be removed';
   END IF;
 END
-$admin$;
-
-RESET ROLE;
+$no_moderation_rpc$;
 SET LOCAL ROLE anon;
 DO $public$
 DECLARE visible_count integer;
 BEGIN
   SELECT count(*) INTO visible_count FROM public.harvest_listings;
   IF visible_count <> 1 THEN
-    RAISE EXCEPTION 'FAIL: public should see only the approved, available listing; saw %', visible_count;
+    RAISE EXCEPTION 'FAIL: public should see the immediately published, available listing; saw %', visible_count;
   END IF;
 END
 $public$;

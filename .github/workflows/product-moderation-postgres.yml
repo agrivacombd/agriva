@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/*guard_product_insert_status.sql"
       - "supabase/migrations/*create_harvest_listings.sql"
       - "supabase/migrations/*reconcile_harvest_listing_policies.sql"
+      - "supabase/migrations/*remove_harvest_admin_approval.sql"
       - "supabase/migrations/*harden_harvest_moderation.sql"
       - "scripts/test-product-insert-moderation.sql"
       - "scripts/test-harvest-listings.sql"
@@ -53,7 +54,7 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: postgres
         run: psql -v ON_ERROR_STOP=1 -f scripts/test-product-insert-moderation.sql
-      - name: Test harvest listing RLS, privacy, upload ownership and moderation
+      - name: Test harvest listing RLS, privacy, upload ownership and immediate publication
         env:
           PGHOST: localhost
           PGPORT: 5432
