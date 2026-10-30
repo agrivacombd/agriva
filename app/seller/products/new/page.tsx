@@ -2,21 +2,18 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import SellerProductForm from "@/components/seller/SellerProductForm";
+import { checkModuleAccess } from "@/lib/authz/module-access";
 
 export default async function NewSellerProductPage() {
   const supabase = await createSupabaseServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/seller/products/new");
 
-  const { data: membership, error } = await supabase
-    .from("user_role_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .in("role", ["seller", "organization"])
-    .limit(1)
-    .maybeSingle();
-
-  if (error || !membership) redirect("/dashboard");
+  const { data: organization, error } = await supabase.from("organizations")
+    .select("id").eq("owner_id", user.id).eq("status", "verified").limit(1).maybeSingle();
+  if (error || !organization) redirect("/account/verification");
+  const access = await checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id });
+  if (!access.allowed) redirect("/account/verification");
 
   return (
     <main className="min-h-screen bg-[#f5f7f2] px-6 py-12 text-[#17351f]">
