@@ -37,7 +37,7 @@ After the eight feature migrations, apply
 `20261030150000_security_performance_advisor_hardening.sql` as a separate, reviewed migration.
 
 - The Production preflight found 42 public `SECURITY DEFINER` functions executable by API roles (the 6 anonymous findings overlap with the authenticated list). The migration moves the original implementations into the non-exposed `private` schema and recreates the same public RPC signatures as `SECURITY INVOKER` facades, preserving each function's existing EXECUTE ACL, argument defaults, return shape, volatility, and original authorization logic.
-- The trigger-only `enforce_seller_product_moderation()` implementation is moved to `private` with client EXECUTE revoked. Existing PostgreSQL triggers keep their function OID.
+- The trigger-returning `enforce_seller_product_moderation()` helper (no current trigger dependency was found) is moved to `private` with client EXECUTE revoked.
 - Keep `private` out of the PostgREST exposed-schema allowlist (the normal exposed schemas are `public` and `graphql_public`). Do not add `private` to the API schema configuration.
 - Eleven missing foreign-key indexes are added.
 - The duplicate permissive SELECT policy pairs on `job_posts` and `job_applications` are consolidated while preserving anonymous published-job access, employer ownership access, and legacy admin visibility.
@@ -52,7 +52,7 @@ The migration was dry-run inside a transaction on Production and rolled back aft
 2. Confirm the hardening migration on `feat/security-performance-advisor-hardening` matches the reviewed commit.
 3. Confirm `private` is absent from the PostgREST exposed-schema allowlist.
 4. Apply `20261030150000_security_performance_advisor_hardening.sql`; stop immediately on any SQL error.
-5. Verify the 41 public RPC facades are `SECURITY INVOKER`, their private implementations retain their original guards, and the trigger-only function is no longer client-executable.
+5. Verify the 41 public RPC facades are `SECURITY INVOKER`, their private implementations retain their original guards, and the trigger-returning helper is no longer client-executable.
 6. Verify all 11 foreign-key indexes exist and the job SELECT policy pairs are consolidated without changing access.
 7. Rerun Security and Performance Advisors and review every remaining finding.
 8. Verify the 15 Global Super Admin capabilities remain active and an ordinary user cannot self-assign admin roles or module grants.
