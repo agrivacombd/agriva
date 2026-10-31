@@ -208,6 +208,15 @@ EXECUTE FUNCTION public.sync_plant_seller_permission();
 -- Seller status cannot be self-published. The existing marketplace products table
 -- remains the Marketplace-only catalogue for backward compatibility with orders.
 DROP POLICY IF EXISTS "products_seller_insert" ON public.products;
+DROP POLICY IF EXISTS "products_farmer_delete" ON public.products;
+CREATE POLICY "products_marketplace_seller_delete" ON public.products
+  FOR DELETE TO authenticated USING (
+    (farmer_id = (SELECT auth.uid()) AND EXISTS (
+      SELECT 1 FROM public.marketplace_seller_permissions p
+      WHERE p.user_id = (SELECT auth.uid()) AND p.status = 'approved'
+    )) OR public.is_admin()
+  );
+
 CREATE POLICY "products_seller_insert" ON public.products
   FOR INSERT TO authenticated WITH CHECK (
     farmer_id = (SELECT auth.uid()) AND status = 'draft'
