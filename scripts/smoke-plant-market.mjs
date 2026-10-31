@@ -37,6 +37,7 @@ assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_market_product
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.marketplace_seller_permissions/, "Marketplace must have a separate seller permission table");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_seller_permissions/, "Plant Market must have a separate seller permission table");
 assert.match(migration, /'plant_seller'/, "Plant Seller role must be distinct");
+assert.doesNotMatch(migration, /granted_by/, "permission migration must support the production role-membership schema without grant attribution");
 assert.doesNotMatch(signupPage, /id: "seller"/, "signup must not self-grant seller role");
 assert.doesNotMatch(profilePage, /id: "seller"/, "profile role picker must not self-grant seller role");
 assert.match(signupPage, /sell-on-marketplace/, "signup must direct sellers to separate application flow");
