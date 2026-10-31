@@ -39,7 +39,7 @@ export default async function PlantMarketPage() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,description,price,stock")
+      .select("id,name,slug,category,description,price,stock,image_url")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(500);
