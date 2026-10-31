@@ -64,7 +64,7 @@ function ProductCard({ product }: { product: MarketplaceProduct }) {
   );
 }
 
-export default function MarketplaceCore({ products, showCategories = true, initialQuery = "" }: { products: MarketplaceProduct[]; showCategories?: boolean; initialQuery?: string }) {
+export default function MarketplaceCore({ products, showCategories = true, initialQuery = "", emptyCatalogMessage }: { products: MarketplaceProduct[]; showCategories?: boolean; initialQuery?: string; emptyCatalogMessage?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("newest");
@@ -156,11 +156,11 @@ export default function MarketplaceCore({ products, showCategories = true, initi
             </div>}
           </> : <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center sm:px-8">
             <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden="true">⌕</span>
-            <p className="mt-4 font-extrabold text-slate-900">এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি</p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।</p>
+            <p className="mt-4 font-extrabold text-slate-900">{emptyCatalogMessage ? "Marketplace ক্যাটালগ এখন খালি" : "এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি"}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।"}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {hasActiveFilters && <button type="button" onClick={() => { setQuery(""); setCategory("all"); }} className="min-h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50">সার্চ ও ক্যাটাগরি মুছুন</button>}
-              <Link href="/buyer-demands" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">চাহিদা জানান</Link>
+              {!emptyCatalogMessage && hasActiveFilters && <button type="button" onClick={() => { setQuery(""); setCategory("all"); }} className="min-h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50">সার্চ ও ক্যাটাগরি মুছুন</button>}
+              {!emptyCatalogMessage && <Link href="/buyer-demands" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">চাহিদা জানান</Link>}
             </div>
           </div>}
         </section>
