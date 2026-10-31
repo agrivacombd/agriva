@@ -105,7 +105,7 @@ REVOKE ALL ON public.marketplace_seller_applications, public.plant_seller_applic
   public.plant_market_products FROM PUBLIC, anon;
 GRANT SELECT, INSERT, UPDATE ON public.marketplace_seller_applications,
   public.plant_seller_applications TO authenticated;
-GRANT SELECT ON public.marketplace_seller_permissions,
+GRANT SELECT, UPDATE ON public.marketplace_seller_permissions,
   public.plant_seller_permissions TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.plant_market_products TO authenticated;
 GRANT SELECT ON public.plant_market_products TO anon;
