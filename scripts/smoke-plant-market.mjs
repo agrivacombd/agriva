@@ -16,6 +16,8 @@ const adminApplicationApi = readFileSync("app/api/admin/seller-applications/[mar
 const adminPermissionApi = readFileSync("app/api/admin/seller-permissions/[market]/[userId]/route.ts", "utf8");
 const adminPermissionListApi = readFileSync("app/api/admin/seller-permissions/[market]/route.ts", "utf8");
 const adminPermissionManager = readFileSync("components/admin/SellerPermissionManager.tsx", "utf8");
+const plantModerationApi = readFileSync("app/api/admin/plant-market-products/route.ts", "utf8");
+const plantModerationUi = readFileSync("components/admin/PlantMarketProductReview.tsx", "utf8");
 const plantSellerDashboard = readFileSync("app/plant-seller/products/page.tsx", "utf8");
 const plantSellerForm = readFileSync("components/seller/PlantSellerProductForm.tsx", "utf8");
 const plantProductDetail = readFileSync("app/plant-market/[slug]/page.tsx", "utf8");
@@ -51,6 +53,8 @@ assert.match(adminPermissionListApi, /marketplace_seller_permissions|plant_selle
 assert.match(adminPermissionManager, /এই মার্কেটের Permission বাতিল/, "Admin must be able to revoke one market without changing the other");
 assert.match(plantSellerDashboard, /plant_market_products/, "Plant Seller dashboard must list only Plant Market products");
 assert.match(plantSellerForm, /plant-product-images/, "Plant Seller form must use its separate image bucket");
+assert.match(plantModerationApi, /plant_market_products/, "Plant Market products must have their own moderation endpoint");
+assert.match(plantModerationUi, /অনুমোদন ও প্রকাশ/, "Plant Market products need a separate admin approval queue");
 assert.match(plantProductDetail, /plant_market_products/, "Plant Market detail route must query only Plant Market products");
 assert.doesNotMatch(plantProductDetail, /from\("products"\)/, "Plant Market detail must not query Marketplace products");
 assert.match(robotsText, /"\/seller\//, "private seller pages must not be crawlable");
