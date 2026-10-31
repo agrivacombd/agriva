@@ -46,6 +46,9 @@ assert.match(migration, /sync_marketplace_seller_permission/, "Marketplace appro
 assert.match(migration, /v_allowed text\[\] := ARRAY\[/, "self-service role picker must remain allow-listed");
 assert.match(migration, /Approved Marketplace Seller permission required/, "Marketplace writes must require Marketplace approval");
 assert.match(migration, /Approved Plant Market Seller permission required/, "Plant Market writes must require Plant Market approval");
+assert.match(migration, /products_marketplace_seller_update/, "Marketplace product updates must require Marketplace permission");
+assert.match(migration, /NEW\.is_anonymous/, "anonymous guest checkout profile creation must remain intact");
+assert.doesNotMatch(migration, /has_platform_admin_access|has_product_moderation_permission/, "migration must only call existing admin authorization functions");
 assert.match(marketplaceApi, /from\("marketplace_seller_permissions"\)/, "Marketplace product API must check Marketplace approval");
 assert.match(marketplacePage, /from\("marketplace_seller_permissions"\)/, "Marketplace product form must check Marketplace approval");
 assert.match(marketplaceCore, /productHrefPrefix/, "shared catalogue UI must support market-specific detail routes");
