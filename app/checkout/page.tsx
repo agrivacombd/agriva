@@ -34,6 +34,11 @@ export default function Checkout() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [codEnabled, setCodEnabled] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -46,10 +51,12 @@ export default function Checkout() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!active) return;
       if (!user) {
-        setMessage("চেকআউটের আগে লগইন করুন।");
+        setMessage("Guest Cart সেশন পাওয়া যায়নি। কার্টে ফিরে আবার পণ্য যোগ করুন।");
         setLoading(false);
         return;
       }
+      setIsGuest(Boolean(user.is_anonymous));
+      setPhoneVerified(Boolean(!user.is_anonymous && user.phone_confirmed_at));
       const [{ data: settings }, { data: cart }] = await Promise.all([
         supabase.rpc("get_public_site_settings"),
         supabase.from("carts").select("id").eq("user_id", user.id).eq("status", "active").maybeSingle(),
@@ -84,6 +91,39 @@ export default function Checkout() {
     return () => { active = false; };
   }, []);
 
+  async function sendPhoneOtp() {
+    const phone = normalizeBangladeshPhone(form.phone);
+    if (!phone) { setMessage("সঠিক বাংলাদেশি মোবাইল নম্বর দিন।"); return; }
+    setOtpBusy(true); setMessage("");
+    try {
+      const { error } = await supabase.auth.updateUser({ phone });
+      if (error) throw error;
+      setOtpSent(true);
+      setPhoneVerified(false);
+      setMessage("আপনার নম্বরে OTP পাঠানো হয়েছে। SMS থেকে কোডটি লিখুন।");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "OTP পাঠানো যায়নি।");
+    } finally { setOtpBusy(false); }
+  }
+
+  async function verifyPhoneOtp() {
+    const phone = normalizeBangladeshPhone(form.phone);
+    if (!phone || !/^\\d{6}$/.test(otp.trim())) {
+      setMessage("SMS-এ পাওয়া ৬ সংখ্যার OTP লিখুন।"); return;
+    }
+    setOtpBusy(true); setMessage("");
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({ phone, token: otp.trim(), type: "phone_change" });
+      if (error || !data.user?.phone_confirmed_at || data.user.phone !== phone) {
+        throw error || new Error("মোবাইল নম্বর যাচাই সম্পন্ন হয়নি।");
+      }
+      setPhoneVerified(true);
+      setMessage("মোবাইল নম্বর সফলভাবে যাচাই হয়েছে।");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "OTP যাচাই করা যায়নি।");
+    } finally { setOtpBusy(false); }
+  }
+
   function setField<K extends keyof Address>(key: K, value: Address[K]) {
     setForm(previous => ({ ...previous, [key]: value, ...(key === "district" ? { upazila: "" } : {}) }));
   }
@@ -91,6 +131,10 @@ export default function Checkout() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!items.length || busy || confirmed) return;
+    if (isGuest && !phoneVerified) {
+      setMessage("Guest Checkout-এর জন্য আগে মোবাইল OTP যাচাই করুন।");
+      return;
+    }
     if (!codEnabled) {
       setMessage("Cash on Delivery বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।");
       return;
@@ -153,7 +197,17 @@ export default function Checkout() {
       {!confirmed && items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-5 shadow-sm sm:p-7">
         <h2 className="text-lg font-black">১. গ্রাহকের তথ্য</h2>
         <Field label="প্রাপকের সম্পূর্ণ নাম *" value={form.name} onChange={v => setField("name", v)} autoComplete="name" />
-        <Field label="মোবাইল নম্বর *" value={form.phone} onChange={v => setField("phone", v)} placeholder="01XXXXXXXXX" type="tel" autoComplete="tel" />
+        <Field label="মোবাইল নম্বর *" value={form.phone} onChange={v => { setField("phone", v); setPhoneVerified(false); setOtpSent(false); setOtp(""); }} placeholder="01XXXXXXXXX" type="tel" autoComplete="tel" />
+        {isGuest && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-bold">Guest Checkout: ফোন যাচাই বাধ্যতামূলক</p>
+          {!phoneVerified ? <>
+            <button type="button" onClick={() => void sendPhoneOtp()} disabled={otpBusy} className="mt-3 rounded-lg bg-[#17351f] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{otpBusy ? "অপেক্ষা করুন…" : otpSent ? "আবার OTP পাঠান" : "SMS OTP পাঠান"}</button>
+            {otpSent && <div className="mt-3 flex flex-wrap gap-2">
+              <input value={otp} onChange={e => setOtp(e.target.value.replace(/\\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="৬ সংখ্যার OTP" maxLength={6} className="min-w-0 flex-1 rounded-lg border px-3 py-2" />
+              <button type="button" onClick={() => void verifyPhoneOtp()} disabled={otpBusy || otp.length !== 6} className="rounded-lg border border-[#17351f] px-4 py-2 text-sm font-bold disabled:opacity-50">যাচাই করুন</button>
+            </div>}
+          </> : <p className="mt-2 text-sm font-bold text-emerald-800">ফোন নম্বর যাচাই সম্পন্ন ✓</p>}
+        </div>}
         <h2 className="pt-3 text-lg font-black">২. বাংলাদেশের ডেলিভারি ঠিকানা</h2>
         <Field label="বিভাগ *" value={form.division} onChange={v => setField("division", v)} placeholder="যেমন: রাজশাহী" autoComplete="address-level1" />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -172,7 +226,7 @@ export default function Checkout() {
           <p className="mt-1 text-sm text-[#647468]">{codEnabled ? "পণ্য হাতে পেয়ে ডেলিভারি কর্মীকে টাকা দিন। অনলাইন পেমেন্ট এই মুহূর্তে চালু নেই।" : "সাইট অ্যাডমিন বর্তমানে Cash on Delivery বন্ধ রেখেছেন।"}</p>
         </div>
         <button type="submit" disabled={busy || !codEnabled} className="w-full rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">
-          {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : "COD অর্ডার নিশ্চিত করুন"}
+          {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : isGuest && !phoneVerified ? "আগে ফোন যাচাই করুন" : "COD অর্ডার নিশ্চিত করুন"}
         </button>
         <p className="text-xs leading-5 text-[#748074]">অর্ডার নিশ্চিত করলে স্টক ও মূল্য সার্ভার থেকে আবার যাচাই করা হবে। ভুল ঠিকানা থাকলে অর্ডার বাতিলের জন্য সাপোর্টে যোগাযোগ করুন।</p>
       </form>}
