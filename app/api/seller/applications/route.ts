@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return NextResponse.json({ error: "প্রথমে AGRIVA-তে লগইন করুন।" }, { status: 401 });
-  const body = await request.json().catch(() => ({}));
+  const body = (await request.json().catch(() => ({}))) || {};
   const values = {
     user_id: user.id,
     business_name: String(body.business_name || "").trim(),
