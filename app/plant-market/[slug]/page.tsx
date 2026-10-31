@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+type Props = { params: Promise<{ slug: string }> };
+export async function generateMetadata({params}:Props):Promise<Metadata>{
+  const {slug}=await params;const supabase=await createSupabaseServerClient();
+  const {data}=await supabase.from("plant_market_products").select("name,description,image_url").eq("slug",slug).eq("status","active").maybeSingle();
+  if(!data)return {title:"Plant Market পণ্য পাওয়া যায়নি | AGRIVA",robots:{index:false,follow:false}};
+  return {title:`${data.name} | AGRIVA Plant Market`,description:(data.description||`${data.name} — AGRIVA Plant Market-এ গাছ ও বাগান সামগ্রী।`).slice(0,160),alternates:{canonical:`/plant-market/${encodeURIComponent(slug)}`},openGraph:{type:"website",title:data.name,description:data.description||undefined,images:data.image_url?[data.image_url]:[]}};
+}
+export default async function PlantMarketProductPage({params}:Props){
+  const {slug}=await params;const supabase=await createSupabaseServerClient();
+  const {data:product}=await supabase.from("plant_market_products").select("id,name,slug,scientific_name,category,plant_size,pot_size,plant_age,sunlight,watering,description,price,stock,unit,image_url").eq("slug",slug).eq("status","active").maybeSingle();
+  if(!product)notFound();
+  const schema={"@context":"https://schema.org","@type":"Product",name:product.name,description:product.description||undefined,category:product.category,image:product.image_url?[product.image_url]:undefined,offers:{"@type":"Offer",priceCurrency:"BDT",price:product.price,availability:Number(product.stock)>0?"https://schema.org/InStock":"https://schema.org/OutOfStock",url:`https://agriva.com.bd/plant-market/${encodeURIComponent(product.slug)}`}};
+  const specs=[["গাছের আকার",product.plant_size],["টবের সাইজ",product.pot_size],["গাছের বয়স",product.plant_age],["সূর্যালোক",product.sunlight],["পানি",product.watering]].filter((item)=>item[1]);
+  return <main className="min-h-screen bg-[#f5f8f1] px-4 py-10 text-[#17351f] sm:px-6"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/><div className="mx-auto max-w-5xl"><Link href="/plant-market" className="font-bold text-emerald-800">← Plant Market</Link><article className="mt-6 grid gap-8 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm md:grid-cols-2 md:p-8"><div className="flex min-h-72 items-center justify-center overflow-hidden rounded-2xl bg-emerald-50 text-6xl">{product.image_url?<img src={product.image_url} alt={product.name} className="h-full max-h-[480px] w-full object-contain"/>:"🪴"}</div><div><p className="text-sm font-bold text-emerald-700">{product.category}</p><h1 className="mt-2 text-3xl font-black">{product.name}</h1>{product.scientific_name&&<p className="mt-2 text-sm italic text-slate-500">{product.scientific_name}</p>}<p className="mt-5 text-3xl font-black text-emerald-900">৳{Number(product.price).toLocaleString("bn-BD")}</p><p className="mt-2 text-sm text-slate-600">স্টক: {product.stock} {product.unit}</p><dl className="mt-6 grid grid-cols-2 gap-3 text-sm">{specs.map(([label,value])=><div key={label} className="rounded-xl bg-emerald-50 p-3"><dt className="font-bold">{label}</dt><dd className="mt-1 text-slate-600">{value}</dd></div>)}</dl>{product.description&&<p className="mt-6 whitespace-pre-wrap text-sm leading-7 text-slate-700">{product.description}</p>}<p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">Plant Market-এর catalogue ও পণ্য তথ্য আলাদা রাখা হয়েছে। অনলাইন checkout/order সংযোগ পরবর্তী ধাপে যুক্ত করতে হবে।</p></div></article></div></main>;
+}
