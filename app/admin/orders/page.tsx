@@ -69,7 +69,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const notice = typeof params?.notice === "string" ? params.notice : "";
   const selectedStatus = typeof params?.status === "string" ? params.status : "";
   const supabase = await requireAdmin();
-  const { data: orders, error } = await supabase
+  const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
     .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
     .order("created_at", { ascending: false })
@@ -107,7 +107,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
         {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
       </p>}
-      {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
+      {ordersError && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
 
       <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
@@ -180,7 +180,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
             </div>
           </article>;
         })}
-        {!error && filtered.length === 0 && <div className="rounded-2xl bg-white p-8 text-center text-sm text-[#647468]">এই ফিল্টারে কোনো অর্ডার নেই।</div>}
+        {!ordersError && !filtered.length && <div className="rounded-2xl bg-white p-8 text-center text-sm text-[#647468]">এই ফিল্টারে কোনো অর্ডার নেই।</div>}
       </section>
 
     </div>
