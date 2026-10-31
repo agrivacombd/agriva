@@ -207,7 +207,7 @@ export default async function NewSellerProductPage() {
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link href="/login?next=/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-900 px-6 py-3 font-extrabold text-white hover:bg-emerald-800">লগইন করুন</Link>
-                <Link href="/sell-on-marketplace" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 font-extrabold text-emerald-950 hover:bg-emerald-50">Marketplace Seller আবেদন করুন</Link>
+                <Link href={user?"/sell-on-marketplace":"/login?next=/seller/products/new"} className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 font-extrabold text-emerald-950 hover:bg-emerald-50">{user?"Marketplace Seller আবেদন করুন":"লগইন করুন"}</Link>
               </div>
             </div>
           )}
