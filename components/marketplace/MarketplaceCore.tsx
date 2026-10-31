@@ -20,8 +20,8 @@ export type MarketplaceProduct = {
 const money = (value: number | string | null) =>
   new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(Number(value || 0));
 
-export default function MarketplaceCore({ products, showCategories = true }: { products: MarketplaceProduct[]; showCategories?: boolean }) {
-  const [query, setQuery] = useState("");
+export default function MarketplaceCore({ products, showCategories = true, initialQuery = "" }: { products: MarketplaceProduct[]; showCategories?: boolean; initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
   const visible = useMemo(() => products.filter((product) => {
     const search = query.trim().toLocaleLowerCase();
