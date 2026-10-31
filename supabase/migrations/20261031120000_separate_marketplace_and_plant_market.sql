@@ -251,6 +251,121 @@ CREATE TRIGGER plant_permission_role_sync
 AFTER INSERT OR UPDATE OF status ON public.plant_seller_permissions
 FOR EACH ROW EXECUTE FUNCTION public.sync_plant_seller_role_membership();
 
+-- Do not let signup metadata or the self-service role picker grant seller roles.
+-- Seller roles are mirrored only after the market-specific permission is approved.
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+AS $function$
+DECLARE
+  v_role public.user_role;
+  v_selected_role text;
+  v_roles jsonb;
+  v_selected_roles text[];
+BEGIN
+  v_role := CASE
+    WHEN (NEW.raw_user_meta_data ->> 'role') IN ('farmer', 'reseller')
+      THEN (NEW.raw_user_meta_data ->> 'role')::public.user_role
+    ELSE 'farmer'::public.user_role
+  END;
+  v_roles := CASE
+    WHEN jsonb_typeof(NEW.raw_user_meta_data -> 'selected_roles') = 'array'
+      THEN NEW.raw_user_meta_data -> 'selected_roles'
+    ELSE '[]'::jsonb
+  END;
+  SELECT coalesce(array_agg(DISTINCT value), ARRAY['farmer']::text[])
+    INTO v_selected_roles
+  FROM jsonb_array_elements_text(v_roles) AS item(value)
+  WHERE value IN (
+    'farmer', 'buyer', 'transport', 'job_seeker',
+    'employer', 'student', 'agriculturist', 'rooftop_gardener'
+  );
+  INSERT INTO public.profiles (id, full_name, phone, role, selected_roles)
+  VALUES (
+    NEW.id,
+    coalesce(nullif(btrim(NEW.raw_user_meta_data ->> 'full_name'), ''), ''),
+    nullif(btrim(NEW.raw_user_meta_data ->> 'phone'), ''),
+    v_role,
+    v_selected_roles
+  )
+  ON CONFLICT (id) DO NOTHING;
+  FOR v_selected_role IN
+    SELECT DISTINCT value
+    FROM jsonb_array_elements_text(v_roles) AS item(value)
+    WHERE value IN (
+      'farmer', 'buyer', 'transport', 'job_seeker',
+      'employer', 'student', 'agriculturist', 'rooftop_gardener'
+    )
+  LOOP
+    INSERT INTO public.user_role_memberships (user_id, role)
+    VALUES (NEW.id, v_selected_role)
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END LOOP;
+  IF NOT EXISTS (SELECT 1 FROM public.user_role_memberships WHERE user_id = NEW.id) THEN
+    INSERT INTO public.user_role_memberships (user_id, role)
+    VALUES (NEW.id, 'farmer')
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.update_my_role_memberships(p_roles text[])
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'pg_catalog', 'public', 'pg_temp'
+AS $function$
+DECLARE
+  v_user_id uuid := auth.uid();
+  v_allowed text[] := ARRAY[
+    'farmer', 'buyer', 'transport', 'job_seeker',
+    'employer', 'student', 'agriculturist', 'rooftop_gardener'
+  ]::text[];
+BEGIN
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required';
+  END IF;
+  IF p_roles IS NULL OR cardinality(p_roles) < 1 OR cardinality(p_roles) > 9 THEN
+    RAISE EXCEPTION 'Select between one and nine roles';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM unnest(p_roles) AS requested(role)
+    WHERE NOT (requested.role = ANY(v_allowed))
+  ) THEN
+    RAISE EXCEPTION 'One or more roles are not allowed';
+  END IF;
+
+  DELETE FROM public.user_role_memberships
+  WHERE user_id = v_user_id
+    AND (
+      role = ANY(v_allowed)
+      OR (role = 'seller' AND NOT EXISTS (
+        SELECT 1 FROM public.marketplace_seller_permissions p
+        WHERE p.user_id = v_user_id AND p.status = 'approved'
+      ))
+      OR (role = 'plant_seller' AND NOT EXISTS (
+        SELECT 1 FROM public.plant_seller_permissions p
+        WHERE p.user_id = v_user_id AND p.status = 'approved'
+      ))
+    );
+
+  UPDATE public.profiles
+  SET selected_roles = ARRAY(SELECT DISTINCT requested.role FROM unnest(p_roles) AS requested(role))
+  WHERE id = v_user_id;
+
+  INSERT INTO public.user_role_memberships (user_id, role)
+  SELECT v_user_id, requested.role
+  FROM (SELECT DISTINCT role FROM unnest(p_roles) AS item(role)) AS requested
+  ON CONFLICT (user_id, role) DO NOTHING;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.update_my_role_memberships(text[]) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.update_my_role_memberships(text[]) TO authenticated;
+
 -- Seller status cannot be self-published. The existing marketplace products table
 -- remains the Marketplace-only catalogue for backward compatibility with orders.
 DROP POLICY IF EXISTS "products_seller_insert" ON public.products;
