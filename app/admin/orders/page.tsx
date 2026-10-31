@@ -180,7 +180,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
             </div>
           </article>;
         })}
-        {!ordersError && !filtered.length && <div className="rounded-2xl bg-white p-8 text-center text-sm text-[#647468]">এই ফিল্টারে কোনো অর্ডার নেই।</div>}
+        {(!ordersError && !orders?.length) || (!ordersError && filtered.length === 0) && <div className="rounded-2xl bg-white p-8 text-center text-sm text-[#647468]">এই ফিল্টারে কোনো অর্ডার নেই।</div>}
       </section>
 
     </div>
