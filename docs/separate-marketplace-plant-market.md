@@ -16,10 +16,11 @@ Both markets use the same Supabase Auth account. Authorization reuses AGRIVA's e
 ## Catalogues and existing commerce
 
 - Marketplace keeps `public.products`, its existing cart/order/reseller/payment relationships and product IDs.
-- The Marketplace table is constrained to `marketplace_channel = 'marketplace'`; its insert/update/delete RLS guards require the existing verified organization and Marketplace module grants.
+- The Marketplace table is constrained to `marketplace_channel = 'marketplace'`; its insert/update RLS guards require a verified organization and Marketplace module grants. Seller deletion is not exposed; moderation remains admin-controlled.
 - Plant Market uses the physically separate `public.plant_market_products` table. Its writes require verified `gardener_profiles` plus the Plant Market module grant.
 - Plant Market images use the separate `plant-product-images` Storage bucket; identity evidence remains private in `identity-verification`.
 - Public catalogue queries show only active products. Seller submissions are forced to draft by the database trigger and require admin moderation.
+- A one-time compatibility backfill grants only existing Marketplace seller/organization role members and owners of existing Marketplace products a verified legacy Marketplace organization plus read/create/update grants. It never grants Plant Market access.
 - The migration aborts if legacy non-Marketplace channel rows are found in `public.products`; it will not silently relabel or delete them.
 
 ## Routes
@@ -36,7 +37,7 @@ Both markets use the same Supabase Auth account. Authorization reuses AGRIVA's e
 
 The repository now includes the existing module-access foundation and identity-verification migrations required by the seller workflow, followed by `20261031120000_separate_marketplace_and_plant_market.sql`.
 
-Apply and verify the migrations on an isolated Supabase test project first. Production already contains the module-access and identity-verification schema; verify its migration ledger before applying anything. The separation migration checks that no Plant Market-channel rows remain in `public.products` and fails safely if it finds any.
+Apply and verify the migrations on an isolated Supabase test project first. Before production deployment, inspect the actual production project's migration ledger; do not assume the module-access or identity-verification schema is already present. The separation migration checks that no Plant Market-channel rows remain in `public.products` and fails safely if it finds any.
 
 The existing Marketplace products, carts, orders, reseller attribution and payment tables are not renamed or copied. The migration adds only a channel guard and independent Plant Market catalogue, RLS, storage and module-revocation behavior.
 
