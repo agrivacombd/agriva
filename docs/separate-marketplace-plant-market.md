@@ -41,6 +41,8 @@ Apply and verify the migrations on an isolated Supabase test project first. Befo
 
 The existing Marketplace products, carts, orders, reseller attribution and payment tables are not renamed or copied. The migration adds only a channel guard and independent Plant Market catalogue, RLS, storage and module-revocation behavior.
 
+Before applying to production, run a manual legacy Plant Market candidate audit against `public.products` using the previous Plant Market keyword set (Bengali: গাছ, চারা, বীজ, ফুল, ফল, টব, মাটি, কম্পোস্ট, বাগান, ইনডোর, ক্যাকটাস, সাকুলেন্ট, নার্সারি; English: plant, tree, sapling, seedling, seed, flower, fruit, pot, soil, compost, garden, gardening, indoor, cactus, succulent, nursery, orchid). This list is intentionally an audit hint, not an automatic classifier: review category, seller and order history before moving any listing. Do not delete or re-key a Marketplace product that is referenced by existing orders. The production data migration must preserve historical order references and pause any reclassified legacy Marketplace listing.
+
 ## Deliberate follow-up
 
 Plant Market now has an isolated product catalogue and detail pages, but its independent cart, checkout, order, payment, refund and seller order dashboard are not part of this change. Do not route Plant Market product IDs into the Marketplace checkout. Implement and test a dedicated Plant Market order lifecycle before enabling Plant Market purchase buttons.
