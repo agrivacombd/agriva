@@ -10,6 +10,7 @@ const sellerProductsPage = readFileSync("app/seller/products/page.tsx", "utf8");
 const farmerPage = readFileSync("app/farmer/products/new/page.tsx", "utf8");
 const dashboard = readFileSync("app/dashboard/page.tsx", "utf8");
 const migration = readFileSync("supabase/migrations/20261029120000_separate_seller_marketplace_from_harvest.sql", "utf8");
+const permissionMigration = readFileSync("supabase/migrations/20261031120000_separate_marketplace_and_plant_market.sql", "utf8");
 
 assert.match(form, /createSupabaseBrowserClient/, "seller form must use the cookie-aware Supabase browser client");
 assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form must upload product images to Storage");
@@ -17,22 +18,23 @@ assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit 
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
-assert.match(route, /user_role_memberships/, "product API must verify persisted role membership");
-assert.match(route, /in\("role", \["seller", "organization"\]\)/, "product API must require seller or approved organization membership");
+assert.match(route, /marketplace_seller_permissions/, "product API must verify Marketplace-specific permission");
+assert.match(route, /eq\("status", "approved"\)/, "product API must require approved Marketplace permission");
+assert.doesNotMatch(route, /user_role_memberships/, "navigation roles must not authorize Marketplace product submission");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
 assert.match(route, /product-images/, "product API must validate product image URLs against the configured bucket");
 assert.match(route, /storage\/v1\/object\/public\/product-images\//, "only public product-images URLs should be accepted");
 assert.match(route, /validFileName[\s\S]*image\.search[\s\S]*image\.hash/, "seller image URLs must be limited to the seller folder and a UUID filename without query/hash");
 assert.match(legacyRoute, /status: 410/, "legacy farmer product API must not create marketplace products");
-assert.match(sellerPage, /in\("role", \["seller", "organization"\]\)/, "seller product page must require seller or organization membership");
-assert.match(sellerProductsPage, /in\("role", \["seller", "organization"\]\)/, "seller product management page must require seller or organization membership");
+assert.match(sellerPage, /marketplace_seller_permissions/, "seller product page must require Marketplace-specific permission");
+assert.match(sellerProductsPage, /marketplace_seller_permissions/, "seller product management page must require Marketplace-specific permission");
 assert.match(sellerProductsPage, /eq\("farmer_id", user\.id\)/, "seller product management must show only the signed-in seller's products");
 assert.match(dashboard, /href: "\/seller\/products"/, "seller dashboard must link to seller product management");
 assert.match(farmerPage, /redirect\("\/sell-harvest"\)/, "farmer product route must direct farmers to Sell Harvest");
 assert.match(migration, /DROP POLICY IF EXISTS "products_farmer_insert"/, "migration must remove the broad farmer insert policy");
-assert.match(migration, /membership\.role IN \('seller', 'organization'\)/, "database insert and storage policies must enforce seller or approved organization membership");
+assert.match(permissionMigration, /products_marketplace_seller_update/, "Marketplace product updates must require explicit Marketplace approval");
 assert.match(migration, /DROP POLICY IF EXISTS "Farmers can upload own product images"/, "migration must replace farmer-only product image uploads");
 assert.match(migration, /storage\.foldername\(name\)/, "Storage policy must restrict uploads to the user's folder");
 
-assert.ok(migration.includes("m.role IN ('farmer', 'seller', 'organization')"), "database moderation guard must recognize approved organization sellers");
+assert.match(permissionMigration, /marketplace_seller_permissions/, "Marketplace database authorization must use its dedicated permission table");
 console.log("Seller marketplace separation regression checks passed.");
