@@ -53,31 +53,31 @@ function ProductCard({
   return (
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-emerald-700/30 hover:shadow-xl hover:shadow-emerald-950/[0.06]">
       <div className="relative">
-        <Link href={\`/marketplace/\${product.slug}\`} className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-[#f2f8ed] to-[#e8f1e3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={\`\${product.name} পণ্যের বিস্তারিত দেখুন\`}>
+        <Link href={`/marketplace/${product.slug}`} className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br from-[#f2f8ed] to-[#e8f1e3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
           <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
-          {product.image_url && <Image src={product.image_url} alt={\`\${product.name} পণ্যের ছবি\`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="bg-white object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />}
+          {product.image_url && <Image src={product.image_url} alt={`${product.name} পণ্যের ছবি`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="bg-white object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />}
         </Link>
-        <span className={\`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm \${inStock ? "bg-white/95 text-emerald-800" : "bg-slate-900/80 text-white"}\`}>
+        <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm ${inStock ? "bg-white/95 text-emerald-800" : "bg-slate-900/80 text-white"}`}>
           {inStock ? "স্টকে আছে" : hasStock ? "স্টক শেষ" : "স্টক যাচাই করুন"}
         </span>
-        <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"} className={\`absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition \${wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600"}\`}>
+        <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"} className={`absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border shadow-sm transition ${wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600"}`}>
           <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-4 w-4" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
         </button>
       </div>
       <div className="flex flex-1 flex-col p-3 sm:p-4">
         <p className="text-[11px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
         <h3 className="mt-1.5 line-clamp-2 min-h-10 break-words text-sm font-bold leading-5 text-slate-900">
-          <Link href={\`/marketplace/\${product.slug}\`} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
+          <Link href={`/marketplace/${product.slug}`} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
         <div className="mt-auto pt-3">
           <p className="text-base font-black text-emerald-950 sm:text-lg">
             {hasPrice && Number(product.price) > 0 ? <>৳{money(product.price as number | string)}{product.unit ? <span className="text-xs font-semibold text-slate-500"> / {product.unit}</span> : null}</> : <span className="text-sm">দাম জানতে যোগাযোগ করুন</span>}
           </p>
           <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
-            <Link href={\`/marketplace/\${product.slug}\`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
+            <Link href={`/marketplace/${product.slug}`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2 text-xs font-bold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
               বিস্তারিত দেখুন <span aria-hidden="true">→</span>
             </Link>
-            <button type="button" onClick={onCompare} aria-pressed={compared} className={\`min-h-10 rounded-xl border px-2.5 text-[11px] font-bold transition \${compared ? "border-emerald-800 bg-emerald-50 text-emerald-900" : "border-slate-200 text-slate-600 hover:border-emerald-300"}\`}>
+            <button type="button" onClick={onCompare} aria-pressed={compared} className={`min-h-10 rounded-xl border px-2.5 text-[11px] font-bold transition ${compared ? "border-emerald-800 bg-emerald-50 text-emerald-900" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
               {compared ? "তুলনায় আছে" : "তুলনা"}
             </button>
           </div>
@@ -150,8 +150,8 @@ export default function MarketplaceCore({ products, showCategories = true, initi
             </div>
             {showCategories && <nav className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:hidden" aria-label="পণ্যের ক্যাটাগরি">
               <span className="shrink-0 pr-1 text-[11px] font-extrabold text-slate-500">ক্যাটাগরি</span>
-              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={\`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition \${category === "all" ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}\`}>সব পণ্য</button>
-              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={\`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition \${category === item.slug ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}\`}>{item.name}</button>)}
+              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === "all" ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>সব পণ্য</button>
+              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === item.slug ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>{item.name}</button>)}
             </nav>}
           </div>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 sm:w-56">
@@ -171,7 +171,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
           <button type="button" onClick={() => setCategory("all")} className="text-xs font-bold text-emerald-800 hover:underline">সব ক্যাটাগরি দেখুন</button>
         </div>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={\`group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition \${category === item.slug ? "border-emerald-700 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/60"}\`}>
+          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition ${category === item.slug ? "border-emerald-700 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/60"}`}>
             <span className="text-2xl" aria-hidden="true">{item.icon}</span><span className="text-[11px] font-extrabold leading-4 text-slate-800">{item.name}</span><span className="text-[10px] text-slate-400">{new Intl.NumberFormat("bn-BD").format(item.count)} পণ্য</span>
           </button>)}
         </div>
@@ -182,8 +182,8 @@ export default function MarketplaceCore({ products, showCategories = true, initi
           <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-extrabold text-slate-900">ক্যাটাগরি</h2>
             <nav className="mt-3 grid gap-1" aria-label="পণ্যের ক্যাটাগরি">
-              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={\`flex min-h-10 items-center justify-between rounded-lg px-3 text-left text-xs font-bold \${category === "all" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-50"}\`}><span>সব পণ্য</span><span>{products.length}</span></button>
-              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={\`flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-left text-xs font-semibold \${category === item.slug ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-50"}\`}><span>{item.name}</span><span className="text-slate-400">{item.count}</span></button>)}
+              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={`flex min-h-10 items-center justify-between rounded-lg px-3 text-left text-xs font-bold ${category === "all" ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-50"}`}><span>সব পণ্য</span><span>{products.length}</span></button>
+              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-left text-xs font-semibold ${category === item.slug ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-50"}`}><span>{item.name}</span><span className="text-slate-400">{item.count}</span></button>)}
             </nav>
             <Link href="/agriculture-calculators" className="mt-5 block rounded-xl bg-gradient-to-br from-emerald-900 to-emerald-700 p-4 text-white transition hover:shadow-lg">
               <span className="text-xl" aria-hidden="true">🧮</span><span className="mt-2 block text-sm font-black">জমির হিসাব করুন</span><span className="mt-1 block text-[11px] leading-5 text-emerald-50/80">জমির পরিমাণ ও চাষের হিসাবের টুল দেখুন</span><span className="mt-3 inline-block text-xs font-bold text-lime-200">ক্যালকুলেটর দেখুন →</span>
@@ -195,7 +195,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h2 id="marketplace-products-heading" className="text-lg font-black tracking-tight text-slate-950 sm:text-xl">{selectedCategory?.name || "সব পণ্য"}</h2>
-              <p className="mt-1 text-xs text-slate-500">{query ? \`“\${query}” অনুসন্ধানের ফলাফল\` : "আপনার প্রয়োজনীয় কৃষিপণ্য বেছে নিন"}</p>
+              <p className="mt-1 text-xs text-slate-500">{query ? `“${query}” অনুসন্ধানের ফলাফল` : "আপনার প্রয়োজনীয় কৃষিপণ্য বেছে নিন"}</p>
             </div>
             <p aria-live="polite" className="shrink-0 text-xs font-bold text-slate-500">{new Intl.NumberFormat("bn-BD").format(visible.length)}টি পণ্য</p>
           </div>
@@ -224,7 +224,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
           <div><p className="text-sm font-black text-slate-900">পণ্য তুলনা <span className="text-emerald-800">({compareIds.length}/3)</span></p><p className="mt-0.5 text-[11px] text-slate-500">সর্বোচ্চ ৩টি পণ্য একসঙ্গে তুলনা করুন</p></div>
           <div className="flex items-center gap-2"><button type="button" onClick={() => setShowCompare((value) => !value)} className="rounded-xl bg-emerald-900 px-4 py-2.5 text-xs font-bold text-white">{showCompare ? "তুলনা বন্ধ করুন" : "তুলনা দেখুন"}</button><button type="button" onClick={() => { setCompareIds([]); setShowCompare(false); }} className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-600">মুছুন</button></div>
         </div>
-        {showCompare && <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-xs"><thead><tr><th className="p-2 text-slate-500">পণ্য</th>{comparedProducts.map((product) => <th key={product.id} className="p-2 font-bold text-slate-900">{product.name}</th>)}</tr></thead><tbody><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">দাম</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 font-extrabold text-emerald-900">{product.price && Number(product.price) > 0 ? \`৳\${money(product.price)}\` : "জানতে যোগাযোগ করুন"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">ক্যাটাগরি</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{product.category || "—"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">স্টক</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{Number(product.stock || 0) > 0 ? "স্টকে আছে" : "স্টক নেই / যাচাই করুন"}</td>)}</tr></tbody></table></div>}
+        {showCompare && <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-xs"><thead><tr><th className="p-2 text-slate-500">পণ্য</th>{comparedProducts.map((product) => <th key={product.id} className="p-2 font-bold text-slate-900">{product.name}</th>)}</tr></thead><tbody><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">দাম</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 font-extrabold text-emerald-900">{product.price && Number(product.price) > 0 ? `৳${money(product.price)}` : "জানতে যোগাযোগ করুন"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">ক্যাটাগরি</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{product.category || "—"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">স্টক</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{Number(product.stock || 0) > 0 ? "স্টকে আছে" : "স্টক নেই / যাচাই করুন"}</td>)}</tr></tbody></table></div>}
       </div>}
     </div>
   );
