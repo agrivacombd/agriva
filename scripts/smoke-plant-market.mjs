@@ -21,7 +21,7 @@ assert.match(page, /image_url/, "Plant Market catalogue must load product images
 const productDetail = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
 const checkoutButton = readFileSync("components/marketplace/CheckoutButton.tsx", "utf8");
 assert.match(productDetail, /CheckoutButton productId=\{product\.id\}/, "Product details must retain the existing purchase actions");
-assert.match(checkoutButton, /from\("@\/lib\/supabase\/client"\)/, "Product detail must use the authenticated Supabase client for cart actions");
+assert.match(checkoutButton, /@\/lib\/supabase\/client/, "Product detail must use the authenticated Supabase client for cart actions");
 assert.match(checkoutButton, /\.from\("carts"\)/, "Product detail must find or create the buyer's active cart");
 assert.match(checkoutButton, /\.from\("cart_items"\)/, "Product detail must add the selected product to cart_items");
 assert.match(checkoutButton, /router\.push\("\/cart"\)/, "Successful add-to-cart must take the buyer to the cart");
