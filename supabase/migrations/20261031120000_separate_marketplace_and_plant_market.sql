@@ -289,6 +289,25 @@ DECLARE
   v_roles jsonb;
   v_selected_roles text[];
 BEGIN
+  IF coalesce(NEW.is_anonymous, false) THEN
+    INSERT INTO public.profiles (id, full_name, phone, role, selected_roles)
+    VALUES (
+      NEW.id,
+      coalesce(nullif(btrim(NEW.raw_user_meta_data ->> 'full_name'), ''), ''),
+      NULL,
+      'buyer'::public.user_role,
+      ARRAY['buyer']::text[]
+    )
+    ON CONFLICT (id) DO UPDATE
+      SET role = 'buyer'::public.user_role,
+          selected_roles = ARRAY['buyer']::text[];
+    DELETE FROM public.user_role_memberships WHERE user_id = NEW.id;
+    INSERT INTO public.user_role_memberships (user_id, role)
+    VALUES (NEW.id, 'buyer')
+    ON CONFLICT (user_id, role) DO NOTHING;
+    RETURN NEW;
+  END IF;
+
   v_role := CASE
     WHEN (NEW.raw_user_meta_data ->> 'role') IN ('farmer', 'reseller')
       THEN (NEW.raw_user_meta_data ->> 'role')::public.user_role
@@ -394,6 +413,19 @@ GRANT EXECUTE ON FUNCTION public.update_my_role_memberships(text[]) TO authentic
 -- remains the Marketplace-only catalogue for backward compatibility with orders.
 DROP POLICY IF EXISTS "products_seller_insert" ON public.products;
 DROP POLICY IF EXISTS "products_farmer_delete" ON public.products;
+DROP POLICY IF EXISTS "products_farmer_update" ON public.products;
+CREATE POLICY "products_marketplace_seller_update" ON public.products
+  FOR UPDATE TO authenticated USING (
+    farmer_id = (SELECT auth.uid()) AND EXISTS (
+      SELECT 1 FROM public.marketplace_seller_permissions p
+      WHERE p.user_id = (SELECT auth.uid()) AND p.status = 'approved'
+    )
+  ) WITH CHECK (
+    farmer_id = (SELECT auth.uid()) AND EXISTS (
+      SELECT 1 FROM public.marketplace_seller_permissions p
+      WHERE p.user_id = (SELECT auth.uid()) AND p.status = 'approved'
+    )
+  );
 CREATE POLICY "products_marketplace_seller_delete" ON public.products
   FOR DELETE TO authenticated USING (
     (farmer_id = (SELECT auth.uid()) AND EXISTS (
@@ -416,14 +448,8 @@ SECURITY DEFINER
 SET search_path TO 'pg_catalog', 'public', 'pg_temp'
 AS $function$
 DECLARE
-  v_is_platform_admin boolean := auth.uid() IS NOT NULL AND (
-    public.has_platform_admin_access()
-    OR EXISTS (
-      SELECT 1 FROM public.user_role_memberships m
-      WHERE m.user_id = auth.uid() AND m.role IN ('admin', 'super_admin')
-    )
-  );
-  v_can_moderate boolean := auth.uid() IS NOT NULL AND public.has_product_moderation_permission();
+  v_is_platform_admin boolean := auth.uid() IS NOT NULL AND public.is_admin();
+  v_can_moderate boolean := auth.uid() IS NOT NULL AND public.is_admin();
   v_is_marketplace_seller boolean := EXISTS (
     SELECT 1 FROM public.marketplace_seller_permissions p
     WHERE p.user_id = auth.uid() AND p.status = 'approved'
@@ -537,13 +563,7 @@ CREATE OR REPLACE FUNCTION public.guard_plant_market_product_write()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp AS $$
 DECLARE
-  v_is_admin boolean := auth.uid() IS NOT NULL AND (
-    public.has_platform_admin_access()
-    OR EXISTS (
-      SELECT 1 FROM public.user_role_memberships m
-      WHERE m.user_id = auth.uid() AND m.role IN ('admin', 'super_admin')
-    )
-  );
+  v_is_admin boolean := auth.uid() IS NOT NULL AND public.is_admin();
   v_is_plant_seller boolean := EXISTS (
     SELECT 1 FROM public.plant_seller_permissions p
     WHERE p.user_id = auth.uid() AND p.status = 'approved'
