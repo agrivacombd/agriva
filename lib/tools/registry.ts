@@ -11,7 +11,6 @@ import {
   BriefcaseBusiness,
   FileText,
   Sprout,
-  House,
   Store,
   Truck,
   ShoppingBasket,
