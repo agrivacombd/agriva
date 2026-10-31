@@ -9,6 +9,14 @@ const migration = readFileSync("supabase/migrations/20261031120000_separate_mark
 const marketplaceApi = readFileSync("app/api/seller/products/route.ts", "utf8");
 const marketplacePage = readFileSync("app/seller/products/new/page.tsx", "utf8");
 const marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+const plantApi = readFileSync("app/api/plant-seller/products/route.ts", "utf8");
+const plantApplicationApi = readFileSync("app/api/plant-seller/applications/route.ts", "utf8");
+const marketplaceApplicationApi = readFileSync("app/api/seller/applications/route.ts", "utf8");
+const adminApplicationApi = readFileSync("app/api/admin/seller-applications/[market]/[applicationId]/route.ts", "utf8");
+const adminPermissionApi = readFileSync("app/api/admin/seller-permissions/[market]/[userId]/route.ts", "utf8");
+const plantSellerDashboard = readFileSync("app/plant-seller/products/page.tsx", "utf8");
+const plantSellerForm = readFileSync("components/seller/PlantSellerProductForm.tsx", "utf8");
+const robotsText = robots;
 
 assert.match(page, /from\("plant_market_products"\)/, "Plant Market must use its isolated catalogue");
 assert.match(page, /\.eq\("status", "active"\)/, "only active approved plant products should appear");
@@ -24,5 +32,16 @@ assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_seller_permiss
 assert.match(marketplaceApi, /from\("marketplace_seller_permissions"\)/, "Marketplace product API must check Marketplace approval");
 assert.match(marketplacePage, /from\("marketplace_seller_permissions"\)/, "Marketplace product form must check Marketplace approval");
 assert.match(marketplaceCore, /productHrefPrefix/, "shared catalogue UI must support market-specific detail routes");
+assert.match(plantApi, /from\("plant_seller_permissions"\)/, "Plant product API must require Plant Seller approval");
+assert.match(plantApi, /from\("plant_market_products"\)/, "Plant product API must write only to Plant Market catalogue");
+assert.match(plantApplicationApi, /plant_seller_applications/, "Plant Seller applications must be stored separately");
+assert.match(marketplaceApplicationApi, /marketplace_seller_applications/, "Marketplace Seller applications must be stored separately");
+assert.match(adminApplicationApi, /marketplace_seller_applications|plant_seller_applications/, "Admin review API must handle separate application queues");
+assert.match(adminPermissionApi, /marketplace_seller_permissions|plant_seller_permissions/, "Admin must be able to manage each market permission separately");
+assert.match(plantSellerDashboard, /plant_market_products/, "Plant Seller dashboard must list only Plant Market products");
+assert.match(plantSellerForm, /plant-product-images/, "Plant Seller form must use its separate image bucket");
+assert.match(robotsText, /"\/seller\//, "private seller pages must not be crawlable");
+assert.match(robotsText, /"\/plant-seller\//, "private Plant Seller pages must not be crawlable");
+assert.match(sitemap, /sell-on-marketplace|sell-on-plant-market/, "public seller acquisition pages must be discoverable");
 
 console.log("Separate Marketplace and Plant Market smoke checks passed.");
