@@ -120,8 +120,21 @@ export default function SignupPage() {
           data: { full_name: fullName.trim(), selected_roles: selectedRoles },
         },
       });
+      const errorCode = error?.code ?? "";
+      const errorMessage = error?.message ?? "";
+      const isEmailRateLimited =
+        errorCode === "over_email_send_rate_limit" ||
+        errorMessage.toLowerCase().includes("over_email_send_rate_limit") ||
+        errorMessage.toLowerCase().includes("rate limit") ||
+        errorMessage.toLowerCase().includes("too many requests");
       setIsError(Boolean(error));
-      setMessage(error ? error.message : t.success);
+      setMessage(error
+        ? isEmailRateLimited
+          ? language === "bn"
+            ? "ইমেইল পাঠানোর সীমা পূর্ণ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
+            : "Email sending limit reached. Please wait before trying again."
+          : errorMessage
+        : t.success);
     } catch {
       setIsError(true);
       setMessage(t.error);
