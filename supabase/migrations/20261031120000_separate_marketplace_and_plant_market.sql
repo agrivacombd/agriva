@@ -143,7 +143,8 @@ CREATE TABLE IF NOT EXISTS public.plant_market_products (
 );
 CREATE INDEX IF NOT EXISTS plant_market_products_public_idx
   ON public.plant_market_products(status, category_slug, created_at DESC);
-CREATE INDEX IF NOT EXISTS plant_market_products_seller_idx
+DROP INDEX IF EXISTS public.plant_market_products_seller_idx;
+CREATE INDEX plant_market_products_seller_idx
   ON public.plant_market_products(seller_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS plant_market_products_moderated_by_idx
   ON public.plant_market_products(moderated_by) WHERE moderated_by IS NOT NULL;
