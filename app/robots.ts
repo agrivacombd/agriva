@@ -48,7 +48,6 @@ export default function robots(): MetadataRoute.Robots {
           "/admin/",
           "/seller/",
           "/plant-seller/",
-          "/api/",
           "/dashboard/",
           "/garden",
           "/api/",
