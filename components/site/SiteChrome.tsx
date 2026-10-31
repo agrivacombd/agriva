@@ -9,9 +9,7 @@ import {
   Calculator,
   CalendarDays,
   ChevronDown,
-  ClipboardList,
   Globe2,
-  Leaf,
   LogIn,
   Menu,
   Search,
@@ -20,7 +18,6 @@ import {
   X,
   BookOpen,
   House,
-  Sparkles,
 } from "lucide-react";
 import { FormEvent, useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -99,7 +96,7 @@ function isActivePath(pathname: string, href: string) {
 function SearchForm({ english, onNavigate }: { english: boolean; onNavigate?: () => void }) {
   return (
     <form
-      action={english ? "/en/marketplace" : "/marketplace"}
+      action="/marketplace"
       method="get"
       role="search"
       onSubmit={onNavigate ? () => onNavigate() : undefined}
@@ -339,9 +336,6 @@ export default function SiteChrome() {
                 <div className="mt-5 grid gap-2 border-t border-slate-100 pt-4">
                   <Link href={english ? "/en" : "/sell-harvest"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
                     <Sprout size={18} aria-hidden="true" />{english ? "Start selling" : "বিক্রি শুরু করুন"}
-                  </Link>
-                  <Link href="/seller/products/new" onClick={() => setMenuOpen(false)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 px-4 py-2.5 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">
-                    <Leaf size={17} aria-hidden="true" />{english ? "Add a product" : "পণ্য যোগ করুন"}
                   </Link>
                 </div>
               </div>
