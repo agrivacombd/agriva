@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Approved Marketplace Seller permission required. Apply separately at /sell-on-marketplace." }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const body = (await request.json().catch(() => ({}))) || {};
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
