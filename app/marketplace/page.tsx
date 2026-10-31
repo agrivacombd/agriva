@@ -22,7 +22,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
+      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,unit,image_url")
       .eq("status", "active")
       .order("created_at", { ascending: false }).limit(120);
     if (error) {
