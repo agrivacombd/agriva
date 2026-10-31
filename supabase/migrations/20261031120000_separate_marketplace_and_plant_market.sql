@@ -14,6 +14,55 @@ BEGIN
 END;
 $guard$;
 
+-- Grandfather only existing Marketplace sellers from the legacy system. A user
+-- qualifies through an existing Marketplace product or a pre-migration seller /
+-- organization membership. This preserves their existing seller workflow while
+-- new accounts still require an independent verified Marketplace application.
+WITH legacy_sellers AS (
+  SELECT DISTINCT user_id
+  FROM public.user_role_memberships
+  WHERE role IN ('seller','organization')
+  UNION
+  SELECT DISTINCT farmer_id AS user_id
+  FROM public.products
+  WHERE marketplace_channel = 'marketplace'
+)
+INSERT INTO public.organizations(owner_id,name,organization_type,status)
+SELECT legacy.user_id,
+  CASE
+    WHEN char_length(btrim(coalesce(profile.full_name,''))) >= 2
+      THEN left(btrim(profile.full_name),180)
+    ELSE 'Legacy AGRIVA Marketplace Seller'
+  END,
+  'other',
+  'verified'
+FROM legacy_sellers legacy
+LEFT JOIN public.profiles profile ON profile.id = legacy.user_id
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.organizations existing
+  WHERE existing.owner_id = legacy.user_id AND existing.status = 'verified'
+);
+
+WITH legacy_sellers AS (
+  SELECT DISTINCT user_id
+  FROM public.user_role_memberships
+  WHERE role IN ('seller','organization')
+  UNION
+  SELECT DISTINCT farmer_id AS user_id
+  FROM public.products
+  WHERE marketplace_channel = 'marketplace'
+)
+INSERT INTO public.user_module_grants(
+  user_id,module,permission,scope_type,scope_id,granted_by,reason
+)
+SELECT legacy.user_id,'marketplace',permission_name,'organization',organization.id,NULL,
+  'Grandfathered existing Marketplace seller during independent Plant Market rollout'
+FROM legacy_sellers legacy
+JOIN public.organizations organization
+  ON organization.owner_id = legacy.user_id AND organization.status = 'verified'
+CROSS JOIN (VALUES ('read'),('create'),('update')) AS permissions(permission_name)
+ON CONFLICT DO NOTHING;
+
 DO $channel_constraint$
 BEGIN
   IF NOT EXISTS (
@@ -90,7 +139,7 @@ CREATE POLICY products_module_access_update_guard ON public.products
         SELECT 1 FROM public.organizations o
         WHERE o.owner_id = (SELECT auth.uid())
           AND o.status = 'verified'
-          AND public.has_module_access('marketplace','create','organization',o.id)
+          AND public.has_module_access('marketplace','update','organization',o.id)
       )
     )
   );
