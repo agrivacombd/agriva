@@ -13,7 +13,7 @@ Both markets use the existing Supabase Auth identity (auth.users.id / profiles.i
 - Admin permission revocation: PATCH /api/admin/seller-permissions/{market}/{userId} with status revoked.
 - Plant Market product moderation: /admin/plant-market-products with GET/PATCH /api/admin/plant-market-products.
 - Approved seller roles are mirrored into the existing user_role_memberships table for dashboard navigation; the permission tables remain the authorization source.
-- The APIs use the existing catalog.moderate admin capability.
+- The APIs use the existing catalog.moderate admin capability. Revoking one market's permission pauses only that market's active listings; reactivation requires fresh moderation.
 
 ## Catalogues
 
@@ -35,7 +35,7 @@ Both markets use the existing Supabase Auth identity (auth.users.id / profiles.i
 
 Apply supabase/migrations/20261031120000_separate_marketplace_and_plant_market.sql to the intended Supabase environment before deploying the application branch. Do not deploy the new application code before the migration is applied; the new routes query the new permission and Plant Market tables.
 
-Only legacy Marketplace memberships with a non-null granted_by are backfilled as approved. Self-selected legacy seller / organization memberships do not become permissions automatically; those accounts must complete the Marketplace application/review flow. No legacy account is automatically granted Plant Market permission.
+Legacy Marketplace memberships with a non-null granted_by and sellers who already have an active, previously moderated Marketplace product are backfilled as approved to avoid breaking existing live listings. Self-selected legacy seller / organization memberships without an active product do not become permissions automatically; those accounts must complete the Marketplace application/review flow. No legacy account is automatically granted Plant Market permission.
 
 ## Deliberate follow-up
 
