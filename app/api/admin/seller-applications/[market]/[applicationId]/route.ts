@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 
 type Params = { params: Promise<{ market: string; applicationId?: string }> };
