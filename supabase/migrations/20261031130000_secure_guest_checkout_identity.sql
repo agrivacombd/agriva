@@ -109,7 +109,7 @@ where coalesce(u.is_anonymous, false)
 on conflict (user_id, role) do nothing;
 
 -- A guest cannot promote its own account through the role-picker RPC.
-create or replace function public.update_my_role_memberships(p_roles text[])
+create or replace function private.update_my_role_memberships(p_roles text[])
 returns void
 language plpgsql
 security definer
@@ -154,6 +154,8 @@ begin
 end;
 $$;
 
+revoke all on function private.update_my_role_memberships(text[]) from public, anon;
+grant execute on function private.update_my_role_memberships(text[]) to authenticated;
 revoke all on function public.update_my_role_memberships(text[]) from public, anon;
 grant execute on function public.update_my_role_memberships(text[]) to authenticated;
 
