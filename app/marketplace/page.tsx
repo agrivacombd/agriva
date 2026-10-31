@@ -56,7 +56,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
       <div className="mb-5 sm:mb-7"><p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-emerald-700">Discover products</p><h2 className="mt-1.5 text-2xl font-black tracking-tight sm:text-3xl">আপনার প্রয়োজনীয় পণ্য খুঁজুন</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">সার্চ করুন, ক্যাটাগরি বেছে নিন অথবা দাম অনুযায়ী পণ্য সাজান।</p></div>
       <MarketplaceCore products={products} initialQuery={initialQuery} />
       {catalogueUnavailable && <p role="status" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।</p>}
-      {!catalogueUnavailable && !products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। পণ্য অনুমোদিত হলে এখানে দেখা যাবে। এর মধ্যে আপনার প্রয়োজন চাহিদা বোর্ডে জানাতে পারেন।</p>}
+      {!catalogueUnavailable && !products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। পণ্য অনুমোদিত হলে এখানে দেখা যাবে। এর মধ্যে আপনার প্রয়োজন চাহিদা বোর্ডে জানাতে পারেন।</p>}
     </section>
 
     <section aria-label="বিক্রেতা ও ক্রেতাদের জন্য সেবা" className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
