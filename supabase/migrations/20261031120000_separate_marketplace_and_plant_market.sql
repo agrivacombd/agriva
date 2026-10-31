@@ -123,7 +123,7 @@ CREATE TABLE IF NOT EXISTS public.plant_market_products (
   description text,
   price numeric(12,2) NOT NULL CHECK (price > 0),
   stock numeric(12,2) NOT NULL DEFAULT 0 CHECK (stock >= 0),
-  unit text NOT NULL DEFAULT 'piece' CHECK (unit IN ('piece','pack','kg','g','bag','liter')),
+  unit text NOT NULL DEFAULT 'piece' CHECK (unit IN ('piece','pot','pack','tray')),
   plant_size text,
   pot_size text,
   plant_age text,
