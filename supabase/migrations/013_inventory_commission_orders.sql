@@ -11,4 +11,5 @@ create table if not exists public.commission_ledger (
 );
 create index if not exists commission_ledger_reseller_idx on public.commission_ledger(reseller_id,created_at desc);
 alter table public.commission_ledger enable row level security;
-create policy if not exists "commission_owner_read" on public.commission_ledger for select using(auth.uid()=reseller_id or auth.uid()=farmer_id or exists(select 1 from public.profiles where id=auth.uid() and role='admin'));
+drop policy if exists "commission_owner_read" on public.commission_ledger;
+create policy "commission_owner_read" on public.commission_ledger for select using (auth.uid() = reseller_id or auth.uid() = farmer_id or exists (select 1 from public.profiles where id = auth.uid() and role = 'admin'));
