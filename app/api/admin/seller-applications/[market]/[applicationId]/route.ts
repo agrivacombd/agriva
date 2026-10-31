@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminApi } from "@/lib/admin/authz";
 
 type Params = { params: Promise<{ market: string; applicationId?: string }> };
 async function getAdminClient() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") return { response: NextResponse.json({ error: "Admin access required." }, { status: 403 }) };
-  return { supabase, user };
+  const access = await requireAdminApi("catalog.moderate");
+  if (!access.ok) return { response: access.response };
+  return { supabase: access.supabase, user: access.user };
 }
 
 export async function GET(_request: NextRequest, { params }: Params) {
