@@ -429,7 +429,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp
-AS $
+AS $withdrawal$
 BEGIN
   IF OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'withdrawn' THEN
     INSERT INTO public.module_access_application_events(application_id,actor_id,event_type,note)
@@ -437,7 +437,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$withdrawal$;
 REVOKE ALL ON FUNCTION public.log_module_application_withdrawal() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS module_access_application_withdrawal_audit ON public.module_access_applications;
 CREATE TRIGGER module_access_application_withdrawal_audit
