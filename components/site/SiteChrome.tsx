@@ -10,10 +10,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnLinks = [
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
+  { href: "/plant-market", label: "Plant Market" },
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
   { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
   { href: "/blog", label: "কৃষি ব্লগ" },
-  { href: "/plant-market", label: "Plant Market" },
 ];
 
 const secondaryBnLinks = [
