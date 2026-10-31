@@ -89,8 +89,11 @@ export default function MarketplaceCore({ products, showCategories = true, initi
 
     return filtered.sort((a, b) => {
       if (sort === "price-low" || sort === "price-high") {
-        const aPrice = a.price === null ? Number.POSITIVE_INFINITY : Number(a.price);
-        const bPrice = b.price === null ? Number.POSITIVE_INFINITY : Number(b.price);
+        const aMissing = a.price === null || a.price === undefined || String(a.price).trim() === "";
+        const bMissing = b.price === null || b.price === undefined || String(b.price).trim() === "";
+        if (aMissing !== bMissing) return aMissing ? 1 : -1;
+        const aPrice = Number(a.price);
+        const bPrice = Number(b.price);
         return sort === "price-low" ? aPrice - bPrice : bPrice - aPrice;
       }
       return 0;
