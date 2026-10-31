@@ -10,7 +10,9 @@ assert.doesNotMatch(reseller, /error: error\.message/, "database details must no
 const seller = readFileSync("app/api/seller/products/route.ts", "utf8");
 assert.match(seller, /Seller marketplace product creation failed/, "seller product insert failures must be logged server-side");
 assert.match(seller, /পণ্য সংরক্ষণ করা যায়নি/, "product insert failures must return safe localized message");
-assert.match(seller, /user_role_memberships/, "seller product creation must verify persisted role membership");
+assert.match(seller, /marketplace_seller_permissions/, "seller product creation must verify the Marketplace-specific approval");
+assert.match(seller, /eq\("status", "approved"\)/, "seller product creation must require approved Marketplace permission");
+assert.doesNotMatch(seller, /user_role_memberships/, "navigation role membership must not be the seller authorization source");
 assert.doesNotMatch(seller, /error: error\.message/, "database details must not be exposed by seller product API");
 
 const legacyFarmer = readFileSync("app/api/farmer/products/route.ts", "utf8");
