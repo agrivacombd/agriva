@@ -6,7 +6,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 
 export const metadata: Metadata = {
   title: "কৃষি টুলস ও অনলাইন ক্যালকুলেটর",
-  description: "বীজ ও সার হিসাব, চাষের খরচ ও লাভ-লোকসান, ফসল পরিকল্পনা, AI কৃষি সহায়তা এবং খামার ব্যবস্থাপনার দরকারি টুলস ব্যবহার করুন AGRIVA-তে।",
+  description: "বীজ ও সার হিসাব, সেচের পানির পরিমাণ, চাষের খরচ ও লাভ, ফসল কাটার সময়, আবহাওয়া, AI কৃষি সহায়তা এবং খামার ব্যবস্থাপনার টুলস ব্যবহার করুন AGRIVA-তে।",
   alternates: { canonical: "/tools", languages: { "bn-BD": "/tools", en: "/en/tools", "x-default": "/tools" } },
   openGraph: {
     title: "কৃষি টুলস ও অনলাইন ক্যালকুলেটর | AGRIVA",
