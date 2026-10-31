@@ -36,6 +36,10 @@ CREATE TABLE IF NOT EXISTS public.plant_seller_applications (
 );
 CREATE INDEX IF NOT EXISTS plant_seller_applications_user_idx
   ON public.plant_seller_applications(user_id, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS marketplace_one_pending_application_per_user
+  ON public.marketplace_seller_applications(user_id) WHERE status = 'pending';
+CREATE UNIQUE INDEX IF NOT EXISTS plant_one_pending_application_per_user
+  ON public.plant_seller_applications(user_id) WHERE status = 'pending';
 
 CREATE TABLE IF NOT EXISTS public.marketplace_seller_permissions (
   user_id uuid PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
