@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
-const migration = readFileSync("supabase/migrations/20261030100000_module_access_foundation.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261030100500_module_access_foundation.sql", "utf8");
 const moduleAccess = readFileSync("lib/authz/module-access.ts", "utf8");
 const adminAccess = readFileSync("lib/admin/permission-service.ts", "utf8");
 for (const table of ["module_access_applications","user_module_grants","organizations","organization_members","farmer_profiles","farm_members","admin_roles","admin_role_permissions","admin_user_roles"]) {
