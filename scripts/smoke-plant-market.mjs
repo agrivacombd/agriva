@@ -35,6 +35,9 @@ assert.match(sitemap,/eq\("marketplace_channel", "marketplace"\)/,"Marketplace s
 assert.match(robots,/"\/plant-market"/,"Plant Market remains crawlable");
 assert.match(migration,/CREATE TABLE IF NOT EXISTS public\.plant_market_products/,"Plant Market has its own physical product table");
 assert.match(migration,/products_marketplace_only_channel_check/,"products table is Marketplace-only");
+assert.match(migration,/Grandfathered existing Marketplace seller/,"existing Marketplace sellers retain their approved legacy access");
+assert.match(migration,/user_role_memberships/,"legacy seller membership is included in the one-time compatibility backfill");
+assert.match(migration,/VALUES \('read'\),\('create'\),\('update'\)/,"legacy Marketplace sellers retain read, create and update permissions");
 assert.match(migration,/products_module_access_insert_guard/,"Marketplace RLS retains organization-scoped module access");
 assert.match(migration,/DROP POLICY IF EXISTS products_seller_insert/,"legacy role-only seller insert policy must be replaced");
 assert.match(migration,/CREATE POLICY products_seller_insert[\\s\\S]*?has_module_access/,"new Marketplace seller insert policy must use the verified module grant");
@@ -53,7 +56,7 @@ assert.match(marketplaceDetail,/marketplace_channel", "marketplace"/,"Marketplac
 assert.match(marketplaceCategory,/marketplace_channel", "marketplace"/,"Marketplace category page is channel-scoped");
 assert.match(marketplaceSubcategory,/marketplace_channel", "marketplace"/,"Marketplace subcategory page is channel-scoped");
 assert.match(identityApi,/module_access_applications/,"both seller applications use the existing identity application table");
-assert.match(identityApi,/selectedModule==="marketplace"/,"Marketplace application is distinct");
+assert.match(identityApi,/applicantType="business"/,"Marketplace application requires a business identity");
 assert.match(identityApi,/selectedModule==="plant_market"/,"Plant Market application is distinct");
 assert.match(identityAdmin,/admin_review_module_application/,"admin review grants only the selected module");
 assert.match(moduleAccess,/rpc\("has_module_access"/,"server authorization uses existing module grants");
@@ -71,5 +74,5 @@ assert.match(plantDashboard,/plant_market_products/,"Plant Seller dashboard read
 assert.match(plantForm,/plant-product-images/,"Plant Seller uploads to its own image bucket");
 assert.match(plantDetail,/from\("plant_market_products"\)/,"Plant Market detail page reads only its own table");
 assert.doesNotMatch(plantDetail,/from\("products"\)/,"Plant Market detail cannot fall back to Marketplace products");
-assert.match(adminPermissionApi,/p_module:module/,"admin revocation sends only the selected module");
+assert.match(adminPermissionApi,/p_module:moduleKey/,"admin revocation sends only the selected module");
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");
