@@ -18,28 +18,14 @@ export const metadata: Metadata = {
   },
 };
 
-const plantTerms = [
-  "গাছ", "চারা", "বীজ", "ফুল", "ফল", "টব", "মাটি", "কম্পোস্ট",
-  "বাগান", "ইনডোর", "ক্যাকটাস", "সাকুলেন্ট", "নার্সারি",
-  "plant", "tree", "sapling", "seedling", "seed", "flower",
-  "fruit", "pot", "soil", "compost", "garden", "gardening",
-  "indoor", "cactus", "succulent", "nursery", "orchid",
-];
-
-function isPlantProduct(product: MarketplaceProduct) {
-  const searchable = [product.name, product.category, product.description]
-    .filter(Boolean).join(" ").normalize("NFKC").toLocaleLowerCase();
-  return plantTerms.some((term) => searchable.includes(term.normalize("NFKC").toLocaleLowerCase()));
-}
-
 export default async function PlantMarketPage() {
   let products: MarketplaceProduct[] = [];
   let loadFailed = false;
 
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,description,price,stock")
+    const { data, error } = await supabase.from("plant_market_products")
+      .select("id,name,slug,category,description,price,stock,image_url")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(500);
@@ -48,7 +34,7 @@ export default async function PlantMarketPage() {
       loadFailed = true;
       console.error("Plant Market catalogue load failed:", error);
     } else {
-      products = ((data ?? []) as MarketplaceProduct[]).filter(isPlantProduct);
+      products = (data ?? []) as MarketplaceProduct[];
     }
   } catch (error) {
     loadFailed = true;
@@ -68,7 +54,7 @@ export default async function PlantMarketPage() {
           "@type": "ListItem",
           position: index + 1,
           name: product.name,
-          url: `${base}/marketplace/${encodeURIComponent(product.slug)}`,
+          url: `${base}/plant-market/${encodeURIComponent(product.slug)}`,
         })),
       },
       {
@@ -109,7 +95,7 @@ export default async function PlantMarketPage() {
             এই মুহূর্তে Plant Market-এর পণ্য লোড করা যাচ্ছে না। পরে আবার চেষ্টা করুন অথবা <Link className="font-bold underline" href="/marketplace">সাধারণ Marketplace</Link> দেখুন।
           </div>
         ) : products.length ? (
-          <MarketplaceCore products={products} showCategories={false} />
+          <MarketplaceCore products={products} showCategories={false} productHrefPrefix="/plant-market" />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
             <div aria-hidden="true" className="text-5xl">🪴</div>
@@ -117,7 +103,7 @@ export default async function PlantMarketPage() {
             <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">নতুন বাস্তব পণ্য সক্রিয় ও অনুমোদিত হলে এখানে দেখা যাবে। আপাতত গাছ বিনিময়ের বোর্ডে অন্য গাছপ্রেমীদের পোস্ট দেখতে পারেন।</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link href="/green-exchange/board" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800">Green Exchange দেখুন</Link>
-              <Link href="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-5 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50">সব কৃষিপণ্য দেখুন</Link>
+              <Link href="/sell-on-plant-market" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800">Plant Seller হন</Link><Link href="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-5 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50">সব কৃষিপণ্য দেখুন</Link>
             </div>
           </div>
         )}
