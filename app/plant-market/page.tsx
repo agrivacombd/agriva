@@ -89,7 +89,7 @@ export default async function PlantMarketPage() {
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-extrabold tracking-wide">🌿 AGRIVA PLANT MARKET</p>
           <h1 className="mt-5 max-w-4xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl">আপনার সবুজ জায়গার জন্য <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span></h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/90 sm:text-lg sm:leading-8">ঘরের গাছ থেকে ছাদবাগান—গাছ, চারা, বীজ, টব ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন। এখানে শুধু ডেটাবেসে থাকা সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/90 sm:text-lg sm:leading-8">ঘরের গাছ, ফল ও ফুলের চারা, বীজ এবং বাগানের প্রয়োজনীয় সামগ্রী—আপনার সবুজ জায়গার জন্য প্রয়োজনীয় পণ্য এক জায়গায় খুঁজুন। এখানে শুধু সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
           <div className="mt-7 flex flex-wrap gap-3">
             <a href="#plant-catalogue" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
             <Link href="/green-exchange" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-sm font-bold text-white hover:bg-white/20">গাছ বিনিময় করুন</Link>
@@ -102,14 +102,14 @@ export default async function PlantMarketPage() {
         <div className="mb-7">
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Plants & gardening</p>
           <h2 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Plant Market-এ খুঁজুন</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">পণ্যের নাম লিখে খুঁজুন। পণ্যের বিস্তারিত পেজে গিয়ে মূল্য, মজুত এবং উপলভ্য কেনাকাটার ধাপ যাচাই করুন।</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">ক্যাটাগরি বেছে নিন, পণ্যের নাম দিয়ে খুঁজুন এবং মূল্য ও মজুত অনুযায়ী সাজিয়ে আপনার প্রয়োজনের পণ্যটি বেছে নিন।</p>
         </div>
         {loadFailed ? (
           <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-amber-950">
             এই মুহূর্তে Plant Market-এর পণ্য লোড করা যাচ্ছে না। পরে আবার চেষ্টা করুন অথবা <Link className="font-bold underline" href="/marketplace">সাধারণ Marketplace</Link> দেখুন।
           </div>
         ) : products.length ? (
-          <MarketplaceCore products={products} showCategories={false} />
+          <MarketplaceCore products={products} showCategories categoryMode="available" />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
             <div aria-hidden="true" className="text-5xl">🪴</div>
