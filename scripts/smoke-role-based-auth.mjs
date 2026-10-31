@@ -19,10 +19,13 @@ const profilePrivilegeMigration = read("supabase/migrations/20261027212454_restr
 const multiRoleMigration = read("supabase/migrations/20261028193000_signup_multi_role_memberships.sql");
 const roleMembershipFix = read("supabase/migrations/20261028220000_preserve_non_self_service_role_memberships.sql");
 
-for (const role of ["farmer", "buyer", "seller", "transport", "job_seeker", "employer", "student", "agriculturist", "rooftop_gardener"]) {
+for (const role of ["farmer", "buyer", "transport", "job_seeker", "employer", "student", "agriculturist", "rooftop_gardener"]) {
   assert.match(signup, new RegExp('id: "' + role + '"'), "signup should offer " + role);
   assert.match(dashboard, new RegExp("\\b" + role + "\\b"), "dashboard should support " + role);
 }
+assert.match(dashboard, /\\bseller\\b/, "legacy Marketplace sellers remain represented in the dashboard");
+assert.doesNotMatch(signup, /id: "seller"/, "Marketplace seller access must require a separate verified application");
+assert.doesNotMatch(signup, /id: "plant_seller"/, "Plant Market seller access must require a separate verified application");
 assert.doesNotMatch(signup, /id: "admin"/, "admin must not be a self-service signup option");
 assert.match(signup, /emailRedirectTo/);
 assert.match(signup, /data: \{ full_name: fullName\.trim\(\), selected_roles: selectedRoles \}/);
