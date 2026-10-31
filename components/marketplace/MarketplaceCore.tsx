@@ -106,13 +106,20 @@ export default function MarketplaceCore({ products, showCategories = true, initi
   return (
     <div className="mt-6 lg:mt-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4" aria-label="পণ্য খুঁজুন">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <label className="flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-emerald-700 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-700/10">
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5 shrink-0 text-emerald-800"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" strokeWidth="1.8"/><path d="m16 16 4.2 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            <span className="sr-only">পণ্যের নাম লিখে খুঁজুন</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="পণ্যের নাম লিখুন — যেমন ধানের বীজ, জৈব সার..." className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 sm:text-base" />
-            {query && <button type="button" onClick={() => setQuery("")} className="rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200" aria-label="সার্চ মুছুন">মুছুন</button>}
-          </label>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="min-w-0 flex-1">
+            <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-emerald-700 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-700/10">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5 shrink-0 text-emerald-800"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" strokeWidth="1.8"/><path d="m16 16 4.2 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              <span className="sr-only">পণ্যের নাম লিখে খুঁজুন</span>
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="পণ্যের নাম লিখুন — যেমন ধানের বীজ, জৈব সার..." className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 sm:text-base" />
+              {query && <button type="button" onClick={() => setQuery("")} className="rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200" aria-label="সার্চ মুছুন">মুছুন</button>}
+            </label>
+            {showCategories && <nav className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 sm:hidden" aria-label="পণ্যের ক্যাটাগরি">
+              <span className="shrink-0 pr-1 text-[11px] font-extrabold text-slate-500">ক্যাটাগরি</span>
+              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === "all" ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>সব পণ্য</button>
+              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === item.slug ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>{item.name}</button>)}
+            </nav>}
+          </div>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 sm:w-56">
             <span className="shrink-0">সাজান</span>
             <select value={sort} onChange={(event) => setSort(event.target.value as SortOption)} className="min-w-0 flex-1 bg-transparent text-sm font-bold text-slate-800 outline-none">
@@ -122,7 +129,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
             </select>
           </label>
         </div>
-        {showCategories && <nav className="mt-3 -mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 lg:hidden" aria-label="পণ্যের ক্যাটাগরি">
+        {showCategories && <nav className="hidden lg:flex mt-3 -mx-1 items-center gap-2 overflow-x-auto px-1 pb-1" aria-label="পণ্যের ক্যাটাগরি">
           <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-bold transition ${category === "all" ? "bg-emerald-900 text-white" : "bg-slate-100 text-slate-700 hover:bg-emerald-50"}`}>সব পণ্য</button>
           {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`shrink-0 rounded-full px-4 py-2.5 text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-100 text-slate-700 hover:bg-emerald-50"}`}>{item.name}</button>)}
         </nav>}
