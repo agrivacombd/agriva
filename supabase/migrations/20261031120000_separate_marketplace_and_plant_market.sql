@@ -31,6 +31,9 @@ ALTER TABLE public.products VALIDATE CONSTRAINT products_marketplace_only_channe
 
 -- Existing shared-table policies allowed both channels. Keep the Marketplace
 -- module-grant contract, but prohibit Plant Market writes to public.products.
+DROP POLICY IF EXISTS products_marketplace_seller_insert ON public.products;
+DROP POLICY IF EXISTS products_marketplace_seller_update ON public.products;
+DROP POLICY IF EXISTS products_marketplace_seller_delete ON public.products;
 DROP POLICY IF EXISTS products_module_access_insert_guard ON public.products;
 CREATE POLICY products_module_access_insert_guard ON public.products
   AS RESTRICTIVE FOR INSERT TO authenticated
