@@ -14,6 +14,8 @@ const plantApplicationApi = readFileSync("app/api/plant-seller/applications/rout
 const marketplaceApplicationApi = readFileSync("app/api/seller/applications/route.ts", "utf8");
 const adminApplicationApi = readFileSync("app/api/admin/seller-applications/[market]/[applicationId]/route.ts", "utf8");
 const adminPermissionApi = readFileSync("app/api/admin/seller-permissions/[market]/[userId]/route.ts", "utf8");
+const adminPermissionListApi = readFileSync("app/api/admin/seller-permissions/[market]/route.ts", "utf8");
+const adminPermissionManager = readFileSync("components/admin/SellerPermissionManager.tsx", "utf8");
 const plantSellerDashboard = readFileSync("app/plant-seller/products/page.tsx", "utf8");
 const plantSellerForm = readFileSync("components/seller/PlantSellerProductForm.tsx", "utf8");
 const plantProductDetail = readFileSync("app/plant-market/[slug]/page.tsx", "utf8");
@@ -45,6 +47,8 @@ assert.match(plantApplicationApi, /plant_seller_applications/, "Plant Seller app
 assert.match(marketplaceApplicationApi, /marketplace_seller_applications/, "Marketplace Seller applications must be stored separately");
 assert.match(adminApplicationApi, /marketplace_seller_applications|plant_seller_applications/, "Admin review API must handle separate application queues");
 assert.match(adminPermissionApi, /marketplace_seller_permissions|plant_seller_permissions/, "Admin must be able to manage each market permission separately");
+assert.match(adminPermissionListApi, /marketplace_seller_permissions|plant_seller_permissions/, "Admin must list each market's approved sellers separately");
+assert.match(adminPermissionManager, /এই মার্কেটের Permission বাতিল/, "Admin must be able to revoke one market without changing the other");
 assert.match(plantSellerDashboard, /plant_market_products/, "Plant Seller dashboard must list only Plant Market products");
 assert.match(plantSellerForm, /plant-product-images/, "Plant Seller form must use its separate image bucket");
 assert.match(plantProductDetail, /plant_market_products/, "Plant Market detail route must query only Plant Market products");
