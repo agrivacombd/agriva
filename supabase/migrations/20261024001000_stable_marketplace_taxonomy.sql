@@ -1,5 +1,7 @@
 -- Stable, database-backed marketplace taxonomy.
 -- Keep products.category as a legacy display/compatibility field during rollout.
+-- Older core schemas may not have the legacy text field yet.
+alter table public.products add column if not exists category text;
 insert into public.product_categories (name, slug, description, is_active, sort_order)
 values
   ('বীজ', 'seeds', 'ধান, সবজি ও মৌসুমি ফসলের বীজ', true, 10),
