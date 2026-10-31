@@ -10,15 +10,14 @@ export async function POST(request: NextRequest) {
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { data: membership, error: membershipError } = await supabase
-    .from("user_role_memberships")
-    .select("role")
+    .from("marketplace_seller_permissions")
+    .select("user_id")
     .eq("user_id", user.id)
-    .in("role", ["seller", "organization"])
-    .limit(1)
+    .eq("status", "approved")
     .maybeSingle();
 
   if (membershipError || !membership) {
-    return NextResponse.json({ error: "Seller or approved organization access required. Farmers can list their crops on Sell Harvest." }, { status: 403 });
+    return NextResponse.json({ error: "Approved Marketplace Seller permission required. Apply separately at /sell-on-marketplace." }, { status: 403 });
   }
 
   const body = await request.json().catch(() => ({}));
