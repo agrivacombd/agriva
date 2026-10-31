@@ -149,14 +149,14 @@ CREATE POLICY marketplace_permission_owner_read ON public.marketplace_seller_per
   FOR SELECT TO authenticated USING (user_id = (SELECT auth.uid()) OR public.is_admin());
 DROP POLICY IF EXISTS marketplace_permission_admin_manage ON public.marketplace_seller_permissions;
 CREATE POLICY marketplace_permission_admin_manage ON public.marketplace_seller_permissions
-  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS plant_permission_owner_read ON public.plant_seller_permissions;
 CREATE POLICY plant_permission_owner_read ON public.plant_seller_permissions
   FOR SELECT TO authenticated USING (user_id = (SELECT auth.uid()) OR public.is_admin());
 DROP POLICY IF EXISTS plant_permission_admin_manage ON public.plant_seller_permissions;
 CREATE POLICY plant_permission_admin_manage ON public.plant_seller_permissions
-  FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+  FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 DROP POLICY IF EXISTS plant_market_products_public_read ON public.plant_market_products;
 CREATE POLICY plant_market_products_public_read ON public.plant_market_products
@@ -558,6 +558,7 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
+REVOKE ALL ON FUNCTION public.enforce_seller_product_moderation() FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.guard_plant_market_product_write()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
