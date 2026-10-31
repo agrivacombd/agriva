@@ -268,7 +268,7 @@ export default function SiteChrome() {
                         {group.links.map((link) => {
                           const Icon = link.icon;
                           return (
-                            <Link key={link.href} href={link.href} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className="flex gap-2 rounded-xl p-2.5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                            <Link key={link.href} href={link.href} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="flex gap-2 rounded-xl p-2.5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
                               <Icon size={18} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />
                               <span className="min-w-0">
                                 <span className="block text-sm font-bold text-slate-800">{link.label}</span>
