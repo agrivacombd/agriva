@@ -37,20 +37,23 @@ create table if not exists public.commission_payouts (
   id uuid primary key default gen_random_uuid(),
   reseller_id uuid not null references public.profiles(id) on delete restrict,
   amount numeric(12,2) not null check (amount > 0),
-  payment_method text not null check (char_length(btrim(payment_method)) between 1 and 100),
-  status text not null default 'requested' check (status in ('requested','approved','paid','rejected','cancelled')),
-  approved_at timestamptz,
-  approved_by uuid references public.profiles(id) on delete set null,
-  paid_at timestamptz,
+  status text not null default 'requested' check (status in ('requested','approved','paid','rejected')),
+  payment_method text,
   payment_reference text,
-  created_at timestamptz not null default now()
+  requested_at timestamptz not null default now(),
+  approved_at timestamptz,
+  paid_at timestamptz,
+  approved_by uuid references public.profiles(id) on delete set null
 );
 create index if not exists commission_payouts_reseller_status_idx
-  on public.commission_payouts(reseller_id, status, created_at);
+  on public.commission_payouts(reseller_id, status, requested_at);
 alter table public.commission_payouts enable row level security;
-drop policy if exists commission_payouts_owner_read on public.commission_payouts;
-create policy commission_payouts_owner_read on public.commission_payouts
-  for select to authenticated using (auth.uid() = reseller_id or public.is_admin());
+drop policy if exists payouts_reseller_read on public.commission_payouts;
+create policy payouts_reseller_read on public.commission_payouts
+  for select to authenticated using (
+    auth.uid() = reseller_id
+    or exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
+  );
 grant select on public.commission_payouts to authenticated;
 
 create or replace function public.request_commission_payout(p_amount numeric,p_method text) returns public.commission_payouts language plpgsql security definer set search_path=public as $$ declare p public.commission_payouts; uid uuid; available numeric; begin uid:=auth.uid(); if uid is null then raise exception 'Authentication required'; end if; select coalesce(sum(amount),0) into available from public.reseller_commissions where reseller_id=uid and status='approved'; if p_amount<=0 or p_amount>available then raise exception 'Requested amount exceeds approved commission balance'; end if; insert into public.commission_payouts(reseller_id,amount,payment_method) values(uid,p_amount,p_method) returning * into p; return p; end;$$;
