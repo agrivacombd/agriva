@@ -202,12 +202,11 @@ export default async function NewSellerProductPage() {
             <div className="mx-auto mt-8 max-w-2xl rounded-3xl border border-emerald-900/10 bg-[#f5f8f1] p-7 text-center sm:p-10">
               <h3 className="text-2xl font-black">বিক্রেতা অ্যাকাউন্ট দিয়ে শুরু করুন</h3>
               <p className="mt-3 text-sm leading-7 text-[#637467]">
-                পণ্য জমা দিতে লগইন করে Seller অথবা Organization অ্যাকাউন্ট ব্যবহার করুন।
-                নতুন হলে আগে AGRIVA-তে অ্যাকাউন্ট তৈরি করে বিক্রেতার ভূমিকা সক্রিয় করুন।
+                Marketplace-এ পণ্য যোগ করতে আগে আলাদাভাবে Seller আবেদন করুন। অ্যাডমিন অনুমোদন না দেওয়া পর্যন্ত Product Submission চালু হবে না।
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 <Link href="/login?next=/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-900 px-6 py-3 font-extrabold text-white hover:bg-emerald-800">লগইন করুন</Link>
-                <Link href="/register?next=/seller/products/new" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 font-extrabold text-emerald-950 hover:bg-emerald-50">অ্যাকাউন্ট তৈরি করুন</Link>
+                <Link href="/sell-on-marketplace" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-6 py-3 font-extrabold text-emerald-950 hover:bg-emerald-50">Marketplace Seller আবেদন করুন</Link>
               </div>
             </div>
           )}
