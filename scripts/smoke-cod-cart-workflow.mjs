@@ -6,6 +6,13 @@ const cart=read("../app/cart/page.tsx"), migration=read("../supabase/migrations/
 const admin=read("../app/admin/orders/page.tsx"), add=read("../components/marketplace/AddToCartButton.tsx");
 for (const field of ["division","district","upazila","unionOrArea","villageRoadHouse"]) { assert.ok(api.includes(field)); assert.ok(checkout.includes(field)); }
 for (const token of ["normalizeBangladeshPhone","p_idempotency_key","cod_enabled"]) assert.ok(api.includes(token));
+assert.ok(!api.includes("phone_confirmed_at"), "guest COD checkout must not require SMS phone verification");
+assert.ok(!api.includes("verified matching phone"), "guest API must not enforce verified phone identity");
+assert.ok(!checkout.includes("sendPhoneOtp") && !checkout.includes("verifyPhoneOtp"), "checkout UI must not require or offer SMS OTP");
+assert.ok(checkout.includes("SMS OTP ছাড়াই"), "guest checkout must explain that SMS OTP is not required");
+const guestMigration=read("../supabase/migrations/20261031130000_secure_guest_checkout_identity.sql");
+assert.ok(guestMigration.includes("require_guest_checkout_buyer_identity"), "guest DB trigger must enforce buyer-only identity");
+assert.ok(!guestMigration.includes("phone_confirmed_at"), "guest DB trigger must not require SMS verification");
 assert.ok(checkout.includes("crypto.randomUUID"));
 assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-quoted body");
 assert.ok(migration.includes("ensure_cart_active_for_item"));
