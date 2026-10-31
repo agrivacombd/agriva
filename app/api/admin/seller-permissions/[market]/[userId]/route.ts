@@ -7,7 +7,7 @@ export async function PATCH(request:NextRequest,{params}:Params){
   if(!access.ok)return access.response;
   const supabase=access.supabase;
   const user=access.user;
-  const body=await request.json().catch(()=>({}));
+  const body=(await request.json().catch(()=>({})))||{};
   const status=body.status;
   if(!userId||!["approved","revoked"].includes(status))return NextResponse.json({error:"Permission status must be approved or revoked."},{status:400});
   const update={status,approved_by:status==="approved"?user.id:null,approved_at:status==="approved"?new Date().toISOString():null,updated_at:new Date().toISOString()};
