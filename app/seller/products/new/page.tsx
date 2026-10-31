@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   description:
     "AGRIVA-তে আপনার ব্যবসার বীজ, সার, কৃষি উপকরণ ও প্যাকেটজাত পণ্য বিক্রির জন্য জমা দিন। পণ্যের ছবি, দাম, স্টক ও বিক্রয় একক যোগ করে ক্রেতাদের কাছে পৌঁছান।",
   alternates: { canonical: "/seller/products/new" },
+  robots: { index: false, follow: false },
   openGraph: {
     type: "website",
     locale: "bn_BD",
