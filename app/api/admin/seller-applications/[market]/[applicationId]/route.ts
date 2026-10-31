@@ -30,7 +30,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const { market, applicationId } = await params;
   const auth = await getAdminClient();
   if ("response" in auth) return auth.response;
-  const body = await request.json().catch(() => ({}));
+  const body = (await request.json().catch(() => ({}))) || {};
   const status = body.status;
   const reviewNote = String(body.review_note || "").trim();
   if (!applicationId || !["approved", "rejected"].includes(status) || reviewNote.length > 1000) {
