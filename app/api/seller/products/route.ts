@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
-import { checkModuleAccess } from "@/lib/authz/module-access";
+import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
 
@@ -10,25 +10,10 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: organization, error: organizationError } = await supabase
-    .from("organizations")
-    .select("id")
-    .eq("owner_id", user.id)
-    .eq("status", "verified")
-    .limit(1)
-    .maybeSingle();
-
-  if (organizationError) {
-    return NextResponse.json({ error: "Seller authorization is temporarily unavailable." }, { status: 503 });
-  }
-  if (!organization) {
-    return NextResponse.json({ error: "A verified business organization is required. Apply at /account/verification." }, { status: 403 });
-  }
-
-  const access = await checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id });
+  const access = await findMarketplaceOrganizationWithAccess("create");
   if (!access.allowed) {
     return NextResponse.json(
-      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "Marketplace seller approval is required." },
+      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "A verified business organization with Marketplace approval is required." },
       { status: access.reason === "authorization_unavailable" ? 503 : access.reason === "unauthenticated" ? 401 : 403 }
     );
   }
