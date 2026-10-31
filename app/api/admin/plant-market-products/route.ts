@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 export async function GET(){
   const access=await requireAdminApi("catalog.moderate");if(!access.ok)return access.response;
-  const {data,error}=await access.supabase.from("plant_market_products").select("id,seller_id,name,slug,scientific_name,category,description,price,stock,unit,image_url,status,created_at").in("status",["draft","rejected"]).order("created_at",{ascending:true}).limit(100);
+  const {data,error}=await access.supabase.from("plant_market_products").select("id,seller_id,name,slug,scientific_name,category,description,price,stock,unit,image_url,status,created_at").in("status",["draft","rejected","suspended"]).order("created_at",{ascending:true}).limit(100);
   if(error)return NextResponse.json({error:"Plant Market product queue লোড করা যায়নি।"},{status:400});
   return NextResponse.json({products:data});
 }
