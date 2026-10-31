@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { strict as assert } from "node:assert";
 const migration = readFileSync("supabase/migrations/20261030100500_module_access_foundation.sql", "utf8");
 const moduleAccess = readFileSync("lib/authz/module-access.ts", "utf8");
