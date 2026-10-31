@@ -14,6 +14,7 @@ export type MarketplaceProduct = {
   description: string | null;
   price: number | string | null;
   stock: number | null;
+  unit?: string | null;
   image_url?: string | null;
 };
 
@@ -51,10 +52,10 @@ function ProductCard({ product }: { product: MarketplaceProduct }) {
           <Link href={`/marketplace/${product.slug}`} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
         <p className="mt-3 text-base font-black text-emerald-950 sm:text-lg">
-          {hasPrice && Number(product.price) > 0 ? `৳${money(product.price as number | string)}` : "দাম জানতে যোগাযোগ করুন"}
+          {hasPrice && Number(product.price) > 0 ? `৳${money(product.price as number | string)}${product.unit ? ` / ${product.unit}` : ""}` : "দাম জানতে যোগাযোগ করুন"}
         </p>
         <p className="mt-1 text-[11px] text-slate-500">
-          {hasStock ? (inStock ? `মজুত: ${money(product.stock as number)}` : "বর্তমানে মজুত নেই") : "মজুতের তথ্য জানতে যোগাযোগ করুন"}
+          {hasStock ? (inStock ? `মজুত: ${money(product.stock as number)}${product.unit ? ` ${product.unit}` : ""}` : "বর্তমানে মজুত নেই") : "মজুতের তথ্য জানতে যোগাযোগ করুন"}
         </p>
         <Link href={`/marketplace/${product.slug}`} className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-xs font-extrabold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
           বিস্তারিত ও যোগাযোগ <span aria-hidden="true" className="ml-1">→</span>
