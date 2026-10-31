@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 type Item = { product_id: string; quantity: number; unit_price: number; name: string };
 type Address = {
@@ -28,6 +29,8 @@ function normalizeBangladeshPhone(input: string): string | null {
 export default function Checkout() {
   const [items, setItems] = useState<Item[]>([]);
   const [form, setForm] = useState<Address>(initialAddress);
+  const selectedDistrict = BANGLADESH_DISTRICTS.find(item => item.name === form.district);
+  const availableUpazilas = selectedDistrict?.upazilas ?? [];
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [codEnabled, setCodEnabled] = useState(false);
@@ -82,7 +85,7 @@ export default function Checkout() {
   }, []);
 
   function setField<K extends keyof Address>(key: K, value: Address[K]) {
-    setForm(previous => ({ ...previous, [key]: value }));
+    setForm(previous => ({ ...previous, [key]: value, ...(key === "district" ? { upazila: "" } : {}) }));
   }
 
   async function submit(event: React.FormEvent) {
@@ -154,8 +157,8 @@ export default function Checkout() {
         <h2 className="pt-3 text-lg font-black">২. বাংলাদেশের ডেলিভারি ঠিকানা</h2>
         <Field label="বিভাগ *" value={form.division} onChange={v => setField("division", v)} placeholder="যেমন: রাজশাহী" autoComplete="address-level1" />
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="জেলা *" value={form.district} onChange={v => setField("district", v)} placeholder="যেমন: নওগাঁ" autoComplete="address-level2" />
-          <Field label="উপজেলা / থানা *" value={form.upazila} onChange={v => setField("upazila", v)} placeholder="উপজেলা বা থানা" />
+          <label className="block"><span className="text-sm font-bold">জেলা *</span><select value={form.district} onChange={event => setField("district", event.target.value)} autoComplete="address-level2" required className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700"><option value="">জেলা বেছে নিন</option>{BANGLADESH_DISTRICTS.map(item => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
+          <label className="block"><span className="text-sm font-bold">উপজেলা / থানা *</span><select value={form.upazila} onChange={event => setField("upazila", event.target.value)} autoComplete="address-level3" required disabled={!form.district} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-100"><option value="">{form.district ? "উপজেলা / থানা বেছে নিন" : "আগে জেলা নির্বাচন করুন"}</option>{availableUpazilas.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
         </div>
         <Field label="ইউনিয়ন / এলাকা / ওয়ার্ড *" value={form.unionOrArea} onChange={v => setField("unionOrArea", v)} />
         <Field label="গ্রাম / রোড / বাড়ি / হোল্ডিং নম্বর *" value={form.villageRoadHouse} onChange={v => setField("villageRoadHouse", v)} autoComplete="street-address" />
