@@ -36,7 +36,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
     console.error("Marketplace catalogue load failed:", error);
   }
 
-  return <main className="min-h-screen overflow-hidden bg-[#f7f9f5] pb-28 text-[#17351f] md:pb-0">
+  return <main className="min-h-screen overflow-x-clip bg-[#f7f9f5] pb-28 text-[#17351f] md:pb-0">
     <section className="relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_82%_20%,rgba(190,242,100,.18),transparent_32%),linear-gradient(120deg,#0b3826_0%,#145c3a_58%,#1b6b40_100%)] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 -z-10 h-96 w-96 rounded-full border-[56px] border-white/[0.06]" />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 left-[42%] -z-10 h-72 w-72 rounded-full border-[44px] border-lime-200/[0.07]" />
