@@ -230,7 +230,7 @@ BEGIN
     WHERE user_id=NEW.user_id AND role='seller' AND granted_by=OLD.approved_by;
   END IF;
   RETURN NEW;
-END $;
+END $marketplace_role_sync$;
 REVOKE ALL ON FUNCTION public.sync_marketplace_seller_role_membership() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS marketplace_permission_role_sync ON public.marketplace_seller_permissions;
 CREATE TRIGGER marketplace_permission_role_sync
@@ -250,7 +250,7 @@ BEGIN
     WHERE user_id=NEW.user_id AND role='plant_seller' AND granted_by=OLD.approved_by;
   END IF;
   RETURN NEW;
-END $;
+END $plant_role_sync$;
 REVOKE ALL ON FUNCTION public.sync_plant_seller_role_membership() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS plant_permission_role_sync ON public.plant_seller_permissions;
 CREATE TRIGGER plant_permission_role_sync
