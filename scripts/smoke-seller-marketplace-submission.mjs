@@ -18,7 +18,7 @@ assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit 
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
-assert.match(route, /checkModuleAccess/, "product API must verify existing Marketplace module access");
+assert.match(route, /findMarketplaceOrganizationWithAccess/, "product API must verify existing Marketplace module access");
 assert.match(route, /organizations/, "product API must require a verified organization scope");
 assert.match(route, /marketplace_channel:\s*"marketplace"/, "product API must store only Marketplace channel products");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
@@ -26,8 +26,8 @@ assert.match(route, /product-images/, "product API must validate product image U
 assert.match(route, /storage\/v1\/object\/public\/product-images\//, "only public product-images URLs should be accepted");
 assert.match(route, /validFileName[\s\S]*image\.search[\s\S]*image\.hash/, "seller image URLs must be limited to the seller folder and a UUID filename without query/hash");
 assert.match(legacyRoute, /status: 410/, "legacy farmer product API must not create marketplace products");
-assert.match(sellerPage, /checkModuleAccess/, "seller product page must require Marketplace module access");
-assert.match(sellerProductsPage, /checkModuleAccess/, "seller product management page must require Marketplace module access");
+assert.match(sellerPage, /findMarketplaceOrganizationWithAccess/, "seller product page must require Marketplace module access");
+assert.match(sellerProductsPage, /findMarketplaceOrganizationWithAccess/, "seller product management page must require Marketplace module access");
 assert.match(sellerProductsPage, /eq\("farmer_id", user\.id\)/, "seller product management must show only the signed-in seller's products");
 assert.match(dashboard, /href: "\/seller\/products"/, "seller dashboard must link to seller product management");
 assert.match(farmerPage, /redirect\("\/sell-harvest"\)/, "farmer product route must direct farmers to Sell Harvest");
