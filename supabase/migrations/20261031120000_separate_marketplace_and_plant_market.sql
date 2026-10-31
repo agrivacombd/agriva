@@ -46,6 +46,23 @@ CREATE POLICY products_module_access_insert_guard ON public.products
       )
     )
   );
+-- The permissive insert policy must also use the verified organization grant;
+-- the legacy seller-role policy would block newly approved module applicants.
+DROP POLICY IF EXISTS products_seller_insert ON public.products;
+CREATE POLICY products_seller_insert ON public.products
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    public.is_admin() OR (
+      farmer_id = (SELECT auth.uid())
+      AND marketplace_channel = 'marketplace'
+      AND EXISTS (
+        SELECT 1 FROM public.organizations o
+        WHERE o.owner_id = (SELECT auth.uid())
+          AND o.status = 'verified'
+          AND public.has_module_access('marketplace','create','organization',o.id)
+      )
+    )
+  );
 
 DROP POLICY IF EXISTS products_module_access_update_guard ON public.products;
 CREATE POLICY products_module_access_update_guard ON public.products
