@@ -48,7 +48,7 @@ assert.match(admin,/startsWith\(app\.user_id\+"\/"\)/,"signed evidence URLs are 
 assert.match(signup,/বিশেষ অনুমতি বা verified status দেয় না/,"signup roles are descriptive only");
 assert.match(signup,/over_email_send_rate_limit/,"signup identifies Supabase email rate limits");
 assert.match(signup,/ইমেইল পাঠানোর সীমা পূর্ণ হয়েছে/,"signup explains rate limiting in Bengali");
-assert.match(seller,/checkModuleAccess/,"business marketplace API checks approved module grant");
+assert.match(seller,/findMarketplaceOrganizationWithAccess/,"business marketplace API checks approved module grant");
 assert.match(gardener,/checkModuleAccess/,"Plant Market API checks gardener grant");
 assert.match(migration,/public\.has_identity_evidence\(applicant_data->'evidence_paths'\)/,"database requires owned evidence files");
 assert.match(migration,/submitted\.path !~ /,"evidence path validation is bound to the caller");
