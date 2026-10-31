@@ -12,7 +12,7 @@ const copy = {
   bn: {
     eyebrow: "AGRIVA TOOLS",
     title: "সকল কৃষি টুলস ও অনলাইন ক্যালকুলেটর এক জায়গায়",
-    subtitle: "সার ও বীজের হিসাব, ফসল পরিকল্পনা, AI কৃষি সহায়তা এবং খামার ব্যবস্থাপনার প্রয়োজনীয় টুলস খুঁজে নিন।",
+    subtitle: "সার ও বীজের হিসাব, সেচের পানি, ফসল কাটার সময়, আবহাওয়া, AI কৃষি সহায়তা এবং খামার ব্যবস্থাপনার প্রয়োজনীয় টুলস খুঁজে নিন।",
     search: "কোন টুলটি খুঁজছেন? বাংলা বা ইংরেজিতে লিখুন...",
     popularSearches: "জনপ্রিয় খোঁজ",
     finder: "আপনার প্রয়োজন অনুযায়ী টুল খুঁজুন",
@@ -46,7 +46,7 @@ const copy = {
   en: {
     eyebrow: "AGRIVA TOOLS",
     title: "Agriculture tools and online calculators in one place",
-    subtitle: "Find practical tools for seed and fertilizer estimates, crop planning, AI agriculture assistance and farm management.",
+    subtitle: "Find practical tools for seed and fertilizer estimates, irrigation water, harvest timing, weather, AI agriculture assistance and farm management.",
     search: "What tool are you looking for? Search in Bangla or English...",
     popularSearches: "Popular searches",
     finder: "Find a tool for your task",
