@@ -10,6 +10,7 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [loginRequired, setLoginRequired] = useState(false);
   const [message, setMessage] = useState("");
   const [orderId, setOrderId] = useState("");
   const [fullName, setFullName] = useState("");
@@ -21,11 +22,13 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
   async function addToCart() {
     if (disabled || addingToCart) return;
     setAddingToCart(true);
+    setLoginRequired(false);
     setMessage("");
     try {
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
+        setLoginRequired(true);
         setMessage("কার্টে পণ্য যোগ করতে আগে লগইন করুন।");
         return;
       }
@@ -192,6 +195,7 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
         {loading ? "অর্ডার তৈরি হচ্ছে..." : disabled ? "স্টকে নেই" : "ক্যাশ অন ডেলিভারিতে অর্ডার করুন"}
       </button>
       {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
+      {loginRequired && <Link href="/login?next=%2Fcart" className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে কার্টে ফিরুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
     </div>
   );
