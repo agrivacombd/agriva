@@ -95,6 +95,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
+  const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
@@ -148,11 +149,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
               <span className="text-[11px] font-bold text-slate-500">জনপ্রিয়:</span>
               {["ধানের বীজ", "জৈব সার", "কৃষি যন্ত্রপাতি"].map((term) => <button key={term} type="button" onClick={() => setQuery(term)} className="rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100">{term}</button>)}
             </div>
-            {showCategories && <nav className="mt-4 flex items-center gap-2 overflow-x-auto pb-1 sm:hidden" aria-label="পণ্যের ক্যাটাগরি">
-              <span className="shrink-0 pr-1 text-[11px] font-extrabold text-slate-500">ক্যাটাগরি</span>
-              <button type="button" onClick={() => setCategory("all")} aria-pressed={category === "all"} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === "all" ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>সব পণ্য</button>
-              {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`shrink-0 rounded-full border px-4 py-2.5 text-xs font-bold transition ${category === item.slug ? "border-emerald-900 bg-emerald-900 text-white shadow-sm" : "border-slate-200 bg-slate-50 text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"}`}>{item.name}</button>)}
-            </nav>}
+
           </div>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 sm:w-56">
             <span className="shrink-0">সাজান</span>
@@ -164,6 +161,17 @@ export default function MarketplaceCore({ products, showCategories = true, initi
           </label>
         </div>
       </section>
+
+      {showCategories && <div className="sticky top-0 z-30 -mx-4 border-b border-emerald-900/10 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md sm:hidden">
+        <button type="button" onClick={() => setMobileCategoryOpen((open) => !open)} aria-expanded={mobileCategoryOpen} aria-controls="mobile-marketplace-category-menu" className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-emerald-900/15 bg-emerald-50/70 px-3 text-left text-sm font-extrabold text-emerald-950 transition active:bg-emerald-100">
+          <span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="text-lg">☷</span><span className="shrink-0">ক্যাটাগরি</span><span className="truncate rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-800">{selectedCategory?.name || "সব পণ্য"}</span></span>
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className={`h-5 w-5 shrink-0 transition-transform ${mobileCategoryOpen ? "rotate-180" : ""}`}><path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </button>
+        {mobileCategoryOpen && <nav id="mobile-marketplace-category-menu" aria-label="পণ্যের ক্যাটাগরি" className="mt-2 grid max-h-[55vh] grid-cols-2 gap-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+          <button type="button" onClick={() => { setCategory("all"); setMobileCategoryOpen(false); }} aria-pressed={category === "all"} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === "all" ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span>সব পণ্য</span><span className="text-[10px] opacity-75">{products.length}</span></button>
+          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => { setCategory(item.slug); setMobileCategoryOpen(false); }} aria-pressed={category === item.slug} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span className="min-w-0 truncate">{item.icon} {item.name}</span><span className="shrink-0 text-[10px] opacity-75">{new Intl.NumberFormat("bn-BD").format(item.count)}</span></button>)}
+        </nav>}
+      </div>}
 
       {showCategories && <section className="mt-5 hidden sm:block" aria-label="ক্যাটাগরি অনুযায়ী কেনাকাটা">
         <div className="mb-3 flex items-end justify-between gap-3">
