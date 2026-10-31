@@ -19,7 +19,7 @@ assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-
 assert.ok(migration.includes("ensure_cart_active_for_item"));
 assert.ok(migration.includes("private.finalize_marketplace_cod_order("), "checkout must use the referral-aware private order RPC");
 assert.ok(migration.includes("Invalid Bangladesh shipping details"), "checkout RPC must validate direct RPC calls at the database boundary");
-assert.ok(migration.includes("phone') !~"), "checkout RPC must enforce Bangladesh phone format");
+assert.ok(migration.includes("phone' !~"), "checkout RPC must enforce Bangladesh phone format");
 assert.ok(migration.includes("length(p_shipping_address->>'phone') <> 14"), "checkout RPC must validate phone length");
 assert.ok(migration.includes("length(p_shipping_address->>'deliveryInstructions') > 500"), "checkout RPC must enforce delivery instruction length limits");
 assert.ok(migration.includes("then p_visitor_token else null end"), "checkout must forward the validated referral visitor token");
