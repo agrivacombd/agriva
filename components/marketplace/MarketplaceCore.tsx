@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
@@ -23,6 +23,7 @@ const money = (value: number | string | null) =>
 export default function MarketplaceCore({ products, showCategories = true, initialQuery = "" }: { products: MarketplaceProduct[]; showCategories?: boolean; initialQuery?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
+  useEffect(() => setQuery(initialQuery), [initialQuery]);
   const visible = useMemo(() => products.filter((product) => {
     const search = query.trim().toLocaleLowerCase();
     const matchesQuery = !search || [product.name, product.category, product.description]
