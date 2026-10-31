@@ -19,6 +19,10 @@ export default function IdentityVerificationPage(){
   setApplications(data.applications||[]);
  },[]);
  useEffect(()=>{load().catch(e=>{setError(true);setMessage(e.message)}).finally(()=>setLoading(false));},[load]);
+ useEffect(()=>{
+  const requested=new URLSearchParams(window.location.search).get("module");
+  if(requested==="marketplace"||requested==="plant_market")setModule(requested);
+ },[]);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();const formElement=event.currentTarget;setBusy(true);setError(false);setMessage("");
   const form=new FormData(formElement);
