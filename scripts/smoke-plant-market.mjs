@@ -45,6 +45,7 @@ assert.match(migration,/public\.has_module_access\('marketplace'/,"Marketplace p
 assert.match(migration,/public\.has_module_access\('plant_market'/,"Plant Market product authorization uses its own module grant");
 assert.match(migration,/gardener_profiles/,"Plant Market seller access requires verified Gardener identity");
 assert.match(migration,/admin_revoke_market_access/,"admin can revoke one module without revoking the other");
+assert.match(migration,/module_access_application_withdrawal_audit/,"module-specific revocations must be written to the append-only audit trail");
 assert.match(migration,/pause_market_listings_on_module_grant_revocation/,"revocation pauses only the affected market's active listings");
 assert.doesNotMatch(migration,/marketplace_seller_permissions|plant_seller_permissions|marketplace_seller_applications|plant_seller_applications/,"no duplicate seller permission or application tables are created");
 assert.doesNotMatch(migration,/handle_new_user/,"catalogue migration does not replace existing Auth or guest checkout triggers");
