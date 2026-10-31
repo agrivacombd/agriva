@@ -25,9 +25,18 @@ export default function AddToCartButton({ product, className = "" }: Props) {
       // Match the cookie-backed client used by /login.
       const supabase = createSupabaseBrowserClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        setMessage("কার্টে পণ্য যোগ করতে আগে লগইন করুন।");
+      if (authError) {
+        setMessage("সেশন যাচাই করা যায়নি। আবার চেষ্টা করুন।");
         return;
+      }
+      if (!user) {
+        // A Supabase anonymous-auth session gives guests an isolated, RLS-protected
+        // cart that survives navigation and can later be phone-verified at checkout.
+        const { error: guestError } = await supabase.auth.signInAnonymously();
+        if (guestError) {
+          setMessage("Guest Cart চালু করা যায়নি। লগইন করে আবার চেষ্টা করুন।");
+          return;
+        }
       }
 
       const { error: addError } = await supabase.rpc("add_marketplace_cart_item", {
@@ -64,7 +73,7 @@ export default function AddToCartButton({ product, className = "" }: Props) {
       {sample ? "নমুনা পণ্য" : stock < 1 ? "স্টকে নেই" : busy ? "যোগ হচ্ছে..." : added ? "আরও কার্টে যোগ করুন" : "কার্টে যোগ করুন"}
     </button>
     {message && <p role="status" aria-live="polite" className={`mt-2 text-xs leading-5 ${added ? "text-emerald-800" : "text-amber-800"}`}>{message}</p>}
-    {message.includes("আগে লগইন") && <Link href={`/login?next=${encodeURIComponent(`/marketplace/${product.slug}`)}`} className="mt-2 inline-flex text-xs font-bold text-emerald-900 underline">লগইন করুন</Link>}
+    {message.includes("লগইন করে") && <Link href={`/login?next=${encodeURIComponent(`/marketplace/${product.slug}`)}`} className="mt-2 inline-flex text-xs font-bold text-emerald-900 underline">লগইন করুন</Link>}
     {added && <Link href="/cart" className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-emerald-900 px-3 py-2.5 text-xs font-extrabold text-white hover:bg-emerald-800">কার্ট দেখুন</Link>}
     {!sample && stock > 100 && <p className="mt-1 text-[11px] text-slate-500">একবারে সর্বোচ্চ ১০০টি; স্টক: {stock}</p>}
   </div>;
