@@ -51,16 +51,22 @@ export async function POST(request:NextRequest) {
   const name=clean(body.organizationName,180),type=clean(body.organizationType,30),address=clean(body.businessAddress,300);
   const tradeLicense=clean(body.tradeLicense,100),website=clean(body.website,300);
   if(!name||!address||!["company","shop","dealer","cooperative","other"].includes(type)) return NextResponse.json({error:"Business name, type and address are required"},{status:400});
-  const {data:existingOrganization,error:existingError}=await supabase.from("organizations").select("id").eq("owner_id",user.id).eq("status","pending").limit(1).maybeSingle();
-  if(existingError)return NextResponse.json({error:"Business profile could not be checked"},{status:503});
-  if(existingOrganization){
-   const {error:updateError}=await supabase.from("organizations").update({name,organization_type:type,registration_number:tradeLicense||null}).eq("id",existingOrganization.id);
-   if(updateError)return NextResponse.json({error:"Business profile could not be updated"},{status:409});
-   organizationId=existingOrganization.id;
+  const {data:verifiedOrganization,error:verifiedError}=await supabase.from("organizations").select("id").eq("owner_id",user.id).eq("status","verified").limit(1).maybeSingle();
+  if(verifiedError)return NextResponse.json({error:"Verified business profile could not be checked"},{status:503});
+  if(verifiedOrganization){
+   organizationId=verifiedOrganization.id;
   }else{
-   const {data:organization,error}=await supabase.from("organizations").insert({owner_id:user.id,name,organization_type:type,registration_number:tradeLicense||null,status:"pending"}).select("id").single();
-   if(error||!organization)return NextResponse.json({error:"Business profile could not be created"},{status:409});
-   organizationId=organization.id;
+   const {data:existingOrganization,error:existingError}=await supabase.from("organizations").select("id").eq("owner_id",user.id).eq("status","pending").limit(1).maybeSingle();
+   if(existingError)return NextResponse.json({error:"Business profile could not be checked"},{status:503});
+   if(existingOrganization){
+    const {error:updateError}=await supabase.from("organizations").update({name,organization_type:type,registration_number:tradeLicense||null}).eq("id",existingOrganization.id);
+    if(updateError)return NextResponse.json({error:"Business profile could not be updated"},{status:409});
+    organizationId=existingOrganization.id;
+   }else{
+    const {data:organization,error}=await supabase.from("organizations").insert({owner_id:user.id,name,organization_type:type,registration_number:tradeLicense||null,status:"pending"}).select("id").single();
+    if(error||!organization)return NextResponse.json({error:"Business profile could not be created"},{status:409});
+    organizationId=organization.id;
+   }
   }
   applicantData={organization_name:name,organization_type:type,trade_license:tradeLicense,business_address:address,website,evidence_paths:paths};
  }
