@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { trackAnalyticsEvent } from "@/lib/analytics";
 
 const INITIAL_FORM = { name: "", price: "", stock: "", unit: "kg", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -81,7 +80,6 @@ export default function ProductForm() {
         throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
       }
       uploadedPath = null;
-      trackAnalyticsEvent("seller_product_submitted", { category: form.category_slug, unit: form.unit });
       setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
       setForm(INITIAL_FORM);
       setImage(null);

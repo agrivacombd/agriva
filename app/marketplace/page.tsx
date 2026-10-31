@@ -23,6 +23,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
     const { data, error } = await supabase.from("products")
       .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
       .eq("status", "active")
+      .eq("marketplace_channel", "marketplace")
       .order("created_at", { ascending: false }).limit(120);
     if (!error && data) products = data as MarketplaceProduct[];
   } catch (error) {
@@ -51,7 +52,8 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
         <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-800">কোম্পানি ও ব্যবসায়ীদের জন্য</span>
         <h2 className="mt-3 text-xl font-black">Marketplace-এ পণ্য বিক্রি করুন</h2>
         <p className="mt-2 text-sm leading-6 text-slate-600">আপনার ব্যবসার কৃষি উপকরণ ও প্যাকেটজাত পণ্য জমা দিন। যাচাই ও অনুমোদনের পর পণ্য Marketplace-এ প্রকাশ হবে।</p>
-        <Link href="/seller/products/new" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">বিক্রেতা হিসেবে পণ্য যোগ করুন →</Link>
+        <Link href="/sell-on-marketplace" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50">বিক্রেতা হিসেবে পণ্য যোগ করুন →</Link>
+        <Link href="/seller/products" className="mt-3 text-sm font-bold text-emerald-800 underline underline-offset-4">আমার Marketplace Seller Dashboard</Link>
       </article>
       <article className="flex flex-col items-start rounded-2xl border border-amber-200 bg-white p-5 shadow-sm sm:p-6">
         <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-800">ক্রেতাদের জন্য</span>

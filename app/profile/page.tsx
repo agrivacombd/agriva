@@ -10,7 +10,6 @@ import MobileDashboardNav from "@/components/MobileDashboardNav";
 const roles = [
   { id: "farmer", bn: "কৃষক", en: "Farmer", description: "খামার ও ফসল পরিচালনা" },
   { id: "buyer", bn: "ক্রেতা", en: "Buyer", description: "কৃষিপণ্য খুঁজুন" },
-  { id: "seller", bn: "ব্যবসায়ী / কোম্পানি / ডিলার", en: "Business / Company / Dealer", description: "Marketplace-এ কৃষি পণ্য ও উপকরণ বিক্রি" },
   { id: "transport", bn: "পরিবহন সেবাদাতা", en: "Transport provider", description: "কৃষিপণ্য পরিবহন" },
   { id: "job_seeker", bn: "চাকরিপ্রার্থী", en: "Job seeker", description: "চাকরির সুযোগ খুঁজুন" },
   { id: "employer", bn: "নিয়োগদাতা", en: "Employer", description: "চাকরি প্রকাশ করুন" },
@@ -139,6 +138,7 @@ export default function ProfilePage() {
               })}
             </div>
             <p className="mt-4 text-xs leading-6 text-slate-500">{language === "bn" ? "ভূমিকা নির্বাচন করলেই verified badge বা বিশেষ অনুমতি পাওয়া যায় না।" : "Selecting a role does not grant a verified badge or privileged access."}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{language === "bn" ? <>বিক্রেতা হতে চাইলে আলাদা আবেদন ও অনুমোদন প্রয়োজন: <Link className="font-bold text-emerald-800 underline" href="/sell-on-marketplace">Marketplace Seller</Link> অথবা <Link className="font-bold text-emerald-800 underline" href="/sell-on-plant-market">Plant Seller</Link>।</> : <>Seller access requires separate application and approval: <Link className="font-bold text-emerald-800 underline" href="/sell-on-marketplace">Marketplace Seller</Link> or <Link className="font-bold text-emerald-800 underline" href="/sell-on-plant-market">Plant Seller</Link>.</>}</p>
             <button type="button" onClick={save} disabled={saving} className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-3 font-bold text-white hover:bg-[#0b563e] disabled:opacity-60 sm:w-auto">{saving ? <LoaderCircle className="animate-spin" size={18} /> : <Save size={18} />}{t.save}</button>
             {message && <p role="status" aria-live="polite" className={`mt-4 rounded-xl px-4 py-3 text-sm leading-6 ${error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"}`}>{message}</p>}
           </>}

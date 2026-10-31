@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
+import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
 
@@ -9,16 +10,12 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("user_role_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .in("role", ["seller", "organization"])
-    .limit(1)
-    .maybeSingle();
-
-  if (membershipError || !membership) {
-    return NextResponse.json({ error: "Seller or approved organization access required. Farmers can list their crops on Sell Harvest." }, { status: 403 });
+  const access = await findMarketplaceOrganizationWithAccess("create");
+  if (!access.allowed) {
+    return NextResponse.json(
+      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "A verified business organization with Marketplace approval is required." },
+      { status: access.reason === "authorization_unavailable" ? 503 : access.reason === "unauthenticated" ? 401 : 403 }
+    );
   }
 
   const body = await request.json().catch(() => ({}));
@@ -73,6 +70,7 @@ export async function POST(request: NextRequest) {
     description,
     image_url: imageUrl,
     status: "draft",
+    marketplace_channel: "marketplace",
   }).select("id,name,category,category_slug,subcategory_slug,image_url,status,unit").single();
 
   if (error) {

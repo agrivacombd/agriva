@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
+type SitemapPlantProduct = { slug: string; updated_at?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
 const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9\u0980-\u09ff]+(?:-[a-z0-9\u0980-\u09ff]+)*$/.test(slug);
@@ -12,6 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   let products: SitemapProduct[] = [];
+  let plantProducts: SitemapPlantProduct[] = [];
   let jobs: SitemapJob[] = [];
   let exchangeListings: SitemapExchangeListing[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
@@ -19,11 +21,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [productResult, jobsResult, exchangeResult] = await Promise.all([
-      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").not("slug", "is", null).limit(5000),
+    const [productResult, plantProductResult, jobsResult, exchangeResult] = await Promise.all([
+      supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").not("slug", "is", null).limit(5000),
+      supabase.from("plant_market_products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
       supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").limit(5000),
     ]);
+    if (!plantProductResult.error && plantProductResult.data) plantProducts = (plantProductResult.data as SitemapPlantProduct[]).filter((product) => isValidSlug(product.slug));
     if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
     if (!exchangeResult.error && exchangeResult.data) exchangeListings = (exchangeResult.data as SitemapExchangeListing[]).filter((listing) => isValidSlug(listing.slug));
     if (!productResult.error && productResult.data) {
@@ -44,7 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticUrls: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/marketplace`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${base}/seller/products/new`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
+    { url: `${base}/sell-on-marketplace`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
+    { url: `${base}/sell-on-plant-market`, lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/krishi-bazar`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${base}/plant-market`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/ai`, lastModified: now, changeFrequency: "weekly", priority: 0.75 },
@@ -90,6 +95,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categoryUrls,
     ...products.map((product) => ({
       url: `${base}/marketplace/${product.slug}`,
+      lastModified: product.updated_at ? new Date(product.updated_at) : now,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    ...plantProducts.map((product) => ({
+      url: `${base}/plant-market/${product.slug}`,
       lastModified: product.updated_at ? new Date(product.updated_at) : now,
       changeFrequency: "weekly" as const,
       priority: 0.7,
