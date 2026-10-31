@@ -15,27 +15,20 @@ declare
   v_selected_role text;
 begin
   if coalesce(new.is_anonymous, false) then
-    v_role := 'buyer'::public.user_role;
-    v_selected_roles := array['buyer']::text[];
-
     insert into public.profiles (id, full_name, phone, role, selected_roles)
     values (
       new.id,
       coalesce(nullif(btrim(new.raw_user_meta_data ->> 'full_name'), ''), ''),
       null,
-      v_role,
-      v_selected_roles
+      'buyer'::public.user_role,
+      array['buyer']::text[]
     )
     on conflict (id) do update
       set role = 'buyer'::public.user_role,
           selected_roles = array['buyer']::text[];
 
-    -- Remove any self-service memberships from a pre-existing anonymous identity.
     delete from public.user_role_memberships
-    where user_id = new.id
-      and role in ('farmer','seller','reseller','buyer','job_seeker','worker','employer',
-                   'expert','educator','transport_provider','organization','transport',
-                   'student','agriculturist','rooftop_gardener');
+    where user_id = new.id;
 
     insert into public.user_role_memberships (user_id, role)
     values (new.id, 'buyer')
@@ -97,6 +90,23 @@ begin
   return new;
 end;
 $$;
+
+-- Repair anonymous profiles created before this migration, removing every role grant.
+update public.profiles p
+set role = 'buyer'::public.user_role,
+    selected_roles = array['buyer']::text[]
+from auth.users u
+where u.id = p.id and coalesce(u.is_anonymous, false);
+
+delete from public.user_role_memberships m
+using auth.users u
+where u.id = m.user_id and coalesce(u.is_anonymous, false);
+
+insert into public.user_role_memberships (user_id, role)
+select u.id, 'buyer'
+from auth.users u
+where coalesce(u.is_anonymous, false)
+on conflict (user_id, role) do nothing;
 
 -- A guest cannot promote its own account through the role-picker RPC.
 create or replace function public.update_my_role_memberships(p_roles text[])
