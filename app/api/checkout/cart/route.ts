@@ -31,6 +31,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।" }, { status: 400 });
   }
 
+  // Never trust the browser's OTP-success flag. Anonymous/guest users must
+  // have a Supabase-confirmed phone matching the shipping phone on this session.
+  if (user.is_anonymous && (!user.phone_confirmed_at || user.phone !== phone)) {
+    return NextResponse.json({ error: "Guest Checkout-এর জন্য এই সেশনে মোবাইল OTP যাচাই বাধ্যতামূলক।" }, { status: 403 });
+  }
+
   const shippingAddress = {
     fullName: cleanText(rawAddress.fullName, 100),
     phone,
