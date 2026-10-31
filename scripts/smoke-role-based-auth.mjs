@@ -23,7 +23,7 @@ for (const role of ["farmer", "buyer", "transport", "job_seeker", "employer", "s
   assert.match(signup, new RegExp('id: "' + role + '"'), "signup should offer " + role);
   assert.match(dashboard, new RegExp("\\b" + role + "\\b"), "dashboard should support " + role);
 }
-assert.match(dashboard, /\bseller\b, "legacy Marketplace sellers remain represented in the dashboard");
+assert.match(dashboard, /\bseller\b/, "legacy Marketplace sellers remain represented in the dashboard");
 assert.doesNotMatch(signup, /id: "seller"/, "Marketplace seller access must require a separate verified application");
 assert.doesNotMatch(signup, /id: "plant_seller"/, "Plant Market seller access must require a separate verified application");
 assert.doesNotMatch(signup, /id: "admin"/, "admin must not be a self-service signup option");
