@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import CheckoutButton from "@/components/marketplace/CheckoutButton";
 import AddToCartButton from "@/components/marketplace/AddToCartButton";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
@@ -237,7 +236,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ) : (
                 <>
                   <AddToCartButton product={{ id: product.id, slug: product.slug, name: product.name, category: product.category, price: product.price, stock: product.stock }} className="mb-3" />
-                  <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
                 </>
               )}
             </div>
