@@ -150,7 +150,7 @@ begin
 
   -- Enforce the same bounds at the database boundary because authenticated
   -- clients can invoke this RPC directly and bypass the HTTP route validator.
-  if (p_shipping_address->>'phone') !~ '^\+8801[3-9][0-9]{8}'
+  if p_shipping_address->>'phone' !~ '^\+8801[3-9][0-9]{8}'
      or length(p_shipping_address->>'phone') <> 14
      or length(p_shipping_address->>'fullName') > 100
      or length(p_shipping_address->>'division') > 80
