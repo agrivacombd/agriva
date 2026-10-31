@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MARKETPLACE_CATEGORIES, getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 
 export type MarketplaceProduct = {
@@ -41,7 +42,7 @@ function ProductCard({ product }: { product: MarketplaceProduct }) {
     <article className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-emerald-700/30 hover:shadow-xl hover:shadow-emerald-950/[0.06]">
       <Link href={`/marketplace/${product.slug}`} className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-[#f2f7ef] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
         <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
-        {product.image_url && <img src={product.image_url} alt={`${product.name} পণ্যের ছবি`} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.style.display = "none"; }} className="absolute inset-0 h-full w-full bg-white object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />}
+        {product.image_url && <Image src={product.image_url} alt={`${product.name} পণ্যের ছবি`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="bg-white object-contain p-3 transition duration-300 group-hover:scale-[1.03]" />}
         <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-bold shadow-sm ${inStock ? "bg-white/95 text-emerald-800" : "bg-slate-900/80 text-white"}`}>
           {inStock ? "স্টকে আছে" : hasStock ? "স্টক শেষ" : "স্টক যাচাই করুন"}
         </span>
