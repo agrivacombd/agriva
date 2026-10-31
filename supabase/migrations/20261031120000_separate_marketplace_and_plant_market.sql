@@ -219,7 +219,7 @@ ALTER TABLE public.user_role_memberships
 
 CREATE OR REPLACE FUNCTION public.sync_marketplace_seller_role_membership()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, public, pg_temp AS $
+SET search_path = pg_catalog, public, pg_temp AS $marketplace_role_sync$
 BEGIN
   IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
     INSERT INTO public.user_role_memberships(user_id,role,granted_by)
@@ -239,7 +239,7 @@ FOR EACH ROW EXECUTE FUNCTION public.sync_marketplace_seller_role_membership();
 
 CREATE OR REPLACE FUNCTION public.sync_plant_seller_role_membership()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
-SET search_path = pg_catalog, public, pg_temp AS $
+SET search_path = pg_catalog, public, pg_temp AS $plant_role_sync$
 BEGIN
   IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
     INSERT INTO public.user_role_memberships(user_id,role,granted_by)
