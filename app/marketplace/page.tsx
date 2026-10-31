@@ -23,6 +23,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
     const { data, error } = await supabase.from("products")
       .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
       .eq("status", "active")
+      .eq("marketplace_channel", "marketplace")
       .order("created_at", { ascending: false }).limit(120);
     if (!error && data) products = data as MarketplaceProduct[];
   } catch (error) {
