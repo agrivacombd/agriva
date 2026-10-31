@@ -10,7 +10,8 @@ export async function POST(request:NextRequest){
   checkModuleAccess("plant_market","create",{type:"global"})
  ]);
  if(profileError)return NextResponse.json({error:"Gardener verification unavailable"},{status:503});
- if(profile?.verification_status!=="verified"||!access.allowed)return NextResponse.json({error:"Verified Plant Market seller approval required."},{status:access.reason==="authorization_unavailable"?503:403});
+ if(profile?.verification_status!=="verified")return NextResponse.json({error:"Verified Plant Market gardener identity required."},{status:403});
+ if(!access.allowed)return NextResponse.json({error:"Verified Plant Market seller approval required."},{status:access.reason==="authorization_unavailable"?503:access.reason==="unauthenticated"?401:403});
  const body=await request.json().catch(()=>null);if(!body||typeof body!=="object")return NextResponse.json({error:"Invalid product"},{status:400});
  const name=typeof body.name==="string"?body.name.trim():"",categorySlug=typeof body.category_slug==="string"?body.category_slug:"",description=typeof body.description==="string"?body.description.trim():"",price=Number(body.price),stock=Number(body.stock),unit=typeof body.unit==="string"?body.unit:"piece",imageUrl=typeof body.image_url==="string"&&body.image_url.trim()?body.image_url.trim():null;
  if(name.length<2||name.length>160||!CATEGORIES[categorySlug]||!Number.isFinite(price)||price<=0||!Number.isInteger(stock)||stock<0||!["piece","pot","pack","tray"].includes(unit)||description.length>5000)return NextResponse.json({error:"পণ্যের নাম, Plant Market category, মূল্য, মজুত ও একক যাচাই করুন।"},{status:400});
