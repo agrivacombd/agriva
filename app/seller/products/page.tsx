@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { checkModuleAccess } from "@/lib/authz/module-access";
+import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
 
 type SellerProduct = {
   id: string;
@@ -26,10 +26,7 @@ export default async function SellerProductsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/seller/products");
 
-  const { data: organization, error: organizationError } = await supabase.from("organizations")
-    .select("id").eq("owner_id", user.id).eq("status", "verified").limit(1).maybeSingle();
-  if (organizationError || !organization) redirect("/account/verification");
-  const access = await checkModuleAccess("marketplace", "read", { type: "organization", id: organization.id });
+  const access = await findMarketplaceOrganizationWithAccess("read");
   if (!access.allowed) redirect("/account/verification");
 
   const { data, error } = await supabase
