@@ -45,9 +45,9 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
   SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
-$;
+$$;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 \i supabase/migrations/20261030183610_green_exchange_reconcile.sql
