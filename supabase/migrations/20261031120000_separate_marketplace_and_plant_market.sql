@@ -222,7 +222,7 @@ ALTER TABLE public.user_role_memberships
   CHECK (role IN (
     'farmer','seller','plant_seller','reseller','buyer','job_seeker','worker',
     'employer','expert','educator','transport_provider','organization','admin',
-    'transport','student','agriculturist','rooftop_gardener'
+    'transport','student','agriculturist','rooftop_gardener','super_admin'
   ));
 
 CREATE OR REPLACE FUNCTION public.sync_marketplace_seller_role_membership()
