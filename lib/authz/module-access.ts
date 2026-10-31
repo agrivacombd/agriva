@@ -28,3 +28,25 @@ export async function requireModuleAccess(module: AgrivaModule, permission: Modu
   if (!result.allowed) return { ok: false as const, status: result.reason === "unauthenticated" ? 401 : result.reason === "forbidden" ? 403 : 503, error: result.reason };
   return { ok: true as const, userId: result.userId };
 }
+
+/** Find an organization for which this authenticated user has the requested Marketplace grant. */
+export async function findMarketplaceOrganizationWithAccess(permission: Extract<ModulePermission,"read"|"create"|"update"|"delete">) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { allowed: false as const, reason: "unauthenticated" as const };
+  const { data: organizations, error } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("owner_id", user.id)
+    .eq("status", "verified")
+    .limit(20);
+  if (error) return { allowed: false as const, reason: "authorization_unavailable" as const };
+  if (!organizations?.length) return { allowed: false as const, reason: "forbidden" as const };
+  let unavailable = false;
+  for (const organization of organizations) {
+    const access = await checkModuleAccess("marketplace", permission, { type: "organization", id: organization.id });
+    if (access.allowed) return { allowed: true as const, userId: user.id, organizationId: organization.id };
+    if (access.reason === "authorization_unavailable") unavailable = true;
+  }
+  return { allowed: false as const, reason: unavailable ? "authorization_unavailable" as const : "forbidden" as const };
+}
