@@ -159,30 +159,23 @@ grant execute on function private.update_my_role_memberships(text[]) to authenti
 revoke all on function public.update_my_role_memberships(text[]) from public, anon;
 grant execute on function public.update_my_role_memberships(text[]) to authenticated;
 
--- Database boundary: direct RPC callers cannot bypass the verified-phone check.
-create or replace function public.require_verified_guest_checkout_phone()
+-- Database boundary: guests may order without SMS OTP, but must remain buyer-only.
+-- The checkout RPC still validates and stores the delivery phone supplied by the customer.
+create or replace function public.require_guest_checkout_buyer_identity()
 returns trigger
 language plpgsql
 security definer
 set search_path = pg_catalog, public, pg_temp
-as $$
+as $
 declare
   v_is_anonymous boolean;
-  v_phone text;
-  v_phone_confirmed_at timestamptz;
 begin
-  select coalesce(is_anonymous, false), phone, phone_confirmed_at
-    into v_is_anonymous, v_phone, v_phone_confirmed_at
+  select coalesce(is_anonymous, false)
+    into v_is_anonymous
   from auth.users
   where id = new.buyer_id;
 
   if coalesce(v_is_anonymous, false) then
-    if v_phone_confirmed_at is null
-       or v_phone is null
-       or v_phone is distinct from (new.shipping_address ->> 'phone') then
-      raise exception 'Guest checkout requires a verified matching phone number';
-    end if;
-
     if not exists (
       select 1 from public.profiles p
       where p.id = new.buyer_id
@@ -195,14 +188,17 @@ begin
 
   return new;
 end;
-$$;
+$;
 
 drop trigger if exists marketplace_checkout_require_verified_guest_phone
   on public.marketplace_checkouts;
-create trigger marketplace_checkout_require_verified_guest_phone
+drop trigger if exists marketplace_checkout_require_guest_buyer
+  on public.marketplace_checkouts;
+create trigger marketplace_checkout_require_guest_buyer
 before insert on public.marketplace_checkouts
-for each row execute function public.require_verified_guest_checkout_phone();
+for each row execute function public.require_guest_checkout_buyer_identity();
 
-revoke all on function public.require_verified_guest_checkout_phone() from public, anon, authenticated;
+drop function if exists public.require_verified_guest_checkout_phone();
+revoke all on function public.require_guest_checkout_buyer_identity() from public, anon, authenticated;
 
 commit;
