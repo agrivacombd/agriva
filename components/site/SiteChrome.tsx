@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnPrimaryLinks = [
+  { href: "/tools", label: "টুলস" },
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
   { href: "/plant-market", label: "Plant Market" },
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
@@ -56,13 +57,14 @@ const bnServiceGroups = [
 
 const enPrimaryLinks = [
   { href: "/en", label: "Home" },
+  { href: "/en/tools", label: "Tools" },
   { href: "/en/agriculture-calculators", label: "Calculators" },
   { href: "/en/crop-calendar", label: "Crop calendar" },
 ];
 
 const bnToEn: Record<string, string> = {
   "/": "/en",
-  "/tools": "/en/agriculture-calculators",
+  "/tools": "/en/tools",
   "/krishi-calculator": "/en/agriculture-calculators",
   "/agriculture-calculators": "/en/agriculture-calculators",
   "/fertilizer-calculator": "/en/fertilizer-calculator",
@@ -75,6 +77,7 @@ const bnToEn: Record<string, string> = {
 
 const enToBn: Record<string, string> = {
   "/en": "/",
+  "/en/tools": "/tools",
   "/en/agriculture-calculators": "/agriculture-calculators",
   "/en/fertilizer-calculator": "/fertilizer-calculator",
   "/en/seed-rate-calculator": "/seed-rate-calculator",
@@ -325,10 +328,10 @@ export default function SiteChrome() {
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
                 <div className="grid gap-1">
-                  {primaryLinks.map((link, index) => (
+                  {primaryLinks.map((link) => (
                     <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className={"flex min-h-12 items-center justify-between rounded-xl px-3 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (isActivePath(pathname, link.href) ? "bg-emerald-50 text-emerald-900" : "text-slate-800 hover:bg-slate-50")}>
                       <span>{link.label}</span>
-                      {index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">বাজার</span>}
+                      {link.href === "/marketplace" && !english && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">বাজার</span>}
                     </Link>
                   ))}
                 </div>

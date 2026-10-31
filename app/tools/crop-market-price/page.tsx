@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Crop Market Price Bangladesh | ফসলের বাজার দর | AGRIVA",
   description: "Check indicative crop market prices and compare recent price observations with AGRIVA's farmer market price tool.",
   alternates: { canonical: "/tools/crop-market-price" },
+  robots: { index: false, follow: true },
   keywords: ["crop market price Bangladesh", "agriculture market price", "farmer market price", "ফসলের বাজার দর", "কৃষি বাজার দাম", "ধানের দাম"],
 };
 
