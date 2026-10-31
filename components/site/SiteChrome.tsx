@@ -99,7 +99,6 @@ function SearchForm({ english, onNavigate }: { english: boolean; onNavigate?: ()
       action="/marketplace"
       method="get"
       role="search"
-      onSubmit={onNavigate ? () => onNavigate() : undefined}
       className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100"
     >
       <Search size={18} className="shrink-0 text-slate-400" aria-hidden="true" />
@@ -239,8 +238,8 @@ export default function SiteChrome() {
               ))}
             </div>
 
-            <Link href={english ? "/en" : "/sell-harvest"} className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:inline-flex">
-              <Sprout size={16} aria-hidden="true" />{english ? "Start selling" : "বিক্রি শুরু করুন"}
+            <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:inline-flex">
+              <Sprout size={16} aria-hidden="true" />{english ? "Sell your harvest" : "বিক্রি শুরু করুন"}
             </Link>
 
             <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 xl:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen} aria-controls="agriva-mobile-navigation">
