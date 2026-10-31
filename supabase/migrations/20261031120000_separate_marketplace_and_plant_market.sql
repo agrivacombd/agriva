@@ -145,11 +145,15 @@ CREATE INDEX IF NOT EXISTS plant_market_products_public_idx
   ON public.plant_market_products(status, category_slug, created_at DESC);
 CREATE INDEX IF NOT EXISTS plant_market_products_seller_idx
   ON public.plant_market_products(seller_id, status, created_at DESC);
+CREATE INDEX IF NOT EXISTS plant_market_products_moderated_by_idx
+  ON public.plant_market_products(moderated_by) WHERE moderated_by IS NOT NULL;
 ALTER TABLE public.plant_market_products ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.plant_market_products FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.plant_market_products TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.plant_market_products TO authenticated;
 
+DROP POLICY IF EXISTS plant_market_products_owner_insert ON public.plant_market_products;
+DROP POLICY IF EXISTS plant_market_products_owner_update ON public.plant_market_products;
 DROP POLICY IF EXISTS plant_market_products_public_read ON public.plant_market_products;
 CREATE POLICY plant_market_products_public_read ON public.plant_market_products
   FOR SELECT TO anon, authenticated USING (
