@@ -45,10 +45,10 @@ assert.match(migration,/admin_revoke_market_access/,"admin can revoke one module
 assert.match(migration,/pause_market_listings_on_module_grant_revocation/,"revocation pauses only the affected market's active listings");
 assert.doesNotMatch(migration,/marketplace_seller_permissions|plant_seller_permissions|marketplace_seller_applications|plant_seller_applications/,"no duplicate seller permission or application tables are created");
 assert.doesNotMatch(migration,/handle_new_user/,"catalogue migration does not replace existing Auth or guest checkout triggers");
-assert.match(marketplaceApi,/checkModuleAccess/,"Marketplace product API checks Marketplace module access");
+assert.match(marketplaceApi,/findMarketplaceOrganizationWithAccess/,"Marketplace product API checks Marketplace module access");
 assert.match(marketplaceApi,/marketplace_channel:\s*"marketplace"/,"Marketplace product API writes only Marketplace-channel products");
-assert.match(marketplacePage,/checkModuleAccess/,"Marketplace product form requires verified module access");
-assert.match(marketplaceList,/checkModuleAccess/,"Marketplace seller dashboard requires module access");
+assert.match(marketplacePage,/findMarketplaceOrganizationWithAccess/,"Marketplace product form requires verified module access");
+assert.match(marketplaceList,/findMarketplaceOrganizationWithAccess/,"Marketplace seller dashboard requires module access");
 assert.match(marketplaceDetail,/marketplace_channel", "marketplace"/,"Marketplace detail lookup is channel-scoped");
 assert.match(marketplaceCategory,/marketplace_channel", "marketplace"/,"Marketplace category page is channel-scoped");
 assert.match(marketplaceSubcategory,/marketplace_channel", "marketplace"/,"Marketplace subcategory page is channel-scoped");
