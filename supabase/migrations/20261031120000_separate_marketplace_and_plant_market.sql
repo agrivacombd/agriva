@@ -236,10 +236,8 @@ BEGIN
   ELSIF TG_OP = 'UPDATE' AND NEW.status = 'revoked' AND OLD.status = 'approved' THEN
     UPDATE public.products SET status = 'paused'::public.product_status, updated_at = now()
     WHERE farmer_id = NEW.user_id AND status = 'active';
-    IF OLD.approved_by IS NOT NULL THEN
-      DELETE FROM public.user_role_memberships
-      WHERE user_id=NEW.user_id AND role='seller';
-    END IF;
+    DELETE FROM public.user_role_memberships
+    WHERE user_id=NEW.user_id AND role='seller';
   END IF;
   RETURN NEW;
 END $marketplace_role_sync$;
@@ -262,10 +260,8 @@ BEGIN
     SET status = 'suspended', moderation_note = 'Seller permission revoked',
         moderated_by = auth.uid(), moderated_at = now(), updated_at = now()
     WHERE seller_id = NEW.user_id AND status = 'active';
-    IF OLD.approved_by IS NOT NULL THEN
-      DELETE FROM public.user_role_memberships
-      WHERE user_id=NEW.user_id AND role='plant_seller';
-    END IF;
+    DELETE FROM public.user_role_memberships
+    WHERE user_id=NEW.user_id AND role='plant_seller';
   END IF;
   RETURN NEW;
 END $plant_role_sync$;
