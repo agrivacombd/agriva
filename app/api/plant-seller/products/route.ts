@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Plant Market Seller approval required." }, { status: 403 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const body = (await request.json().catch(() => ({}))) || {};
   const name = String(body.name || "").trim();
   const categorySlug = String(body.category_slug || "").trim();
   const price = Number(body.price);
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
   const unit = String(body.unit || "piece").trim();
   const imageUrl = typeof body.image_url === "string" && body.image_url.trim() ? body.image_url.trim() : null;
 
-  if (name.length < 2 || name.length > 160 || !CATEGORIES[categorySlug] ||
+  if (name.length < 2 || name.length > 160 || !Object.prototype.hasOwnProperty.call(CATEGORIES, categorySlug) ||
       !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !["piece", "pot", "pack", "tray"].includes(unit) || description.length > 5000) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও বিক্রয় একক যাচাই করুন।" }, { status: 400 });
