@@ -39,6 +39,7 @@ async function approvePayout(formData: FormData) {
   if (!payoutId) redirect("/admin?notice=invalid_payout");
   const { supabase } = await requireAdmin();
   const { error } = await supabase.rpc("approve_commission_payout", { p_payout_id: payoutId });
+  if (error?.message?.toLowerCase().includes("mfa verification required")) redirect("/admin?notice=payout_mfa_required");
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_error" : "/admin?notice=payout_approved");
 }
@@ -53,6 +54,7 @@ async function completePayout(formData: FormData) {
     p_payout_id: payoutId,
     p_payment_reference: reference,
   });
+  if (error?.message?.toLowerCase().includes("mfa verification required")) redirect("/admin?notice=payout_mfa_required");
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_complete_error" : "/admin?notice=payout_paid");
 }
@@ -67,6 +69,7 @@ const noticeText: Record<string, string> = {
   commission_error: "কমিশন অনুমোদন করা যায়নি।",
   payout_approved: "পেআউট অনুমোদিত হয়েছে।",
   payout_error: "পেআউট অনুমোদন করা যায়নি।",
+  payout_mfa_required: "পেআউট অনুমোদন বা নিষ্পত্তির আগে Authenticator MFA দিয়ে AAL2 verification সম্পন্ন করুন।",
   payout_paid: "পেআউট পরিশোধ হিসেবে চিহ্নিত হয়েছে।",
   payout_complete_error: "পেআউট সম্পন্ন হয়নি। ব্যালেন্স ও পেমেন্ট রেফারেন্স যাচাই করুন।",
   invalid_order: "অর্ডারের তথ্য সঠিক নয়।",
