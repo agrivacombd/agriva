@@ -13,6 +13,7 @@ assert.ok(checkout.includes("SMS OTP ছাড়াই"), "guest checkout must 
 const guestMigration=read("../supabase/migrations/20261031130000_secure_guest_checkout_identity.sql");
 assert.ok(guestMigration.includes("require_guest_checkout_buyer_identity"), "guest DB trigger must enforce buyer-only identity");
 assert.ok(!guestMigration.includes("phone_confirmed_at"), "guest DB trigger must not require SMS verification");
+assert.ok(guestMigration.includes("as $\\ndeclare\\n  v_is_anonymous boolean;") && guestMigration.includes("end;\\n$;\\n\\ndrop trigger if exists marketplace_checkout_require_verified_guest_phone"), "guest identity trigger must use valid PL/pgSQL dollar quoting");
 assert.ok(checkout.includes("crypto.randomUUID"));
 assert.ok(migration.includes("as $$"), "add-to-cart SQL must use a valid dollar-quoted body");
 assert.ok(migration.includes("ensure_cart_active_for_item"));
