@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
+import { checkModuleAccess } from "@/lib/authz/module-access";
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
 
@@ -9,18 +10,30 @@ export async function POST(request: NextRequest) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("marketplace_seller_permissions")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .eq("status", "approved")
+  const { data: organization, error: organizationError } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("owner_id", user.id)
+    .eq("status", "verified")
+    .limit(1)
     .maybeSingle();
 
-  if (membershipError || !membership) {
-    return NextResponse.json({ error: "Approved Marketplace Seller permission required. Apply separately at /sell-on-marketplace." }, { status: 403 });
+  if (organizationError) {
+    return NextResponse.json({ error: "Seller authorization is temporarily unavailable." }, { status: 503 });
+  }
+  if (!organization) {
+    return NextResponse.json({ error: "A verified business organization is required. Apply at /account/verification." }, { status: 403 });
   }
 
-  const body = (await request.json().catch(() => ({}))) || {};
+  const access = await checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id });
+  if (!access.allowed) {
+    return NextResponse.json(
+      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "Marketplace seller approval is required." },
+      { status: access.reason === "authorization_unavailable" ? 503 : access.reason === "unauthenticated" ? 401 : 403 }
+    );
+  }
+
+  const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
   const price = Number(body.price);
   const stock = Number(body.stock);
@@ -72,6 +85,7 @@ export async function POST(request: NextRequest) {
     description,
     image_url: imageUrl,
     status: "draft",
+    marketplace_channel: "marketplace",
   }).select("id,name,category,category_slug,subcategory_slug,image_url,status,unit").single();
 
   if (error) {
