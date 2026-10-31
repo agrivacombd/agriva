@@ -404,6 +404,19 @@ BEGIN
       OR (p_module = 'plant_market' AND scope_type = 'global' AND scope_id IS NULL)
     );
   GET DIAGNOSTICS v_count = ROW_COUNT;
+  UPDATE public.module_access_applications
+  SET status = 'withdrawn',
+      review_note = 'Module access revoked by administrator',
+      reviewed_by = auth.uid(),
+      reviewed_at = now(),
+      updated_at = now()
+  WHERE user_id = p_user_id
+    AND module = p_module
+    AND status = 'approved'
+    AND (
+      (p_module = 'marketplace' AND organization_id = p_scope_id)
+      OR (p_module = 'plant_market' AND organization_id IS NULL)
+    );
   RETURN v_count;
 END;
 $function$;
