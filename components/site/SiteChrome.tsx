@@ -19,7 +19,7 @@ import {
   BookOpen,
   House,
 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnPrimaryLinks = [
@@ -93,7 +93,7 @@ function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-function SearchForm({ english, onNavigate }: { english: boolean; onNavigate?: () => void }) {
+function SearchForm({ english }: { english: boolean }) {
   return (
     <form
       action="/marketplace"
