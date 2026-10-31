@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return NextResponse.json({ error: "প্রথমে AGRIVA-তে লগইন করুন।" }, { status: 401 });
-  const body = await request.json().catch(() => ({}));
+  const body = (await request.json().catch(() => ({}))) || {};
   const values = { user_id: user.id, nursery_name: String(body.business_name || "").trim(), business_type: String(body.business_type || "").trim(), contact_phone: String(body.contact_phone || "").trim(), nursery_address: String(body.business_address || "").trim(), trade_license: String(body.trade_license || "").trim() || null };
   if (values.nursery_name.length < 2 || values.nursery_name.length > 160 || values.business_type.length < 2 || values.business_type.length > 80 || values.contact_phone.length < 6 || values.contact_phone.length > 30 || values.nursery_address.length < 5 || values.nursery_address.length > 500) return NextResponse.json({ error: "নার্সারির নাম, ধরন, ফোন ও ঠিকানা সঠিকভাবে দিন।" }, { status: 400 });
   const { data: existing } = await supabase.from("plant_seller_applications").select("id").eq("user_id", user.id).eq("status", "pending").maybeSingle();
