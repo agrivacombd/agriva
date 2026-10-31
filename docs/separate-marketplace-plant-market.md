@@ -11,6 +11,8 @@ Both markets use the existing Supabase Auth identity (auth.users.id / profiles.i
 - Admin queue API: GET /api/admin/seller-applications/{market}/queue.
 - Admin decision API: PATCH /api/admin/seller-applications/{market}/{applicationId} with status approved or rejected and an optional review_note.
 - Admin permission revocation: PATCH /api/admin/seller-permissions/{market}/{userId} with status revoked.
+- Plant Market product moderation: /admin/plant-market-products with GET/PATCH /api/admin/plant-market-products.
+- Approved seller roles are mirrored into the existing user_role_memberships table for dashboard navigation; the permission tables remain the authorization source.
 - The APIs use the existing catalog.moderate admin capability.
 
 ## Catalogues
