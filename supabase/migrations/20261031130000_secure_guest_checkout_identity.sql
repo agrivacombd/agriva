@@ -166,7 +166,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = pg_catalog, public, pg_temp
-as $
+as $$
 declare
   v_is_anonymous boolean;
 begin
@@ -188,7 +188,7 @@ begin
 
   return new;
 end;
-$;
+$$;
 
 drop trigger if exists marketplace_checkout_require_verified_guest_phone
   on public.marketplace_checkouts;
