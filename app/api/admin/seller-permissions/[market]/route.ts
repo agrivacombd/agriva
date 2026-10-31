@@ -5,9 +5,9 @@ export async function GET(_request:Request,{params}:{params:Promise<{market:stri
   const moduleKey=market==="marketplace"?"marketplace":market==="plant-market"?"plant_market":null;
   if(!moduleKey)return NextResponse.json({error:"Unknown market."},{status:404});
   const access=await requireAdminApi("catalog.moderate");if(!access.ok)return access.response;
-  const {data,error}=await access.supabase.from("user_moduleKey_grants")
-    .select("user_id,moduleKey,permission,scope_type,scope_id,status,granted_by,granted_at,expires_at,reason")
-    .eq("moduleKey",moduleKey).eq("permission","create").eq("status","active")
+  const {data,error}=await access.supabase.from("user_module_grants")
+    .select("user_id,module,permission,scope_type,scope_id,status,granted_by,granted_at,expires_at,reason")
+    .eq("module",moduleKey).eq("permission","create").eq("status","active")
     .order("granted_at",{ascending:false}).limit(500);
   if(error)return NextResponse.json({error:"Seller permission তালিকা লোড করা যায়নি।"},{status:400});
   return NextResponse.json({permissions:data||[]});
