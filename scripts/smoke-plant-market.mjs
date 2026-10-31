@@ -40,7 +40,7 @@ assert.match(migration,/user_role_memberships/,"legacy seller membership is incl
 assert.match(migration,/VALUES \('read'\),\('create'\),\('update'\)/,"legacy Marketplace sellers retain read, create and update permissions");
 assert.match(migration,/products_module_access_insert_guard/,"Marketplace RLS retains organization-scoped module access");
 assert.match(migration,/DROP POLICY IF EXISTS products_seller_insert/,"legacy role-only seller insert policy must be replaced");
-assert.match(migration,/CREATE POLICY products_seller_insert[\\s\\S]*?has_module_access/,"new Marketplace seller insert policy must use the verified module grant");
+assert.match(migration,/CREATE POLICY products_seller_insert[\s\S]*?has_module_access/,"new Marketplace seller insert policy must use the verified module grant");
 assert.match(migration,/public\.has_module_access\('marketplace'/,"Marketplace product authorization uses the existing module-grant system");
 assert.match(migration,/public\.has_module_access\('plant_market'/,"Plant Market product authorization uses its own module grant");
 assert.match(migration,/gardener_profiles/,"Plant Market seller access requires verified Gardener identity");
