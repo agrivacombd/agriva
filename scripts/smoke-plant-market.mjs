@@ -24,7 +24,8 @@ const productDetail = readFileSync("app/marketplace/[productId]/page.tsx", "utf8
 const checkoutButton = readFileSync("components/marketplace/CheckoutButton.tsx", "utf8");
 assert.match(productDetail, /CheckoutButton productId=\{product\.id\}/, "Product details must retain the existing checkout action");
 assert.match(checkoutButton, /fetch\("\/api\/checkout"/, "Product detail checkout must use the existing checkout API");
-\nconst marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+
+const marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
 assert.match(page, /categoryMode="available"/, "Plant Market categories must reflect products actually available");
 assert.match(marketplaceCore, /price-low/, "Product sorting must support ascending price");
 assert.match(marketplaceCore, /price-high/, "Product sorting must support descending price");
