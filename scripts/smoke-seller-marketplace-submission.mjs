@@ -6,6 +6,7 @@ const form = readFileSync("components/seller/SellerProductForm.tsx", "utf8");
 const route = readFileSync("app/api/seller/products/route.ts", "utf8");
 const legacyRoute = readFileSync("app/api/farmer/products/route.ts", "utf8");
 const sellerPage = readFileSync("app/seller/products/new/page.tsx", "utf8");
+const moduleAccess = readFileSync("lib/authz/module-access.ts", "utf8");
 const sellerProductsPage = readFileSync("app/seller/products/page.tsx", "utf8");
 const farmerPage = readFileSync("app/farmer/products/new/page.tsx", "utf8");
 const dashboard = readFileSync("app/dashboard/page.tsx", "utf8");
@@ -19,7 +20,9 @@ assert.match(form, /image_url/, "seller form must submit the public image URL wi
 assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
 assert.match(route, /findMarketplaceOrganizationWithAccess/, "product API must verify existing Marketplace module access");
-assert.match(route, /organizations/, "product API must require a verified organization scope");
+assert.match(moduleAccess, /from\("organizations"\)/, "Marketplace module helper must resolve a verified organization scope");
+assert.match(moduleAccess, /\.eq\("status", "verified"\)/, "Marketplace module helper must reject unverified organizations");
+assert.match(moduleAccess, /checkModuleAccess\("marketplace", permission/, "Marketplace module helper must verify the requested permission");
 assert.match(route, /marketplace_channel:\s*"marketplace"/, "product API must store only Marketplace channel products");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
 assert.match(route, /product-images/, "product API must validate product image URLs against the configured bucket");
@@ -34,7 +37,7 @@ assert.match(farmerPage, /redirect\("\/sell-harvest"\)/, "farmer product route m
 assert.match(migration, /DROP POLICY IF EXISTS "products_farmer_insert"/, "migration must remove the broad farmer insert policy");
 assert.match(permissionMigration, /products_marketplace_only_channel_check/, "Marketplace product table must reject Plant Market channel records");
 assert.match(permissionMigration, /products_module_access_insert_guard/, "Marketplace product insert RLS must preserve organization-scoped module access");
-assert.match(permissionMigration, /public\\.has_module_access\\('marketplace'/, "Marketplace product RLS must use the existing module grant");
+assert.match(permissionMigration, /public\.has_module_access\('marketplace'/, "Marketplace product RLS must use the existing module grant");
 assert.match(migration, /DROP POLICY IF EXISTS "Farmers can upload own product images"/, "migration must replace farmer-only product image uploads");
 assert.match(migration, /storage\.foldername\(name\)/, "Storage policy must restrict uploads to the user's folder");
 
