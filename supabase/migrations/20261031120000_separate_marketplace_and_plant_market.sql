@@ -233,11 +233,13 @@ BEGIN
     INSERT INTO public.user_role_memberships(user_id,role,granted_by)
     VALUES (NEW.user_id,'seller',NEW.approved_by)
     ON CONFLICT (user_id,role) DO UPDATE SET granted_by=EXCLUDED.granted_by;
-  ELSIF TG_OP = 'UPDATE' AND NEW.status = 'revoked' AND OLD.status = 'approved' THEN
-    UPDATE public.products SET status = 'paused'::public.product_status, updated_at = now()
-    WHERE farmer_id = NEW.user_id AND status = 'active';
-    DELETE FROM public.user_role_memberships
-    WHERE user_id=NEW.user_id AND role='seller';
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.status = 'revoked' AND OLD.status = 'approved' THEN
+      UPDATE public.products SET status = 'paused'::public.product_status, updated_at = now()
+      WHERE farmer_id = NEW.user_id AND status = 'active';
+      DELETE FROM public.user_role_memberships
+      WHERE user_id=NEW.user_id AND role='seller';
+    END IF;
   END IF;
   RETURN NEW;
 END $marketplace_role_sync$;
@@ -255,13 +257,15 @@ BEGIN
     INSERT INTO public.user_role_memberships(user_id,role,granted_by)
     VALUES (NEW.user_id,'plant_seller',NEW.approved_by)
     ON CONFLICT (user_id,role) DO UPDATE SET granted_by=EXCLUDED.granted_by;
-  ELSIF TG_OP = 'UPDATE' AND NEW.status = 'revoked' AND OLD.status = 'approved' THEN
-    UPDATE public.plant_market_products
-    SET status = 'suspended', moderation_note = 'Seller permission revoked',
-        moderated_by = auth.uid(), moderated_at = now(), updated_at = now()
-    WHERE seller_id = NEW.user_id AND status = 'active';
-    DELETE FROM public.user_role_memberships
-    WHERE user_id=NEW.user_id AND role='plant_seller';
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF NEW.status = 'revoked' AND OLD.status = 'approved' THEN
+      UPDATE public.plant_market_products
+      SET status = 'suspended', moderation_note = 'Seller permission revoked',
+          moderated_by = auth.uid(), moderated_at = now(), updated_at = now()
+      WHERE seller_id = NEW.user_id AND status = 'active';
+      DELETE FROM public.user_role_memberships
+      WHERE user_id=NEW.user_id AND role='plant_seller';
+    END IF;
   END IF;
   RETURN NEW;
 END $plant_role_sync$;
