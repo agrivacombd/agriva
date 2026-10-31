@@ -39,17 +39,16 @@ INSERT INTO public.profiles(id, role) VALUES
   ('10000000-0000-0000-0000-000000000003', 'farmer');
 INSERT INTO public.products(name, category, status) VALUES ('Plant seed', 'plants-gardening', 'active');
 
-CREATE OR REPLACE FUNCTION private.is_admin()
+CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS boolean
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $$
+AS $
   SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
-$$;
-GRANT USAGE ON SCHEMA private TO authenticated;
-GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
+$;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 \i supabase/migrations/20261030183610_green_exchange_reconcile.sql
 \i supabase/migrations/20261030183617_green_living_reconcile.sql
