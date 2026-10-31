@@ -2,17 +2,16 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
-import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Store, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
+import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
 
-type RoleId = "farmer" | "buyer" | "seller" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
+type RoleId = "farmer" | "buyer" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
 
 const roles: { id: RoleId; icon: typeof Sprout; bn: string; en: string; bnDesc: string; enDesc: string }[] = [
   { id: "farmer", icon: Sprout, bn: "কৃষক", en: "Farmer", bnDesc: "ফসল ও খামার পরিচালনা", enDesc: "Crops and farm management" },
   { id: "buyer", icon: ShoppingCart, bn: "ক্রেতা", en: "Buyer", bnDesc: "কৃষিপণ্য খুঁজুন ও কিনুন", enDesc: "Discover and buy produce" },
-  { id: "seller", icon: Store, bn: "ব্যবসায়ী / কোম্পানি / ডিলার", en: "Business / Company / Dealer", bnDesc: "Marketplace-এ কৃষি পণ্য ও উপকরণ বিক্রি", enDesc: "Sell agricultural products and supplies on Marketplace" },
   { id: "transport", icon: Truck, bn: "পরিবহন সেবাদাতা", en: "Transport provider", bnDesc: "কৃষিপণ্য পরিবহন", enDesc: "Transport agricultural goods" },
   { id: "job_seeker", icon: BriefcaseBusiness, bn: "চাকরিপ্রার্থী", en: "Job seeker", bnDesc: "কৃষি খাতে চাকরি খুঁজুন", enDesc: "Find agriculture jobs" },
   { id: "employer", icon: BriefcaseBusiness, bn: "নিয়োগদাতা", en: "Employer", bnDesc: "চাকরি প্রকাশ ও কর্মী খোঁজা", enDesc: "Post jobs and find talent" },
@@ -211,6 +210,7 @@ export default function SignupPage() {
                   );
                 })}
               </div>
+              <p className="mt-4 text-sm leading-6 text-slate-600">বিক্রেতা হতে চাইলে অ্যাকাউন্ট তৈরি করে আলাদাভাবে আবেদন করুন: <Link href="/sell-on-marketplace" className="font-bold text-emerald-800 underline">Marketplace Seller</Link> অথবা <Link href="/sell-on-plant-market" className="font-bold text-emerald-800 underline">Plant Seller</Link>। অনুমোদন প্রতিটি মার্কেটের জন্য আলাদা।</p>
             </fieldset>
 
             <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-slate-600">
