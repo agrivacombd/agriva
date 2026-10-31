@@ -46,6 +46,8 @@ jobs:
         run: npm run test:marketplace-product-seo
       - name: Checkout error disclosure regression test
         run: npm run test:checkout-error-safety
+      - name: COD cart checkout and collection audit regression test
+        run: npm run test:cod-cart
       - name: API role and error disclosure regression test
         run: npm run test:api-role-hardening
       - name: Admin authorization regression test

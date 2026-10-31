@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ArrowUp, ChevronDown, Globe2, Menu, X } from "lucide-react";
+import { ArrowUp, ChevronDown, Globe2, Menu, ShoppingCart, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -149,6 +149,10 @@ export default function SiteChrome() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
+            <Link href="/cart" aria-label={english ? "Shopping cart" : "শপিং কার্ট"} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2.5 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-3">
+              <ShoppingCart size={18} />
+              <span>{english ? "Cart" : "কার্ট"}</span>
+            </Link>
             <Link href={languageTarget} lang={english ? "bn" : "en"} className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2.5 text-sm font-bold leading-5 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:gap-2 sm:px-3" aria-label={english ? "Switch language to Bangla" : "Switch language to English"}>
               <Globe2 size={17} />
               <span>{english ? "বাংলা" : "English"}</span>
@@ -175,6 +179,7 @@ export default function SiteChrome() {
         {menuOpen && <nav aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="border-t border-slate-100 bg-white px-4 py-3 lg:hidden">
           <div className="mx-auto grid max-w-7xl gap-1">
             {links.map((link) => <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="rounded-xl px-3 py-3 text-sm font-bold text-slate-800 hover:bg-emerald-50">{link.label}</Link>)}
+            <Link href="/cart" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-emerald-900 hover:bg-emerald-50"><ShoppingCart size={18} />{english ? "Shopping cart" : "শপিং কার্ট"}</Link>
             {authReady && <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3">
               {signedIn ? (
                 <>
