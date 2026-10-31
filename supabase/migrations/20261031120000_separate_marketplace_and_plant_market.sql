@@ -205,6 +205,58 @@ AFTER UPDATE OF status ON public.plant_seller_applications
 FOR EACH ROW WHEN (OLD.status IS DISTINCT FROM NEW.status)
 EXECUTE FUNCTION public.sync_plant_seller_permission();
 
+-- Keep the existing role-based dashboard navigation in sync, without using
+-- role membership as the authorization source for either marketplace.
+ALTER TABLE public.user_role_memberships
+  DROP CONSTRAINT IF EXISTS user_role_memberships_role_check;
+ALTER TABLE public.user_role_memberships
+  ADD CONSTRAINT user_role_memberships_role_check
+  CHECK (role IN (
+    'farmer','seller','plant_seller','reseller','buyer','job_seeker','worker',
+    'employer','expert','educator','transport_provider','organization','admin',
+    'transport','student','agriculturist','rooftop_gardener'
+  ));
+
+CREATE OR REPLACE FUNCTION public.sync_marketplace_seller_role_membership()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp AS $
+BEGIN
+  IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
+    INSERT INTO public.user_role_memberships(user_id,role,granted_by)
+    VALUES (NEW.user_id,'seller',NEW.approved_by)
+    ON CONFLICT (user_id,role) DO NOTHING;
+  ELSIF NEW.status = 'revoked' AND OLD.status = 'approved' AND OLD.approved_by IS NOT NULL THEN
+    DELETE FROM public.user_role_memberships
+    WHERE user_id=NEW.user_id AND role='seller' AND granted_by=OLD.approved_by;
+  END IF;
+  RETURN NEW;
+END $;
+REVOKE ALL ON FUNCTION public.sync_marketplace_seller_role_membership() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS marketplace_permission_role_sync ON public.marketplace_seller_permissions;
+CREATE TRIGGER marketplace_permission_role_sync
+AFTER INSERT OR UPDATE OF status ON public.marketplace_seller_permissions
+FOR EACH ROW EXECUTE FUNCTION public.sync_marketplace_seller_role_membership();
+
+CREATE OR REPLACE FUNCTION public.sync_plant_seller_role_membership()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp AS $
+BEGIN
+  IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
+    INSERT INTO public.user_role_memberships(user_id,role,granted_by)
+    VALUES (NEW.user_id,'plant_seller',NEW.approved_by)
+    ON CONFLICT (user_id,role) DO NOTHING;
+  ELSIF NEW.status = 'revoked' AND OLD.status = 'approved' AND OLD.approved_by IS NOT NULL THEN
+    DELETE FROM public.user_role_memberships
+    WHERE user_id=NEW.user_id AND role='plant_seller' AND granted_by=OLD.approved_by;
+  END IF;
+  RETURN NEW;
+END $;
+REVOKE ALL ON FUNCTION public.sync_plant_seller_role_membership() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS plant_permission_role_sync ON public.plant_seller_permissions;
+CREATE TRIGGER plant_permission_role_sync
+AFTER INSERT OR UPDATE OF status ON public.plant_seller_permissions
+FOR EACH ROW EXECUTE FUNCTION public.sync_plant_seller_role_membership();
+
 -- Seller status cannot be self-published. The existing marketplace products table
 -- remains the Marketplace-only catalogue for backward compatibility with orders.
 DROP POLICY IF EXISTS "products_seller_insert" ON public.products;
