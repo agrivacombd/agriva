@@ -9,6 +9,8 @@ const migration = readFileSync("supabase/migrations/20261031120000_separate_mark
 const marketplaceApi = readFileSync("app/api/seller/products/route.ts", "utf8");
 const marketplacePage = readFileSync("app/seller/products/new/page.tsx", "utf8");
 const marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+const signupPage = readFileSync("app/signup/page.tsx", "utf8");
+const profilePage = readFileSync("app/profile/page.tsx", "utf8");
 const plantApi = readFileSync("app/api/plant-seller/products/route.ts", "utf8");
 const plantApplicationApi = readFileSync("app/api/plant-seller/applications/route.ts", "utf8");
 const marketplaceApplicationApi = readFileSync("app/api/seller/applications/route.ts", "utf8");
@@ -35,6 +37,10 @@ assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_market_product
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.marketplace_seller_permissions/, "Marketplace must have a separate seller permission table");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_seller_permissions/, "Plant Market must have a separate seller permission table");
 assert.match(migration, /'plant_seller'/, "Plant Seller role must be distinct");
+assert.doesNotMatch(signupPage, /id: "seller"/, "signup must not self-grant seller role");
+assert.doesNotMatch(profilePage, /id: "seller"/, "profile role picker must not self-grant seller role");
+assert.match(signupPage, /sell-on-marketplace/, "signup must direct sellers to separate application flow");
+assert.match(signupPage, /sell-on-plant-market/, "signup must direct Plant Sellers to separate application flow");
 assert.match(migration, /sync_plant_seller_permission/, "Plant Seller approval must create its own permission");
 assert.match(migration, /sync_marketplace_seller_permission/, "Marketplace approval must create its own permission");
 assert.match(migration, /v_allowed text\[\] := ARRAY\[/, "self-service role picker must remain allow-listed");
