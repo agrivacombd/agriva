@@ -423,6 +423,27 @@ CREATE TRIGGER user_module_grants_pause_market_listings
   AFTER UPDATE OF status ON public.user_module_grants
   FOR EACH ROW EXECUTE FUNCTION public.pause_market_listings_on_module_grant_revocation();
 
+-- Keep module revocations visible in the append-only identity audit trail.
+CREATE OR REPLACE FUNCTION public.log_module_application_withdrawal()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp
+AS $
+BEGIN
+  IF OLD.status IS DISTINCT FROM NEW.status AND NEW.status = 'withdrawn' THEN
+    INSERT INTO public.module_access_application_events(application_id,actor_id,event_type,note)
+    VALUES (NEW.id,coalesce(NEW.reviewed_by,auth.uid()),'withdrawn',NEW.review_note);
+  END IF;
+  RETURN NEW;
+END;
+$;
+REVOKE ALL ON FUNCTION public.log_module_application_withdrawal() FROM PUBLIC, anon, authenticated;
+DROP TRIGGER IF EXISTS module_access_application_withdrawal_audit ON public.module_access_applications;
+CREATE TRIGGER module_access_application_withdrawal_audit
+  AFTER UPDATE OF status ON public.module_access_applications
+  FOR EACH ROW EXECUTE FUNCTION public.log_module_application_withdrawal();
+
 CREATE OR REPLACE FUNCTION public.admin_revoke_market_access(
   p_user_id uuid,
   p_module text,
