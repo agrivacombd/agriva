@@ -19,7 +19,7 @@ import {
   BookOpen,
   House,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnPrimaryLinks = [
@@ -125,6 +125,8 @@ export default function SiteChrome() {
   const [progress, setProgress] = useState(0);
   const [signedIn, setSignedIn] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -187,15 +189,38 @@ export default function SiteChrome() {
 
   useEffect(() => {
     if (!menuOpen) return;
+    const drawer = drawerRef.current;
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const getFocusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(focusableSelector) || [])
+      .filter((element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true");
+    getFocusable()[0]?.focus();
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = getFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      menuButtonRef.current?.focus();
     };
   }, [menuOpen]);
 
@@ -242,7 +267,7 @@ export default function SiteChrome() {
               <Sprout size={16} aria-hidden="true" />{english ? "Sell your harvest" : "বিক্রি শুরু করুন"}
             </Link>
 
-            <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 xl:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen} aria-controls="agriva-mobile-navigation">
+            <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 xl:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen} aria-controls="agriva-mobile-navigation" aria-haspopup="dialog" ref={menuButtonRef}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
@@ -293,7 +318,7 @@ export default function SiteChrome() {
         {menuOpen && (
           <div className="fixed inset-0 z-[90] xl:hidden" id="agriva-mobile-navigation">
             <button type="button" aria-label={english ? "Close navigation menu" : "মেনু বন্ধ করুন"} onClick={() => setMenuOpen(false)} className="absolute inset-0 bg-slate-950/40" />
-            <nav aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-hidden bg-white shadow-2xl">
+            <nav ref={drawerRef} role="dialog" aria-modal="true" aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-hidden bg-white shadow-2xl">
               <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-4">
                 <span className="text-base font-extrabold text-slate-900">{english ? "Explore AGRIVA" : "AGRIVA মেনু"}</span>
                 <button type="button" onClick={() => setMenuOpen(false)} className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={english ? "Close menu" : "মেনু বন্ধ করুন"}><X size={21} /></button>
