@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkModuleAccess } from "@/lib/authz/module-access";
 
 type SellerProduct = {
   id: string;
@@ -25,18 +26,17 @@ export default async function SellerProductsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/seller/products");
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("marketplace_seller_permissions")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .eq("status", "approved")
-    .maybeSingle();
-  if (membershipError || !membership) redirect("/sell-on-marketplace");
+  const { data: organization, error: organizationError } = await supabase.from("organizations")
+    .select("id").eq("owner_id", user.id).eq("status", "verified").limit(1).maybeSingle();
+  if (organizationError || !organization) redirect("/account/verification");
+  const access = await checkModuleAccess("marketplace", "read", { type: "organization", id: organization.id });
+  if (!access.allowed) redirect("/account/verification");
 
   const { data, error } = await supabase
     .from("products")
     .select("id,name,slug,category,price,stock,status,created_at")
     .eq("farmer_id", user.id)
+    .eq("marketplace_channel", "marketplace")
     .order("created_at", { ascending: false })
     .limit(100);
   const products = (data ?? []) as SellerProduct[];
