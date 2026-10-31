@@ -141,6 +141,16 @@ CREATE TABLE IF NOT EXISTS public.plant_market_products (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.plant_market_products
+  ADD COLUMN IF NOT EXISTS flowering_season text,
+  ADD COLUMN IF NOT EXISTS delivery_area text,
+  ADD COLUMN IF NOT EXISTS images text[] NOT NULL DEFAULT '{}';
+ALTER TABLE public.plant_market_products
+  DROP CONSTRAINT IF EXISTS plant_market_products_status_check;
+ALTER TABLE public.plant_market_products
+  ADD CONSTRAINT plant_market_products_status_check
+  CHECK (status IN ('draft','active','paused','rejected','suspended'));
+
 CREATE INDEX IF NOT EXISTS plant_market_products_public_idx
   ON public.plant_market_products(status, category_slug, created_at DESC);
 DROP INDEX IF EXISTS public.plant_market_products_seller_idx;
