@@ -108,7 +108,7 @@ export default function Checkout() {
 
   async function verifyPhoneOtp() {
     const phone = normalizeBangladeshPhone(form.phone);
-    if (!phone || !/^\\d{6}$/.test(otp.trim())) {
+    if (!phone || !/^\d{6}$/.test(otp.trim())) {
       setMessage("SMS-এ পাওয়া ৬ সংখ্যার OTP লিখুন।"); return;
     }
     setOtpBusy(true); setMessage("");
@@ -203,7 +203,7 @@ export default function Checkout() {
           {!phoneVerified ? <>
             <button type="button" onClick={() => void sendPhoneOtp()} disabled={otpBusy} className="mt-3 rounded-lg bg-[#17351f] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{otpBusy ? "অপেক্ষা করুন…" : otpSent ? "আবার OTP পাঠান" : "SMS OTP পাঠান"}</button>
             {otpSent && <div className="mt-3 flex flex-wrap gap-2">
-              <input value={otp} onChange={e => setOtp(e.target.value.replace(/\\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="৬ সংখ্যার OTP" maxLength={6} className="min-w-0 flex-1 rounded-lg border px-3 py-2" />
+              <input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="৬ সংখ্যার OTP" maxLength={6} className="min-w-0 flex-1 rounded-lg border px-3 py-2" />
               <button type="button" onClick={() => void verifyPhoneOtp()} disabled={otpBusy || otp.length !== 6} className="rounded-lg border border-[#17351f] px-4 py-2 text-sm font-bold disabled:opacity-50">যাচাই করুন</button>
             </div>}
           </> : <p className="mt-2 text-sm font-bold text-emerald-800">ফোন নম্বর যাচাই সম্পন্ন ✓</p>}
