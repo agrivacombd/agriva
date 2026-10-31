@@ -328,7 +328,7 @@ export default function SiteChrome() {
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
                 <div className="grid gap-1">
-                  {primaryLinks.map((link, index) => (
+                  {primaryLinks.map((link) => (
                     <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className={"flex min-h-12 items-center justify-between rounded-xl px-3 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (isActivePath(pathname, link.href) ? "bg-emerald-50 text-emerald-900" : "text-slate-800 hover:bg-slate-50")}>
                       <span>{link.label}</span>
                       {link.href === "/marketplace" && !english && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">বাজার</span>}
