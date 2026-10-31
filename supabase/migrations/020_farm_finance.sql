@@ -72,7 +72,8 @@ with check (
     select 1 from public.crop_cycles c where c.id = crop_cycle_id and c.farm_id = farm_id and c.owner_id = auth.uid()
   ))
 );
-drop policy if exists "farm_sales_owner_delete" on public.farm_sales for delete using (auth.uid() = owner_id);
+drop policy if exists "farm_sales_owner_delete" on public.farm_sales;
+create policy "farm_sales_owner_delete" on public.farm_sales for delete using (auth.uid() = owner_id);
 
 comment on table public.farm_expenses is 'Farmer-entered costs linked to a farm and optionally a crop cycle.';
 comment on table public.farm_sales is 'Farmer-entered crop sales revenue linked to a farm and optionally a crop cycle.';
