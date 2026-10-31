@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { requireAdminPage } from "@/lib/admin/authz";
 import SellerApplicationReview from "@/components/admin/SellerApplicationReview";
