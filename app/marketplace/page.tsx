@@ -58,9 +58,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
     </section>
 
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-      <MarketplaceCore products={products} initialQuery={initialQuery} />
-      {catalogueUnavailable && <p role="status" className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।</p>}
-      {!catalogueUnavailable && !products.length && <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। পণ্য অনুমোদিত হলে এখানে দেখা যাবে। এর মধ্যে আপনার প্রয়োজন চাহিদা বোর্ডে জানাতে পারেন।</p>}
+      <MarketplaceCore products={products} initialQuery={initialQuery} emptyCatalogMessage={catalogueUnavailable ? "এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।" : !products.length ? "এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য পাওয়া যায়নি। পণ্য অনুমোদিত হলে এখানে দেখা যাবে।" : undefined} />
     </section>
 
     <section aria-label="বিক্রেতা ও ক্রেতাদের জন্য সেবা" className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
