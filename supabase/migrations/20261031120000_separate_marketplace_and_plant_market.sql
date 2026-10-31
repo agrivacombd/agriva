@@ -533,7 +533,13 @@ CREATE OR REPLACE FUNCTION public.guard_plant_market_product_write()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp AS $$
 DECLARE
-  v_is_admin boolean := auth.uid() IS NOT NULL AND public.is_admin();
+  v_is_admin boolean := auth.uid() IS NOT NULL AND (
+    public.has_platform_admin_access()
+    OR EXISTS (
+      SELECT 1 FROM public.user_role_memberships m
+      WHERE m.user_id = auth.uid() AND m.role IN ('admin', 'super_admin')
+    )
+  );
   v_is_plant_seller boolean := EXISTS (
     SELECT 1 FROM public.plant_seller_permissions p
     WHERE p.user_id = auth.uid() AND p.status = 'approved'
@@ -542,7 +548,10 @@ BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
   END IF;
-  IF NEW.status = 'active' AND NOT v_is_plant_seller THEN
+  IF NEW.status = 'active' AND NOT EXISTS (
+    SELECT 1 FROM public.plant_seller_permissions p
+    WHERE p.user_id = NEW.seller_id AND p.status = 'approved'
+  ) THEN
     RAISE EXCEPTION 'Active Plant Market listings require approved Plant Seller permission' USING ERRCODE = '42501';
   END IF;
   IF v_is_admin THEN RETURN NEW; END IF;
