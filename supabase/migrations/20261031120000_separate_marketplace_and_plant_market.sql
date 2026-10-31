@@ -64,6 +64,20 @@ FROM public.user_role_memberships m
 WHERE m.role IN ('seller','organization') AND m.granted_by IS NOT NULL
 ON CONFLICT (user_id) DO NOTHING;
 
+-- Existing live Marketplace listings are evidence of prior admin approval; preserve
+-- their sellers when moving authorization to the explicit permission table.
+INSERT INTO public.marketplace_seller_permissions(user_id,status,approved_by,approved_at)
+SELECT p.farmer_id, 'approved', NULL, max(p.updated_at)
+FROM public.products p
+WHERE p.status = 'active'
+GROUP BY p.farmer_id
+ON CONFLICT (user_id) DO NOTHING;
+INSERT INTO public.user_role_memberships(user_id,role)
+SELECT DISTINCT p.farmer_id, 'seller'
+FROM public.products p
+WHERE p.status = 'active'
+ON CONFLICT (user_id,role) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS public.plant_market_products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   seller_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
@@ -224,7 +238,7 @@ BEGIN
     WHERE farmer_id = NEW.user_id AND status = 'active';
     IF OLD.approved_by IS NOT NULL THEN
       DELETE FROM public.user_role_memberships
-      WHERE user_id=NEW.user_id AND role='seller' AND granted_by=OLD.approved_by;
+      WHERE user_id=NEW.user_id AND role='seller';
     END IF;
   END IF;
   RETURN NEW;
@@ -250,7 +264,7 @@ BEGIN
     WHERE seller_id = NEW.user_id AND status = 'active';
     IF OLD.approved_by IS NOT NULL THEN
       DELETE FROM public.user_role_memberships
-      WHERE user_id=NEW.user_id AND role='plant_seller' AND granted_by=OLD.approved_by;
+      WHERE user_id=NEW.user_id AND role='plant_seller';
     END IF;
   END IF;
   RETURN NEW;
@@ -408,6 +422,9 @@ BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
   END IF;
+  IF NEW.status = 'active' AND NOT v_is_marketplace_seller THEN
+    RAISE EXCEPTION 'Active Marketplace listings require approved Marketplace Seller permission' USING ERRCODE = '42501';
+  END IF;
   IF v_is_admin THEN RETURN NEW; END IF;
   IF NOT v_is_marketplace_seller THEN
     RAISE EXCEPTION 'Approved Marketplace Seller permission required' USING ERRCODE = '42501';
@@ -444,6 +461,9 @@ DECLARE
 BEGIN
   IF auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
+  END IF;
+  IF NEW.status = 'active' AND NOT v_is_plant_seller THEN
+    RAISE EXCEPTION 'Active Plant Market listings require approved Plant Seller permission' USING ERRCODE = '42501';
   END IF;
   IF v_is_admin THEN RETURN NEW; END IF;
   IF NOT v_is_plant_seller THEN
