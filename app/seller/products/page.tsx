@@ -26,13 +26,12 @@ export default async function SellerProductsPage() {
   if (!user) redirect("/login?next=/seller/products");
 
   const { data: membership, error: membershipError } = await supabase
-    .from("user_role_memberships")
-    .select("role")
+    .from("marketplace_seller_permissions")
+    .select("user_id")
     .eq("user_id", user.id)
-    .in("role", ["seller", "organization"])
-    .limit(1)
+    .eq("status", "approved")
     .maybeSingle();
-  if (membershipError || !membership) redirect("/dashboard");
+  if (membershipError || !membership) redirect("/sell-on-marketplace");
 
   const { data, error } = await supabase
     .from("products")
