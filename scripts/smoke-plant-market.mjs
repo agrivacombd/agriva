@@ -18,4 +18,11 @@ assert.match(home, /href="\/plant-market"/, "home navigation must expose Plant M
 assert.match(sitemap, /\$\{base\}\/plant-market/, "Plant Market must be in the sitemap");
 assert.match(robots, /"\/plant-market"/, "Plant Market must be crawlable");
 
+const marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+assert.match(page, /categoryMode="available"/, "Plant Market categories must reflect products actually available");
+assert.match(marketplaceCore, /price-low/, "Product sorting must support ascending price");
+assert.match(marketplaceCore, /price-high/, "Product sorting must support descending price");
+assert.match(marketplaceCore, /stockOnly/, "Customers must be able to filter in-stock products");
+assert.match(marketplaceCore, /aria-pressed/, "Category selection must expose accessible pressed state");
+
 console.log("Plant Market live-inventory and SEO smoke checks passed.");
