@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminApi } from "@/lib/admin/authz";
 type Params={params:Promise<{market:string;userId:string}>};
 export async function PATCH(request:NextRequest,{params}:Params){
   const {market,userId}=await params;
-  const supabase=await createSupabaseServerClient();
-  const {data:{user},error:authError}=await supabase.auth.getUser();
-  if(authError||!user)return NextResponse.json({error:"Unauthorized"},{status:401});
-  const {data:profile}=await supabase.from("profiles").select("role").eq("id",user.id).maybeSingle();
-  if(profile?.role!=="admin")return NextResponse.json({error:"Admin access required."},{status:403});
+  const access=await requireAdminApi("catalog.moderate");
+  if(!access.ok)return access.response;
+  const supabase=access.supabase;
+  const user=access.user;
   const body=await request.json().catch(()=>({}));
   const status=body.status;
   if(!userId||!["approved","revoked"].includes(status))return NextResponse.json({error:"Permission status must be approved or revoked."},{status:400});
