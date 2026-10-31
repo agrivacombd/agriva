@@ -25,6 +25,7 @@ assert.match(checkoutButton, /@\/lib\/supabase\/client/, "Product detail must us
 assert.match(checkoutButton, /\.from\("carts"\)/, "Product detail must find or create the buyer's active cart");
 assert.match(checkoutButton, /\.from\("cart_items"\)/, "Product detail must add the selected product to cart_items");
 assert.match(checkoutButton, /router\.push\("\/cart"\)/, "Successful add-to-cart must take the buyer to the cart");
+assert.match(checkoutButton, /\/login\?next=%2Fcart/, "Unauthenticated buyers must be able to resume the cart flow after login");
 assert.match(checkoutButton, /fetch\("\/api\/checkout"/, "Direct COD purchase must retain the existing checkout API");
 
 const marketplaceCore = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
