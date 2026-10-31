@@ -56,16 +56,9 @@ CREATE TABLE IF NOT EXISTS public.plant_seller_permissions (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Preserve previously admin-granted legacy Marketplace sellers only. Self-selected
--- legacy memberships (granted_by IS NULL) do not become approved automatically.
-INSERT INTO public.marketplace_seller_permissions(user_id,status,approved_by,approved_at)
-SELECT m.user_id, 'approved', m.granted_by, m.created_at
-FROM public.user_role_memberships m
-WHERE m.role IN ('seller','organization') AND m.granted_by IS NOT NULL
-ON CONFLICT (user_id) DO NOTHING;
-
--- Existing live Marketplace listings are evidence of prior admin approval; preserve
--- their sellers when moving authorization to the explicit permission table.
+-- The production membership table predates grant attribution, so do not infer approval
+-- from a legacy role alone. Existing active Marketplace listings are the verifiable
+-- evidence used to preserve sellers during this migration.
 INSERT INTO public.marketplace_seller_permissions(user_id,status,approved_by,approved_at)
 SELECT p.farmer_id, 'approved', NULL, max(p.updated_at)
 FROM public.products p
@@ -230,9 +223,9 @@ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp AS $marketplace_role_sync$
 BEGIN
   IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
-    INSERT INTO public.user_role_memberships(user_id,role,granted_by)
-    VALUES (NEW.user_id,'seller',NEW.approved_by)
-    ON CONFLICT (user_id,role) DO UPDATE SET granted_by=EXCLUDED.granted_by;
+    INSERT INTO public.user_role_memberships(user_id,role)
+    VALUES (NEW.user_id,'seller')
+    ON CONFLICT (user_id,role) DO NOTHING;
   ELSIF TG_OP = 'UPDATE' THEN
     IF NEW.status = 'revoked' AND OLD.status = 'approved' THEN
       UPDATE public.products SET status = 'paused'::public.product_status, updated_at = now()
@@ -254,9 +247,9 @@ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp AS $plant_role_sync$
 BEGIN
   IF NEW.status = 'approved' AND NEW.approved_by IS NOT NULL THEN
-    INSERT INTO public.user_role_memberships(user_id,role,granted_by)
-    VALUES (NEW.user_id,'plant_seller',NEW.approved_by)
-    ON CONFLICT (user_id,role) DO UPDATE SET granted_by=EXCLUDED.granted_by;
+    INSERT INTO public.user_role_memberships(user_id,role)
+    VALUES (NEW.user_id,'plant_seller')
+    ON CONFLICT (user_id,role) DO NOTHING;
   ELSIF TG_OP = 'UPDATE' THEN
     IF NEW.status = 'revoked' AND OLD.status = 'approved' THEN
       UPDATE public.plant_market_products
