@@ -16,6 +16,7 @@ const adminApplicationApi = readFileSync("app/api/admin/seller-applications/[mar
 const adminPermissionApi = readFileSync("app/api/admin/seller-permissions/[market]/[userId]/route.ts", "utf8");
 const plantSellerDashboard = readFileSync("app/plant-seller/products/page.tsx", "utf8");
 const plantSellerForm = readFileSync("components/seller/PlantSellerProductForm.tsx", "utf8");
+const plantProductDetail = readFileSync("app/plant-market/[slug]/page.tsx", "utf8");
 const robotsText = robots;
 
 assert.match(page, /from\("plant_market_products"\)/, "Plant Market must use its isolated catalogue");
@@ -29,6 +30,12 @@ assert.match(robots, /"\/plant-market"/, "Plant Market must be crawlable");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_market_products/, "Plant Market must have a separate product table");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.marketplace_seller_permissions/, "Marketplace must have a separate seller permission table");
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.plant_seller_permissions/, "Plant Market must have a separate seller permission table");
+assert.match(migration, /'plant_seller'/, "Plant Seller role must be distinct");
+assert.match(migration, /sync_plant_seller_permission/, "Plant Seller approval must create its own permission");
+assert.match(migration, /sync_marketplace_seller_permission/, "Marketplace approval must create its own permission");
+assert.match(migration, /v_allowed text\[\] := ARRAY\[/, "self-service role picker must remain allow-listed");
+assert.match(migration, /Approved Marketplace Seller permission required/, "Marketplace writes must require Marketplace approval");
+assert.match(migration, /Approved Plant Market Seller permission required/, "Plant Market writes must require Plant Market approval");
 assert.match(marketplaceApi, /from\("marketplace_seller_permissions"\)/, "Marketplace product API must check Marketplace approval");
 assert.match(marketplacePage, /from\("marketplace_seller_permissions"\)/, "Marketplace product form must check Marketplace approval");
 assert.match(marketplaceCore, /productHrefPrefix/, "shared catalogue UI must support market-specific detail routes");
@@ -40,6 +47,8 @@ assert.match(adminApplicationApi, /marketplace_seller_applications|plant_seller_
 assert.match(adminPermissionApi, /marketplace_seller_permissions|plant_seller_permissions/, "Admin must be able to manage each market permission separately");
 assert.match(plantSellerDashboard, /plant_market_products/, "Plant Seller dashboard must list only Plant Market products");
 assert.match(plantSellerForm, /plant-product-images/, "Plant Seller form must use its separate image bucket");
+assert.match(plantProductDetail, /plant_market_products/, "Plant Market detail route must query only Plant Market products");
+assert.doesNotMatch(plantProductDetail, /from\("products"\)/, "Plant Market detail must not query Marketplace products");
 assert.match(robotsText, /"\/seller\//, "private seller pages must not be crawlable");
 assert.match(robotsText, /"\/plant-seller\//, "private Plant Seller pages must not be crawlable");
 assert.match(sitemap, /sell-on-marketplace|sell-on-plant-market/, "public seller acquisition pages must be discoverable");
