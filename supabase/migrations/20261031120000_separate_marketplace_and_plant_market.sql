@@ -140,14 +140,16 @@ CREATE POLICY plant_market_products_public_read ON public.plant_market_products
 DROP POLICY IF EXISTS plant_market_products_seller_insert ON public.plant_market_products;
 CREATE POLICY plant_market_products_seller_insert ON public.plant_market_products
   FOR INSERT TO authenticated WITH CHECK (
-    seller_id = (SELECT auth.uid())
-    AND status = 'draft'
-    AND EXISTS (
-      SELECT 1 FROM public.gardener_profiles gp
-      WHERE gp.user_id = (SELECT auth.uid())
-        AND gp.verification_status = 'verified'
+    public.is_admin() OR (
+      seller_id = (SELECT auth.uid())
+      AND status = 'draft'
+      AND EXISTS (
+        SELECT 1 FROM public.gardener_profiles gp
+        WHERE gp.user_id = (SELECT auth.uid())
+          AND gp.verification_status = 'verified'
+      )
+      AND public.has_module_access('plant_market','create','global',NULL::uuid)
     )
-    AND public.has_module_access('plant_market','create','global',NULL::uuid)
   );
 DROP POLICY IF EXISTS plant_market_products_seller_update ON public.plant_market_products;
 CREATE POLICY plant_market_products_seller_update ON public.plant_market_products
@@ -173,8 +175,10 @@ CREATE POLICY plant_market_products_seller_update ON public.plant_market_product
 DROP POLICY IF EXISTS plant_market_products_seller_delete ON public.plant_market_products;
 CREATE POLICY plant_market_products_seller_delete ON public.plant_market_products
   FOR DELETE TO authenticated USING (
-    seller_id = (SELECT auth.uid())
-    AND public.has_module_access('plant_market','delete','global',NULL::uuid)
+    public.is_admin() OR (
+      seller_id = (SELECT auth.uid())
+      AND public.has_module_access('plant_market','delete','global',NULL::uuid)
+    )
   );
 DROP POLICY IF EXISTS plant_market_products_admin_update ON public.plant_market_products;
 CREATE POLICY plant_market_products_admin_update ON public.plant_market_products
