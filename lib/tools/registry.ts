@@ -50,7 +50,7 @@ export const toolCategories: {
   icon: LucideIcon;
 }[] = [
   { id: "calculators", title: "কৃষি ক্যালকুলেটর", titleEn: "Agriculture Calculators", description: "সার, বীজ, খরচ ও ফসলের সম্ভাব্য লাভের হিসাব", descriptionEn: "Estimate inputs, production costs and crop returns.", icon: Calculator },
-  { id: "ai", title: "AI কৃষি সহায়তা", titleEn: "AI Agriculture Tools", description: "কৃষি প্রশ্ন, স্মার্ট সার্চ ও রোগের প্রাথমিক বিশ্লেষণ", descriptionEn: "Ask agriculture questions, search smarter and review crop symptoms.", icon: Bot },
+  { id: "ai", title: "AI ও ফসলের স্বাস্থ্য", titleEn: "AI & Crop Health Tools", description: "কৃষি প্রশ্ন, স্মার্ট সার্চ ও ফসলের লক্ষণ/রোগের প্রাথমিক সহায়তা", descriptionEn: "Ask agriculture questions, search smarter and review crop symptoms.", icon: Bot },
   { id: "farm-management", title: "খামার ব্যবস্থাপনা", titleEn: "Farm Management", description: "জমি, ফসলের মৌসুম ও দৈনন্দিন কাজের রেকর্ড", descriptionEn: "Manage farm, crop-cycle and activity records.", icon: Tractor },
   { id: "farm-planning", title: "ফসল পরিকল্পনা", titleEn: "Farm Planning", description: "আবহাওয়া ও মৌসুমভিত্তিক কৃষিকাজের পরিকল্পনা", descriptionEn: "Plan farm activities with weather and seasonal checklists.", icon: CalendarDays },
   { id: "market", title: "বাজার তথ্য", titleEn: "Market Intelligence", description: "সরকারি উৎস থেকে কৃষিপণ্যের বাজারদর যাচাই", descriptionEn: "Check agricultural market-price sources before selling.", icon: TrendingUp },
