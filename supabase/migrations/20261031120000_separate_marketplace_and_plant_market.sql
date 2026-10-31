@@ -170,9 +170,6 @@ BEGIN
     VALUES (NEW.user_id,'approved',NEW.reviewed_by,coalesce(NEW.reviewed_at,now()),now())
     ON CONFLICT (user_id) DO UPDATE SET status='approved',
       approved_by=EXCLUDED.approved_by, approved_at=EXCLUDED.approved_at, updated_at=now();
-  ELSIF NEW.status = 'rejected' THEN
-    UPDATE public.marketplace_seller_permissions SET status='revoked', updated_at=now()
-    WHERE user_id=NEW.user_id;
   END IF;
   RETURN NEW;
 END $$;
@@ -192,9 +189,6 @@ BEGIN
     VALUES (NEW.user_id,'approved',NEW.reviewed_by,coalesce(NEW.reviewed_at,now()),now())
     ON CONFLICT (user_id) DO UPDATE SET status='approved',
       approved_by=EXCLUDED.approved_by, approved_at=EXCLUDED.approved_at, updated_at=now();
-  ELSIF NEW.status = 'rejected' THEN
-    UPDATE public.plant_seller_permissions SET status='revoked', updated_at=now()
-    WHERE user_id=NEW.user_id;
   END IF;
   RETURN NEW;
 END $$;
