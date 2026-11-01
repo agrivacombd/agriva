@@ -15,9 +15,9 @@ export async function POST(request:NextRequest){
  const raw=body.shippingAddress&&typeof body.shippingAddress==="object"&&!Array.isArray(body.shippingAddress)?body.shippingAddress as Record<string,unknown>:{};
  const address={fullName:clean(raw.fullName,100),phone:clean(raw.phone,20),division:clean(raw.division,80),district:clean(raw.district,80),upazila:clean(raw.upazila,100),unionOrArea:clean(raw.unionOrArea,100),villageRoadHouse:clean(raw.villageRoadHouse,200),landmark:clean(raw.landmark,160),postalCode:clean(raw.postalCode,20),deliveryInstructions:clean(raw.deliveryInstructions,300)};
  if(!address.fullName||!address.phone||!address.division||!address.district||!address.upazila||!address.unionOrArea||!address.villageRoadHouse)return NextResponse.json({error:"নাম, মোবাইল, বিভাগ, জেলা, উপজেলা, এলাকা ও সম্পূর্ণ ঠিকানা দিন।"},{status:400});
- const phone=address.phone.replace(/[\\s()-]/g,"");
+ const phone=address.phone.replace(/[\s()-]/g,"");
  const normalized=phone.startsWith("+")?phone:phone.startsWith("880")?"+"+phone:phone.startsWith("01")?"+88"+phone:phone.startsWith("1")?"+880"+phone:"";
- if(!/^\\+8801[3-9]\\d{8}$/.test(normalized))return NextResponse.json({error:"সঠিক বাংলাদেশি মোবাইল নম্বর দিন।"},{status:400});
+ if(!/^\+8801[3-9]\d{8}$/.test(normalized))return NextResponse.json({error:"সঠিক বাংলাদেশি মোবাইল নম্বর দিন।"},{status:400});
  const shippingAddress={...address,phone:normalized,address:[address.upazila,address.unionOrArea,address.villageRoadHouse].filter(Boolean).join(", ")};
  const {data,error}=await supabase.rpc("plant_market_finalize_checkout",{p_shipping_address:shippingAddress,p_idempotency_key:key});
  if(error){console.error("Plant Market checkout failed",{code:error.code||"unknown"});return NextResponse.json({error:"Plant Market checkout সম্পন্ন হয়নি। কার্ট ও স্টক যাচাই করে আবার চেষ্টা করুন।"},{status:409});}
