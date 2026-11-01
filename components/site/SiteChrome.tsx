@@ -315,75 +315,77 @@ export default function SiteChrome() {
           <SearchForm english={english} />
         </div>
 
-        {menuOpen && (
-          <div className="fixed inset-0 z-[90] xl:hidden" id="agriva-mobile-navigation">
-            <button type="button" aria-label={english ? "Close navigation menu" : "মেনু বন্ধ করুন"} onClick={() => setMenuOpen(false)} className="absolute inset-0 bg-slate-950/40" />
-            <nav ref={drawerRef} role="dialog" aria-modal="true" aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-hidden bg-white shadow-2xl">
-              <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-4">
-                <span className="text-base font-extrabold text-slate-900">{english ? "Explore AGRIVA" : "AGRIVA মেনু"}</span>
-                <button type="button" onClick={() => setMenuOpen(false)} className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={english ? "Close menu" : "মেনু বন্ধ করুন"}><X size={21} /></button>
-              </div>
-              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
-                <div className="grid gap-1">
-                  {primaryLinks.map((link, index) => (
-                    <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className={"flex min-h-12 items-center justify-between rounded-xl px-3 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (isActivePath(pathname, link.href) ? "bg-emerald-50 text-emerald-900" : "text-slate-800 hover:bg-slate-50")}>
-                      <span>{link.label}</span>
-                      {index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">বাজার</span>}
-                    </Link>
-                  ))}
-                </div>
 
-                {!english && <div className="mt-5 border-t border-slate-100 pt-4">
-                  <button type="button" onClick={() => setServicesOpen((open) => !open)} aria-expanded={servicesOpen} className="flex min-h-12 w-full items-center justify-between rounded-xl px-3 text-sm font-extrabold text-slate-900 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-                    আরও সেবা <ChevronDown size={18} className={"transition " + (servicesOpen ? "rotate-180" : "")} />
-                  </button>
-                  {servicesOpen && <div className="mt-2 grid gap-4 pl-2">
-                    {bnServiceGroups.map((group) => (
-                      <section key={group.title}>
-                        <h3 className="mb-1 px-3 text-xs font-extrabold tracking-wide text-emerald-800">{group.title}</h3>
-                        <div className="grid gap-1">
-                          {group.links.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                              <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-                                <Icon size={18} className="shrink-0 text-emerald-700" aria-hidden="true" />
-                                <span>{link.label}</span>
-                              </Link>
-                            );
-                          })}
-                        </div>
-                      </section>
-                    ))}
-                  </div>}
-                </div>}
-
-                <div className="mt-5 grid gap-2 border-t border-slate-100 pt-4">
-                  <Link href={english ? "/en" : "/sell-harvest"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
-                    <Sprout size={18} aria-hidden="true" />{english ? "Start selling" : "বিক্রি শুরু করুন"}
-                  </Link>
-                </div>
-              </div>
-
-              <div className="border-t border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <Link href={languageTarget} lang={english ? "bn" : "en"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 text-sm font-bold text-emerald-900"><Globe2 size={16} />{english ? "বাংলা" : "English"}</Link>
-                  {authReady && (signedIn ? (
-                    <div className="flex items-center gap-2">
-                      <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
-                      <button type="button" onClick={signOut} className="min-h-10 rounded-xl px-2 text-sm font-semibold text-slate-600 hover:bg-white">{english ? "Log out" : "লগআউট"}</button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Link href="/login" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-1 rounded-xl px-2 text-sm font-bold text-emerald-800"><LogIn size={16} />{english ? "Log in" : "লগইন"}</Link>
-                      <Link href="/signup" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Sign up" : "নিবন্ধন"}</Link>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </nav>
-          </div>
-        )}
       </header>
+
+      {menuOpen && (
+        <div className="fixed inset-0 z-[90] xl:hidden" id="agriva-mobile-navigation">
+          <button type="button" aria-label={english ? "Close navigation menu" : "মেনু বন্ধ করুন"} onClick={() => setMenuOpen(false)} className="absolute inset-0 bg-slate-950/40" />
+          <nav ref={drawerRef} role="dialog" aria-modal="true" aria-label={english ? "Mobile navigation" : "মোবাইল নেভিগেশন"} className="absolute inset-y-0 right-0 flex h-[100dvh] max-h-[100dvh] w-full max-w-sm flex-col overflow-hidden bg-white shadow-2xl">
+            <div className="flex min-h-16 items-center justify-between border-b border-slate-100 px-4">
+              <span className="text-base font-extrabold text-slate-900">{english ? "Explore AGRIVA" : "AGRIVA মেনু"}</span>
+              <button type="button" onClick={() => setMenuOpen(false)} className="grid h-10 w-10 place-items-center rounded-xl text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700" aria-label={english ? "Close menu" : "মেনু বন্ধ করুন"}><X size={21} /></button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4">
+              <div className="grid gap-1">
+                {primaryLinks.map((link, index) => (
+                  <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className={"flex min-h-12 items-center justify-between rounded-xl px-3 py-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (isActivePath(pathname, link.href) ? "bg-emerald-50 text-emerald-900" : "text-slate-800 hover:bg-slate-50")}>
+                    <span>{link.label}</span>
+                    {index === 0 && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800">বাজার</span>}
+                  </Link>
+                ))}
+              </div>
+
+              {!english && <div className="mt-5 border-t border-slate-100 pt-4">
+                <button type="button" onClick={() => setServicesOpen((open) => !open)} aria-expanded={servicesOpen} className="flex min-h-12 w-full items-center justify-between rounded-xl px-3 text-sm font-extrabold text-slate-900 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                  আরও সেবা <ChevronDown size={18} className={"transition " + (servicesOpen ? "rotate-180" : "")} />
+                </button>
+                {servicesOpen && <div className="mt-2 grid gap-4 pl-2">
+                  {bnServiceGroups.map((group) => (
+                    <section key={group.title}>
+                      <h3 className="mb-1 px-3 text-xs font-extrabold tracking-wide text-emerald-800">{group.title}</h3>
+                      <div className="grid gap-1">
+                        {group.links.map((link) => {
+                          const Icon = link.icon;
+                          return (
+                            <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                              <Icon size={18} className="shrink-0 text-emerald-700" aria-hidden="true" />
+                              <span>{link.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  ))}
+                </div>}
+              </div>}
+
+              <div className="mt-5 grid gap-2 border-t border-slate-100 pt-4">
+                <Link href={english ? "/en" : "/sell-harvest"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
+                  <Sprout size={18} aria-hidden="true" />{english ? "Start selling" : "বিক্রি শুরু করুন"}
+                </Link>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-100 bg-slate-50 p-4">
+              <div className="flex items-center justify-between gap-3">
+                <Link href={languageTarget} lang={english ? "bn" : "en"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 text-sm font-bold text-emerald-900"><Globe2 size={16} />{english ? "বাংলা" : "English"}</Link>
+                {authReady && (signedIn ? (
+                  <div className="flex items-center gap-2">
+                    <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
+                    <button type="button" onClick={signOut} className="min-h-10 rounded-xl px-2 text-sm font-semibold text-slate-600 hover:bg-white">{english ? "Log out" : "লগআউট"}</button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link href="/login" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-1 rounded-xl px-2 text-sm font-bold text-emerald-800"><LogIn size={16} />{english ? "Log in" : "লগইন"}</Link>
+                    <Link href="/signup" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Sign up" : "নিবন্ধন"}</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
 
       {showTop && <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" })} className="fixed bottom-5 right-5 z-50 grid h-12 w-12 place-items-center rounded-full bg-emerald-800 text-white shadow-lg transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" aria-label={english ? "Back to top" : "উপরে যান"}><ArrowUp size={21} /></button>}
     </>
