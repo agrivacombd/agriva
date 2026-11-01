@@ -136,7 +136,7 @@ begin
  if not exists(select 1 from public.plant_market_cart_items where cart_id=c.id) then raise exception 'Plant Market cart is empty'; end if;
  -- Lock and validate every line before any persistent checkout/order/stock writes.
  for p in
-  select ci.product_id,ci.quantity,pm.seller_id,pm.name,pm.price,pm.stock
+  select ci.product_id,ci.quantity,pm.seller_id,pm.name,pm.price,pm.stock,pm.status
   from public.plant_market_cart_items ci join public.plant_market_products pm on pm.id=ci.product_id
   where ci.cart_id=c.id order by ci.product_id for update of pm
  loop
