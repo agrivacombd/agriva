@@ -34,6 +34,7 @@ assert.match(sitemap,/from\("plant_market_products"\)/,"Plant Market sitemap rea
 assert.match(sitemap,/eq\("marketplace_channel", "marketplace"\)/,"Marketplace sitemap excludes all other channels");
 assert.match(robots,/"\/plant-market"/,"Plant Market remains crawlable");
 assert.match(migration,/CREATE TABLE IF NOT EXISTS public\.plant_market_products/,"Plant Market has its own physical product table");
+assert.match(migration,/DROP TRIGGER IF EXISTS plant_market_products_guard_write/,"previous Plant Market guard trigger is removed before the replacement is created");
 assert.match(migration,/products_marketplace_only_channel_check/,"products table is Marketplace-only");
 assert.match(migration,/Grandfathered existing Marketplace seller/,"existing Marketplace sellers retain their approved legacy access");
 assert.doesNotMatch(migration,/user_role_memberships/,"self-selected legacy roles must never grant verified Marketplace access");

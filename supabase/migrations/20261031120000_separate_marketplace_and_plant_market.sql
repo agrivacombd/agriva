@@ -336,6 +336,9 @@ BEGIN
 END;
 $function$;
 REVOKE ALL ON FUNCTION public.guard_plant_market_product_write() FROM PUBLIC, anon, authenticated;
+-- Remove the earlier PR/test trigger name as well, otherwise the same guard
+-- would execute twice on every Plant Market insert/update.
+DROP TRIGGER IF EXISTS plant_market_products_guard_write ON public.plant_market_products;
 DROP TRIGGER IF EXISTS plant_market_products_write_guard ON public.plant_market_products;
 CREATE TRIGGER plant_market_products_write_guard
   BEFORE INSERT OR UPDATE ON public.plant_market_products
