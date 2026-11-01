@@ -19,15 +19,15 @@ import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnPrimaryLinks = [
-  { href: "/tools", label: "কৃষি টুলস" },
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
-  { href: "/plant-market", label: "গাছ ও বাগান" },
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
   { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
-  { href: "/blog", label: "কৃষি ব্লগ" },
-  { href: "/farms", label: "খামার ব্যবস্থাপনা" },
-  { href: "/jobs", label: "কৃষি কাজ ও চাকরি" },
   { href: "/transport", label: "কৃষি পরিবহন" },
+  { href: "/tools", label: "কৃষি টুলস" },
+  { href: "/farms", label: "খামার ব্যবস্থাপনা" },
+  { href: "/plant-market", label: "গাছ ও বাগান" },
+  { href: "/blog", label: "কৃষি ব্লগ" },
+  { href: "/jobs", label: "কৃষি কাজ ও চাকরি" },
 ];
 
 const enPrimaryLinks = [
