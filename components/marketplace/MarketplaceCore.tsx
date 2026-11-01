@@ -87,7 +87,7 @@ function ProductCard({
   );
 }
 
-export default function MarketplaceCore({ products, showCategories = true, initialQuery = "", emptyCatalogMessage }: { products: MarketplaceProduct[]; showCategories?: boolean; initialQuery?: string; emptyCatalogMessage?: string }) {
+export default function MarketplaceCore({ products, showCategories = true, availableCategoriesOnly = false, initialQuery = "", emptyCatalogMessage }: { products: MarketplaceProduct[]; showCategories?: boolean; availableCategoriesOnly?: boolean; initialQuery?: string; emptyCatalogMessage?: string }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("newest");
@@ -102,7 +102,7 @@ export default function MarketplaceCore({ products, showCategories = true, initi
   const categoryCounts = useMemo(() => MARKETPLACE_CATEGORIES.map((item) => ({
     ...item,
     count: products.filter((product) => productMatchesCategory(product, item.slug)).length,
-  })), [products]);
+  })).filter((item) => !availableCategoriesOnly || item.count > 0), [products, availableCategoriesOnly]);
 
   const visible = useMemo(() => {
     const search = normalize(query);

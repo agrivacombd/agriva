@@ -1,6 +1,7 @@
 export type AnalyticsEventName =
   | "seller_product_submitted"
-  | "marketplace_order_placed";
+  | "marketplace_order_placed"
+  | "add_to_cart";
 
 type AnalyticsEventParams = Record<string, string | number | boolean | undefined>;
 
