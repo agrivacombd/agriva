@@ -5,6 +5,7 @@ const page = readFileSync("app/plant-market/page.tsx", "utf8");
 const home = readFileSync("app/home-client.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
+const analytics = readFileSync("lib/analytics.ts", "utf8");
 
 assert.match(page, /from\("products"\)/, "Plant Market must use real product inventory");
 assert.match(page, /\.eq\("status", "active"\)/, "only active products should appear");
@@ -28,5 +29,6 @@ assert.match(purchase, /\.from\("cart_items"\)/, "Product detail must add the se
 assert.match(purchase, /router\.push\("\/cart"\)/, "Successful add-to-cart must open the cart");
 assert.match(purchase, /\/login\?next=%2Fcart/, "Unauthenticated buyers must be able to resume the cart flow after login");
 assert.match(purchase, /fetch\("\/api\/checkout"/, "Direct COD purchase must retain the existing checkout API");
+assert.match(analytics, /"add_to_cart"/, "Analytics must accept the add-to-cart event");
 
-console.log("Plant Market live-inventory and SEO smoke checks passed.");
+console.log("Plant Market inventory, discovery, cart, checkout and SEO smoke checks passed.");
