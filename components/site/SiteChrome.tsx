@@ -23,9 +23,9 @@ import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const bnPrimaryLinks = [
-  { href: "/tools", label: "টুলস" },
+  { href: "/tools", label: "কৃষি টুলস" },
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
-  { href: "/plant-market", label: "Plant Market" },
+  { href: "/plant-market", label: "গাছ ও বাগান" },
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
   { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
   { href: "/blog", label: "কৃষি ব্লগ" },
