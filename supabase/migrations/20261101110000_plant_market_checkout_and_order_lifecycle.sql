@@ -70,11 +70,11 @@ alter table public.plant_market_orders enable row level security;
 alter table public.plant_market_order_items enable row level security;
 
 revoke all on public.plant_market_carts,public.plant_market_cart_items,public.plant_market_checkouts,public.plant_market_orders,public.plant_market_order_items from public,anon,authenticated;
-grant select on public.plant_market_carts,public.plant_market_cart_items,public.plant_market_checkouts,public.plant_market_orders,public.plant_market_order_items to authenticated;
+grant select on public.plant_market_carts,public.plant_market_cart_items,public.plant_market_checkouts,public.plant_market_orders,public.plant_market_order_items to authenticated;\ngrant delete on public.plant_market_cart_items to authenticated;
 
 drop policy if exists plant_market_cart_owner_read on public.plant_market_carts;
 create policy plant_market_cart_owner_read on public.plant_market_carts for select to authenticated using(buyer_id=(select auth.uid()));
-drop policy if exists plant_market_cart_item_owner_read on public.plant_market_cart_items;
+drop policy if exists plant_market_cart_item_owner_read on public.plant_market_cart_items;\ndrop policy if exists plant_market_cart_item_owner_delete on public.plant_market_cart_items;\ncreate policy plant_market_cart_item_owner_delete on public.plant_market_cart_items for delete to authenticated using(exists(select 1 from public.plant_market_carts c where c.id=cart_id and c.buyer_id=(select auth.uid()) and c.status='active'));
 create policy plant_market_cart_item_owner_read on public.plant_market_cart_items for select to authenticated using(exists(select 1 from public.plant_market_carts c where c.id=cart_id and c.buyer_id=(select auth.uid())));
 drop policy if exists plant_market_checkout_party_read on public.plant_market_checkouts;
 create policy plant_market_checkout_party_read on public.plant_market_checkouts for select to authenticated using(buyer_id=(select auth.uid()) or public.is_admin());
