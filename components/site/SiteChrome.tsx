@@ -41,8 +41,8 @@ const bnServiceGroups = [
   {
     title: "খামার ও ক্যারিয়ার",
     links: [
-      { href: "/farms", label: "আমার খামার", description: "খামারের কাজ ও পরিকল্পনা", icon: House },
-      { href: "/jobs", label: "কৃষি চাকরি", description: "চাকরি খুঁজুন বা নিয়োগ দিন", icon: BriefcaseBusiness },
+      { href: "/farms", label: "খামার ব্যবস্থাপনা", description: "খামারের কাজ ও পরিকল্পনা", icon: House },
+      { href: "/jobs", label: "কৃষি কাজ ও চাকরি", description: "কাজ খুঁজুন বা নিয়োগ দিন", icon: BriefcaseBusiness },
     ],
   },
   {
