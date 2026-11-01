@@ -39,7 +39,7 @@ export default async function PlantMarketPage() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,description,price,stock")
+      .select("id,name,slug,category,description,price,stock,unit,image_url")
       .eq("status", "active")
       .order("created_at", { ascending: false })
       .limit(500);
@@ -109,7 +109,7 @@ export default async function PlantMarketPage() {
             এই মুহূর্তে Plant Market-এর পণ্য লোড করা যাচ্ছে না। পরে আবার চেষ্টা করুন অথবা <Link className="font-bold underline" href="/marketplace">সাধারণ Marketplace</Link> দেখুন।
           </div>
         ) : products.length ? (
-          <MarketplaceCore products={products} showCategories={false} />
+          <MarketplaceCore products={products} showCategories />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
             <div aria-hidden="true" className="text-5xl">🪴</div>
