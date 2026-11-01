@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "AGRIVA Marketplace | কৃষি পণ্য, বীজ, সার ও কৃষি উপকরণ",
   description: "বাংলাদেশের কৃষি পণ্য এক জায়গায় খুঁজুন। বীজ, সার, ফসল সুরক্ষা, কৃষিযন্ত্র, ফসল ও প্রিমিয়াম খাদ্যশস্যের পণ্যের দাম, মজুত ও বিবরণ দেখুন।",
   alternates: { canonical: "/marketplace" },
-  keywords: ["কৃষি পণ্য", "কৃষি মার্কেটপ্লেস", "কৃষি বীজ", "কৃষি সার", "কৃষি যন্ত্রপাতি", "বাংলাদেশ কৃষি পণ্য", "ফসল সুরক্ষা", "কৃষি যন্ত্রপাতি", "প্যাকেটজাত কৃষিপণ্য", "Premium Food & Grains"],
+  keywords: ["কৃষি পণ্য", "কৃষি মার্কেটপ্লেস", "কৃষি বীজ", "কৃষি সার", "কৃষি যন্ত্রপাতি", "বাংলাদেশ কৃষি পণ্য", "ফসল", "চারা", "Premium Food & Grains"],
   openGraph: { title: "AGRIVA Marketplace | কৃষি পণ্য এক জায়গায়", description: "বীজ, সার, কৃষিযন্ত্র ও কৃষিপণ্য খুঁজুন এবং বিক্রেতার সঙ্গে যোগাযোগ করুন।", type: "website", locale: "bn_BD" },
 };
 
@@ -67,7 +67,13 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
         <p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-emerald-700">AGRIVA services</p>
         <h2 className="mt-1.5 text-xl font-black sm:text-2xl">কেনা-বেচায় আরও সুযোগ</h2>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <article className="flex flex-col items-start rounded-2xl border border-emerald-800 bg-[#075d45] p-5 text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg sm:p-6">
+          <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-lg border border-lime-200/30 bg-white/10 text-xl">▦</span>
+          <h3 className="mt-3 text-lg font-black">জমির হিসাব করুন</h3>
+          <p className="mt-2 text-sm leading-6 text-emerald-50/90">জমির পরিমাপ ও আয়তন হিসাব করুন। শতাংশ, কাঠা, বিঘা, একরসহ বিভিন্ন এককে রূপান্তর দেখুন।</p>
+          <Link href="/land-calculator" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-extrabold text-emerald-950 transition hover:bg-lime-200">ক্যালকুলেটর দেখুন →</Link>
+        </article>
         <article className="flex flex-col items-start rounded-2xl border border-emerald-200/80 bg-white p-5 sm:p-6">
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">কৃষকদের জন্য</span>
           <h3 className="mt-3 text-lg font-black">নিজের ফসল সরাসরি বিক্রি করুন</h3>

@@ -14,15 +14,11 @@ BEGIN
 END;
 $guard$;
 
--- Grandfather only existing Marketplace sellers from the legacy system. A user
--- qualifies through an existing Marketplace product or a pre-migration seller /
--- organization membership. This preserves their existing seller workflow while
--- new accounts still require an independent verified Marketplace application.
+-- Grandfather only owners of existing Marketplace listings. Legacy role
+-- memberships were self-selectable during signup and are not proof of business
+-- verification; users without an existing listing must use the new application
+-- and admin approval workflow.
 WITH legacy_sellers AS (
-  SELECT DISTINCT user_id
-  FROM public.user_role_memberships
-  WHERE role IN ('seller','organization')
-  UNION
   SELECT DISTINCT farmer_id AS user_id
   FROM public.products
   WHERE marketplace_channel = 'marketplace'
@@ -43,11 +39,11 @@ WHERE NOT EXISTS (
   WHERE existing.owner_id = legacy.user_id AND existing.status = 'verified'
 );
 
+-- Grandfather only owners of existing Marketplace listings. Legacy role
+-- memberships were self-selectable during signup and are not proof of business
+-- verification; users without an existing listing must use the new application
+-- and admin approval workflow.
 WITH legacy_sellers AS (
-  SELECT DISTINCT user_id
-  FROM public.user_role_memberships
-  WHERE role IN ('seller','organization')
-  UNION
   SELECT DISTINCT farmer_id AS user_id
   FROM public.products
   WHERE marketplace_channel = 'marketplace'

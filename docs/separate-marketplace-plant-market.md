@@ -20,7 +20,7 @@ Both markets use the same Supabase Auth account. Authorization reuses AGRIVA's e
 - Plant Market uses the physically separate `public.plant_market_products` table. Its writes require verified `gardener_profiles` plus the Plant Market module grant.
 - Plant Market images use the separate `plant-product-images` Storage bucket; identity evidence remains private in `identity-verification`.
 - Public catalogue queries show only active products. Seller submissions are forced to draft by the database trigger and require admin moderation.
-- A one-time compatibility backfill grants only existing Marketplace seller/organization role members and owners of existing Marketplace products a verified legacy Marketplace organization plus read/create/update grants. It never grants Plant Market access.
+- A one-time compatibility backfill grants read/create/update access only to owners of existing Marketplace products. Legacy seller/organization role memberships were self-selectable during signup and are not treated as business verification; users without an existing Marketplace listing must complete the independent business application and admin approval flow. The backfill never grants Plant Market access.
 - The migration aborts if legacy non-Marketplace channel rows are found in `public.products`; it will not silently relabel or delete them.
 
 ## Routes
