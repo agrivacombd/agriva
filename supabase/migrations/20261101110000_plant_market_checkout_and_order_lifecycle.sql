@@ -86,6 +86,20 @@ create policy plant_market_order_party_read on public.plant_market_orders for se
 drop policy if exists plant_market_order_item_party_read on public.plant_market_order_items;
 create policy plant_market_order_item_party_read on public.plant_market_order_items for select to authenticated using(exists(select 1 from public.plant_market_orders o where o.id=order_id and (o.buyer_id=(select auth.uid()) or o.seller_id=(select auth.uid()) or public.is_admin())));
 
+create or replace function public.plant_market_guard_cart_item_delete()
+returns trigger language plpgsql security definer
+set search_path=pg_catalog,public,pg_temp as $
+declare cart_status text;
+begin
+ select status into cart_status from public.plant_market_carts where id=old.cart_id for update;
+ if cart_status is distinct from 'active' then raise exception 'Plant Market cart is no longer active'; end if;
+ return old;
+end $;
+revoke all on function public.plant_market_guard_cart_item_delete() from public,anon,authenticated;
+drop trigger if exists plant_market_cart_item_active_guard on public.plant_market_cart_items;
+create trigger plant_market_cart_item_active_guard before delete on public.plant_market_cart_items
+for each row execute function public.plant_market_guard_cart_item_delete();
+
 create or replace function public.plant_market_add_to_cart(p_product_id uuid,p_quantity integer default 1)
 returns jsonb language plpgsql security definer
 set search_path=pg_catalog,public,pg_temp as $$
@@ -136,7 +150,6 @@ begin
  end if;
  select * into c from public.plant_market_carts where buyer_id=uid and status='active' for update;
  if not found then raise exception 'Plant Market cart is empty'; end if;
- perform 1 from public.plant_market_cart_items where cart_id=c.id order by product_id for update;
  if not exists(select 1 from public.plant_market_cart_items where cart_id=c.id) then raise exception 'Plant Market cart is empty'; end if;
  -- Lock and validate every line before any persistent checkout/order/stock writes.
  for p in
