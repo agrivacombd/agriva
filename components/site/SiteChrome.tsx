@@ -14,7 +14,7 @@ import {
   Search,
   Sprout,
   X,
-undefinedundefined} from "lucide-react";
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
