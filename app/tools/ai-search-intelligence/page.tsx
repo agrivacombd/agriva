@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "AI Search Intelligence for Agriculture | AGRIVA",
   description: "Turn farmer search queries into intent signals, keyword opportunities and AI-assisted article briefs for admin review.",
   alternates: { canonical: "/tools/ai-search-intelligence" },
+  robots: { index: false, follow: true },
   keywords: ["agriculture search intelligence", "farmer search analytics", "AI SEO content agriculture", "keyword intent agriculture", "AGRIVA AI search"],
 };
 
