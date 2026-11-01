@@ -35,7 +35,7 @@ const bnServiceGroups = [
   {
     title: "ব্যবসা ও সরবরাহ",
     links: [
-      { href: "/transport", label: "পরিবহন", description: "ফসল ও পণ্য পরিবহনের ব্যবস্থা", icon: Truck },
+      { href: "/transport", label: "কৃষি পরিবহন", description: "ফসল ও পণ্য পরিবহনের ব্যবস্থা", icon: Truck },
     ],
   },
   {
