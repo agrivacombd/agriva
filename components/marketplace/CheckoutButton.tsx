@@ -120,8 +120,8 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
       setMessage("অর্ডার করতে নাম, মোবাইল নম্বর, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
       return;
     }
-    const normalizedPhone = phone.trim().replace(/[\\s()-]/g, "");
-    if (!/^(?:\\+?88)?01[3-9]\\d{8}$/.test(normalizedPhone)) {
+    const normalizedPhone = phone.trim().replace(/[\s()-]/g, "");
+    if (!/^(?:\+?88)?01[3-9]\d{8}$/.test(normalizedPhone)) {
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
