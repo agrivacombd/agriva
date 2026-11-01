@@ -1,0 +1,13 @@
+"use client";
+import {useEffect,useState} from "react";
+import Link from "next/link";
+type Item={id:string;product_id:string;quantity:number;plant_market_products:{name:string;slug:string;price:number|string;stock:number;unit:string;image_url:string|null}|null};
+export default function PlantMarketCartClient(){
+ const [items,setItems]=useState<Item[]>([]);const [loading,setLoading]=useState(true);const [message,setMessage]=useState("");
+ async function load(){setLoading(true);try{const r=await fetch("/api/plant-market/cart",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Cart load failed");setItems(d.items||[]);}catch(e){setMessage(e instanceof Error?e.message:"Cart load failed");}finally{setLoading(false);}}
+ useEffect(()=>{void load();},[]);
+ async function remove(id:string){const r=await fetch("/api/plant-market/cart?itemId="+encodeURIComponent(id),{method:"DELETE"});const d=await r.json().catch(()=>({}));if(!r.ok){setMessage(d.error||"Item সরানো যায়নি");return;}await load();}
+ const total=items.reduce((sum,item)=>sum+Number(item.plant_market_products?.price||0)*item.quantity,0);
+ if(loading)return <p className="rounded-2xl bg-white p-6">Plant Market Cart লোড হচ্ছে…</p>;
+ return <section className="space-y-4">{message&&<p role="status" className="rounded-xl bg-amber-50 p-4 text-sm">{message}</p>}{items.length? <>{items.map(item=>{const p=item.plant_market_products;if(!p)return null;return <article key={item.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5"><div><Link href={"/plant-market/"+p.slug} className="font-extrabold underline">{p.name}</Link><p className="mt-1 text-sm text-slate-600">{item.quantity} × ৳{Number(p.price).toLocaleString("bn-BD")} · স্টক {p.stock} {p.unit}</p></div><div className="flex items-center gap-4"><strong>৳{(Number(p.price)*item.quantity).toLocaleString("bn-BD")}</strong><button onClick={()=>remove(item.id)} className="text-sm font-bold text-red-700 underline">সরান</button></div></article>})}<div className="rounded-2xl bg-white p-5"><p className="text-xl font-black">সর্বমোট: ৳{total.toLocaleString("bn-BD")}</p><p className="mt-1 text-xs text-slate-500">একাধিক seller থাকলে checkout-এর পর seller অনুযায়ী আলাদা order তৈরি হবে।</p><Link href="/plant-market/checkout" className="mt-4 inline-flex rounded-xl bg-emerald-900 px-6 py-3 font-bold text-white">Checkout করুন</Link></div></>:<div className="rounded-2xl border border-dashed bg-white p-8 text-center"><p className="font-bold">আপনার Plant Market cart খালি।</p><Link href="/plant-market" className="mt-3 inline-flex font-bold text-emerald-800 underline">গাছ ও পণ্য দেখুন</Link></div>}</section>;
+}
