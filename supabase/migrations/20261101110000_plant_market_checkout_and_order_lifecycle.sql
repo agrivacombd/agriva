@@ -136,6 +136,7 @@ begin
  end if;
  select * into c from public.plant_market_carts where buyer_id=uid and status='active' for update;
  if not found then raise exception 'Plant Market cart is empty'; end if;
+ perform 1 from public.plant_market_cart_items where cart_id=c.id order by product_id for update;
  if not exists(select 1 from public.plant_market_cart_items where cart_id=c.id) then raise exception 'Plant Market cart is empty'; end if;
  -- Lock and validate every line before any persistent checkout/order/stock writes.
  for p in
