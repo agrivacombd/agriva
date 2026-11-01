@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "AI Farm Assistant Bangladesh | কৃষি AI সহকারী | AGRIVA",
   description: "Ask AGRIVA's AI Farm Assistant agriculture questions and organize crop, weather, market and farm-record context into practical next steps.",
   alternates: { canonical: "/tools/ai-farm-assistant" },
+  robots: { index: false, follow: true },
   keywords: ["AI farm assistant Bangladesh", "agriculture AI assistant", "কৃষি AI", "কৃষকের AI সহকারী", "farmer AI assistant"],
 };
 

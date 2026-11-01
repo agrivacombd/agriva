@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "AI Crop Disease & Pest Assistant Bangladesh | ফসলের রোগ | AGRIVA",
   description: "Describe crop symptoms and get an AI-assisted list of possible disease or pest causes, questions to check, and safe next steps for farmers.",
   alternates: { canonical: "/tools/crop-disease-assistant" },
+  robots: { index: false, follow: true },
   keywords: ["AI crop disease assistant Bangladesh", "crop disease identification", "crop pest identification", "ফসলের রোগ", "ফসলের পোকা", "কৃষি AI"],
 };
 
