@@ -5,7 +5,6 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowUp,
-  BriefcaseBusiness,
   Calculator,
   CalendarDays,
   ChevronDown,
@@ -14,11 +13,8 @@ import {
   Menu,
   Search,
   Sprout,
-  Truck,
   X,
-  BookOpen,
-  House,
-} from "lucide-react";
+undefinedundefined} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -29,30 +25,9 @@ const bnPrimaryLinks = [
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
   { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
   { href: "/blog", label: "কৃষি ব্লগ" },
-];
-
-const bnServiceGroups = [
-  {
-    title: "ব্যবসা ও সরবরাহ",
-    links: [
-      { href: "/transport", label: "কৃষি পরিবহন", description: "ফসল ও পণ্য পরিবহনের ব্যবস্থা", icon: Truck },
-    ],
-  },
-  {
-    title: "খামার ও ক্যারিয়ার",
-    links: [
-      { href: "/farms", label: "খামার ব্যবস্থাপনা", description: "খামারের কাজ ও পরিকল্পনা", icon: House },
-      { href: "/jobs", label: "কৃষি কাজ ও চাকরি", description: "কাজ খুঁজুন বা নিয়োগ দিন", icon: BriefcaseBusiness },
-    ],
-  },
-  {
-    title: "জ্ঞান ও কৃষি টুলস",
-    links: [
-      { href: "/learn", label: "কৃষি গাইড", description: "কৃষি শেখা ও পরামর্শ", icon: BookOpen },
-      { href: "/agriculture-calculators", label: "কৃষি ক্যালকুলেটর", description: "চাষের হিসাব সহজ করুন", icon: Calculator },
-      { href: "/crop-calendar", label: "ফসল ক্যালেন্ডার", description: "মৌসুমভিত্তিক কৃষি পরিকল্পনা", icon: CalendarDays },
-    ],
-  },
+  { href: "/farms", label: "খামার ব্যবস্থাপনা" },
+  { href: "/jobs", label: "কৃষি কাজ ও চাকরি" },
+  { href: "/transport", label: "কৃষি পরিবহন" },
 ];
 
 const enPrimaryLinks = [
@@ -123,7 +98,6 @@ export default function SiteChrome() {
   const english = isEnglishPath(pathname);
   const privateRoute = /^\/(admin|dashboard|auth|login|signup|garden|profile|orders)(\/|$)/.test(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [progress, setProgress] = useState(0);
   const [signedIn, setSignedIn] = useState(false);
@@ -175,7 +149,6 @@ export default function SiteChrome() {
   useEffect(() => {
     document.documentElement.lang = english ? "en" : "bn";
     setMenuOpen(false);
-    setServicesOpen(false);
   }, [english, pathname]);
 
   useEffect(() => {
@@ -231,10 +204,6 @@ export default function SiteChrome() {
 
   const languageTarget = english ? (enToBn[pathname] || "/") : (bnToEn[pathname] || "/en");
   const primaryLinks = english ? enPrimaryLinks : bnPrimaryLinks;
-  const hasActiveService = bnServiceGroups.some((group) =>
-    group.links.some((link) => isActivePath(pathname, link.href)),
-  );
-
   return (
     <>
       <div aria-hidden="true" className="fixed left-0 top-0 z-[80] h-1 bg-emerald-600 transition-[width] duration-100" style={{ width: progress + "%" }} />
@@ -283,34 +252,7 @@ export default function SiteChrome() {
                 {link.label}
               </Link>
             ))}
-            {!english && (
-              <details className="group relative ml-auto">
-                <summary className={"flex min-h-10 cursor-pointer list-none items-center gap-1 whitespace-nowrap rounded-xl px-3 py-2 text-sm font-bold transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (hasActiveService ? "bg-emerald-50 text-emerald-900" : "text-slate-700")}>
-                  আরও সেবা <ChevronDown size={15} className="transition group-open:rotate-180" aria-hidden="true" />
-                </summary>
-                <div className="absolute right-0 top-full z-30 mt-2 grid w-[min(680px,calc(100vw-2rem))] grid-cols-3 gap-3 rounded-2xl border border-emerald-100 bg-white p-4 shadow-xl">
-                  {bnServiceGroups.map((group) => (
-                    <div key={group.title} className="min-w-0">
-                      <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-wide text-emerald-800">{group.title}</p>
-                      <div className="grid gap-1">
-                        {group.links.map((link) => {
-                          const Icon = link.icon;
-                          return (
-                            <Link key={link.href} href={link.href} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} onClick={(event) => event.currentTarget.closest("details")?.removeAttribute("open")} className="flex gap-2 rounded-xl p-2.5 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-                              <Icon size={18} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" />
-                              <span className="min-w-0">
-                                <span className="block text-sm font-bold text-slate-800">{link.label}</span>
-                                <span className="mt-0.5 block text-xs leading-5 text-slate-500">{link.description}</span>
-                              </span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </details>
-            )}
+
           </nav>
         </div>
 
@@ -338,30 +280,6 @@ export default function SiteChrome() {
                   </Link>
                 ))}
               </div>
-
-              {!english && <div className="mt-5 border-t border-slate-100 pt-4">
-                <button type="button" onClick={() => setServicesOpen((open) => !open)} aria-expanded={servicesOpen} className="flex min-h-12 w-full items-center justify-between rounded-xl px-3 text-sm font-extrabold text-slate-900 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-                  আরও সেবা <ChevronDown size={18} className={"transition " + (servicesOpen ? "rotate-180" : "")} />
-                </button>
-                {servicesOpen && <div className="mt-2 grid gap-4 pl-2">
-                  {bnServiceGroups.map((group) => (
-                    <section key={group.title}>
-                      <h3 className="mb-1 px-3 text-xs font-extrabold tracking-wide text-emerald-800">{group.title}</h3>
-                      <div className="grid gap-1">
-                        {group.links.map((link) => {
-                          const Icon = link.icon;
-                          return (
-                            <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} aria-current={isActivePath(pathname, link.href) ? "page" : undefined} className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-                              <Icon size={18} className="shrink-0 text-emerald-700" aria-hidden="true" />
-                              <span>{link.label}</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  ))}
-                </div>}
-              </div>}
 
               <div className="mt-5 grid gap-2 border-t border-slate-100 pt-4">
                 <Link href={english ? "/en" : "/sell-harvest"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
