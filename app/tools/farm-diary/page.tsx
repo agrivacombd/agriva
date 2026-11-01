@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Farm Diary Bangladesh | কৃষি ডায়েরি ও ফার্ম রেকর্ড | AGRIVA",
   description: "Keep simple farm records for crops, planting, irrigation, fertilizer, pest observations, harvest and expenses with AGRIVA Farm Diary.",
   alternates: { canonical: "/tools/farm-diary" },
+  robots: { index: false, follow: true },
   keywords: ["farm diary Bangladesh", "digital farm diary", "farm record keeping", "কৃষি ডায়েরি", "ফার্ম রেকর্ড", "কৃষকের ডায়েরি"],
 };
 
