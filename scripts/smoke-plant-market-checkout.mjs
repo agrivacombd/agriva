@@ -35,6 +35,8 @@ for (const fragment of [
   "as $pm$",
   "site_settings where key='cod_enabled' and value='true'",
   "active verified plant market seller access required",
+  "revoke all on function public.plant_market_finalize_checkout(jsonb,text) from public,anon",
+  "grant execute on function public.plant_market_finalize_checkout(jsonb,text) to authenticated",
   "invalid order status transition",
   "agriva.plant_market_inventory_adjustment",
   "guard_plant_market_product_write",
@@ -46,8 +48,8 @@ must(!sql.includes("marketplace_orders") && !sql.includes("marketplace_checkouts
   && !sql.includes("public.carts") && !sql.includes("public.cart_items"),
   "Plant Market checkout must not reuse Marketplace cart/order tables");
 
-must(cartApi.includes("plant_market_add_to_cart") && cartApi.includes("plant_market_cart_items"),
-  "Plant Market cart API is not wired to its own tables/RPC");
+must(cartApi.includes("plant_market_add_to_cart") && cartApi.includes("plant_market_cart_items") && cartApi.includes("items:data??[]"),
+  "Plant Market cart API is not wired to its own tables/RPC or hides unavailable items");
 must(checkoutApi.includes("plant_market_finalize_checkout") && checkoutApi.includes("cod_enabled"),
   "Plant Market checkout API is missing its atomic RPC or COD guard");
 must(productPage.includes("PlantMarketAddToCart"), "Product page is not connected to Plant Market cart");
