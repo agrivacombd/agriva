@@ -33,76 +33,20 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
         return;
       }
 
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .select("id,price,stock,status")
-        .eq("id", productId)
-        .maybeSingle();
-      if (productError) throw productError;
-      if (!product || product.status !== "active") {
-        setMessage("এই পণ্যটি এখন কেনার জন্য উপলভ্য নয়।");
+      const { error: addError } = await supabase.rpc("add_marketplace_cart_item", {
+        p_product_id: productId,
+        p_quantity: 1,
+      });
+      if (addError) {
+        const message = addError.message || "";
+        setMessage(/Insufficient stock|Product unavailable/i.test(message)
+          ? "পণ্যটির স্টক শেষ বা পরিবর্তিত হয়েছে।"
+          : "কার্টে পণ্য যোগ করা যায়নি। আবার চেষ্টা করুন।");
         return;
       }
-      const stock = Number(product.stock || 0);
-      if (stock < 1) {
-        setMessage("পণ্যটি বর্তমানে স্টকে নেই।");
-        return;
-      }
-      const price = Number(product.price);
-      if (product.price === null || product.price === undefined || !Number.isFinite(price) || price <= 0) {
-        setMessage("পণ্যের মূল্য যাচাই করা যাচ্ছে না। পরে আবার চেষ্টা করুন।");
-        return;
-      }
-
-      let { data: cart, error: cartError } = await supabase
-        .from("carts")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .maybeSingle();
-      if (cartError) throw cartError;
-
-      if (!cart) {
-        const { data: createdCart, error: createCartError } = await supabase
-          .from("carts")
-          .insert({ user_id: user.id, status: "active" })
-          .select("id")
-          .single();
-        if (createCartError) throw createCartError;
-        cart = createdCart;
-      }
-
-      const { data: existingItem, error: itemLookupError } = await supabase
-        .from("cart_items")
-        .select("id,quantity")
-        .eq("cart_id", cart.id)
-        .eq("product_id", productId)
-        .maybeSingle();
-      if (itemLookupError) throw itemLookupError;
-
-      const nextQuantity = Number(existingItem?.quantity || 0) + 1;
-      if (nextQuantity > stock) {
-        setMessage(`আপনার কার্টে ইতিমধ্যে ${existingItem?.quantity || 0}টি আছে। সর্বোচ্চ ${stock}টি যোগ করা যাবে।`);
-        return;
-      }
-
-      const { error: saveError } = existingItem
-        ? await supabase.from("cart_items").update({
-            quantity: nextQuantity,
-            unit_price: price,
-            updated_at: new Date().toISOString(),
-          }).eq("id", existingItem.id)
-        : await supabase.from("cart_items").insert({
-            cart_id: cart.id,
-            product_id: productId,
-            quantity: 1,
-            unit_price: price,
-          });
-      if (saveError) throw saveError;
 
       trackAnalyticsEvent("add_to_cart", {
         currency: "BDT",
-        value: price,
         item_id: productId,
         quantity: 1,
       });

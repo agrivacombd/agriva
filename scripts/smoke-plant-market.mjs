@@ -80,8 +80,8 @@ assert.doesNotMatch(plantDetail,/from\("products"\)/,"Plant Market detail cannot
 assert.match(adminPermissionApi,/p_module:moduleKey/,"admin revocation sends only the selected module");
 const checkout = read("components/marketplace/CheckoutButton.tsx");
 assert.match(marketplaceDetail,/CheckoutButton productId=\{product\.id\}/,"Marketplace product details retain the purchase component");
-assert.match(checkout,/\.from\("carts"\)/,"Marketplace add-to-cart keeps the active cart flow");
-assert.match(checkout,/\.from\("cart_items"\)/,"Marketplace add-to-cart writes cart items");
 assert.match(checkout,/router\.push\("\/cart"\)/,"successful add-to-cart opens the cart");
 assert.match(checkout,/fetch\("\/api\/checkout"/,"COD checkout endpoint remains connected");
+assert.ok(checkout.includes('rpc("add_marketplace_cart_item"'), "Marketplace add-to-cart uses the stock-checked cart RPC");
+assert.ok(!checkout.includes('.from("cart_items")'), "Marketplace add-to-cart must not bypass the cart RPC");
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");

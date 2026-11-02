@@ -42,10 +42,11 @@ export default async function SellerProductsPage() {
     <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
       <div className="mx-auto max-w-5xl">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
-          <div><p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-100">AGRIVA Seller Centre</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">আমার ব্যবসার পণ্য</h1></div>
+          <div><p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-100">AGRIVA Seller Centre</p>
+        <h1 className="mt-2 text-2xl font-black sm:text-3xl">আমার ব্যবসার পণ্য</h1></div>
           <Link href="/seller/products/new" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-extrabold text-[#17351f]">+ নতুন পণ্য যোগ করুন</Link>
         </header>
-        <div className="mt-5 flex flex-wrap gap-3 text-sm font-bold">
+        <div className="mt-5 flex flex-wrap gap-3 text-sm font-bold"><Link href="/seller/orders" className="rounded-xl border border-emerald-900/15 bg-white px-4 py-3 hover:bg-emerald-50">অর্ডার ম্যানেজ করুন</Link>
           <Link href="/marketplace" className="rounded-xl border border-emerald-900/15 bg-white px-4 py-3 hover:bg-emerald-50">Marketplace দেখুন</Link>
           <Link href="/dashboard" className="rounded-xl border border-emerald-900/15 bg-white px-4 py-3 hover:bg-emerald-50">ড্যাশবোর্ড</Link>
         </div>

@@ -1,158 +1,194 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
+import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
-type Item = { product_id: string; quantity: number; unit_price: number; name?: string };
+type Item = { product_id: string; quantity: number; unit_price: number; name: string };
+type Address = {
+  name: string; phone: string; division: string; district: string; upazila: string;
+  unionOrArea: string; villageRoadHouse: string; landmark: string; postalCode: string; deliveryInstructions: string;
+};
+
+const initialAddress: Address = {
+  name: "", phone: "", division: "", district: "", upazila: "",
+  unionOrArea: "", villageRoadHouse: "", landmark: "", postalCode: "", deliveryInstructions: "",
+};
+
+function normalizeBangladeshPhone(input: string): string | null {
+  const compact = input.trim().replace(/[\s()-]/g, "");
+  let digits = compact.replace(/^\+/, "");
+  if (digits.startsWith("00880")) digits = digits.slice(2);
+  if (digits.startsWith("8801") && /^8801[3-9]\d{8}$/.test(digits)) return `+ ${digits}`.replace(" ", "");
+  if (/^01[3-9]\d{8}$/.test(digits)) return `+88${digits}`;
+  if (/^1[3-9]\d{8}$/.test(digits)) return `+880${digits}`;
+  return null;
+}
 
 export default function Checkout() {
   const [items, setItems] = useState<Item[]>([]);
-  const [cartId, setCartId] = useState("");
-  const [form, setForm] = useState({ name: "", phone: "", address: "", district: "", upazila: "", area: "" });
+  const [form, setForm] = useState<Address>(initialAddress);
+  const selectedDistrict = BANGLADESH_DISTRICTS.find(item => item.name === form.district);
+  const availableUpazilas = selectedDistrict?.upazilas ?? [];
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [codEnabled, setCodEnabled] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
   const [message, setMessage] = useState("");
+  const [confirmed, setConfirmed] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const idempotencyKeyRef = useRef<string>("");
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0), [items]);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!active) return;
       if (!user) {
-        setMessage("অর্ডার করতে আগে আপনার অ্যাকাউন্টে লগইন করুন।");
+        setMessage("Guest Cart সেশন পাওয়া যায়নি। কার্টে ফিরে আবার পণ্য যোগ করুন।");
         setLoading(false);
         return;
       }
-      const { data: settings } = await supabase.rpc("get_public_site_settings");
+      setIsGuest(Boolean(user.is_anonymous));
+      const [{ data: settings }, { data: cart }] = await Promise.all([
+        supabase.rpc("get_public_site_settings"),
+        supabase.from("carts").select("id").eq("user_id", user.id).eq("status", "active").maybeSingle(),
+      ]);
+      if (!active) return;
       const codSetting = (settings || []).find((setting: { key: string; value: string }) => setting.key === "cod_enabled");
       setCodEnabled(codSetting?.value === "true");
-
-      const { data: cart } = await supabase.from("carts").select("id")
-        .eq("user_id", user.id).eq("status", "active").maybeSingle();
       if (!cart) {
-        setMessage("আপনার কার্টে কোনো পণ্য নেই।");
+        setMessage("আপনার কার্ট খালি।");
         setLoading(false);
         return;
       }
-      setCartId(cart.id);
-      const { data } = await supabase.from("cart_items")
-        .select("product_id,quantity,unit_price").eq("cart_id", cart.id);
-      const ids = (data || []).map((item) => item.product_id);
+      const { data: rows, error } = await supabase.from("cart_items").select("product_id,quantity,unit_price").eq("cart_id", cart.id);
+      if (!active) return;
+      if (error) {
+        setMessage("কার্ট লোড করা যায়নি। আবার চেষ্টা করুন।");
+        setLoading(false);
+        return;
+      }
+      const ids = (rows || []).map(row => row.product_id);
       const { data: products } = ids.length
-        ? await supabase.from("products").select("id,name").in("id", ids)
+        ? await supabase.from("products").select("id,name,price,stock,status").in("id", ids)
         : { data: [] };
-      const names = new Map((products || []).map((product) => [product.id, product.name]));
-      setItems((data || []).map((item) => ({ ...item, name: names.get(item.product_id) || "Product" })));
+      if (!active) return;
+      const productMap = new Map((products || []).map(product => [product.id, product]));
+      setItems((rows || []).map(row => {
+        const product = productMap.get(row.product_id);
+        return { ...row, unit_price: Number(product?.price ?? row.unit_price), name: product?.name || "পণ্য" };
+      }));
       setLoading(false);
     })();
+    return () => { active = false; };
   }, []);
+
+  function setField<K extends keyof Address>(key: K, value: Address[K]) {
+    setForm(previous => ({ ...previous, [key]: value, ...(key === "district" ? { upazila: "" } : {}) }));
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (!items.length || busy) return;
+    if (!items.length || busy || confirmed) return;
     if (!codEnabled) {
-      setMessage("Cash on Delivery is currently disabled. Please contact support.");
+      setMessage("Cash on Delivery বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।");
       return;
     }
-
+    const normalizedPhone = normalizeBangladeshPhone(form.phone);
+    if (!normalizedPhone) {
+      setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
+      return;
+    }
     setBusy(true);
     setMessage("");
-    const placed: string[] = [];
-    const placedProductIds = new Set<string>();
-    const failed: string[] = [];
-    const cartSyncFailed: string[] = [];
-
+    if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID();
     try {
-      for (const item of items) {
-        const response = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            productId: item.product_id,
-            quantity: item.quantity,
-            paymentMethod: "cod",
-            shippingAddress: {
-              fullName: form.name,
-              phone: form.phone,
-              district: form.district,
-              address: [form.upazila, form.area, form.address, "Bangladesh"].filter(Boolean).join(", "),
-            },
-          }),
-        });
-        const result = await response.json();
-        if (!response.ok) {
-          failed.push(item.name || item.product_id);
-          continue;
-        }
-
-        placed.push(result.orderId);
-        placedProductIds.add(item.product_id);
-        // Remove each successfully ordered cart line immediately, so a later item
-        // failing does not leave already-purchased items in the active cart.
-        const { error: removeError } = await supabase.from("cart_items").delete()
-          .eq("cart_id", cartId).eq("product_id", item.product_id);
-        if (removeError) cartSyncFailed.push(item.name || item.product_id);
-      }
-
-      if (placedProductIds.size) {
-        // Only remove lines whose order was successfully created from the current UI.
-        setItems((current) => current.filter((item) => !placedProductIds.has(item.product_id)));
-      }
-
-      if (failed.length || cartSyncFailed.length) {
-        const orderList = placed.map((id) => id.slice(0, 8)).join(", ");
-        setMessage(
-          `Placed orders: ${orderList || "none"}. ${failed.length ? `Could not place: ${failed.join(", ")}. ` : ""}` +
-          `${cartSyncFailed.length ? "Some cart lines could not be synchronized. Check Orders before trying again." : "Successful orders were removed from the cart; remaining items can be retried."}`,
-        );
-      } else if (placed.length) {
-        setMessage(`Order confirmed. ${placed.length} order${placed.length === 1 ? "" : "s"} placed with Cash on Delivery.`);
-      } else {
-        setMessage("No orders were placed. Please check the remaining items and try again.");
-      }
-    } catch {
-      setMessage("Checkout was interrupted. Check your Orders page before retrying to avoid duplicate orders.");
+      const address = {
+        fullName: form.name.trim(),
+        phone: normalizedPhone,
+        division: form.division.trim(),
+        district: form.district.trim(),
+        upazila: form.upazila.trim(),
+        unionOrArea: form.unionOrArea.trim(),
+        villageRoadHouse: form.villageRoadHouse.trim(),
+        landmark: form.landmark.trim(),
+        postalCode: form.postalCode.trim(),
+        deliveryInstructions: form.deliveryInstructions.trim(),
+        // Keep a backward-compatible printable address for older order views.
+        address: [form.upazila, form.unionOrArea, form.villageRoadHouse].map(value => value.trim()).filter(Boolean).join(", "),
+      };
+      const response = await fetch("/api/checkout/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shippingAddress: address, idempotencyKey: idempotencyKeyRef.current }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
+      setConfirmed(true);
+      setOrderId(String(result.orderId ?? ""));
+      setItems([]);
+      setMessage(`অর্ডার নিশ্চিত হয়েছে। মোট ${Number(result.total).toLocaleString("bn-BD", { style: "currency", currency: "BDT" })}।`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setBusy(false);
     }
   }
 
-  if (loading) return <main className="min-h-screen bg-[#f5f7f2] px-6 py-12"><div className="mx-auto max-w-3xl rounded-3xl bg-white p-8">Loading checkout…</div></main>;
+  if (loading) return <main className="min-h-screen bg-[#f5f7f2] px-4 py-10"><div className="mx-auto max-w-3xl rounded-3xl bg-white p-8">চেকআউট লোড হচ্ছে…</div></main>;
 
-  return (
-    <main className="min-h-screen bg-[#f5f7f2] px-6 py-12 text-[#17351f]">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout · বাংলাদেশ</p>
-        <h1 className="mt-3 text-4xl font-black">ডেলিভারির তথ্য</h1>
-        <p className="mt-2 text-sm text-[#647468]">আপনার অর্ডারটি ঠিকভাবে পৌঁছে দিতে নিচের তথ্যগুলো দিন। * চিহ্ন দেওয়া ঘরগুলো পূরণ করা জরুরি।</p>
-        {items.length > 0 && <div className="mt-6 rounded-2xl bg-white p-5">
-          <p className="font-bold">আপনার কার্টে {items.length} ধরনের পণ্য</p>
-          {items.map((item) => <p key={item.product_id} className="mt-2 text-sm text-[#647468]">{item.name} × {item.quantity} · ৳{(Number(item.unit_price) * item.quantity).toFixed(2)}</p>)}
-        </div>}
-        {message && <div role="status" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}</div>}
-        {items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-7 shadow-sm">
-          <Field label="আপনার পুরো নাম *" placeholder="যেমন: মো. রহিম উদ্দিন" value={form.name} onChange={(value) => setForm({ ...form, name: value })} />
-          <Field label="মোবাইল নম্বর *" placeholder="01XXXXXXXXX" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} type="tel" />
-          <p className="-mt-2 text-xs text-[#647468]">১১ সংখ্যার সচল মোবাইল নম্বর দিন।</p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="জেলা *" placeholder="আপনার জেলার নাম" value={form.district} onChange={(value) => setForm({ ...form, district: value })} />
-            <Field label="উপজেলা *" placeholder="আপনার উপজেলার নাম" value={form.upazila} onChange={(value) => setForm({ ...form, upazila: value })} />
-          </div>
-          <Field label="এলাকা / গ্রাম / ইউনিয়ন *" placeholder="এলাকা, গ্রাম বা ইউনিয়নের নাম" value={form.area} onChange={(value) => setForm({ ...form, area: value })} />
-          <Field label="বাড়ি, রোড ও বিস্তারিত ঠিকানা *" placeholder="বাড়ি/হোল্ডিং নম্বর, রোড, বাজার বা পরিচিত স্থান" value={form.address} onChange={(value) => setForm({ ...form, address: value })} />
-          <div className="rounded-xl bg-[#f5f7f2] px-4 py-3 text-sm text-[#647468]">দেশ <b className="text-[#17351f]">বাংলাদেশ</b></div>
-          <div className="rounded-2xl border p-4"><b>Cash on Delivery</b><p className="mt-1 text-sm text-[#647468]">{codEnabled ? "Pay when your order is delivered. Online payment will be enabled later." : "Cash on Delivery is currently disabled by the site administrator."}</p></div>
-          <button disabled={busy || !codEnabled} className="w-full rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">{busy ? "অর্ডার করা হচ্ছে…" : "অর্ডার নিশ্চিত করুন"}</button>
-        </form>}
-      </div>
-    </main>
-  );
+  return <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12">
+    <div className="mx-auto max-w-3xl">
+      <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout · বাংলাদেশ</p>
+      <h1 className="mt-3 text-3xl font-black sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>
+      {items.length > 0 && <section className="mt-6 rounded-2xl bg-white p-5">
+        <h2 className="font-bold">অর্ডার সারাংশ · {items.length} ধরনের পণ্য</h2>
+        {items.map(item => <p key={item.product_id} className="mt-2 flex justify-between gap-3 text-sm text-[#647468]"><span>{item.name} × {item.quantity}</span><span className="shrink-0">৳{(item.unit_price * item.quantity).toLocaleString("bn-BD")}</span></p>)}
+        <p className="mt-4 border-t pt-3 text-lg font-black">পণ্যের মোট: ৳{subtotal.toLocaleString("bn-BD", { maximumFractionDigits: 2 })}</p>
+        <p className="mt-1 text-xs text-[#647468]">ডেলিভারি চার্জ থাকলে নিশ্চিত করার আগে দেখানো হবে। বর্তমান checkout-এ চার্জ ০ টাকা হিসেবে গণনা করা হয়।</p>
+      </section>}
+      {message && <div role="status" aria-live="polite" className="mt-6 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{message}{confirmed && orderId && <p className="mt-2 break-all">Checkout reference: {orderId}</p>}</div>}
+      {confirmed && <Link href="/orders" className="mt-5 inline-flex rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white">আমার অর্ডার দেখুন</Link>}
+      {!confirmed && items.length > 0 && <form onSubmit={submit} className="mt-6 space-y-4 rounded-3xl bg-white p-5 shadow-sm sm:p-7">
+        <h2 className="text-lg font-black">১. গ্রাহকের তথ্য</h2>
+        <Field label="প্রাপকের সম্পূর্ণ নাম *" value={form.name} onChange={v => setField("name", v)} autoComplete="name" />
+        <Field label="মোবাইল নম্বর *" value={form.phone} onChange={v => setField("phone", v)} placeholder="01XXXXXXXXX" type="tel" autoComplete="tel" />
+        {isGuest && <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">Guest Checkout: SMS OTP ছাড়াই অর্ডার করতে পারবেন। ডেলিভারির জন্য সচল মোবাইল নম্বর দিন।</p>}
+        <h2 className="pt-3 text-lg font-black">২. বাংলাদেশের ডেলিভারি ঠিকানা</h2>
+        <Field label="বিভাগ *" value={form.division} onChange={v => setField("division", v)} placeholder="যেমন: রাজশাহী" autoComplete="address-level1" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block"><span className="text-sm font-bold">জেলা *</span><select value={form.district} onChange={event => setField("district", event.target.value)} autoComplete="address-level2" required className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700"><option value="">জেলা বেছে নিন</option>{BANGLADESH_DISTRICTS.map(item => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
+          <label className="block"><span className="text-sm font-bold">উপজেলা / থানা *</span><select value={form.upazila} onChange={event => setField("upazila", event.target.value)} autoComplete="address-level3" required disabled={!form.district} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-100"><option value="">{form.district ? "উপজেলা / থানা বেছে নিন" : "আগে জেলা নির্বাচন করুন"}</option>{availableUpazilas.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
+        </div>
+        <Field label="ইউনিয়ন / এলাকা / ওয়ার্ড *" value={form.unionOrArea} onChange={v => setField("unionOrArea", v)} />
+        <Field label="গ্রাম / রোড / বাড়ি / হোল্ডিং নম্বর *" value={form.villageRoadHouse} onChange={v => setField("villageRoadHouse", v)} autoComplete="street-address" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="নিকটস্থ পরিচিত স্থান (ঐচ্ছিক)" value={form.landmark} onChange={v => setField("landmark", v)} required={false} />
+          <Field label="পোস্ট কোড (ঐচ্ছিক)" value={form.postalCode} onChange={v => setField("postalCode", v)} required={false} />
+        </div>
+        <label className="block"><span className="text-sm font-bold">ডেলিভারির অতিরিক্ত নির্দেশনা (ঐচ্ছিক)</span><textarea value={form.deliveryInstructions} onChange={event => setField("deliveryInstructions", event.target.value)} maxLength={500} rows={3} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" placeholder="কখন ফোন করবেন, কীভাবে আসবেন ইত্যাদি" /></label>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+          <b>ক্যাশ অন ডেলিভারি (COD)</b>
+          <p className="mt-1 text-sm text-[#647468]">{codEnabled ? "পণ্য হাতে পেয়ে ডেলিভারি কর্মীকে টাকা দিন। অনলাইন পেমেন্ট এই মুহূর্তে চালু নেই।" : "সাইট অ্যাডমিন বর্তমানে Cash on Delivery বন্ধ রেখেছেন।"}</p>
+        </div>
+        <button type="submit" disabled={busy || !codEnabled} className="w-full rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">
+          {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : "COD অর্ডার নিশ্চিত করুন"}
+        </button>
+        <p className="text-xs leading-5 text-[#748074]">অর্ডার নিশ্চিত করলে স্টক ও মূল্য সার্ভার থেকে আবার যাচাই করা হবে। ভুল ঠিকানা থাকলে অর্ডার বাতিলের জন্য সাপোর্টে যোগাযোগ করুন।</p>
+      </form>}
+      {!items.length && !confirmed && <Link href="/cart" className="mt-5 inline-flex rounded-xl border border-[#17351f] px-5 py-3 font-bold">কার্টে ফিরে যান</Link>}
+    </div>
+  </main>;
 }
 
-function Field({ label, value, onChange, placeholder, type = "text" }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: "text" | "tel" }) {
-  return (
-    <label className="block">
-      <span className="text-sm font-bold">{label}</span>
-      <input required type={type} inputMode={type === "tel" ? "tel" : "text"} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-xl border border-[#dce5dc] bg-white px-4 py-3 outline-none transition focus:border-[#3b7650] focus:ring-2 focus:ring-[#3b7650]/15" />
-    </label>
-  );
+function Field({ label, value, onChange, placeholder, type = "text", autoComplete, required }: {
+  label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; autoComplete?: string; required?: boolean;
+}) {
+  return <label className="block">
+    <span className="text-sm font-bold">{label}</span>
+    <input value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder} type={type} autoComplete={autoComplete} required={required ?? true} maxLength={200} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" />
+  </label>;
 }
