@@ -5,7 +5,7 @@ const read = (path) => readFileSync(path, "utf8");
 const migration = read("supabase/migrations/20261102161752_plant_market_checkout_and_order_lifecycle.sql");
 const guestCheckoutMigration = read("supabase/migrations/20261102161707_secure_guest_checkout_identity.sql");
 const marketplaceCheckoutMigration = read("supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
-const foreignKeyIndexesMigration = read("supabase/migrations/20261102170000_marketplace_plant_market_fk_indexes.sql");
+const foreignKeyIndexesMigration = read("supabase/migrations/20261102162807_marketplace_plant_market_fk_indexes.sql");
 const cartApi = read("app/api/plant-market/cart/route.ts");
 const checkoutApi = read("app/api/plant-market/checkout/route.ts");
 const productPage = read("app/plant-market/[slug]/page.tsx");
