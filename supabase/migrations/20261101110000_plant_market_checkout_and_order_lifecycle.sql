@@ -356,6 +356,12 @@ begin
   if o.seller_id<>(select auth.uid()) then
     raise exception 'Seller access denied';
   end if;
+  if not exists(
+    select 1 from public.gardener_profiles gp
+    where gp.user_id=(select auth.uid()) and gp.verification_status='verified'
+  ) or not public.has_module_access('plant_market','read','global',null::uuid) then
+    raise exception 'Active verified Plant Market seller access required';
+  end if;
   if not (
     (o.status='processing' and p_status in ('shipped','cancelled'))
     or (o.status='shipped' and p_status='delivered')
