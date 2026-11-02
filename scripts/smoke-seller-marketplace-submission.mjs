@@ -11,7 +11,7 @@ const sellerProductsPage = readFileSync("app/seller/products/page.tsx", "utf8");
 const farmerPage = readFileSync("app/farmer/products/new/page.tsx", "utf8");
 const dashboard = readFileSync("app/dashboard/page.tsx", "utf8");
 const migration = readFileSync("supabase/migrations/20261029120000_separate_seller_marketplace_from_harvest.sql", "utf8");
-const permissionMigration = readFileSync("supabase/migrations/20261031120000_separate_marketplace_and_plant_market.sql", "utf8");
+const permissionMigration = readFileSync("supabase/migrations/20261102161650_separate_marketplace_and_plant_market.sql", "utf8");
 
 assert.match(form, /createSupabaseBrowserClient/, "seller form must use the cookie-aware Supabase browser client");
 assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form must upload product images to Storage");
