@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {redirect} from "next/navigation";
 import {createSupabaseServerClient} from "@/lib/supabase/server";
-export const metadata={title:"My Plant Market Orders | AGRIVA",robots:{index:false,follow:false}};
+export const metadata={title:"My Plant Market Orders",robots:{index:false,follow:false}};
 export default async function PlantMarketOrdersPage(){
  const supabase=await createSupabaseServerClient();const {data:{user},error:authError}=await supabase.auth.getUser();if(authError||!user)redirect("/login?next=/plant-market/orders");
  const {data:orders,error}=await supabase.from("plant_market_orders").select("id,seller_id,total_amount,status,payment_status,created_at,plant_market_order_items(product_name,quantity,unit_price,line_total)").eq("buyer_id",user.id).order("created_at",{ascending:false}).limit(100);
