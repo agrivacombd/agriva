@@ -40,7 +40,9 @@
     "test:module-access": "node scripts/smoke-module-access-architecture.mjs",
     "test:identity-verification": "node scripts/smoke-identity-verification-workflow.mjs",
     "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs",
-    "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs"
+    "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
+    "test:tools-hub-locales": "node scripts/smoke-tools-hub-locales.mjs",
+    "test:seo-title-template": "node scripts/smoke-seo-title-template.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
