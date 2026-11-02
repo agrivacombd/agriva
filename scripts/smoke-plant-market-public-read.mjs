@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const migration = readFileSync("supabase/migrations/20261102165837_fix_plant_market_public_read_policy.sql", "utf8");
+const test = readFileSync("supabase/tests/plant_market_products_public_read.sql", "utf8");
+assert.match(migration, /FOR SELECT\s+TO anon\s+USING \(status = 'active'\)/i);
+assert.match(migration, /FOR SELECT\s+TO authenticated[\s\S]*?public\.is_admin\(\)/i);
+assert.doesNotMatch(migration.match(/CREATE POLICY plant_market_products_anon_read[\s\S]*?;/i)?.[0] ?? "", /is_admin/i);
+assert.match(test, /has_function_privilege\('anon',[\s\S]*?false/i);
+assert.match(test, /plant_market_products_authenticated_read/i);
+console.log("Plant Market public-read policy regression checks passed.");
