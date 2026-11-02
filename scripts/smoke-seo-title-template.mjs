@@ -20,6 +20,7 @@ const pages = [
   "app/plant-market/checkout/page.tsx",
   "app/plant-market/orders/page.tsx",
   "app/orders/page.tsx",
+  "app/marketplace/buy/page.tsx",
 ];
 
 for (const path of pages) {
@@ -40,3 +41,9 @@ assert.match(marketplaceProduct, /const title = name[\s\S]*?const socialTitle = 
 const jobSeo = readFileSync("lib/jobs/seo.ts", "utf8");
 assert.match(jobSeo, /const title = `\$\{job\.title\} — \$\{location\}`/);
 assert.match(jobSeo, /const socialTitle = `\$\{title\} \| AGRIVA Jobs`/);
+const greenExchange = readFileSync("app/green-exchange/[slug]/page.tsx", "utf8");
+assert.doesNotMatch(greenExchange.match(/title:\s*`[^`]+`/)?.[0] ?? "", /AGRIVA/i, "Green Exchange listing title should rely on the global suffix");
+const lesson = readFileSync("app/learn/[slug]/page.tsx", "utf8");
+assert.doesNotMatch(lesson.match(/if \(!lesson\)[\s\S]*?return \{ title: "[^"]+"/)?.[0] ?? "", /AGRIVA/i, "Lesson fallback title should rely on the global suffix");
+const jobPage = readFileSync("app/jobs/[slug]/page.tsx", "utf8");
+assert.doesNotMatch(jobPage.match(/: \{title:"[^"]+"/)?.[0] ?? "", /AGRIVA/i, "Job fallback title should rely on the global suffix");
