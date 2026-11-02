@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
 
 type SellerProduct = {
   id: string;
@@ -25,19 +26,14 @@ export default async function SellerProductsPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/seller/products");
 
-  const { data: membership, error: membershipError } = await supabase
-    .from("user_role_memberships")
-    .select("role")
-    .eq("user_id", user.id)
-    .in("role", ["seller", "organization"])
-    .limit(1)
-    .maybeSingle();
-  if (membershipError || !membership) redirect("/dashboard");
+  const access = await findMarketplaceOrganizationWithAccess("read");
+  if (!access.allowed) redirect("/account/verification");
 
   const { data, error } = await supabase
     .from("products")
     .select("id,name,slug,category,price,stock,status,created_at")
     .eq("farmer_id", user.id)
+    .eq("marketplace_channel", "marketplace")
     .order("created_at", { ascending: false })
     .limit(100);
   const products = (data ?? []) as SellerProduct[];

@@ -11,7 +11,8 @@ export default function robots(): MetadataRoute.Robots {
           "/",
           "/blog",
           "/marketplace",
-          "/seller/products/new",
+          "/sell-on-marketplace",
+          "/sell-on-plant-market",
           "/krishi-bazar",
           "/plant-market",
           "/agriculture-calculators",
@@ -45,6 +46,8 @@ export default function robots(): MetadataRoute.Robots {
         ],
         disallow: [
           "/admin/",
+          "/seller/",
+          "/plant-seller/",
           "/dashboard/",
           "/garden",
           "/api/",

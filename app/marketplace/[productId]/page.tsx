@@ -38,10 +38,10 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
 
   const supabase = await createSupabaseServerClient();
   const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").maybeSingle();
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
-  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").maybeSingle();
+  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
 }
 

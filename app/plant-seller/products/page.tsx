@@ -1,0 +1,19 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkModuleAccess } from "@/lib/authz/module-access";
+type PlantProduct={id:string;name:string;slug:string;category:string;price:number|string;stock:number;status:string;created_at:string};
+const statusLabels:Record<string,string>={draft:"পর্যালোচনাধীন",active:"প্রকাশিত",rejected:"সংশোধন প্রয়োজন",suspended:"সাময়িক বন্ধ"};
+export const metadata={robots:{index:false,follow:false}};
+export default async function PlantSellerProductsPage(){
+ const supabase=await createSupabaseServerClient();const {data:{user}}=await supabase.auth.getUser();
+ if(!user)redirect("/login?next=/plant-seller/products");
+ const [{data:profile},access]=await Promise.all([
+  supabase.from("gardener_profiles").select("verification_status").eq("user_id",user.id).maybeSingle(),
+  checkModuleAccess("plant_market","read",{type:"global"})
+ ]);
+ if(profile?.verification_status!=="verified"||!access.allowed)redirect("/account/verification?module=plant_market");
+ const {data,error}=await supabase.from("plant_market_products").select("id,name,slug,category,price,stock,status,created_at").eq("seller_id",user.id).order("created_at",{ascending:false}).limit(100);
+ const products=(data??[]) as PlantProduct[];
+ return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-5xl"><header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><p className="text-xs font-bold uppercase tracking-widest text-emerald-100">AGRIVA Plant Seller Centre</p><h1 className="mt-2 text-2xl font-black">আমার Plant Market পণ্য</h1></div><Link href="/plant-seller/products/new" className="inline-flex min-h-11 items-center rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-extrabold text-[#17351f]">+ নতুন পণ্য যোগ করুন</Link></header><div className="mt-5 flex flex-wrap gap-3 text-sm font-bold"><Link href="/plant-market" className="rounded-xl border bg-white px-4 py-3">Plant Market দেখুন</Link><Link href="/dashboard" className="rounded-xl border bg-white px-4 py-3">AGRIVA ড্যাশবোর্ড</Link></div>{error?<p role="status" className="mt-6 rounded-2xl bg-amber-50 p-5 text-sm text-amber-900">Plant Market পণ্য লোড করা যায়নি।</p>:products.length?<div className="mt-6 space-y-3">{products.map(product=><article key={product.id} className="flex flex-col gap-3 rounded-2xl border bg-white p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-lg font-extrabold">{product.name}</h2><p className="mt-1 text-sm text-slate-600">{product.category} · স্টক {product.stock}</p><p className="mt-1 font-bold text-emerald-900">৳{Number(product.price).toLocaleString("bn-BD")}</p></div><div className="flex items-center gap-3"><span className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold">{statusLabels[product.status]||product.status}</span>{product.status==="active"&&<Link href={`/plant-market/${product.slug}`} className="text-sm font-bold text-emerald-800 underline">পণ্য দেখুন</Link>}</div></article>)}</div>:<section className="mt-6 rounded-2xl border border-dashed bg-white p-8 text-center"><h2 className="text-xl font-black">এখনো Plant Market পণ্য যোগ করেননি</h2><p className="mt-2 text-sm text-slate-600">গাছ, চারা ও বাগান সামগ্রী জমা দিন। অনুমোদনের আগে পণ্য প্রকাশিত হবে না।</p><Link href="/plant-seller/products/new" className="mt-5 inline-flex rounded-xl bg-emerald-900 px-5 py-3 font-bold text-white">প্রথম পণ্য যোগ করুন</Link></section>}</div></main>;
+}
