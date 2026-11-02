@@ -21,6 +21,7 @@ const pages = [
   "app/plant-market/orders/page.tsx",
   "app/orders/page.tsx",
   "app/marketplace/buy/page.tsx",
+  "app/en/soil-fertilizer/page.tsx",
 ];
 
 for (const path of pages) {
