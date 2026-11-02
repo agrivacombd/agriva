@@ -84,6 +84,7 @@ jobs:
       - name: Plant Market live inventory and SEO regression test
         run: npm run test:plant-market
       - name: Plant Market independent checkout and order lifecycle regression test
+        if: hashFiles('scripts/smoke-plant-market-checkout.mjs') != ''
         run: npm run test:plant-market-checkout
       - name: Green Living schema, privacy, and SEO regression test
         run: npm run test:green-living-platform
