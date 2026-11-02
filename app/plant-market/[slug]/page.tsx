@@ -7,8 +7,8 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({params}:Props):Promise<Metadata>{
   const {slug}=await params;const supabase=await createSupabaseServerClient();
   const {data}=await supabase.from("plant_market_products").select("name,description,image_url").eq("slug",slug).eq("status","active").maybeSingle();
-  if(!data)return {title:"Plant Market পণ্য পাওয়া যায়নি | AGRIVA",robots:{index:false,follow:false}};
-  return {title:`${data.name} | AGRIVA Plant Market`,description:(data.description||`${data.name} — AGRIVA Plant Market-এ গাছ ও বাগান সামগ্রী।`).slice(0,160),alternates:{canonical:`/plant-market/${encodeURIComponent(slug)}`},openGraph:{type:"website",title:data.name,description:data.description||undefined,images:data.image_url?[data.image_url]:[]}};
+  if(!data)return {title:"Plant Market পণ্য পাওয়া যায়নি",robots:{index:false,follow:false}};
+  return {title:`${data.name} | Plant Market`,description:(data.description||`${data.name} — AGRIVA Plant Market-এ গাছ ও বাগান সামগ্রী।`).slice(0,160),alternates:{canonical:`/plant-market/${encodeURIComponent(slug)}`},openGraph:{type:"website",title:data.name,description:data.description||undefined,images:data.image_url?[data.image_url]:[]}};
 }
 export default async function PlantMarketProductPage({params}:Props){
   const {slug}=await params;const supabase=await createSupabaseServerClient();
