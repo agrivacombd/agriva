@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 
 const read = (path) => readFileSync(path, "utf8");
-const migration = read("supabase/migrations/20261101110000_plant_market_checkout_and_order_lifecycle.sql");
-const guestCheckoutMigration = read("supabase/migrations/20261101080000_secure_guest_checkout_identity.sql");
-const marketplaceCheckoutMigration = read("supabase/migrations/20261101090000_atomic_marketplace_cart_checkout.sql");
+const migration = read("supabase/migrations/20261102161752_plant_market_checkout_and_order_lifecycle.sql");
+const guestCheckoutMigration = read("supabase/migrations/20261102161707_secure_guest_checkout_identity.sql");
+const marketplaceCheckoutMigration = read("supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
 const cartApi = read("app/api/plant-market/cart/route.ts");
 const checkoutApi = read("app/api/plant-market/checkout/route.ts");
 const productPage = read("app/plant-market/[slug]/page.tsx");
