@@ -16,6 +16,10 @@ const pages = [
   "app/terms-of-service/page.tsx",
   "app/sell-harvest/page.tsx",
   "app/buyer-demands/page.tsx",
+  "app/plant-market/cart/page.tsx",
+  "app/plant-market/checkout/page.tsx",
+  "app/plant-market/orders/page.tsx",
+  "app/orders/page.tsx",
 ];
 
 for (const path of pages) {
@@ -28,3 +32,11 @@ for (const path of pages) {
 }
 
 console.log("SEO title template checks passed.");
+
+const plantProduct = readFileSync("app/plant-market/[slug]/page.tsx", "utf8");
+assert.doesNotMatch(plantProduct.match(/return \{title:[^}]+\}/)?.[0] ?? "", /AGRIVA/i, "Plant Market product title should rely on the global suffix");
+const marketplaceProduct = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+assert.match(marketplaceProduct, /const title = name[\s\S]*?const socialTitle = title \+ " \| AGRIVA"/, "Marketplace metadata title and social title should be separated");
+const jobSeo = readFileSync("lib/jobs/seo.ts", "utf8");
+assert.match(jobSeo, /const title = `\$\{job\.title\} — \$\{location\}`/);
+assert.match(jobSeo, /const socialTitle = `\$\{title\} \| AGRIVA Jobs`/);
