@@ -119,6 +119,91 @@ create policy plant_market_order_item_party_read on public.plant_market_order_it
     )
   ));
 
+-- Permit only stock/updated_at mutations made inside the two trusted lifecycle RPCs.
+-- The transaction-local GUC is set by those SECURITY DEFINER functions and is
+-- never accepted from an RPC argument.
+create or replace function public.guard_plant_market_product_write()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'pg_catalog','public','pg_temp'
+as $pm$
+declare
+  v_admin boolean := auth.uid() is not null and public.is_admin();
+begin
+  if tg_op='UPDATE'
+     and current_setting('agriva.plant_market_inventory_adjustment',true)='on' then
+    if new.seller_id is distinct from old.seller_id
+       or (to_jsonb(new)-'stock'-'updated_at') is distinct from
+          (to_jsonb(old)-'stock'-'updated_at') then
+      raise exception 'Inventory adjustment may only change stock';
+    end if;
+    return new;
+  end if;
+
+  if auth.uid() is null then
+    raise exception 'Authentication required' using errcode='42501';
+  end if;
+
+  if new.status='active' and not exists (
+    select 1 from public.user_module_grants g
+    join public.gardener_profiles gp on gp.user_id=g.user_id
+    where g.user_id=new.seller_id
+      and g.module='plant_market'
+      and g.permission='create'
+      and g.scope_type='global'
+      and g.scope_id is null
+      and g.status='active'
+      and (g.expires_at is null or g.expires_at>now())
+      and gp.verification_status='verified'
+  ) then
+    raise exception 'Plant Market listing requires verified gardener identity and active Plant Market create grant'
+      using errcode='42501';
+  end if;
+
+  if v_admin then
+    if tg_op='UPDATE' and new.status is distinct from old.status then
+      new.moderated_by:=auth.uid();
+      new.moderated_at:=now();
+      if new.status='active' then new.moderation_note:=null; end if;
+    end if;
+    return new;
+  end if;
+
+  if tg_op='INSERT' then
+    if new.seller_id<>auth.uid() then
+      raise exception 'Cannot create a Plant Market listing for another seller' using errcode='42501';
+    end if;
+    if not exists (
+      select 1 from public.gardener_profiles gp
+      where gp.user_id=auth.uid() and gp.verification_status='verified'
+    ) or not public.has_module_access('plant_market','create','global',null::uuid) then
+      raise exception 'Verified Plant Market seller access required' using errcode='42501';
+    end if;
+    new.status:='draft';
+    new.moderation_note:=null;
+    new.moderated_by:=null;
+    new.moderated_at:=null;
+    return new;
+  end if;
+
+  if old.seller_id<>auth.uid() or new.seller_id<>old.seller_id then
+    raise exception 'Cannot modify another seller listing or transfer ownership' using errcode='42501';
+  end if;
+  if new.status is distinct from old.status
+     or new.moderation_note is distinct from old.moderation_note
+     or new.moderated_by is distinct from old.moderated_by
+     or new.moderated_at is distinct from old.moderated_at then
+    raise exception 'Plant Market moderation fields are platform-controlled' using errcode='42501';
+  end if;
+  if not public.has_module_access('plant_market','update','global',null::uuid) then
+    raise exception 'Active Plant Market update grant required' using errcode='42501';
+  end if;
+  return new;
+end;
+$pm$;
+revoke all on function public.guard_plant_market_product_write() from public,anon,authenticated;
+
 -- A direct cart-item delete must serialize against checkout's cart-row lock.
 create or replace function public.plant_market_guard_cart_item_delete()
 returns trigger
@@ -320,10 +405,12 @@ begin
     where ci.cart_id=c.id and pm.seller_id=p.seller_id;
   end loop;
 
+  perform set_config('agriva.plant_market_inventory_adjustment','on',true);
   update public.plant_market_products pm
     set stock=pm.stock-ci.quantity,updated_at=now()
     from public.plant_market_cart_items ci
     where ci.cart_id=c.id and ci.product_id=pm.id;
+  perform set_config('agriva.plant_market_inventory_adjustment','off',true);
   update public.plant_market_carts
     set status='checked_out',updated_at=now() where id=c.id;
 
@@ -370,10 +457,12 @@ begin
     raise exception 'Invalid order status transition';
   end if;
   if p_status='cancelled' then
+    perform set_config('agriva.plant_market_inventory_adjustment','on',true);
     update public.plant_market_products pm
       set stock=pm.stock+oi.quantity,updated_at=now()
       from public.plant_market_order_items oi
       where oi.order_id=o.id and oi.product_id=pm.id;
+    perform set_config('agriva.plant_market_inventory_adjustment','off',true);
   end if;
   update public.plant_market_orders
     set status=p_status,updated_at=now() where id=o.id;
