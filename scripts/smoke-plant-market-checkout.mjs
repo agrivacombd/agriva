@@ -3,6 +3,8 @@ import {readFileSync} from "node:fs";
 
 const read = (path) => readFileSync(path, "utf8");
 const migration = read("supabase/migrations/20261101110000_plant_market_checkout_and_order_lifecycle.sql");
+const guestCheckoutMigration = read("supabase/migrations/20261101080000_secure_guest_checkout_identity.sql");
+const marketplaceCheckoutMigration = read("supabase/migrations/20261101090000_atomic_marketplace_cart_checkout.sql");
 const cartApi = read("app/api/plant-market/cart/route.ts");
 const checkoutApi = read("app/api/plant-market/checkout/route.ts");
 const productPage = read("app/plant-market/[slug]/page.tsx");
@@ -15,6 +17,13 @@ const buyerOrders = read("app/plant-market/orders/page.tsx");
 const sellerDashboard = read("app/plant-seller/products/page.tsx");
 const sql = migration.toLowerCase();
 const must = (condition, message) => assert.ok(condition, message);
+
+const checkoutTablePosition = marketplaceCheckoutMigration.indexOf("create table if not exists public.marketplace_checkouts");
+const guestTriggerPosition = marketplaceCheckoutMigration.indexOf("create trigger marketplace_checkout_require_guest_buyer");
+must(checkoutTablePosition >= 0 && guestTriggerPosition > checkoutTablePosition,
+  "Guest buyer trigger must be installed only after marketplace_checkouts exists");
+must(!guestCheckoutMigration.includes("public.marketplace_checkouts"),
+  "Guest identity migration must not reference a checkout table created by a later migration");
 
 for (const table of [
   "plant_market_carts",
