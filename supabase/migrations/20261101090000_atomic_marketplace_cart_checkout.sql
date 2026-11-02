@@ -73,6 +73,15 @@ create table if not exists public.marketplace_checkouts (
   unique (buyer_id, idempotency_key)
 );
 
+-- Install the guest buyer-only guard after the checkout table exists.
+drop trigger if exists marketplace_checkout_require_verified_guest_phone
+  on public.marketplace_checkouts;
+drop trigger if exists marketplace_checkout_require_guest_buyer
+  on public.marketplace_checkouts;
+create trigger marketplace_checkout_require_guest_buyer
+before insert on public.marketplace_checkouts
+for each row execute function public.require_guest_checkout_buyer_identity();
+
 alter table public.marketplace_orders
   add column if not exists checkout_id uuid references public.marketplace_checkouts(id) on delete set null;
 create index if not exists marketplace_orders_checkout_id_idx
