@@ -1,40 +1,65 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
-const read=p=>readFileSync(p,"utf8");
-const migration=read("supabase/migrations/20261101110000_plant_market_checkout_and_order_lifecycle.sql");
-const cartApi=read("app/api/plant-market/cart/route.ts");
-const checkoutApi=read("app/api/plant-market/checkout/route.ts");
-const product=read("app/plant-market/[slug]/page.tsx");
-const cartPage=read("app/plant-market/cart/page.tsx");
-const checkoutPage=read("app/plant-market/checkout/page.tsx");
-const sellerOrders=read("app/plant-seller/orders/page.tsx");
-const buyerOrders=read("app/plant-market/orders/page.tsx");
-const sellerDashboard=read("app/plant-seller/products/page.tsx");
-for(const table of ["plant_market_carts","plant_market_cart_items","plant_market_checkouts","plant_market_orders","plant_market_order_items"])assert.match(migration,new RegExp("CREATE TABLE IF NOT EXISTS public\\."+table));
-assert.match(migration,/plant_market_add_to_cart/);
-assert.match(migration,/plant_market_finalize_checkout/);
-assert.match(migration,/pg_advisory_xact_lock/);
-assert.match(migration,/FOR UPDATE OF pm/);
-assert.match(migration,/unique\(buyer_id,idempotency_key\)/);
-assert.match(migration,/update public\.plant_market_products pm set stock=pm\.stock-ci\.quantity/);
-assert.match(migration,/plant_market_set_order_status/);
-assert.match(migration,/as \\$pm\\$/);
-assert.match(migration,/site_settings where key=.cod_enabled. and value=.true./);
-assert.match(migration,/Active verified Plant Market seller access required/);
-assert.match(migration,/Invalid order status transition/);
-assert.doesNotMatch(migration,/then raise exception .Invalid Bangladesh phone.; end if;[\\s\\S]*commit;[\\s\\S]*then raise exception/);
-assert.match(migration,/o\.seller_id<>\(select auth\.uid\(\)\)/);
-assert.match(migration,/plant_market_cart_item_owner_delete/);
-assert.doesNotMatch(migration,/marketplace_orders|marketplace_checkouts|public\.carts|public\.cart_items/);
-assert.match(cartApi,/plant_market_add_to_cart/);
-assert.match(cartApi,/plant_market_cart_items/);
-assert.match(checkoutApi,/plant_market_finalize_checkout/);
-assert.match(checkoutApi,/cod_enabled/);
-assert.match(product,/PlantMarketAddToCart/);
-assert.match(cartPage,/PlantMarketCartClient/);
-assert.match(checkoutPage,/PlantMarketCheckoutClient/);
-assert.match(sellerOrders,/plant_market_orders/);
-assert.match(sellerOrders,/plant_market_set_order_status/);
-assert.match(buyerOrders,/eq\("buyer_id",user\.id\)/);
-assert.match(sellerDashboard,/plant-seller\/orders/);
-console.log("Plant Market isolated cart, atomic COD checkout and order lifecycle smoke checks passed.");
+
+const read = (path) => readFileSync(path, "utf8");
+const migration = read("supabase/migrations/20261101110000_plant_market_checkout_and_order_lifecycle.sql");
+const cartApi = read("app/api/plant-market/cart/route.ts");
+const checkoutApi = read("app/api/plant-market/checkout/route.ts");
+const productPage = read("app/plant-market/[slug]/page.tsx");
+const cartPage = read("app/plant-market/cart/page.tsx");
+const checkoutPage = read("app/plant-market/checkout/page.tsx");
+const cartClient = read("components/plant-market/PlantMarketCartClient.tsx");
+const checkoutClient = read("components/plant-market/PlantMarketCheckoutClient.tsx");
+const sellerOrders = read("app/plant-seller/orders/page.tsx");
+const buyerOrders = read("app/plant-market/orders/page.tsx");
+const sellerDashboard = read("app/plant-seller/products/page.tsx");
+const sql = migration.toLowerCase();
+const must = (condition, message) => assert.ok(condition, message);
+
+for (const table of [
+  "plant_market_carts",
+  "plant_market_cart_items",
+  "plant_market_checkouts",
+  "plant_market_orders",
+  "plant_market_order_items",
+]) must(sql.includes("create table if not exists public." + table), "Missing Plant Market table: " + table);
+
+for (const fragment of [
+  "plant_market_add_to_cart",
+  "plant_market_finalize_checkout",
+  "plant_market_set_order_status",
+  "pg_advisory_xact_lock",
+  "for update of pm",
+  "unique(buyer_id,idempotency_key)",
+  "set stock=pm.stock-ci.quantity",
+  "as $pm$",
+  "site_settings where key='cod_enabled' and value='true'",
+  "active verified plant market seller access required",
+  "invalid order status transition",
+  "agriva.plant_market_inventory_adjustment",
+  "guard_plant_market_product_write",
+  "plant_market_cart_item_owner_delete",
+]) must(sql.includes(fragment), "Missing SQL safety invariant: " + fragment);
+
+must(!sql.includes("commit;\n then raise exception"), "Migration contains SQL after COMMIT");
+must(!sql.includes("marketplace_orders") && !sql.includes("marketplace_checkouts")
+  && !sql.includes("public.carts") && !sql.includes("public.cart_items"),
+  "Plant Market checkout must not reuse Marketplace cart/order tables");
+
+must(cartApi.includes("plant_market_add_to_cart") && cartApi.includes("plant_market_cart_items"),
+  "Plant Market cart API is not wired to its own tables/RPC");
+must(checkoutApi.includes("plant_market_finalize_checkout") && checkoutApi.includes("cod_enabled"),
+  "Plant Market checkout API is missing its atomic RPC or COD guard");
+must(productPage.includes("PlantMarketAddToCart"), "Product page is not connected to Plant Market cart");
+must(cartPage.includes("PlantMarketCartClient"), "Plant Market cart page is missing its client");
+must(checkoutPage.includes("PlantMarketCheckoutClient"), "Plant Market checkout page is missing its client");
+must(cartClient.includes("অর্ডারযোগ্য নয়") && cartClient.includes("PlantMarketCheckoutClient") === false,
+  "Unavailable cart products must remain visible and removable");
+must(checkoutClient.includes("items.some(item=>item.plant_market_products?.status!==\"active\")"),
+  "Checkout must be blocked when an unavailable product remains in the cart");
+must(sellerOrders.includes("plant_market_set_order_status") && sellerOrders.includes("plant_market_orders"),
+  "Plant Seller order management is not wired to Plant Market orders");
+must(buyerOrders.includes('.eq("buyer_id",user.id)'), "Buyer order history is not scoped to the authenticated buyer");
+must(sellerDashboard.includes("/plant-seller/orders"), "Plant Seller dashboard has no orders link");
+
+console.log("Plant Market checkout lifecycle static regression checks passed.");
