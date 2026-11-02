@@ -3,7 +3,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 # Keep only the newest run for each branch/PR to avoid stale queued jobs.
 concurrency:
@@ -84,6 +83,8 @@ jobs:
         run: npm run test:green-exchange-security
       - name: Plant Market live inventory and SEO regression test
         run: npm run test:plant-market
+      - name: Plant Market independent checkout and order lifecycle regression test
+        run: npm run test:plant-market-checkout
       - name: Green Living schema, privacy, and SEO regression test
         run: npm run test:green-living-platform
       - name: Production build
