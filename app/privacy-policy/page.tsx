@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "গোপনীয়তা নীতি | AGRIVA",
+  title: "গোপনীয়তা নীতি",
   description: "AGRIVA ব্যবহার করার সময় আপনার তথ্য কীভাবে সংগ্রহ, ব্যবহার ও সুরক্ষিত রাখা হতে পারে, তা জানুন।",
   alternates: { canonical: "/privacy-policy" },
 };
