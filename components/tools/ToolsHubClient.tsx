@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Search, ArrowUpRight, LockKeyhole, SlidersHorizontal, Sparkles } from "lucide-react";
-import { relatedServices, toolCategories, tools, type ToolCategoryId, type ToolEntry } from "@/lib/tools/registry";
+import { getToolHref, relatedServices, toolCategories, tools, type ToolCategoryId, type ToolEntry } from "@/lib/tools/registry";
 
 type Locale = "bn" | "en";
 
@@ -92,7 +92,7 @@ function ToolCard({ tool, locale }: { tool: ToolEntry; locale: Locale }) {
   const en = locale === "en";
   const Icon = tool.icon as LucideIcon;
   return (
-    <Link href={tool.href} target="_blank" rel="noopener noreferrer" className="group flex h-full flex-col rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+    <Link href={getToolHref(tool, locale)} target="_blank" rel="noopener noreferrer" className="group flex h-full flex-col rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
       <div className="flex items-start justify-between gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><Icon size={21} aria-hidden="true" /></span>
         {tool.status === "login-required" ? <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-900"><LockKeyhole size={12} />{copy[locale].login}</span> : tool.status === "prototype" ? <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700">{copy[locale].prototype}</span> : null}

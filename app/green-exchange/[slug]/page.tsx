@@ -51,12 +51,12 @@ type PageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const listing = await getListing(slug);
-  if (!listing) return { title: "পোস্ট পাওয়া যায়নি | Green Exchange – AGRIVA", robots: { index: false, follow: true } };
+  if (!listing) return { title: "পোস্ট পাওয়া যায়নি | Green Exchange", robots: { index: false, follow: true } };
 
   const description = listing.description.replace(/\s+/g, " ").slice(0, 155);
   const canonical = `${siteUrl}/green-exchange/${encodeURIComponent(listing.slug)}`;
   return {
-    title: `${listing.title} | Green Exchange – AGRIVA`,
+    title: `${listing.title} | Green Exchange`,
     description,
     alternates: { canonical },
     openGraph: { title: listing.title, description, url: canonical, type: "article", siteName: "AGRIVA" },

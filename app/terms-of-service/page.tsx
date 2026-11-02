@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ব্যবহারের শর্তাবলি | AGRIVA",
+  title: "ব্যবহারের শর্তাবলি",
   description: "AGRIVA ওয়েবসাইট ও ডিজিটাল সেবা ব্যবহারের জন্য প্রযোজ্য সাধারণ শর্তাবলি পড়ুন।",
   alternates: { canonical: "/terms-of-service" },
 };

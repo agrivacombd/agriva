@@ -39,7 +39,8 @@ export function jobPath(job: Pick<JobSeoRecord, "slug">) {
 
 export function buildJobMetadata(job: JobSeoRecord): Metadata {
   const location = [job.upazila, job.district].filter(Boolean).join(", ");
-  const title = `${job.title} — ${location} | AGRIVA Jobs`.slice(0, 70);
+  const title = `${job.title} — ${location}`.slice(0, 70);
+  const socialTitle = `${title} | AGRIVA Jobs`;
   const plainDescription = job.description.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
   const description = `${typeLabels[job.job_type]}: ${plainDescription} এলাকা: ${location}। মজুরি ও আবেদনের তথ্য AGRIVA Jobs-এ দেখুন।`.slice(0, 160);
   const canonical = jobPath(job);
@@ -48,8 +49,8 @@ export function buildJobMetadata(job: JobSeoRecord): Metadata {
     description,
     alternates: { canonical },
     robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } },
-    openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA Jobs", title, description, url: canonical },
-    twitter: { card: "summary", title, description },
+    openGraph: { type: "website", locale: "bn_BD", siteName: "AGRIVA Jobs", title: socialTitle, description, url: canonical },
+    twitter: { card: "summary", title: socialTitle, description },
   };
 }
 

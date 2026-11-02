@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "কৃষি চাকরি ও কৃষিশ্রমিক নিয়োগ | AGRIVA Jobs",
+  title: "কৃষি চাকরি ও কৃষিশ্রমিক নিয়োগ",
   description: "বাংলাদেশে কৃষি চাকরি খুঁজুন ও কর্মী নিয়োগ দিন। এককালীন, পার্ট-টাইম ও ফুল-টাইম কাজ, স্থানীয় এলাকা সার্চ এবং ম্যাপ দিকনির্দেশনা।",
   alternates: { canonical: "/jobs" },
   keywords: ["কৃষি চাকরি", "কৃষিশ্রমিক নিয়োগ", "ধান কাটার শ্রমিক", "খামারের চাকরি", "কৃষি কর্মকর্তা চাকরি"],

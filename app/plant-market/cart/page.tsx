@@ -1,4 +1,4 @@
 import Link from "next/link";
 import PlantMarketCartClient from "@/components/plant-market/PlantMarketCartClient";
-export const metadata={title:"Plant Market Cart | AGRIVA",robots:{index:false,follow:false}};
+export const metadata={title:"Plant Market Cart",robots:{index:false,follow:false}};
 export default function PlantMarketCartPage(){return <main className="min-h-screen bg-[#f5f8f1] px-4 py-10 text-[#17351f] sm:px-6"><div className="mx-auto max-w-4xl"><Link href="/plant-market" className="font-bold text-emerald-800 underline">← Plant Market</Link><h1 className="mt-4 text-3xl font-black">আপনার Plant Market Cart</h1><p className="mt-2 text-sm text-slate-600">এই cart সাধারণ Marketplace-এর cart থেকে সম্পূর্ণ আলাদা।</p><div className="mt-6"><PlantMarketCartClient/></div></div></main>}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ToolsHubClient from "@/components/tools/ToolsHubClient";
-import { tools } from "@/lib/tools/registry";
+import { getToolHref, tools } from "@/lib/tools/registry";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
@@ -26,7 +26,7 @@ const itemListJsonLd = {
     "@type": "ListItem",
     position: index + 1,
     name: tool.titleEn,
-    url: siteUrl + tool.href,
+    url: siteUrl + getToolHref(tool, "en"),
   })),
 };
 

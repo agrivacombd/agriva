@@ -54,8 +54,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const name = cleanText(product.name);
   const title = name.toLocaleLowerCase().includes("bangladesh")
-    ? name + " | AGRIVA"
-    : name + " in Bangladesh | AGRIVA";
+    ? name
+    : name + " in Bangladesh";
+  const socialTitle = title + " | AGRIVA";
   const description = product.description && product.description.trim()
     ? cleanText(product.description).slice(0, 155)
     : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
@@ -67,7 +68,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       type: "website",
       locale: "bn_BD",
@@ -76,7 +77,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     },
     twitter: {
       card: image ? "summary_large_image" : "summary",
-      title,
+      title: socialTitle,
       description,
       ...(image ? { images: [image] } : {}),
     },

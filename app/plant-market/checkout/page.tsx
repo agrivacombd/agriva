@@ -1,4 +1,4 @@
 import Link from "next/link";
 import PlantMarketCheckoutClient from "@/components/plant-market/PlantMarketCheckoutClient";
-export const metadata={title:"Plant Market Checkout | AGRIVA",robots:{index:false,follow:false}};
+export const metadata={title:"Plant Market Checkout",robots:{index:false,follow:false}};
 export default function PlantMarketCheckoutPage(){return <main className="min-h-screen bg-[#f5f8f1] px-4 py-10 text-[#17351f] sm:px-6"><div className="mx-auto max-w-5xl"><Link href="/plant-market/cart" className="font-bold text-emerald-800 underline">← Plant Market Cart</Link><h1 className="mt-4 text-3xl font-black">Plant Market Checkout</h1><p className="mt-2 text-sm text-slate-600">নিজস্ব COD checkout · এক checkout-এ একাধিক seller থাকলে আলাদা seller order তৈরি হবে।</p><div className="mt-6"><PlantMarketCheckoutClient/></div></div></main>}

@@ -83,6 +83,14 @@ jobs:
         run: npm run test:green-exchange-security
       - name: Plant Market live inventory and SEO regression test
         run: npm run test:plant-market
+      - name: Plant Market public-read RLS regression test
+        run: npm run test:plant-market-public-read
+      - name: Tools Hub localized route regression test
+        run: npm run test:tools-hub-locales
+      - name: SEO title template regression test
+        run: npm run test:seo-title-template
+      - name: Marketplace COD cart workflow regression test
+        run: npm run test:cod-cart
       - name: Plant Market independent checkout and order lifecycle regression test
         if: hashFiles('scripts/smoke-plant-market-checkout.mjs') != ''
         run: npm run test:plant-market-checkout

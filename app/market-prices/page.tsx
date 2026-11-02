@@ -6,7 +6,7 @@ const sources = [
 ];
 
 export const metadata: Metadata = {
-  title: "কৃষিপণ্যের বাজারদর | AGRIVA",
+  title: "কৃষিপণ্যের বাজারদর",
   description: "বাংলাদেশের কৃষিপণ্যের সর্বশেষ সরকারি বাজারদর দেখার জন্য নির্ভরযোগ্য উৎসের লিংক।",
   alternates: { canonical: "/market-prices" },
 };
