@@ -190,13 +190,6 @@ begin
 end;
 $$;
 
-drop trigger if exists marketplace_checkout_require_verified_guest_phone
-  on public.marketplace_checkouts;
-drop trigger if exists marketplace_checkout_require_guest_buyer
-  on public.marketplace_checkouts;
-create trigger marketplace_checkout_require_guest_buyer
-before insert on public.marketplace_checkouts
-for each row execute function public.require_guest_checkout_buyer_identity();
 
 drop function if exists public.require_verified_guest_checkout_phone();
 revoke all on function public.require_guest_checkout_buyer_identity() from public, anon, authenticated;
