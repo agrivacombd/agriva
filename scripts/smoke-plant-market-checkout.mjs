@@ -5,6 +5,7 @@ const read = (path) => readFileSync(path, "utf8");
 const migration = read("supabase/migrations/20261102161752_plant_market_checkout_and_order_lifecycle.sql");
 const guestCheckoutMigration = read("supabase/migrations/20261102161707_secure_guest_checkout_identity.sql");
 const marketplaceCheckoutMigration = read("supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
+const foreignKeyIndexesMigration = read("supabase/migrations/20261102170000_marketplace_plant_market_fk_indexes.sql");
 const cartApi = read("app/api/plant-market/cart/route.ts");
 const checkoutApi = read("app/api/plant-market/checkout/route.ts");
 const productPage = read("app/plant-market/[slug]/page.tsx");
@@ -24,6 +25,11 @@ must(checkoutTablePosition >= 0 && guestTriggerPosition > checkoutTablePosition,
   "Guest buyer trigger must be installed only after marketplace_checkouts exists");
 must(!guestCheckoutMigration.includes("public.marketplace_checkouts"),
   "Guest identity migration must not reference a checkout table created by a later migration");
+for (const index of [
+  "cod_collection_events_collected_by_idx",
+  "plant_market_cart_items_product_id_idx",
+  "plant_market_order_items_product_id_idx",
+]) must(foreignKeyIndexesMigration.includes(index), "Missing foreign-key performance index: " + index);
 
 for (const table of [
   "plant_market_carts",
