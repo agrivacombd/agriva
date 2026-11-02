@@ -11,7 +11,7 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: Props): Metadata {
   const lesson = getLesson(params.slug);
-  if (!lesson) return { title: "গাইড পাওয়া যায়নি | AGRIVA", robots: { index: false, follow: false } };
+  if (!lesson) return { title: "গাইড পাওয়া যায়নি", robots: { index: false, follow: false } };
   return {
     title: lesson.title,
     description: lesson.summary,
