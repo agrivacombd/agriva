@@ -8,7 +8,7 @@ export async function GET(){
  if(!cart)return NextResponse.json({items:[]});
  const {data,error:itemError}=await supabase.from("plant_market_cart_items").select("id,product_id,quantity,plant_market_products(id,name,slug,price,stock,status,unit,image_url,seller_id)").eq("cart_id",cart.id).order("created_at",{ascending:true});
  if(itemError)return NextResponse.json({error:"Plant Market cart items লোড করা যায়নি।"},{status:503});
- return NextResponse.json({cartId:cart.id,items:(data??[]).filter(row=>row.plant_market_products&&row.plant_market_products.status==="active")});
+ return NextResponse.json({cartId:cart.id,items:data??[]});
 }
 export async function POST(request:NextRequest){
  const supabase=await createSupabaseServerClient();const {data:{user},error:authError}=await supabase.auth.getUser();
