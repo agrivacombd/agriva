@@ -25,7 +25,7 @@ const pages = [
 
 for (const path of pages) {
   const source = readFileSync(path, "utf8");
-  const metadata = source.match(/export const metadata[\s\S]*?\n};/);
+  const metadata = source.match(/export const metadata[\\s\\S]*?};/);
   assert.ok(metadata, `${path} should export page metadata`);
   const title = metadata[0].match(/title:\s*["'`]([^"'`]+)["'`]/);
   assert.ok(title, `${path} should define a static title`);
