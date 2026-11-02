@@ -87,6 +87,20 @@ export const tools: ToolEntry[] = [
   { id: "personal-garden", href: "/garden", category: "green-living", title: "আমার গার্ডেন", titleEn: "Personal Garden", description: "নিজের গাছের তালিকা, যত্নের কাজ ও তারিখের রেকর্ড রাখুন।", descriptionEn: "Keep a list of your plants and plan care tasks and dates.", keywords: ["বাগান", "গাছ", "গাছের যত্ন", "garden", "plant care", "home garden"], icon: Sprout, status: "login-required" },
 ];
 
+const englishToolRoutes: Record<string, string> = {
+  "/fertilizer-calculator": "/en/fertilizer-calculator",
+  "/seed-rate-calculator": "/en/seed-rate-calculator",
+  "/farming-cost-profit-calculator": "/en/farming-cost-profit-calculator",
+  "/crop-calendar": "/en/crop-calendar",
+  "/crop-choice": "/en/crop-choice",
+  "/soil-fertilizer": "/en/soil-fertilizer",
+};
+
+export function getToolHref(tool: ToolEntry, locale: "bn" | "en"): string {
+  if (locale === "bn") return tool.href;
+  return englishToolRoutes[tool.href] ?? tool.href;
+}
+
 export const relatedServices = [
   { href: "/marketplace", title: "কৃষি মার্কেটপ্লেস", titleEn: "Agriculture Marketplace", description: "বীজ, সার ও কৃষি উপকরণ খুঁজুন", descriptionEn: "Find seeds, fertilizer and farm supplies", icon: ShoppingBasket },
   { href: "/sell-harvest", title: "ফসল বিক্রি", titleEn: "Sell Harvest", description: "নিজের ফসল বিক্রির অফার দিন", descriptionEn: "Create an offer for your harvest", icon: Store },
