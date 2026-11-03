@@ -10,8 +10,8 @@ assert.match(migration, /revoke all on function public\.resolve_reseller_attribu
   "anonymous and default PUBLIC execution must be revoked");
 assert.match(migration, /grant execute on function public\.resolve_reseller_attribution\(text, text, uuid\) to authenticated, service_role/i,
   "authenticated and trusted service role must retain execution");
-assert.match(forwardMigration, /revoke all on function public\.resolve_reseller_attribution\\(text, text, uuid\) from public, anon/i, "forward migration must remove anonymous resolver access");
-assert.match(forwardMigration, /grant execute on function public\.resolve_reseller_attribution\\(text, text, uuid\) to authenticated, service_role/i, "forward migration must preserve authenticated checkout access");
+assert.match(forwardMigration, /revoke all on function public\.resolve_reseller_attribution\(text, text, uuid\) from public, anon/i, "forward migration must remove anonymous resolver access");
+assert.match(forwardMigration, /grant execute on function public\.resolve_reseller_attribution\(text, text, uuid\) to authenticated, service_role/i, "forward migration must preserve authenticated checkout access");
 assert.match(checkoutRoute, /if \(!user\)[\s\S]*?status:\s*401/i,
   "checkout must require an authenticated user");
 assert.match(checkoutRoute, /rpc\("finalize_marketplace_cod_order_safe"/i,
