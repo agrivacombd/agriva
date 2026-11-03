@@ -9,6 +9,8 @@ const read = (path) => {
 
 const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
+const adminDashboard = read("app/admin/page.tsx");
+const controlCenterNav = read("components/admin/AdminControlCenterNav.tsx");
 assert.match(layout, /requireAdminPage\("dashboard\.read"\)/, "admin layout must use the shared capability guard");
 assert.match(authz, /supabase\.auth\.getUser\(\)/, "shared guard must verify the server-side session");
 assert.match(authz, /profileError/, "shared guard must fail closed when profile lookup fails");
@@ -16,6 +18,20 @@ assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\.has\(capability\)/, "shared guar
 assert.match(authz, /authorization_unavailable/, "authorization lookup failures must be distinguishable from ordinary denial");
 const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
 assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|payouts\.approve|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
+assert.match(controlCenterNav, /getAvailableAdminCapabilities/, "Admin navigation must use a server-verified capability list");
+assert.match(controlCenterNav, /availableCapabilities\.has\(item\.capability\)/, "Admin navigation must hide links without the corresponding capability");
+for (const match of controlCenterNav.matchAll(/href: "(\/admin(?:\/[a-z-]+)?)"/g)) {
+  const href = match[1];
+  const routeFile = href === "/admin" ? "app/admin/page.tsx" : `app${href}/page.tsx`;
+  assert.ok(existsSync(routeFile), `Admin navigation must not link to a missing route: ${href}`);
+}
+assert.match(adminDashboard, /requireAdmin\("payments\.reconcile"\)/, "commission approval must require a finance capability");
+assert.match(adminDashboard, /requireAdmin\("payouts\.approve"\)/, "payout approval must require an explicit high-risk capability");
+assert.match(adminDashboard, /getAvailableAdminCapabilities\(\["payments\.reconcile", "payouts\.approve"\]\)/, "finance actions must be rendered only for explicitly granted capabilities");
+assert.match(adminDashboard, /canApproveCommissions \? <form action=\{approveCommission\}/, "commission approval UI must be hidden without its capability");
+assert.match(adminDashboard, /canManagePayouts \? <form action=\{approvePayout\}/, "payout approval UI must be hidden without its capability");
+assert.match(adminDashboard, /canManagePayouts \? <form action=\{completePayout\}/, "payout completion UI must be hidden without its capability");
+
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
