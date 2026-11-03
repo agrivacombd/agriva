@@ -174,10 +174,14 @@ assert.ok(ordersPage.includes('requireAdmin("payments.reconcile")'), "COD collec
 assert.ok(ordersPage.includes("canReconcilePayments"), "COD collection UI must be hidden without the dedicated finance capability");
 assert.ok(ordersPage.includes('requireAdmin("orders.read")'), "Order operations must use the shared read capability");
 assert.ok(ordersPage.includes("checkoutIds.length && canReadPayments"), "COD ledger reads must be skipped without payments.read");
-assert.ok(ordersPage.includes('!["cancelled", "completed", "refunded"].includes(status)'), "Order operations must hide transition controls for terminal states");
+assert.ok(ordersPage.includes("orderTransitionOptions[status]"), "Order operations must hide controls when no valid transition exists");
 assert.ok(adminDashboard.includes('getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition"'), "Dashboard finance data must be capability-gated");
 assert.ok(adminDashboard.includes("canReadPayments ? supabase.from"), "Commission queries must be skipped without finance read permission");
 assert.ok(adminDashboard.includes("canReadPayouts ? supabase.from"), "Payout queries must be skipped without payout read permission");
+assert.ok(adminDashboard.includes('const canReadPayments = availableAdminCapabilities.has("payments.read")'), "Finance reads must require payments.read, not a mutation capability");
+assert.ok(adminDashboard.includes('const canReadPayouts = availableAdminCapabilities.has("payouts.read")'), "Payout reads must require payouts.read, not a mutation capability");
+assert.ok(adminDashboard.includes("const FINANCE_MUTATIONS_ENABLED = false"), "Legacy finance mutations must remain disabled until audited service RPCs exist");
+assert.ok(ordersPage.includes("const FINANCE_MUTATIONS_ENABLED = false"), "COD mutation must remain disabled until audited service RPCs exist");
 assert.ok(!adminDashboard.includes("shipping_address"), "Dashboard order preview must not fetch full shipping-address PII");
 assert.ok(!adminDashboard.includes('value="refunded"'), "Routine dashboard order controls must not expose refund status");
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
