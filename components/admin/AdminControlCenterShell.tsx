@@ -9,7 +9,7 @@ import {
   Menu, X, Home, ExternalLink,
 } from "lucide-react";
 
-export type AdminShellLink = { label: string; href: string };
+export type AdminShellLink = { label: string; href: string; capability?: string };
 export type AdminShellModule = {
   id: string;
   title: string;
