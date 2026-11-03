@@ -68,8 +68,8 @@ export async function PATCH(request: NextRequest) {
     const [{ data: grant, error: grantError }, { data: gardener, error: gardenerError }] = await Promise.all([
       access.supabase.from("user_module_grants").select("id")
         .eq("user_id", current.seller_id).eq("module", "plant_market")
-        .eq("permission", "create").eq("scope_type", "global").eq("status", "active")
-        .maybeSingle(),
+        .eq("permission", "create").eq("scope_type", "global").is("scope_id", null).eq("status", "active")
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`).maybeSingle(),
       access.supabase.from("gardener_profiles").select("user_id")
         .eq("user_id", current.seller_id).eq("verification_status", "verified").maybeSingle(),
     ]);
