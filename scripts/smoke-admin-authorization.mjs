@@ -13,6 +13,7 @@ const adminDashboard = read("app/admin/page.tsx");
 const controlCenterNav = read("components/admin/AdminControlCenterNav.tsx");
 const marketplaceAdmin = read("app/admin/marketplace/page.tsx");
 const adminUsers = read("app/admin/users/page.tsx");
+const identityQueue = read("app/admin/identity-verification/page.tsx");
 const adminShell = read("components/admin/AdminControlCenterShell.tsx");
 const adminProducts = read("app/admin/products/page.tsx");
 const plantMarketEditor = read("app/admin/plant-market/page.tsx");
@@ -64,6 +65,9 @@ assert.match(adminUsers, /requireAdmin\("roles\.grant"\)/, "User role changes mu
 assert.match(adminUsers, /name="q"/, "User management must provide server-side name search");
 assert.match(adminUsers, /md:hidden/, "User management must provide mobile-friendly cards");
 assert.match(adminUsers, /Protected admin/, "Admin accounts must remain protected from routine role changes");
+assert.match(identityQueue, /notice=reason/, "Identity rejection must require a reason without throwing a server error");
+assert.match(identityQueue, /notice=error/, "Identity review failures must return an actionable UI notice");
+assert.match(identityQueue, /min-h-11/, "Identity review actions must meet mobile touch-target sizing");
 assert.match(plantMarketManageApi, /\["piece", "pot", "pack", "tray"\]/, "Plant Market units must match the Production check constraint");
 assert.match(plantMarketManager, /Slug ও publication status আলাদা moderation workflow-এ থাকবে/, "Plant Market editor must not mutate slug or publication status");
 assert.match(plantMarketManager, /Primary image · read only/, "Plant Market media must remain read-only until Admin upload access is reviewed");
