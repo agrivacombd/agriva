@@ -52,6 +52,9 @@ assert.match(marketplaceAdmin, /Custom slug editing, slug history and 301 redire
 assert.match(plantMarketEditor, /requireAdminPage\("catalog\.read"\)/, "Plant Market editor must require catalog read access");
 assert.match(plantMarketEditor, /from\("plant_market_products"\)/, "Plant Market editor must query its own product domain");
 assert.match(plantMarketManageApi, /requireAdminApi\("catalog\.edit"\)/, "Plant Market edits must require catalog edit permission");
+assert.match(plantMarketManageApi, /createClient\(supabaseUrl, serviceRoleKey/, "Plant Market writes must use a server-only audit client");
+assert.match(plantMarketManageApi, /admin_audit_log/, "Plant Market writes must record an audit event");
+assert.ok(plantMarketManageApi.indexOf('from("admin_audit_log").insert') < plantMarketManageApi.indexOf('from("plant_market_products").update'), "Plant Market audit intent must be recorded before product mutation");
 assert.doesNotMatch(plantMarketManageApi, /image_url\\s*:/, "Plant Market editor must not bypass the pending Admin media-upload policy review");
 assert.match(plantMarketManageApi, /status === "active"/, "Active Plant Market edits must preserve seller verification and create-grant checks");
 assert.match(plantMarketManager, /Slug ও publication status আলাদা moderation workflow-এ থাকবে/, "Plant Market editor must not mutate slug or publication status");
