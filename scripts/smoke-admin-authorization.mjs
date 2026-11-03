@@ -50,6 +50,7 @@ assert.match(adminProductPage, /if \(normalizeSlug\(productId\) !== product\.slu
 assert.match(marketplaceSlugMigration, /CHECK \(length\(old_slug\) BETWEEN 1 AND 255\)/, "Slug history must preserve existing Unicode legacy slugs");
 assert.match(marketplaceSlugMigration, /GRANT EXECUTE ON FUNCTION public\.admin_update_product_slug\(uuid, text\) TO authenticated/, "Slug mutation RPC must be callable only by authenticated Admin sessions");
 assert.doesNotMatch(marketplaceSlugMigration, /TO authenticated, service_role/, "Slug mutation RPC must not grant a service-role bypass");
+assert.match(marketplaceSlugMigration, /GRANT SELECT \(old_slug, product_id\) ON TABLE public\.marketplace_product_slug_redirects TO anon, authenticated/, "Public slug lookup must not expose audit actor or timestamp columns");
 assert.match(adminDashboard, /md:hidden/, "Dashboard must render a mobile-friendly order card list");
 assert.doesNotMatch(adminDashboard, /orderTotals/, "Dashboard must not retain the unbounded all-order value query");
 assert.ok(adminDashboard.includes("quickActions.map"), "Dashboard shortcuts must be rendered from a capability-filtered action list");
