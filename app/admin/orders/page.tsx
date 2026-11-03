@@ -76,7 +76,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const selectedStatus = typeof params?.status === "string" ? params.status : "";
   const supabase = await requireAdmin("orders.read");
   const availableCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile"]));
-  const canReadPayments = availableCapabilities.has("payments.read") || availableCapabilities.has("payments.reconcile");
+  const canReadPayments = availableCapabilities.has("payments.read");
   const canReconcilePayments = FINANCE_MUTATIONS_ENABLED && availableCapabilities.has("payments.reconcile");
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
@@ -186,7 +186,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                   <label className="text-xs font-bold">নোট / পার্থক্যের কারণ<input name="note" maxLength={500} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="ঐচ্ছিক"/></label>
                   <button type="submit" className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</button>
                 </form>}
-                {checkout.payment_status !== "paid" && !canReconcilePayments && <p className="mt-3 rounded-lg border border-amber-200 bg-white/70 p-3 text-xs leading-5 text-amber-900">COD collection entry is hidden. The dedicated payments.reconcile permission is required.</p>}
+                {checkout.payment_status !== "paid" && !canReconcilePayments && <p className="mt-3 rounded-lg border border-amber-200 bg-white/70 p-3 text-xs leading-5 text-amber-900">COD collection entry is disabled until the audited server-side finance workflow is deployed.</p>}
               </div>}
             </div>
           </article>;
