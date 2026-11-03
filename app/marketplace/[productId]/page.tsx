@@ -83,7 +83,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       ...(images.length ? { images: images.map((url, index) => ({ url, alt: product.seo_image_alt_texts?.[index] || name + " product image" })) } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: images.length ? "summary_large_image" : "summary",
       title,
       description,
       ...(images.length ? { images } : {}),
