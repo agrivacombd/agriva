@@ -197,9 +197,9 @@ Target project confirmed by the user: `dhqaepsbuwhbynagfxpf` (`supabase-coral-cl
 ### Migration-history reconciliation blocker
 
 - Repository branch contains 106 SQL migration files under `supabase/migrations`; the live project reports 102 migration-history entries.
-- Only 34 migration names match exactly; 72 repository filenames and 68 live history names do not have exact counterparts. Some may be renamed/replayed equivalents, so this is not proof that every unmatched migration is unapplied. It is proof that a filename-only replay or guessed baseline is unsafe.
+- 34 rows match exact repository filename and migration name. Prefix-normalization finds 44 additional candidate pairs; six groups contain duplicate/replay-name ambiguity. After one-to-one pairing, 28 repository files and 24 live history rows still have no safe name-based counterpart. Candidate names do not prove equivalent DDL; the ambiguous groups and unmatched files require content-level intent comparison.
 - Several live objects already exist (including product SEO and image fields) despite their creation migration names not matching the current branch filenames. Reconcile each object and migration intent before producing a forward-only migration.
-- Next reconciliation work: build a migration-name/intent map, compare relevant DDL and function definitions for Marketplace/Plant Market, inspect the remaining migration entries, then generate a minimal reviewed forward-only migration. Do not repair migration history by deleting/reinserting rows or replaying the folder wholesale.
+- Next reconciliation work: complete content-level intent mapping for the 28 repository-only files, 24 live-only rows, and six ambiguous replay groups; compare live object definitions against each migration's intended DDL; then generate a minimal reviewed forward-only migration only if a required object change is missing. Do not repair migration history by deleting/reinserting rows or replaying the folder wholesale.
 
 ### Security advisor snapshot
 
@@ -213,3 +213,57 @@ Target project confirmed by the user: `dhqaepsbuwhbynagfxpf` (`supabase-coral-cl
 The current editor only saves core product fields and taxonomy. The public product page currently uses generated metadata rather than stored SEO fields and loads only `image_url`. The live schema already contains most Marketplace SEO/media fields, but the current editor does not expose them and slug changes have no redirect history. Implement the UI and public metadata/media consumption only against verified existing fields and tested RPC contracts; defer slug mutation until the redirect-history migration and RPC are reviewed. Plant Market SEO/editor work remains a separate bounded context.
 
 **Release status:** production migration application remains blocked pending full migration-intent reconciliation, backup/recovery plan, advisors review, and explicit release approval. This snapshot does not authorize production DDL or deployment.
+
+## Phase 0 — Production migration/security reconciliation (read-only, 2026-11-04)
+
+Target: `dhqaepsbuwhbynagfxpf` (`supabase-coral-clock`). The user explicitly confirmed this project should be treated as Production. All checks in this section were read-only; no database DDL, data writes, grants, Auth settings, migration-history rows, or production deployments were changed.
+
+### Migration history cross-check
+
+- Branch migration directory: 106 SQL files. Production migration history: 102 rows.
+- 34 rows match exact repository filename and migration name.
+- 44 additional prefix-normalized candidate pairs were found. Six groups are ambiguous because of duplicate/replay entries (Green Living indexes, truncate privileges, Green Exchange reconcile, Green Living reconcile, atomic cart checkout, and legacy order RPC revocation).
+- After one-to-one pairing, 28 repository migration files and 24 production history rows remain without a safe name-based counterpart.
+- This establishes migration-history drift, not a list of unapplied migrations. Some repo-only effects may already be present in Production under differently named/renamed history rows. Conversely, a matching filename is not proof that its DDL is identical.
+- No attempt was made to repair migration history or replay any migration. Next reconciliation must compare the 28/24 unmatched entries and six ambiguous groups against actual live object definitions and migration SQL intent.
+
+### Security issue cross-check
+
+- Issue #68/#69 payment-event grant hardening: live `public.record_payment_event(uuid,text,text,numeric,text,text,jsonb)` currently has `anon_execute=false`, `authenticated_execute=false`, and `service_role_execute=true`. This is the desired least-privilege runtime state even though the corresponding repository migration name is not an exact live history match. Preserve it; do not re-grant browser execution.
+- `public.is_admin()` and its anon/authenticated grants still require a single-result ACL verification before closing the remaining historical grant issue; no grant was changed in this phase.
+- Security advisor reported 13 authenticated-executable SECURITY DEFINER functions and one anon-executable aggregate function. Read-only body review found the 12 user/admin workflow functions require `auth.uid()`; admin-only actions additionally check `public.is_admin()` or the admin profile, while checkout/order/Green Exchange functions include actor/ownership checks. These are intentionally authenticated workflow RPCs, not blanket reasons to revoke EXECUTE. Keep the per-function inventory and regression tests.
+- `public.get_green_impact_metrics()` is callable by anon and authenticated but returns aggregate counts only (approved Green Exchange listings, active Marketplace products in a category pattern, completed exchange requests). This appears to be an intentional public aggregate endpoint; assess inference risk and keep its output aggregate-only. Do not revoke without a product compatibility decision.
+- Auth leaked-password protection is disabled. This is a real hardening task, but enabling it can affect signup/password update behavior and requires an Auth configuration rollout and user-flow tests; it was not toggled during this read-only pass.
+- Performance advisor reports 103 unused indexes and one multiple-permissive-policy warning on `green_exchange_listings`. No index or policy was removed; index usage and policy semantics need workload/behavior review first.
+- RLS is enabled on the inspected Marketplace, Plant Market, order and admin audit tables. RLS is not forced on all of them; do not infer that table owners/service-role access is constrained by RLS.
+
+### Phase 0 exit decision
+
+**Status: partially reconciled; no production mutation.**
+
+The security state for payment-event RPC grants is confirmed safe. SECURITY DEFINER warnings have been classified by function intent rather than blindly revoked. Migration drift is quantified, but content-level reconciliation of all 28/24 unmatched entries and six replay groups remains a blocker to any migration application. Auth leaked-password protection and public aggregate exposure review remain open hardening items. No production migration can be declared ready yet.
+
+## Phase 1 — Responsive Admin Shell implementation (branch work)
+
+- Added a shared responsive shell under the protected `/admin` layout.
+- Desktop: persistent 264px sidebar, module grouping, active-route state, searchable navigation and user-dashboard shortcut.
+- Mobile: four primary bottom-navigation destinations (Home, Orders, Marketplace, Plant Market) plus a searchable More sheet; safe-area padding and 48px touch targets.
+- Navigation links are filtered individually by their server-verified capability. Every destination still enforces its own server-side access checks.
+- Planned features are rendered as non-clickable labels. The shell does not fabricate routes for unfinished modules.
+- Dashboard now uses a pending-order count query rather than loading every order amount to compute an all-time value; recent orders render as cards on mobile and a table on desktop.
+- The existing `/admin/orders` route still has its own legacy admin role check. A future capability migration should align that route with `orders.read`/transition policies before delegated admins are introduced.
+
+## Marketplace vertical slice progress
+
+- Marketplace overview remains database-backed and read-only for status metrics.
+- Product editor now supports server-side name search and status filters, core product fields, taxonomy, SEO title/description/keywords/content/FAQ, gallery inspection, and per-image alt text through the existing admin-guarded SEO RPCs.
+- The public Marketplace product page consumes saved SEO title/description/keywords, SEO content, image gallery and alt text; saved FAQ entries are displayed and emitted as FAQ structured data. UUID fallback and canonical slug redirect behavior remain.
+- Existing image URLs are view-only in Admin. Production Storage policies inspected so far authorize seller-owned uploads, not a reviewed Admin upload flow; no client-side policy bypass was added.
+- Custom slug editing, slug history and 301 redirect persistence remain blocked until a forward-only migration/RPC design is reviewed and the full production migration map is reconciled.
+- Marketplace and Plant Market remain separate data and moderation domains.
+
+### Verification status for this implementation slice
+
+- Static source-contract checks were added to `smoke-admin-authorization.mjs` and `smoke-marketplace-product-seo.mjs`.
+- GitHub Actions and Vercel preview results for the latest commit are pending; no successful build, lint, typecheck or route verification is claimed until those checks finish.
+- No PR merge, production deploy or production database write was performed.
