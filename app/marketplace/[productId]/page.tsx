@@ -67,7 +67,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       ? cleanText(product.description).slice(0, 155)
       : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
   const images = [...new Set([...(product.image_urls ?? []), product.image_url].filter((value): value is string => Boolean(value?.trim())))].slice(0, 4);
-  const image = images[0];
 
   return {
     title,
@@ -108,7 +107,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasRealPrice = !isSample && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const hasStock = product.stock !== null && product.stock !== undefined;
   const productImages = [...new Set([...(product.image_urls ?? []), product.image_url].filter((value): value is string => Boolean(value?.trim())))].slice(0, 4);
-  const image = productImages[0];
   const description = product.description?.trim() || "";
   const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
