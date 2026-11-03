@@ -55,9 +55,9 @@ for (const match of controlCenterNav.matchAll(/href: "(\/admin(?:\/[a-z-]+)?)"/g
 assert.match(adminDashboard, /requireAdmin\("payments\.reconcile"\)/, "commission approval must require a finance capability");
 assert.match(adminDashboard, /requireAdmin\("payouts\.approve"\)/, "payout approval must require an explicit high-risk capability");
 assert.match(adminDashboard, /getAvailableAdminCapabilities\(\["payments\.read", "payments\.reconcile", "payouts\.read", "payouts\.approve", "orders\.read", "orders\.transition"/, "finance data and actions must be scoped to explicitly granted capabilities");
-assert.match(adminDashboard, /canApproveCommissions \? \(\s*<form action=\{approveCommission\}/, "commission approval UI must be hidden without its capability");
-assert.match(adminDashboard, /canManagePayouts \? \(\s*<form action=\{approvePayout\}/, "payout approval UI must be hidden without its capability");
-assert.match(adminDashboard, /canManagePayouts \? \(\s*<form action=\{completePayout\}/, "payout completion UI must be hidden without its capability");
+assert.match(adminDashboard, /canApproveCommissions \\? <form action=\\{approveCommission\\}/, "commission approval UI must be hidden without its capability");
+assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{approvePayout\\}/, "payout approval UI must be hidden without its capability");
+assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{completePayout\\}/, "payout completion UI must be hidden without its capability");
 
 
 const collectRouteHandlers = (directory) => {
