@@ -273,3 +273,6 @@ The security state for payment-event RPC grants is confirmed safe. SECURITY DEFI
 - `payments.reconcile` remains deny-by-default in the current legacy capability allow-list, so no existing admin receives COD collection permission from this UI until a separately reviewed grant model exists. The database RPC continues to require its own admin check.
 - The main dashboard no longer offers `refunded` as an ordinary order status. Refunds remain outside routine order transitions and require a dedicated reviewed workflow.
 - Regression checks were added for both boundaries. No Production grants or payment records were changed.
+- Dashboard commission and payout data queries are now skipped unless `payments.read`/`payments.reconcile` or `payouts.read`/`payouts.approve` is available. The corresponding KPI and panels show restricted/unavailable state rather than a misleading zero.
+- `/admin/orders` skips checkout collection-ledger queries without `payments.read`; order details remain available under `orders.read`. The COD reconciliation form remains hidden unless `payments.reconcile` is separately granted.
+- Dashboard recent-order preview no longer fetches the full `shipping_address` JSON just to display a buyer name; it selects only the buyer profile's `full_name`.
