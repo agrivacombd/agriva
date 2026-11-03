@@ -100,6 +100,22 @@ const LEGACY_ADMIN_CAPABILITIES = new Set<AdminCapability>([
   "system.health.read",
 ]);
 
+/** Return the legacy-admin capabilities available to the current request in one auth/profile lookup. */
+export async function getAvailableAdminCapabilities(
+  requested: readonly AdminCapability[],
+): Promise<AdminCapability[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return [];
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profileError || profile?.role !== "admin") return [];
+  return requested.filter((capability) => LEGACY_ADMIN_CAPABILITIES.has(capability));
+}
+
 export async function requireCapability(capability: AdminCapability): Promise<CapabilityResult> {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
