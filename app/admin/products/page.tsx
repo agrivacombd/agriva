@@ -66,7 +66,7 @@ async function saveProduct(formData: FormData) {
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; q?: string; status?: string } }) {
   const supabase = await requireAdmin();
   const search = String(searchParams?.q ?? "").trim().slice(0, 100).replace(/[%_]/g, "");
-  const statusFilter = ["draft", "active", "paused", "sold_out"].includes(searchParams?.status ?? "") ? searchParams?.status : "";
+  const statusFilter = (["draft", "active", "paused", "sold_out"].includes(searchParams?.status ?? "") ? searchParams?.status : "") as "" | "draft" | "active" | "paused" | "sold_out";
   let productsQuery = supabase.from("products")
     .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,updated_at");
   if (search) productsQuery = productsQuery.ilike("name", `%${search}%`);
