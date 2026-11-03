@@ -37,6 +37,10 @@ assert.match(adminProducts, /admin_update_product_seo_assistant_details/, "Marke
 assert.match(adminProducts, /Slug পরিবর্তন redirect migration প্রস্তুত না হওয়া পর্যন্ত read-only থাকবে/, "Marketplace slug editing must remain blocked until redirect history is available");
 assert.match(adminDashboard, /md:hidden/, "Dashboard must render a mobile-friendly order card list");
 assert.doesNotMatch(adminDashboard, /orderTotals/, "Dashboard must not retain the unbounded all-order value query");
+assert.ok(adminDashboard.includes("quickActions.map"), "Dashboard shortcuts must be rendered from a capability-filtered action list");
+assert.ok(adminDashboard.includes("canReadOrders ? supabase.from"), "Dashboard must skip recent-order reads without orders.read");
+assert.ok(adminDashboard.includes('!["cancelled", "completed", "refunded"].includes(order.status)'), "Dashboard must hide routine transition controls for terminal order states");
+assert.ok(!adminDashboard.includes("shipping_address"), "Dashboard must not select buyer shipping-address PII");
 assert.ok(controlCenterNav.includes("available.has(link.capability ?? capabilities[0])"), "Admin navigation must filter each destination by its required capability");
 assert.match(marketplaceAdmin, /requireAdminPage\("catalog\.read"\)/, "Marketplace landing page must require catalog read access");
 assert.match(marketplaceAdmin, /from\("products"\)/, "Marketplace landing page must use the Marketplace products domain");
@@ -124,6 +128,7 @@ assert.ok(ordersPage.includes('requireAdmin("payments.reconcile")'), "COD collec
 assert.ok(ordersPage.includes("canReconcilePayments"), "COD collection UI must be hidden without the dedicated finance capability");
 assert.ok(ordersPage.includes('requireAdmin("orders.read")'), "Order operations must use the shared read capability");
 assert.ok(ordersPage.includes("checkoutIds.length && canReadPayments"), "COD ledger reads must be skipped without payments.read");
+assert.ok(ordersPage.includes('!["cancelled", "completed", "refunded"].includes(status)'), "Order operations must hide transition controls for terminal states");
 assert.ok(adminDashboard.includes('getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve"])'), "Dashboard finance data must be capability-gated");
 assert.ok(adminDashboard.includes("canReadPayments ? supabase.from"), "Commission queries must be skipped without finance read permission");
 assert.ok(adminDashboard.includes("canReadPayouts ? supabase.from"), "Payout queries must be skipped without payout read permission");
