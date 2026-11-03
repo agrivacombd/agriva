@@ -171,7 +171,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       question: "কেনার আগে কী কী যাচাই করা উচিত?",
       answer: "পণ্যের নাম ও ধরন, প্যাকেটের পরিমাণ, বিক্রেতার দেওয়া specification, মূল্য, মজুত, ডেলিভারি এবং প্রযোজ্য শর্ত যাচাই করুন। প্রয়োজন হলে অর্ডারের আগে বিক্রেতার কাছে অতিরিক্ত তথ্য চান।",
     },
-  ]
+  ];
   const customFaqs = (product.seo_faqs ?? []).filter((faq) => Boolean(faq?.question?.trim() && faq?.answer?.trim()));
   const faqs = customFaqs.length ? customFaqs : defaultFaqs;
   const faqJsonLd = {
@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       name: faq.question,
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
-  };;
+  };
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
