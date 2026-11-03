@@ -52,9 +52,10 @@ assert.match(marketplaceAdmin, /Custom slug editing, slug history and 301 redire
 assert.match(plantMarketEditor, /requireAdminPage\("catalog\.read"\)/, "Plant Market editor must require catalog read access");
 assert.match(plantMarketEditor, /from\("plant_market_products"\)/, "Plant Market editor must query its own product domain");
 assert.match(plantMarketManageApi, /requireAdminApi\("catalog\.edit"\)/, "Plant Market edits must require catalog edit permission");
-assert.match(plantMarketManageApi, /https:/, "Plant Market image URLs must be HTTPS validated");
+assert.doesNotMatch(plantMarketManageApi, /image_url\\s*:/, "Plant Market editor must not bypass the pending Admin media-upload policy review");
 assert.match(plantMarketManageApi, /status === "active"/, "Active Plant Market edits must preserve seller verification and create-grant checks");
 assert.match(plantMarketManager, /Slug ও publication status আলাদা moderation workflow-এ থাকবে/, "Plant Market editor must not mutate slug or publication status");
+assert.match(plantMarketManager, /Primary image · read only/, "Plant Market media must remain read-only until Admin upload access is reviewed");
 assert.match(controlCenterNav, /href: "\/admin\/plant-market", capability: "catalog\.edit"/, "Plant Market editor must be capability-filtered in navigation");
 
 for (const match of controlCenterNav.matchAll(/href: "(\/admin(?:\/[a-z-]+)?)"/g)) {
