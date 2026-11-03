@@ -82,9 +82,9 @@ for (const match of controlCenterNav.matchAll(/href: "(\/admin(?:\/[a-z-]+)?)"/g
 assert.match(adminDashboard, /requireAdmin\("payments\.reconcile"\)/, "commission approval must require a finance capability");
 assert.match(adminDashboard, /requireAdmin\("payouts\.approve"\)/, "payout approval must require an explicit high-risk capability");
 assert.match(adminDashboard, /getAvailableAdminCapabilities\(\["payments\.read", "payments\.reconcile", "payouts\.read", "payouts\.approve", "orders\.read", "orders\.transition"/, "finance data and actions must be scoped to explicitly granted capabilities");
-assert.match(adminDashboard, /canApproveCommissions \\? <form action=\\{approveCommission\\}/, "commission approval UI must be hidden without its capability");
-assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{approvePayout\\}/, "payout approval UI must be hidden without its capability");
-assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{completePayout\\}/, "payout completion UI must be hidden without its capability");
+assert.ok(adminDashboard.includes('c.status === "pending" && (canApproveCommissions ? <form action={approveCommission}'), "commission approval UI must remain behind the disabled mutation capability");
+assert.ok(adminDashboard.includes('p.status === "requested" && (canManagePayouts ? <form action={approvePayout}'), "payout approval UI must remain behind the disabled mutation capability");
+assert.ok(adminDashboard.includes('canManagePayouts ? <form action={completePayout}'), "payout completion UI must remain behind the disabled mutation capability");
 
 
 for (const signature of [
@@ -181,6 +181,7 @@ assert.ok(adminDashboard.includes("canReadPayouts ? supabase.from"), "Payout que
 assert.ok(adminDashboard.includes('const canReadPayments = availableAdminCapabilities.has("payments.read")'), "Finance reads must require payments.read, not a mutation capability");
 assert.ok(adminDashboard.includes('const canReadPayouts = availableAdminCapabilities.has("payouts.read")'), "Payout reads must require payouts.read, not a mutation capability");
 assert.ok(adminDashboard.includes("const FINANCE_MUTATIONS_ENABLED = false"), "Legacy finance mutations must remain disabled until audited service RPCs exist");
+assert.ok(adminDashboard.includes("if (!FINANCE_MUTATIONS_ENABLED) redirect"), "Direct Server Action invocation must also fail closed");
 assert.ok(ordersPage.includes("const FINANCE_MUTATIONS_ENABLED = false"), "COD mutation must remain disabled until audited service RPCs exist");
 assert.ok(!adminDashboard.includes("shipping_address"), "Dashboard order preview must not fetch full shipping-address PII");
 assert.ok(!adminDashboard.includes('value="refunded"'), "Routine dashboard order controls must not expose refund status");
