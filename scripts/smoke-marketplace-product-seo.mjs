@@ -28,6 +28,14 @@ assert.match(page, /twitter:\s*\{[\s\S]*?card:\s*images\.length\s*\?\s*"summary_
   "Twitter metadata must use an image card when a product image exists");
 assert.match(page, /"@type":\s*"Product"/,
   "Product JSON-LD must be present");
+assert.match(page, /"@type":\s*"FAQPage"/,
+  "Saved product FAQs must be represented in FAQ structured data");
+assert.match(page, /product\.seo_faqs/,
+  "Public product page must prefer the saved SEO FAQ array");
+assert.match(page, /product\.seo_content\?\.trim\(\)/,
+  "Public product page must render saved SEO content");
+assert.match(page, /seo_content,seo_faqs/,
+  "Product lookup must fetch saved SEO content and FAQ fields");
 assert.match(page, /url:\s*productUrl/,
   "Product JSON-LD must include the canonical product URL");
 assert.match(page, /\.\.\.\(productImages\.length\s*\?\s*\{\s*image:\s*productImages/,
@@ -48,6 +56,16 @@ assert.match(adminProducts, /name="seoKeywords"/,
   "Admin product editor must expose SEO keywords");
 assert.match(adminProducts, /name="seoFaqs"/,
   "Admin product editor must preserve and edit structured SEO FAQs");
+assert.match(adminProducts, /admin_update_product_seo_assistant_details/,
+  "Admin product editor must save image alt text through the existing guarded RPC");
+assert.match(adminProducts, /existingSeoDetails\?\.seo_attribute_suggestions \?\? \[\]/,
+  "Saving image alt text must preserve existing SEO attribute suggestions");
+assert.match(adminProducts, /name="seoImageAltTexts"/,
+  "Admin product editor must expose image alt text fields");
+assert.match(adminProducts, /name="q"/,
+  "Admin product editor must provide product search");
+assert.match(adminProducts, /name="status"/,
+  "Admin product editor must provide status filtering");
 assert.match(adminProducts, /seoTitle\.length > 70[\s\S]*seoDescription\.length > 160/,
   "Admin product editor must validate SEO title and description limits");
 assert.match(sitemap, /from\("products"\)[\s\S]*?\.eq\("status", "active"\)/,
