@@ -65,7 +65,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const notice = typeof params?.notice === "string" ? params.notice : "";
   const selectedStatus = typeof params?.status === "string" ? params.status : "";
   const supabase = await requireAdmin("orders.read");
-  const availableCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.reconcile"]));
+  const availableCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile"]));
+  const canReadPayments = availableCapabilities.has("payments.read") || availableCapabilities.has("payments.reconcile");
   const canReconcilePayments = availableCapabilities.has("payments.reconcile");
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
@@ -74,10 +75,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     .limit(100);
 
   const checkoutIds = Array.from(new Set((orders ?? []).map((order) => order.checkout_id).filter(Boolean)));
-  const { data: checkouts } = checkoutIds.length
+  const { data: checkouts } = checkoutIds.length && canReadPayments
     ? await supabase.from("marketplace_checkouts").select("id,total_amount,payment_status,collection_status").in("id", checkoutIds)
     : { data: [] };
-  const { data: collectionEvents } = checkoutIds.length
+  const { data: collectionEvents } = checkoutIds.length && canReadPayments
     ? await supabase.from("cod_collection_events").select("id,checkout_id,collected_amount,cumulative_collected,discrepancy_amount,collected_by,created_at,note").in("checkout_id", checkoutIds).order("created_at", { ascending: false })
     : { data: [] };
   const checkoutMap = new Map((checkouts ?? []).map((checkout) => [checkout.id, checkout]));
@@ -101,6 +102,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       </header>
       <h1 className="mt-7 text-3xl font-black">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">অর্ডারের ঠিকানা, COD-তে আদায়যোগ্য টাকা এবং ডেলিভারির অবস্থা এক জায়গা থেকে দেখুন। Delivered মানেই টাকা আদায় হয়েছে—এমন ধরে নেওয়া হয় না।</p>
+      {!canReadPayments && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">COD collection ledger ও reconciliation details hidden. The separate payments.read capability is required.</p>}
 
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
         {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
