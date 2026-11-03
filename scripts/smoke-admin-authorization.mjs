@@ -57,6 +57,9 @@ assert.match(plantMarketManageApi, /admin_audit_log/, "Plant Market writes must 
 assert.ok(plantMarketManageApi.indexOf('from("admin_audit_log").insert') < plantMarketManageApi.indexOf('from("plant_market_products").update'), "Plant Market audit intent must be recorded before product mutation");
 assert.doesNotMatch(plantMarketManageApi, /image_url\\s*:/, "Plant Market editor must not bypass the pending Admin media-upload policy review");
 assert.match(plantMarketManageApi, /status === "active"/, "Active Plant Market edits must preserve seller verification and create-grant checks");
+assert.match(plantMarketManageApi, /category_slug: categorySlug/, "Plant Market category label and slug must be updated together");
+assert.match(plantMarketManageApi, /price <= 0/, "Plant Market price must satisfy the Production positive-price constraint");
+assert.match(plantMarketManageApi, /\["piece", "pot", "pack", "tray"\]/, "Plant Market units must match the Production check constraint");
 assert.match(plantMarketManager, /Slug ও publication status আলাদা moderation workflow-এ থাকবে/, "Plant Market editor must not mutate slug or publication status");
 assert.match(plantMarketManager, /Primary image · read only/, "Plant Market media must remain read-only until Admin upload access is reviewed");
 assert.match(controlCenterNav, /href: "\/admin\/plant-market", capability: "catalog\.edit"/, "Plant Market editor must be capability-filtered in navigation");
