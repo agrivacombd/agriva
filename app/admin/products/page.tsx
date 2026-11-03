@@ -22,9 +22,16 @@ async function saveProduct(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   const categorySlug = String(formData.get("category_slug") ?? "").trim();
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
+  const seoTitle = String(formData.get("seoTitle") ?? "").trim();
+  const seoDescription = String(formData.get("seoDescription") ?? "").trim();
+  const seoKeywords = String(formData.get("seoKeywords") ?? "").split(",").map(value => value.trim()).filter(Boolean);
+  const seoContent = String(formData.get("seoContent") ?? "").trim();
+  const seoFaqsRaw = String(formData.get("seoFaqs") ?? "[]");
+  let seoFaqs: unknown;
+  try { seoFaqs = JSON.parse(seoFaqsRaw); } catch { redirect("/admin/products?notice=invalid"); }
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoContent.length > 10000 || seoKeywords.length > 10 || seoKeywords.some(value => value.length > 60) || !Array.isArray(seoFaqs)) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin("catalog.edit");
@@ -35,17 +42,25 @@ async function saveProduct(formData: FormData) {
   const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_taxonomy", {
     p_product_id: productId, p_category_slug: categorySlug || null, p_subcategory_slug: subcategorySlug || null,
   });
+  const { error: seoError } = productError || categoryError ? { error: productError || categoryError } : await supabase.rpc("admin_update_product_seo", {
+    p_product_id: productId,
+    p_seo_title: seoTitle || null,
+    p_seo_description: seoDescription || null,
+    p_seo_keywords: seoKeywords,
+    p_seo_content: seoContent || null,
+    p_seo_faqs: seoFaqs,
+  });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError || seoError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,updated_at")
+    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
@@ -68,6 +83,17 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         </div>
+        <section className="mt-5 rounded-xl border border-[#e4eadf] bg-[#f8faf6] p-4">
+          <h3 className="font-extrabold">SEO ও সার্চ প্রিভিউ</h3>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <label className="text-sm font-bold">SEO title<input name="seoTitle" maxLength={70} defaultValue={p.seo_title ?? ""} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="সর্বোচ্চ ৭০ অক্ষর"/></label>
+            <label className="text-sm font-bold">SEO description<input name="seoDescription" maxLength={160} defaultValue={p.seo_description ?? ""} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="সর্বোচ্চ ১৬০ অক্ষর"/></label>
+            <label className="text-sm font-bold md:col-span-2">SEO keywords (কমা দিয়ে আলাদা করুন)<input name="seoKeywords" defaultValue={(p.seo_keywords ?? []).join(", ")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="সর্বোচ্চ ১০টি keyword"/></label>
+            <label className="text-sm font-bold md:col-span-2">SEO content<textarea name="seoContent" rows={3} maxLength={10000} defaultValue={p.seo_content ?? ""} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"/></label>
+            <label className="text-sm font-bold md:col-span-2">SEO FAQs (JSON array)<textarea name="seoFaqs" rows={4} defaultValue={JSON.stringify(p.seo_faqs ?? [], null, 2)} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-mono text-xs font-normal"/></label>
+          </div>
+          <p className="mt-2 text-xs text-[#718071]">FAQ প্রতিটি object-এ question ও answer থাকতে হবে। সর্বোচ্চ ৮টি FAQ; title ৭০, description ১৬০ অক্ষরের মধ্যে রাখুন।</p>
+        </section>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
       </form>)}
       {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
