@@ -12,7 +12,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <>
       <AdminControlCenterNav>{children}</AdminControlCenterNav>
-      {children}
     </>
   );
 }
