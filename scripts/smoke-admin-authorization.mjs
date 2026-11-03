@@ -19,6 +19,7 @@ const adminProducts = read("app/admin/products/page.tsx");
 const plantMarketEditor = read("app/admin/plant-market/page.tsx");
 const plantMarketManager = read("components/admin/PlantMarketProductManager.tsx");
 const plantMarketManageApi = read("app/api/admin/plant-market-products/manage/route.ts");
+const adminFinanceForwardMigration = read("supabase/migrations/20261104110000_forward_harden_admin_finance_and_order_rpcs.sql");
 assert.match(layout, /requireAdminPage\("dashboard\.read"\)/, "admin layout must use the shared capability guard");
 assert.match(authz, /supabase\.auth\.getUser\(\)/, "shared guard must verify the server-side session");
 assert.match(authz, /profileError/, "shared guard must fail closed when profile lookup fails");
@@ -85,6 +86,21 @@ assert.match(adminDashboard, /canApproveCommissions \\? <form action=\\{approveC
 assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{approvePayout\\}/, "payout approval UI must be hidden without its capability");
 assert.match(adminDashboard, /canManagePayouts \\? <form action=\\{completePayout\\}/, "payout completion UI must be hidden without its capability");
 
+
+for (const signature of [
+  "public.approve_reseller_commission(uuid)",
+  "private.approve_reseller_commission(uuid)",
+  "public.approve_commission_payout(uuid)",
+  "private.approve_commission_payout(uuid)",
+  "public.complete_commission_payout(uuid, text)",
+  "private.complete_commission_payout(uuid, text)",
+  "public.record_cod_collection(uuid, numeric, text)",
+]) {
+  assert.ok(adminFinanceForwardMigration.includes(`REVOKE ALL ON FUNCTION ${signature} FROM PUBLIC, anon, authenticated, service_role`), `forward migration must disable direct client execution of ${signature}`);
+}
+assert.match(adminFinanceForwardMigration, /p_status NOT IN \('processing', 'shipped', 'delivered', 'completed', 'cancelled'\)/, "order status RPC must exclude refunds until a separate workflow exists");
+assert.match(adminFinanceForwardMigration, /REVOKE ALL ON FUNCTION private\.set_marketplace_order_status\(uuid, text\) FROM PUBLIC, anon, authenticated, service_role/, "clients must not bypass the public order transition wrapper");
+assert.match(adminFinanceForwardMigration, /v_old_status = 'pending' AND p_status IN \('processing', 'cancelled'\)/, "admin order transitions must follow the explicit state machine");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
