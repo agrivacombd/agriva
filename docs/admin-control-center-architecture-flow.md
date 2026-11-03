@@ -35,7 +35,7 @@ Routes above are target route namespaces, not a claim that all pages already exi
 
 ## Layered architecture
 
-1. **UI / route layer** — server-rendered `/admin` pages, shared responsive shell, navigation filtered by capabilities, forms and accessible states.
+1. **UI / route layer** — server-rendered `/admin` pages, shared responsive navigation, links only to verified destinations, forms and accessible states. Capability-filtered navigation is a follow-up once module grants are implemented.
 2. **Application/use-case layer** — domain-specific server actions and route handlers; parse and validate inputs before calling persistence.
 3. **Authorization layer** — `requireAdminPage`, `requireAdminApi`, capability checks, deny-by-default grants, and explicit high-risk step-up/approval policies.
 4. **Domain/persistence layer** — existing Supabase tables, RLS, constraints, narrowly scoped RPCs, migrations and audit records. Do not duplicate existing entities.
@@ -49,7 +49,7 @@ flowchart TD
   B --> C[Admin layout guard]
   C --> D{Authenticated and dashboard access?}
   D -->|No| E[Login or forbidden route]
-  D -->|Yes| F[Capability-aware navigation]
+  D -->|Yes| F[Admin module navigation]
   F --> G[Module page / server component]
   G --> H[Domain use case / server action / API]
   H --> I{Capability check for this action}
@@ -112,7 +112,7 @@ Arrows describe logical dependencies, not direct database coupling. Cross-domain
 - Agree on route names and capability ownership before creating pages.
 
 ### Phase 1 — Admin shell and access model
-- Implement shared sidebar/header/mobile navigation with capability-filtered links.
+- Implement shared module navigation (initial version links only to verified existing pages; future grants will filter visibility).
 - Add module landing pages only where a real destination exists.
 - Centralize server-side capability checks for every page/action.
 - Add navigation, unauthorized access and responsive smoke tests.
@@ -154,7 +154,7 @@ Issue descriptions are repository audit records, not a substitute for rechecking
 
 ## Immediate implementation backlog
 
-1. Build the capability-aware Admin shell without changing database schema.
+1. Build the Admin shell without changing database schema; keep navigation visibility separate from authorization.
 2. Add a route/capability registry with no implicit grants and no dead links.
 3. Add regression coverage for navigation visibility and server-side route protection.
 4. Start Marketplace editor as the first complete catalogue vertical slice.
