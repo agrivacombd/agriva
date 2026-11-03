@@ -101,6 +101,10 @@ for (const signature of [
 assert.match(adminFinanceForwardMigration, /p_status NOT IN \('processing', 'shipped', 'delivered', 'completed', 'cancelled'\)/, "order status RPC must exclude refunds until a separate workflow exists");
 assert.match(adminFinanceForwardMigration, /REVOKE ALL ON FUNCTION private\.set_marketplace_order_status\(uuid, text\) FROM PUBLIC, anon, authenticated, service_role/, "clients must not bypass the public order transition wrapper");
 assert.match(adminFinanceForwardMigration, /v_old_status = 'pending' AND p_status IN \('processing', 'cancelled'\)/, "admin order transitions must follow the explicit state machine");
+assert.doesNotMatch(adminFinanceForwardMigration, /'refunded'/i, "forward order RPC must not accept direct refund status");
+assert.match(adminDashboard, /orderTransitionOptions\[order\.status\]/, "Dashboard actions must show only state-machine-valid next statuses");
+assert.match(ordersPage, /orderTransitionOptions\[status\]/, "Order operations must show only state-machine-valid next statuses");
+assert.doesNotMatch(ordersPage, /value="refunded"/, "routine order UI must not expose direct refunds");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
