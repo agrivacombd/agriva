@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { requireAdminApi } from "@/lib/admin/authz";
 
 const textField = (value: unknown, max: number) => {
@@ -70,6 +71,29 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!serviceRoleKey || !supabaseUrl) {
+    return NextResponse.json({ error: "Admin audit service is not configured; no product changes were made." }, { status: 503 });
+  }
+  const auditClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const changedFields = [
+    "name", "scientific_name", "category", "description", "price", "stock", "unit",
+    "plant_size", "pot_size", "plant_age", "sunlight", "watering", "flowering_season", "delivery_area",
+  ];
+  const { data: auditEvent, error: auditError } = await auditClient.from("admin_audit_log").insert({
+    admin_id: access.user.id,
+    action: "plant_market.product.update_requested",
+    entity_type: "plant_market_product",
+    entity_id: id,
+    metadata: { changed_fields: changedFields, stage: "requested" },
+  }).select("id").single();
+  if (auditError || !auditEvent) {
+    return NextResponse.json({ error: "Audit event could not be recorded; no product changes were made." }, { status: 503 });
+  }
+
   const { data, error } = await access.supabase.from("plant_market_products").update({
     name, scientific_name: scientificName, category, description, price, stock, unit,
     plant_size: plantSize, pot_size: potSize, plant_age: plantAge, sunlight, watering,
@@ -78,7 +102,18 @@ export async function PATCH(request: NextRequest) {
   }).eq("id", id).select("id,name,status,updated_at").maybeSingle();
 
   if (error || !data) {
+    await auditClient.from("admin_audit_log").update({
+      action: "plant_market.product.update_failed",
+      metadata: { changed_fields: changedFields, stage: "failed", database_error_code: error?.code ?? "NO_ROW_UPDATED" },
+    }).eq("id", auditEvent.id);
     return NextResponse.json({ error: "পণ্য সংরক্ষণ করা যায়নি। Database policy বা product validation যাচাই করুন।" }, { status: 409 });
+  }
+  const { error: auditFinalizeError } = await auditClient.from("admin_audit_log").update({
+    action: "plant_market.product.updated",
+    metadata: { changed_fields: changedFields, stage: "completed" },
+  }).eq("id", auditEvent.id);
+  if (auditFinalizeError) {
+    return NextResponse.json({ error: "পণ্য সংরক্ষিত হয়েছে, কিন্তু audit status finalize হয়নি। Admin audit log যাচাই করুন।" }, { status: 500 });
   }
   return NextResponse.json({ product: data });
 }
