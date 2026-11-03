@@ -47,6 +47,25 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_image_alt_texts,seo_content,seo_faqs";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
+
+  // Resolve retired Marketplace slugs to their current active product. The page
+  // redirects to the canonical current slug after this lookup.
+  const { data: slugRedirect } = await supabase
+    .from("marketplace_product_slug_redirects")
+    .select("product_id")
+    .eq("old_slug", normalized)
+    .maybeSingle();
+  if (slugRedirect?.product_id) {
+    const { data: redirectedProduct } = await supabase
+      .from("products")
+      .select(columns)
+      .eq("id", slugRedirect.product_id)
+      .eq("status", "active")
+      .eq("marketplace_channel", "marketplace")
+      .maybeSingle();
+    if (redirectedProduct) return redirectedProduct as ProductRecord;
+  }
+
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
   const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
