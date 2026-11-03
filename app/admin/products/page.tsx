@@ -11,6 +11,27 @@ async function requireAdmin(capability: AdminCapability = "catalog.read") {
   return supabase;
 }
 
+async function updateProductSlug(formData: FormData) {
+  "use server";
+  const productId = String(formData.get("productId") ?? "").trim();
+  const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
+  const currentSlug = String(formData.get("currentSlug") ?? "").trim();
+  if (!/^[0-9a-f-]{36}$/i.test(productId) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length < 3 || slug.length > 80) {
+    redirect("/admin/products?notice=slug-invalid");
+  }
+  const supabase = await requireAdmin("catalog.edit");
+  const { error: historyError } = await supabase.from("marketplace_product_slug_redirects").select("old_slug").limit(0);
+  if (historyError) redirect("/admin/products?notice=slug-migration-required");
+  const { error } = await supabase.rpc("admin_update_product_slug", { p_product_id: productId, p_new_slug: slug });
+  if (error) redirect("/admin/products?notice=slug-error");
+  revalidatePath("/admin/products");
+  revalidatePath("/marketplace");
+  revalidatePath("/sitemap.xml");
+  if (currentSlug) revalidatePath(`/marketplace/${currentSlug}`);
+  revalidatePath(`/marketplace/${slug}`);
+  redirect("/admin/products?notice=slug-saved");
+}
+
 async function saveProduct(formData: FormData) {
   "use server";
   const productId = String(formData.get("productId") ?? "");
@@ -73,11 +94,13 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   if (search) productsQuery = productsQuery.ilike("name", `%${search}%`);
   if (statusFilter) productsQuery = productsQuery.eq("status", statusFilter);
   const { data: products, error } = await productsQuery.order("updated_at", { ascending: false }).limit(100);
+  const { error: slugHistoryError } = await supabase.from("marketplace_product_slug_redirects").select("old_slug").limit(0);
+  const slugHistoryAvailable = !slugHistoryError;
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Catalogue management</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-      <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, taxonomy, gallery alt text ও SEO তথ্য পরিবর্তন করুন। Slug পরিবর্তন redirect migration প্রস্তুত না হওয়া পর্যন্ত read-only থাকবে।</p>
+      <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, taxonomy, gallery alt text ও SEO তথ্য পরিবর্তন করুন। Slug পরিবর্তন এখন permanent redirect history সহ সংরক্ষিত হয়; migration না থাকলে field disabled থাকবে।</p>
       <form method="get" className="mt-5 grid gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_180px_auto_auto] sm:items-end">
         <label className="text-sm font-bold">পণ্য খুঁজুন<input name="q" type="search" maxLength={100} defaultValue={search} placeholder="পণ্যের নাম লিখুন..." className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
         <label className="text-sm font-bold">স্ট্যাটাস<select name="status" defaultValue={statusFilter} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 font-normal"><option value="">সব স্ট্যাটাস</option><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
@@ -85,13 +108,17 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         <a href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#d9e3d5] px-4 text-sm font-bold text-[#345a40]">Clear</a>
       </form>
       <p className="mt-3 text-xs text-[#748074]">সর্বশেষ আপডেট হওয়া সর্বোচ্চ ১০০টি পণ্য দেখানো হচ্ছে। Search ও status filter server-side প্রয়োগ হয়।</p>
-      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে।" : "পণ্য, taxonomy বা SEO তথ্য সংরক্ষণ করা যায়নি। অনুমতি ও database RPC যাচাই করুন।"}</p>}
+      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "slug-saved" ? "নতুন slug সংরক্ষিত হয়েছে; পুরোনো URL permanent redirect হবে।" : searchParams.notice === "slug-migration-required" ? "Slug history migration এই database-এ নেই; তাই পরিবর্তন করা হয়নি।" : searchParams.notice === "slug-invalid" ? "Slug ৩–৮০ অক্ষরের lowercase English letter, number ও hyphen দিয়ে লিখুন।" : searchParams.notice === "slug-error" ? "Slug পরিবর্তন করা যায়নি। Slug collision বা audit log যাচাই করুন।" : searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে।" : "পণ্য, taxonomy বা SEO তথ্য সংরক্ষণ করা যায়নি। অনুমতি ও database RPC যাচাই করুন।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
       <AdminCreateProductForm />
       <div className="mt-6 grid gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p><p className="mt-1 break-all text-xs text-[#7b887d]">Slug: {p.slug ?? "Not set"}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p><p className="mt-1 break-all text-xs text-[#7b887d]">Current slug: {p.slug ?? "Not set"}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 rounded-xl border border-[#e4eadf] bg-[#f8faf6] p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end md:col-span-2 xl:col-span-3">
+            <label className="text-sm font-bold">SEO URL slug<input name="slug" minLength={3} maxLength={80} pattern="[a-z0-9]+(-[a-z0-9]+)*" defaultValue={p.slug ?? ""} placeholder="organic-rice-seed" className="mt-1.5 min-h-11 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"/><input type="hidden" name="currentSlug" value={p.slug ?? ""}/></label>
+            <button type="submit" formAction={updateProductSlug} disabled={!slugHistoryAvailable} className="min-h-11 rounded-xl border border-[#17452c] px-4 text-sm font-bold text-[#17452c] disabled:cursor-not-allowed disabled:opacity-40">{slugHistoryAvailable ? "Save slug + permanent redirect" : "Slug migration pending"}</button>
+          </div>
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
