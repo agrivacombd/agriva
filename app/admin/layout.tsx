@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { requireAdminPage } from "@/lib/admin/authz";
+import AdminControlCenterNav from "@/components/admin/AdminControlCenterNav";
 
 /**
  * Defense-in-depth guard for every /admin page, including client-rendered pages.
@@ -7,5 +8,11 @@ import { requireAdminPage } from "@/lib/admin/authz";
  */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await requireAdminPage("dashboard.read");
-  return children;
+
+  return (
+    <>
+      <AdminControlCenterNav />
+      {children}
+    </>
+  );
 }
