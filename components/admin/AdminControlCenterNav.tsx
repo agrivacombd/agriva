@@ -19,7 +19,7 @@ const modules: AdminModule[] = [
 
 export default async function AdminControlCenterNav({ children }: { children: React.ReactNode }) {
   const requested = [...new Set(modules.flatMap((module) => module.capabilities))];
-  const available = new Set(await getAvailableAdminCapabilities(requested));
+  const available = new Set<string>(await getAvailableAdminCapabilities(requested));
   const visibleModules: AdminShellModule[] = modules.map(({ capabilities, ...module }) => ({
     ...module,
     links: module.links.filter((link) => available.has(link.capability ?? capabilities[0])),
