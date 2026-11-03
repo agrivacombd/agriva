@@ -267,3 +267,9 @@ The security state for payment-event RPC grants is confirmed safe. SECURITY DEFI
 - Static source-contract checks were added to `smoke-admin-authorization.mjs` and `smoke-marketplace-product-seo.mjs`.
 - GitHub Actions and Vercel preview results for the latest commit are pending; no successful build, lint, typecheck or route verification is claimed until those checks finish.
 - No PR merge, production deploy or production database write was performed.
+### Additional financial-action boundary found during Phase 1
+
+- The legacy `/admin/orders` page previously allowed COD collection after only checking `profiles.role = 'admin'`. It now uses `orders.read` for the page, `orders.transition` for delivery status changes, and `payments.reconcile` for the COD collection Server Action. The collection form is hidden unless that separate capability is available.
+- `payments.reconcile` remains deny-by-default in the current legacy capability allow-list, so no existing admin receives COD collection permission from this UI until a separately reviewed grant model exists. The database RPC continues to require its own admin check.
+- The main dashboard no longer offers `refunded` as an ordinary order status. Refunds remain outside routine order transitions and require a dedicated reviewed workflow.
+- Regression checks were added for both boundaries. No Production grants or payment records were changed.
