@@ -75,7 +75,7 @@ const noticeText: Record<string, string> = {
 
 export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const { supabase, user } = await requireAdmin();
-  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
+  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "users.read", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
   const canReadPayments = availableAdminCapabilities.has("payments.read") || availableAdminCapabilities.has("payments.reconcile");
   const canReadPayouts = availableAdminCapabilities.has("payouts.read") || availableAdminCapabilities.has("payouts.approve");
   const canApproveCommissions = availableAdminCapabilities.has("payments.reconcile");
@@ -87,7 +87,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     { href: "/admin/green-exchange", label: "Green Exchange মডারেশন", capability: "settings.read" },
     { href: "/admin/harvest", label: "ফসলের পোস্ট", capability: "harvest.read" },
     { href: "/admin/transport", label: "পরিবহন পার্টনার যাচাই", capability: "transport.moderate" },
-    { href: "/admin/users", label: "ব্যবহারকারী", capability: "roles.grant" },
+    { href: "/admin/users", label: "ব্যবহারকারী", capability: "users.read" },
     { href: "/admin/categories", label: "ক্যাটাগরি", capability: "catalog.edit" },
     { href: "/admin/settings", label: "সাইট সেটিংস", capability: "settings.write" },
     { href: "/admin/reports", label: "রিপোর্ট ও CSV", capability: "reports.export" },
