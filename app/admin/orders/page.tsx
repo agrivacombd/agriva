@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAvailableAdminCapabilities, requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
 type OrderStatus = "processing" | "shipped" | "delivered" | "completed" | "cancelled";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "orders.read") {
+  const { supabase } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -22,7 +18,7 @@ async function updateOrderStatus(formData: FormData) {
   if (!/^[0-9a-f-]{36}$/i.test(orderId) || !allowed.includes(status)) {
     redirect("/admin/orders?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("orders.transition");
   const { error } = await supabase.rpc("set_marketplace_order_status", {
     p_order_id: orderId,
     p_status: status,
@@ -39,7 +35,7 @@ async function recordCodCollection(formData: FormData) {
   const amount = Number(formData.get("collectedAmount"));
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
   if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0) redirect("/admin/orders?notice=invalid");
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("payments.reconcile");
   const { error } = await supabase.rpc("record_cod_collection", {
     p_checkout_id: checkoutId, p_collected_amount: amount, p_note: note || null,
   });
@@ -68,7 +64,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const params = await searchParams;
   const notice = typeof params?.notice === "string" ? params.notice : "";
   const selectedStatus = typeof params?.status === "string" ? params.status : "";
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("orders.read");
+  const availableCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.reconcile"]));
+  const canReconcilePayments = availableCapabilities.has("payments.reconcile");
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
     .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
@@ -170,12 +168,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                 {(collectionEventsByCheckout.get(checkout.id) ?? []).map((event) => <p key={event.id} className="mt-2 border-t border-amber-200 pt-2 text-xs leading-5 text-[#654b18]">
                   {new Date(event.created_at).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })} · Admin {String(event.collected_by).slice(0, 8)} · আদায় ৳{Number(event.collected_amount).toLocaleString("bn-BD")} · মোট ৳{Number(event.cumulative_collected).toLocaleString("bn-BD")} · পার্থক্য ৳{Number(event.discrepancy_amount).toLocaleString("bn-BD")}{event.note ? ` · ${event.note}` : ""}
                 </p>)}
-                {checkout.payment_status !== "paid" && <form action={recordCodCollection} className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
+                {checkout.payment_status !== "paid" && canReconcilePayments && <form action={recordCodCollection} className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
                   <input type="hidden" name="checkoutId" value={checkout.id}/>
                   <label className="text-xs font-bold">এবার আদায় (৳)<input required name="collectedAmount" type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="0.00"/></label>
                   <label className="text-xs font-bold">নোট / পার্থক্যের কারণ<input name="note" maxLength={500} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="ঐচ্ছিক"/></label>
-                  <button className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</button>
+                  <button type="submit" className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</button>
                 </form>}
+                {checkout.payment_status !== "paid" && !canReconcilePayments && <p className="mt-3 rounded-lg border border-amber-200 bg-white/70 p-3 text-xs leading-5 text-amber-900">COD collection entry is hidden. The dedicated payments.reconcile permission is required.</p>}
               </div>}
             </div>
           </article>;
