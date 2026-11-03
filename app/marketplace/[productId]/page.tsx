@@ -25,6 +25,8 @@ type ProductRecord = {
   seo_description?: string | null;
   seo_keywords?: string[] | null;
   seo_image_alt_texts?: string[] | null;
+  seo_content?: string | null;
+  seo_faqs?: { question: string; answer: string }[] | null;
   commission_percent?: number | null;
 };
 
@@ -42,7 +44,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_image_alt_texts";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_image_alt_texts,seo_content,seo_faqs";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -150,7 +152,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       { "@type": "ListItem", position: category ? 4 : 3, name: product.name, item: productUrl },
     ],
   };
-  const faqs = [
+  const defaultFaqs = [
     {
       question: product.name + " এর দাম কত?",
       answer: product.price !== null && product.price !== undefined
@@ -169,12 +171,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
       question: "কেনার আগে কী কী যাচাই করা উচিত?",
       answer: "পণ্যের নাম ও ধরন, প্যাকেটের পরিমাণ, বিক্রেতার দেওয়া specification, মূল্য, মজুত, ডেলিভারি এবং প্রযোজ্য শর্ত যাচাই করুন। প্রয়োজন হলে অর্ডারের আগে বিক্রেতার কাছে অতিরিক্ত তথ্য চান।",
     },
-  ];
+  ]
+  const customFaqs = (product.seo_faqs ?? []).filter((faq) => Boolean(faq?.question?.trim() && faq?.answer?.trim()));
+  const faqs = customFaqs.length ? customFaqs : defaultFaqs;
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };;
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-y-2 text-sm text-slate-500">
@@ -270,8 +284,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
                 {description && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">বিবরণ</dt><dd className="mt-3 min-w-0 text-sm leading-8 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-3"><summary className="inline-flex min-h-10 cursor-pointer items-center rounded-lg font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
+                {product.seo_content?.trim() && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">অতিরিক্ত পণ্য তথ্য</dt><dd className="mt-3 whitespace-pre-line break-words text-sm leading-8 text-slate-700">{product.seo_content}</dd></div>}
               </dl>
-              {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
+              {!description && !product.seo_content?.trim() && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
 
             <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
