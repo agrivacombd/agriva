@@ -152,7 +152,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
               </div>
               <div className="rounded-xl border border-[#e4ebe1] p-4">
                 <p className="text-sm font-extrabold">ডেলিভারি অবস্থা</p>
-                <form action={updateOrderStatus} className="mt-3 space-y-3">
+                {!["cancelled", "completed", "refunded"].includes(status) ? <form action={updateOrderStatus} className="mt-3 space-y-3">
                   <input type="hidden" name="orderId" value={o.id}/>
                   <label className="block text-xs font-bold text-[#647468]">নতুন status
                     <select name="status" defaultValue={status === "pending" ? "processing" : status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 text-sm">
@@ -160,7 +160,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                     </select>
                   </label>
                   <button className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</button>
-                </form>
+                </form> : <p className="mt-3 text-xs text-[#748074]">এই terminal status থেকে routine transition করা যাবে না।</p>}
                 <p className="mt-3 text-xs leading-5 text-[#748074]">Status update database authorization মেনে চলে। বাতিল করলে বর্তমান database RPC stock ফেরত দেওয়ার চেষ্টা করে।</p>
               </div>
 
