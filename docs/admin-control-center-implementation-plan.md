@@ -99,8 +99,16 @@ The two domains must use separate APIs, validations, permissions and slug namesp
 
 A module is complete only when server-side authorization, database constraints/RLS, validation, audit history, public rendering, SEO/canonical behaviour, error states, responsive UI and regression tests all pass.
 
-## Database/deployment gate
+## Live schema verification and database/deployment gate
 
-The connected Supabase accounts currently expose no project under the Primary account. The other account exposes projects named `supabase-coral-clock`, `agriva-identity-approval-test` (inactive), and `agriva-guest-checkout-e2e`; none can safely be assumed to be the live AGRIVA production database.
+Read-only inspection identified `supabase-coral-clock` (`dhqaepsbuwhbynagfxpf`) as the strong AGRIVA project match: it is active/healthy, has the expected Marketplace, Plant Market, seller grants, checkout, admin audit and site-settings tables, non-zero application records, and a migration history matching the repository's AGRIVA migrations. The other connected projects are empty or explicitly test/inactive projects. The Primary Supabase account has no projects.
 
-Therefore this phase does not apply SQL, alter live data, or deploy. Before database migrations are applied, identify the correct AGRIVA Supabase project and inspect its live schema/migration history. Apply changes through reviewed migrations and verify RLS/security advisors and regression tests.
+Live schema facts verified read-only:
+- `products.slug` is unique; Marketplace SEO title/description and image/gallery fields already exist.
+- `plant_market_products.slug` is unique and its own product table is separate from Marketplace.
+- Plant Market already has the expected botanical, inventory, image gallery and moderation columns, but no dedicated SEO title/description columns were found.
+- Both domains have admin status guards; Plant Market admin moderation is already a separate endpoint.
+- `admin_audit_log` supports actor, action, entity, JSON metadata and timestamp.
+- There is no shared slug redirect/history table in the inspected public schema.
+
+No DDL, data mutation, or deployment has been performed. The next implementation requires a reviewed migration for slug redirects/history and Plant Market SEO/revision support, then server-side admin RPCs and editors. Apply changes through reviewed migrations and verify RLS/security advisors and regression tests before release.
