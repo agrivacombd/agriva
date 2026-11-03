@@ -115,12 +115,14 @@ Arrows describe logical dependencies, not direct database coupling. Cross-domain
 - Agree on route names and capability ownership before creating pages.
 
 ### Phase 1 — Admin shell and access model
-- Implement shared module navigation (initial version links only to verified existing pages; future grants will filter visibility).
+- Shared module navigation filters verified links through the server-checked legacy Admin capability allow-list.
 - Add module landing pages only where a real destination exists.
-- Centralize server-side capability checks for every page/action.
-- Add navigation, unauthorized access and responsive smoke tests.
+- Keep page, API and Server Action authorization independent of navigation visibility.
+- Keep high-risk finance actions deny-by-default; commission approval requires `payments.reconcile`, payout approval/completion requires `payouts.approve`.
+- Add navigation, destination integrity and finance action regression checks.
 
 ### Phase 2 — Catalogue control (first functional vertical slice)
+- Marketplace landing page provides database-backed product status counts and links to the existing product editor, seller application queue and taxonomy manager.
 - Marketplace product editor: custom slug, category, media, inventory, SEO, preview.
 - Plant Market editor as a separate vertical slice with its own validation and permissions.
 - Add slug history/redirect and revision/audit support only through reviewed migrations.
@@ -155,15 +157,21 @@ Each phase is a separate reviewable PR, with CI + Vercel preview evidence. Do no
 
 Issue descriptions are repository audit records, not a substitute for rechecking the current code and live project immediately before implementing a fix. No issue was closed or marked resolved by this document.
 
+## Implementation progress
+
+- Admin Control Center navigation is mounted under the protected Admin layout and filters links through a server-verified capability list.
+- Marketplace module landing page is implemented with read-only product status metrics and verified links to existing workflows.
+- Commission/payout Server Actions no longer inherit the broad `dashboard.read` grant; they require explicit finance capabilities and their controls are hidden when those capabilities are unavailable.
+- Authorization smoke tests now cover navigation capability filtering, valid route targets, finance action guards, and Marketplace metrics/error behavior.
+- SSLCommerz endpoints remain disabled (HTTP 410) and the COD-only smoke test remains in CI. This is a mitigation, not an online payment implementation.
+
 ## Immediate implementation backlog
 
-1. Build the Admin shell without changing database schema; keep navigation visibility separate from authorization.
-2. Ensure all finance mutation Server Actions request explicit deny-by-default finance capabilities; do not let `dashboard.read` authorize commission or payout actions.
-3. Add a route/capability registry with no implicit grants and no dead links.
-4. Add regression coverage for navigation visibility and server-side route protection.
-5. Start Marketplace editor as the first complete catalogue vertical slice.
-6. Keep custom-slug redirect/history migration separate and blocked pending reviewed schema plan.
-7. Keep SSLCommerz disabled; reconcile #65 migration drift and #68/#69 RPC grants before any payment migration or online-payment activation.
+1. Complete Marketplace editor custom-slug, media and SEO workflow only after the required migration is generated through the supported Supabase workflow and schema drift is reconciled.
+2. Build Plant Market editor as a separate domain-specific vertical slice.
+3. Add slug history/301 redirect tests and canonical metadata checks with reviewed schema changes.
+4. Continue CMS, SEO, Sellers, Orders and Finance modules using explicit capabilities.
+5. Keep SSLCommerz disabled; reconcile #65 migration drift and #68/#69 RPC grants before any payment migration or online-payment activation.
 
 ## Release gates
 
