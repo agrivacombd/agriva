@@ -5,6 +5,8 @@ import { getAvailableAdminCapabilities, requireAdminPage, type AdminCapability }
 
 type OrderStatus = "processing" | "shipped" | "delivered" | "completed" | "cancelled";
 
+const FINANCE_MUTATIONS_ENABLED = false; // Re-enable only after audited service-role RPC workflow is deployed.
+
 async function requireAdmin(capability: AdminCapability = "orders.read") {
   const { supabase } = await requireAdminPage(capability);
   return supabase;
@@ -31,6 +33,7 @@ async function updateOrderStatus(formData: FormData) {
 
 async function recordCodCollection(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin/orders?notice=finance-disabled");
   const checkoutId = String(formData.get("checkoutId") ?? "").trim();
   const amount = Number(formData.get("collectedAmount"));
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
@@ -74,7 +77,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const supabase = await requireAdmin("orders.read");
   const availableCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile"]));
   const canReadPayments = availableCapabilities.has("payments.read") || availableCapabilities.has("payments.reconcile");
-  const canReconcilePayments = availableCapabilities.has("payments.reconcile");
+  const canReconcilePayments = FINANCE_MUTATIONS_ENABLED && availableCapabilities.has("payments.reconcile");
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
     .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
@@ -112,7 +115,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       {!canReadPayments && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">COD collection ledger ও reconciliation details hidden. The separate payments.read capability is required.</p>}
 
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
-        {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
+        {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : notice === "finance-disabled" ? "COD reconciliation সাময়িকভাবে বন্ধ। Audited secure workflow চালু হলে পুনরায় enable করা হবে।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
       </p>}
       {ordersError && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
 
