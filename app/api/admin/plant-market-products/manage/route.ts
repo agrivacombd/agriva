@@ -30,7 +30,6 @@ export async function PATCH(request: NextRequest) {
   const watering = textField(body.watering, 500);
   const floweringSeason = textField(body.flowering_season, 160);
   const deliveryArea = textField(body.delivery_area, 500);
-  const imageUrl = textField(body.image_url, 2000);
   const price = Number(body.price);
   const stock = Number(body.stock);
 
@@ -39,19 +38,12 @@ export async function PATCH(request: NextRequest) {
       description === undefined || unit === undefined || !unit ||
       plantSize === undefined || potSize === undefined || plantAge === undefined ||
       sunlight === undefined || watering === undefined || floweringSeason === undefined ||
-      deliveryArea === undefined || imageUrl === undefined ||
+      deliveryArea === undefined ||
       !Number.isFinite(price) || price < 0 || price > 100000000 ||
       !Number.isFinite(stock) || stock < 0 || stock > 100000000) {
     return NextResponse.json({ error: "নাম, ক্যাটাগরি, মূল্য, স্টক ও অন্যান্য ফিল্ডের সীমা যাচাই করুন।" }, { status: 400 });
   }
-  if (imageUrl) {
-    try {
-      const parsed = new URL(imageUrl);
-      if (parsed.protocol !== "https:") throw new Error("https required");
-    } catch {
-      return NextResponse.json({ error: "ছবির URL অবশ্যই HTTPS হতে হবে।" }, { status: 400 });
-    }
-  }
+
 
   const { data: current, error: lookupError } = await access.supabase
     .from("plant_market_products")
@@ -81,7 +73,7 @@ export async function PATCH(request: NextRequest) {
   const { data, error } = await access.supabase.from("plant_market_products").update({
     name, scientific_name: scientificName, category, description, price, stock, unit,
     plant_size: plantSize, pot_size: potSize, plant_age: plantAge, sunlight, watering,
-    flowering_season: floweringSeason, delivery_area: deliveryArea, image_url: imageUrl,
+    flowering_season: floweringSeason, delivery_area: deliveryArea,
     updated_at: new Date().toISOString(),
   }).eq("id", id).select("id,name,status,updated_at").maybeSingle();
 
