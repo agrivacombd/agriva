@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
     auth: { autoRefreshToken: false, persistSession: false },
   });
   const changedFields = [
-    "name", "scientific_name", "category", "description", "price", "stock", "unit",
+    "name", "scientific_name", "category", "category_slug", "description", "price", "stock", "unit",
     "plant_size", "pot_size", "plant_age", "sunlight", "watering", "flowering_season", "delivery_area",
   ];
   const { data: auditEvent, error: auditError } = await auditClient.from("admin_audit_log").insert({
