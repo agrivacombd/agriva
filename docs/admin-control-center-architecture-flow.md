@@ -334,3 +334,10 @@ The security state for payment-event RPC grants is confirmed safe. SECURITY DEFI
 - The three `*_reconcile_replay` SQL files in the repo are intentionally empty comments because Production migration history contains duplicate Green Exchange/Green Living replay entries. Do not replace them with DDL or replay them.
 - `record_attribution_session`/`resolve_reseller_attribution` are not just naming drift: live definitions and ACLs were checked and expose more than intended. The two new forward-only migrations target these concrete gaps; neither is applied to Production.
 - Dashboard and Orders now require `payments.read` / `payouts.read` strictly for finance data; mutation capabilities do not imply read access. All legacy commission approval, payout approval/completion and COD collection Server Actions are hard-disabled until a new audited service-role workflow exists, matching the forward migration that revokes the legacy RPCs.
+ 
+### Marketplace slug history and canonical redirects — branch-only
+- Added `20261104120000_marketplace_slug_history_and_admin_rpc.sql`: an immutable old-slug mapping table, public read-only redirect lookup, authenticated Admin-only slug update RPC, and `admin_audit_log` entry for each change.
+- Public product lookup now resolves old slugs and the product page redirects them to the current canonical slug. Sitemap and metadata continue to use the canonical slug.
+- Production currently contains Bengali/Unicode slugs. The first draft's ASCII-only history constraint would have rejected those old slugs; it was corrected to preserve legacy slugs verbatim (1–255 characters). Current inspected slugs are 29, 31 and 65 characters.
+- The RPC is granted to `authenticated` only (not `service_role`) and checks `auth.uid()` plus `public.is_admin()`. No Production migration has been applied.
+- Repository migration-file count is now 109 after the slug-history migration; do not infer applied status from the filename count.
