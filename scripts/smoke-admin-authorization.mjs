@@ -11,6 +11,7 @@ const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
 const adminDashboard = read("app/admin/page.tsx");
 const controlCenterNav = read("components/admin/AdminControlCenterNav.tsx");
+const marketplaceAdmin = read("app/admin/marketplace/page.tsx");
 assert.match(layout, /requireAdminPage\("dashboard\.read"\)/, "admin layout must use the shared capability guard");
 assert.match(authz, /supabase\.auth\.getUser\(\)/, "shared guard must verify the server-side session");
 assert.match(authz, /profileError/, "shared guard must fail closed when profile lookup fails");
@@ -20,6 +21,11 @@ const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]
 assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|payouts\.approve|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
 assert.match(controlCenterNav, /getAvailableAdminCapabilities/, "Admin navigation must use a server-verified capability list");
 assert.match(controlCenterNav, /availableCapabilities\.has\(item\.capability\)/, "Admin navigation must hide links without the corresponding capability");
+assert.match(marketplaceAdmin, /requireAdminPage\("catalog\.read"\)/, "Marketplace landing page must require catalog read access");
+assert.match(marketplaceAdmin, /from\("products"\)/, "Marketplace landing page must use the Marketplace products domain");
+assert.match(marketplaceAdmin, /failed queries are shown as unavailable, not zero/i, "Marketplace metrics must not turn query failures into zero counts");
+assert.match(marketplaceAdmin, /Custom slug editing, slug history and 301 redirects are intentionally not enabled yet/, "Marketplace landing page must not promise slug persistence before migration");
+
 for (const match of controlCenterNav.matchAll(/href: "(\/admin(?:\/[a-z-]+)?)"/g)) {
   const href = match[1];
   const routeFile = href === "/admin" ? "app/admin/page.tsx" : `app${href}/page.tsx`;
