@@ -37,7 +37,7 @@ assert.match(adminProducts, /admin_update_product_seo_assistant_details/, "Marke
 assert.match(adminProducts, /Slug পরিবর্তন redirect migration প্রস্তুত না হওয়া পর্যন্ত read-only থাকবে/, "Marketplace slug editing must remain blocked until redirect history is available");
 assert.match(adminDashboard, /md:hidden/, "Dashboard must render a mobile-friendly order card list");
 assert.doesNotMatch(adminDashboard, /orderTotals/, "Dashboard must not retain the unbounded all-order value query");
-assert.match(controlCenterNav, /availableCapabilities\.has\(item\.capability\)/, "Admin navigation must hide links without the corresponding capability");
+assert.ok(controlCenterNav.includes("available.has(link.capability ?? capabilities[0])"), "Admin navigation must filter each destination by its required capability");
 assert.match(marketplaceAdmin, /requireAdminPage\("catalog\.read"\)/, "Marketplace landing page must require catalog read access");
 assert.match(marketplaceAdmin, /from\("products"\)/, "Marketplace landing page must use the Marketplace products domain");
 assert.match(marketplaceAdmin, /failed queries are shown as unavailable, not zero/i, "Marketplace metrics must not turn query failures into zero counts");
