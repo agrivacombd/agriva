@@ -56,6 +56,10 @@ assert.match(adminProducts, /name="seoKeywords"/,
   "Admin product editor must expose SEO keywords");
 assert.match(adminProducts, /name="seoFaqs"/,
   "Admin product editor must preserve and edit structured SEO FAQs");
+assert.match(adminProducts, /seoFaqs\.length <= 8[\s\S]*item\.question\.trim\(\)\.length <= 250[\s\S]*item\.answer\.trim\(\)\.length <= 2000/,
+  "Admin product editor must validate FAQ count and question/answer lengths");
+assert.match(page, /Array\.isArray\(product\.seo_faqs\)[\s\S]*typeof faq\.question === "string"[\s\S]*typeof faq\.answer === "string"/,
+  "Public FAQ rendering must ignore malformed stored JSON values");
 assert.match(adminProducts, /admin_update_product_seo_assistant_details/,
   "Admin product editor must save image alt text through the existing guarded RPC");
 assert.match(adminProducts, /existingSeoDetails\?\.seo_attribute_suggestions \?\? \[\]/,
