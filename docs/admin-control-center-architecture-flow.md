@@ -311,3 +311,4 @@ The security state for payment-event RPC grants is confirmed safe. SECURITY DEFI
 
 - `/admin/users` now supports server-side name search and role filters, with desktop table and mobile cards. User IDs are masked in the UI; query failures show an alert instead of a false empty state.
 - Navigation and Dashboard shortcut require `users.read`; role mutation remains a separate `roles.grant` Server Action and the existing database RPC. Routine UI can only switch Farmer/Reseller and cannot promote an Admin or change the signed-in admin's own role.
+- Identity verification queue now returns explicit success/validation/failure notices after Server Action review instead of throwing an unhandled error. Rejection requires a review reason, applicant IDs are masked, and action controls use mobile-sized touch targets.
