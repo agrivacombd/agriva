@@ -63,16 +63,27 @@ async function saveProduct(formData: FormData) {
   redirect(productError || categoryError || seoError || altTextError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
+export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; q?: string; status?: string } }) {
   const supabase = await requireAdmin();
-  const { data: products, error } = await supabase.from("products")
-    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,updated_at")
-    .order("updated_at", { ascending: false }).limit(100);
+  const search = String(searchParams?.q ?? "").trim().slice(0, 100).replace(/[%_]/g, "");
+  const statusFilter = ["draft", "active", "paused", "sold_out"].includes(searchParams?.status ?? "") ? searchParams?.status : "";
+  let productsQuery = supabase.from("products")
+    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,updated_at");
+  if (search) productsQuery = productsQuery.ilike("name", `%${search}%`);
+  if (statusFilter) productsQuery = productsQuery.eq("status", statusFilter);
+  const { data: products, error } = await productsQuery.order("updated_at", { ascending: false }).limit(100);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
     <div className="mx-auto max-w-7xl">
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Catalogue management</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-      <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p>
+      <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, taxonomy, gallery alt text ও SEO তথ্য পরিবর্তন করুন। Slug পরিবর্তন redirect migration প্রস্তুত না হওয়া পর্যন্ত read-only থাকবে।</p>
+      <form method="get" className="mt-5 grid gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_180px_auto_auto] sm:items-end">
+        <label className="text-sm font-bold">পণ্য খুঁজুন<input name="q" type="search" maxLength={100} defaultValue={search} placeholder="পণ্যের নাম লিখুন..." className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
+        <label className="text-sm font-bold">স্ট্যাটাস<select name="status" defaultValue={statusFilter} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 font-normal"><option value="">সব স্ট্যাটাস</option><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
+        <button type="submit" className="min-h-11 rounded-xl bg-[#17452c] px-5 text-sm font-bold text-white">Filter</button>
+        <a href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#d9e3d5] px-4 text-sm font-bold text-[#345a40]">Clear</a>
+      </form>
+      <p className="mt-3 text-xs text-[#748074]">সর্বশেষ আপডেট হওয়া সর্বোচ্চ ১০০টি পণ্য দেখানো হচ্ছে। Search ও status filter server-side প্রয়োগ হয়।</p>
       {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে।" : "পণ্য, taxonomy বা SEO তথ্য সংরক্ষণ করা যায়নি। অনুমতি ও database RPC যাচাই করুন।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
       <AdminCreateProductForm />
@@ -118,7 +129,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         </section>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
       </form>)}
-      {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
+      {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">{search || statusFilter ? "এই filter-এ কোনো পণ্য পাওয়া যায়নি।" : "Database-এ এখনো কোনো পণ্য নেই।"}</p><p className="mt-2 text-sm text-[#748074]">Filter clear করে আবার চেষ্টা করুন। Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
     </div>
   </main>;
 }
