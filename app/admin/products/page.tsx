@@ -48,7 +48,7 @@ async function saveProduct(formData: FormData) {
     p_seo_description: seoDescription || null,
     p_seo_keywords: seoKeywords,
     p_seo_content: seoContent || null,
-    p_seo_faqs: seoFaqs,
+    p_seo_faqs: seoFaqs as never,
   });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
