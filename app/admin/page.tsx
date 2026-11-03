@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getAvailableAdminCapabilities, requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
-import BrandLogo from "@/components/BrandLogo";
 
 async function requireAdmin(capability: AdminCapability = "dashboard.read") {
   const { supabase, user } = await requireAdminPage(capability);
@@ -82,7 +81,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
 
   const [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
-    commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
+    commissionsCount, payoutsCount, pendingOrdersCount, recentOrders, recentCommissions,
     recentPayouts, opportunities,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -92,16 +91,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     supabase.from("marketplace_orders").select("id", { count: "exact", head: true }),
     supabase.from("reseller_commissions").select("id", { count: "exact", head: true }),
     supabase.from("commission_payouts").select("id", { count: "exact", head: true }),
-    supabase.from("marketplace_orders").select("total_amount,status,payment_status"),
+    supabase.from("marketplace_orders").select("id", { count: "exact", head: true }).in("status", ["pending", "processing"]),
     supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity,shipping_address,product:products(name),buyer:profiles!marketplace_orders_buyer_id_fkey(full_name)").order("created_at", { ascending: false }).limit(12),
     supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8),
     supabase.from("commission_payouts").select("id,reseller_id,amount,status,payment_method,requested_at,payment_reference").order("requested_at", { ascending: false }).limit(8),
     supabase.from("content_opportunities").select("id,keyword,search_count,opportunity_type,status").order("search_count", { ascending: false }).limit(5),
   ]);
 
-  const orders = orderTotals.data ?? [];
-  const revenue = orders.filter(o => !["cancelled", "refunded"].includes(o.status)).reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
-  const pendingOrders = orders.filter(o => ["pending", "processing"].includes(o.status)).length;
+  const pendingOrders = pendingOrdersCount.error ? "—" : pendingOrdersCount.count ?? 0;
   const pendingCommissions = (recentCommissions.data ?? []).filter(c => c.status === "pending");
   const pendingPayouts = (recentPayouts.data ?? []).filter(p => ["requested", "approved"].includes(p.status));
   const cards = [
@@ -110,28 +107,21 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     ["রিসেলার", resellersCount.error ? "—" : resellersCount.count ?? 0, "share-2"],
     ["পণ্য", productsCount.error ? "—" : productsCount.count ?? 0, "package"],
     ["মোট অর্ডার", ordersCount.error ? "—" : ordersCount.count ?? 0, "shopping-bag"],
-    ["রিভিউ প্রয়োজন", orderTotals.error ? "—" : pendingOrders, "clipboard-list"],
+    ["রিভিউ প্রয়োজন", pendingOrdersCount.error ? "—" : pendingOrders, "clipboard-list"],
     ["কমিশন রেকর্ড", commissionsCount.error ? "—" : commissionsCount.count ?? 0, "wallet"],
     ["পেআউট রেকর্ড", payoutsCount.error ? "—" : payoutsCount.count ?? 0, "banknote"],
   ];
   const hasDashboardQueryError = [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
     commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
-    recentPayouts, opportunities,
+    recentPayouts, opportunities, pendingOrdersCount,
   ].some((result) => Boolean(result.error));
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
-      <aside className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-8">
-          <div><BrandLogo href="/" imageClassName="h-10 w-40 rounded-lg bg-white p-1" /><p className="mt-2 text-xs font-bold uppercase tracking-[.2em] text-emerald-100">Super Admin Console</p></div>
-          <div className="flex items-center gap-3 text-sm"><span className="rounded-full border border-white/20 px-3 py-1.5">Admin verified</span><Link href="/admin/seller-applications" className="rounded-xl bg-lime-300 px-4 py-2 font-bold text-[#17351f] hover:bg-lime-200">Seller applications ↗</Link><Link href="/admin/plant-market-products" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">Plant products ↗</Link><Link href="/dashboard" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">User dashboard ↗</Link></div>
-        </div>
-      </aside>
-
-      <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1500px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Super Admin Panel</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
+          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Admin Control Center</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
         </div>
 
@@ -144,14 +134,16 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
 
         <section className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_.8fr]">
           <div className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:p-6">
-            <p className="text-sm font-bold text-[#6b786d]">ORDER VALUE SNAPSHOT</p><div className="mt-3 flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><p className="break-words text-2xl font-black sm:text-3xl">{orderTotals.error ? "ডেটা পাওয়া যায়নি" : money(revenue)}</p><p className="mt-1 text-sm text-[#68786b]">Non-cancelled order value (all time)</p></div><div className="rounded-xl bg-amber-50 px-3 py-3 text-sm sm:px-4"><span className="font-black text-amber-800">{orderTotals.error ? "—" : pendingOrders}</span><span className="ml-2 text-amber-900">অর্ডার প্রসেসিং প্রয়োজন</span></div></div><p className="mt-4 text-xs leading-5 text-[#879187]">এটি অর্ডারের মোট মূল্য; এটি নিট আয় বা নিশ্চিতভাবে আদায় করা টাকা নয়।</p>
+            <p className="text-sm font-bold text-[#6b786d]">NEEDS ATTENTION</p><div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"><div className="rounded-xl bg-amber-50 p-4"><p className="text-xs font-semibold text-amber-900">অর্ডার অপেক্ষমাণ</p><p className="mt-2 text-2xl font-black text-amber-950">{pendingOrdersCount.error ? "—" : pendingOrders}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-600">সাম্প্রতিক ৮ কমিশনে pending</p><p className="mt-2 text-2xl font-black">{recentCommissions.error ? "—" : pendingCommissions.length}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-600">সাম্প্রতিক ৮ পেআউটে pending</p><p className="mt-2 text-2xl font-black">{recentPayouts.error ? "—" : pendingPayouts.length}</p></div></div><p className="mt-4 text-xs leading-5 text-[#879187]">কমিশন ও পেআউটের সংখ্যা সর্বশেষ ৮টি রেকর্ড থেকে; পূর্ণ হিসাব নয়। অনুমতি ছাড়া financial action দেখানো হবে না।</p>
           </div>
-          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/orders","অর্ডার পেজ"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
+          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/admin/orders","অর্ডার ব্যবস্থাপনা"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
         </section>
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">সাম্প্রতিক অর্ডার</h2><p className="mt-1 text-sm text-[#748074]">স্ট্যাটাস আপডেট করলে stock ও কমিশনের নিয়ম ডেটাবেস RPC-তে প্রয়োগ হবে।</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">{recentOrders.data?.length ?? 0} recent</span></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs uppercase tracking-wide text-[#6d7b6e]"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">Product / buyer</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Payment</th><th className="px-5 py-3">Status / update</th></tr></thead><tbody>{(recentOrders.data ?? []).map(order => <tr key={order.id} className="border-t border-[#edf1ea] align-top"><td className="px-5 py-4"><p className="font-bold">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td><td className="px-5 py-4"><p className="font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></td><td className="px-5 py-4 font-black">{money(order.total_amount)}</td><td className="px-5 py-4"><p className="font-semibold uppercase">{order.payment_method}</p><p className="mt-1 text-xs text-[#7b887d]">{order.payment_status}</p></td><td className="px-5 py-4"><p className="mb-2 inline-flex rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</p><form action={updateOrderStatus} className="flex items-center gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} className="rounded-lg border border-[#d9e3d5] bg-white px-2 py-2 text-xs"><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select><button className="rounded-lg bg-[#17452c] px-3 py-2 text-xs font-bold text-white hover:bg-[#22613d]">Save</button></form></td></tr>)}</tbody></table>{recentOrders.error ? <p role="alert" className="p-5 text-sm text-red-800">অর্ডার লোড করা যায়নি। Database permission বা query error যাচাই করুন।</p> : !recentOrders.data?.length && <p className="p-8 text-sm text-[#6b786d]">এখনো কোনো অর্ডার পাওয়া যায়নি।</p>}</div>
+          <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs uppercase tracking-wide text-[#6d7b6e]"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">Product / buyer</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Payment</th><th className="px-5 py-3">Status / update</th></tr></thead><tbody>{(recentOrders.data ?? []).map(order => <tr key={order.id} className="border-t border-[#edf1ea] align-top"><td className="px-5 py-4"><p className="font-bold">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td><td className="px-5 py-4"><p className="font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></td><td className="px-5 py-4 font-black">{money(order.total_amount)}</td><td className="px-5 py-4"><p className="font-semibold uppercase">{order.payment_method}</p><p className="mt-1 text-xs text-[#7b887d]">{order.payment_status}</p></td><td className="px-5 py-4"><p className="mb-2 inline-flex rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</p><form action={updateOrderStatus} className="flex items-center gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} aria-label={`Update order ${order.id.slice(0,8)} status`} className="rounded-lg border border-[#d9e3d5] bg-white px-2 py-2 text-xs"><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select><button type="submit" className="min-h-10 rounded-lg bg-[#17452c] px-3 py-2 text-xs font-bold text-white hover:bg-[#22613d]">Save</button></form></td></tr>)}</tbody></table></div>
+          <div className="divide-y divide-[#edf1ea] md:hidden">{(recentOrders.data ?? []).map(order => <article key={order.id} className="space-y-3 p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-sm font-black">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></div><span className="shrink-0 rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</span></div><div className="min-w-0"><p className="truncate text-sm font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></div><div className="flex items-center justify-between gap-3"><p className="text-lg font-black">{money(order.total_amount)}</p><p className="text-right text-xs text-[#748074]">{order.payment_method?.toUpperCase()} · {order.payment_status}</p></div><form action={updateOrderStatus} className="grid grid-cols-[1fr_auto] gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} aria-label={`Update order ${order.id.slice(0,8)} status`} className="min-h-11 min-w-0 rounded-xl border border-[#d9e3d5] bg-white px-3 text-sm"><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select><button type="submit" className="min-h-11 rounded-xl bg-[#17452c] px-4 text-sm font-bold text-white">Save</button></form></article>)}</div>
+          {recentOrders.error ? <p role="alert" className="p-5 text-sm text-red-800">অর্ডার লোড করা যায়নি। Database permission বা query error যাচাই করুন।</p> : !recentOrders.data?.length && <p className="p-8 text-sm text-[#6b786d]">এখনো কোনো অর্ডার পাওয়া যায়নি।</p>}
         </section>
 
         <section className="mt-5 grid gap-5 xl:grid-cols-2">
