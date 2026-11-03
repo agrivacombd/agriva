@@ -22,6 +22,7 @@ export async function PATCH(request: NextRequest) {
   const name = textField(body.name, 160);
   const scientificName = textField(body.scientific_name, 160);
   const category = textField(body.category, 100);
+  const categorySlug = textField(body.category_slug, 100);
   const description = textField(body.description, 5000);
   const unit = textField(body.unit, 40);
   const plantSize = textField(body.plant_size, 100);
@@ -35,13 +36,13 @@ export async function PATCH(request: NextRequest) {
   const stock = Number(body.stock);
 
   if (!id || name === undefined || !name || name.length < 2 ||
-      scientificName === undefined || category === undefined || !category ||
+      scientificName === undefined || category === undefined || !category || categorySlug === undefined || !categorySlug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(categorySlug) ||
       description === undefined || unit === undefined || !unit ||
       plantSize === undefined || potSize === undefined || plantAge === undefined ||
       sunlight === undefined || watering === undefined || floweringSeason === undefined ||
       deliveryArea === undefined ||
-      !Number.isFinite(price) || price < 0 || price > 100000000 ||
-      !Number.isFinite(stock) || stock < 0 || stock > 100000000) {
+      !Number.isFinite(price) || price <= 0 || price > 100000000 ||
+      !Number.isFinite(stock) || stock < 0 || stock > 100000000 || !["piece", "pot", "pack", "tray"].includes(String(unit))) {
     return NextResponse.json({ error: "নাম, ক্যাটাগরি, মূল্য, স্টক ও অন্যান্য ফিল্ডের সীমা যাচাই করুন।" }, { status: 400 });
   }
 
@@ -95,7 +96,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const { data, error } = await access.supabase.from("plant_market_products").update({
-    name, scientific_name: scientificName, category, description, price, stock, unit,
+    name, scientific_name: scientificName, category, category_slug: categorySlug, description, price, stock, unit,
     plant_size: plantSize, pot_size: potSize, plant_age: plantAge, sunlight, watering,
     flowering_season: floweringSeason, delivery_area: deliveryArea,
     updated_at: new Date().toISOString(),
