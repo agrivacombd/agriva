@@ -75,7 +75,7 @@ const noticeText: Record<string, string> = {
 
 export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const { supabase, user } = await requireAdmin();
-  const availableAdminCapabilities = new Set(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
+  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
   const canReadPayments = availableAdminCapabilities.has("payments.read") || availableAdminCapabilities.has("payments.reconcile");
   const canReadPayouts = availableAdminCapabilities.has("payouts.read") || availableAdminCapabilities.has("payouts.approve");
   const canApproveCommissions = availableAdminCapabilities.has("payments.reconcile");
