@@ -129,7 +129,7 @@ assert.ok(ordersPage.includes("canReconcilePayments"), "COD collection UI must b
 assert.ok(ordersPage.includes('requireAdmin("orders.read")'), "Order operations must use the shared read capability");
 assert.ok(ordersPage.includes("checkoutIds.length && canReadPayments"), "COD ledger reads must be skipped without payments.read");
 assert.ok(ordersPage.includes('!["cancelled", "completed", "refunded"].includes(status)'), "Order operations must hide transition controls for terminal states");
-assert.ok(adminDashboard.includes('getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve"])'), "Dashboard finance data must be capability-gated");
+assert.ok(adminDashboard.includes('getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition"'), "Dashboard finance data must be capability-gated");
 assert.ok(adminDashboard.includes("canReadPayments ? supabase.from"), "Commission queries must be skipped without finance read permission");
 assert.ok(adminDashboard.includes("canReadPayouts ? supabase.from"), "Payout queries must be skipped without payout read permission");
 assert.ok(!adminDashboard.includes("shipping_address"), "Dashboard order preview must not fetch full shipping-address PII");
