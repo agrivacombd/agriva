@@ -10,6 +10,7 @@ const read = (path) => {
 const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
 const adminDashboard = read("app/admin/page.tsx");
+const ordersPage = read("app/admin/orders/page.tsx");
 const controlCenterNav = read("components/admin/AdminControlCenterNav.tsx");
 const marketplaceAdmin = read("app/admin/marketplace/page.tsx");
 const adminUsers = read("app/admin/users/page.tsx");
@@ -168,7 +169,6 @@ const reportsPage = read("app/admin/reports/page.tsx");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
 
-const ordersPage = read("app/admin/orders/page.tsx");
 assert.ok(ordersPage.includes('requireAdmin("orders.transition")'), "Order status updates must require the orders.transition capability");
 assert.ok(ordersPage.includes('requireAdmin("payments.reconcile")'), "COD collection must require the separate payments.reconcile capability");
 assert.ok(ordersPage.includes("canReconcilePayments"), "COD collection UI must be hidden without the dedicated finance capability");
