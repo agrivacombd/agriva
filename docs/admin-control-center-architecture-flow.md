@@ -180,3 +180,36 @@ Issue descriptions are repository audit records, not a substitute for rechecking
 - Supabase: migration diff, RLS/grants, backup/recovery and target project identity reviewed.
 - Security: no client-executable privileged RPCs, no exposed secrets, and all high-risk actions deny by default.
 - Release: reviewed PR and explicit production approval. Netlify is not a release gate for this project.
+
+
+## Production schema reconciliation snapshot (2026-11-04)
+
+Target project confirmed by the user: `dhqaepsbuwhbynagfxpf` (`supabase-coral-clock`, ACTIVE_HEALTHY, PostgreSQL 17.11, us-east-1). All inspection below was read-only; no SQL writes, migrations, data updates, or permission changes were performed.
+
+### Live catalogue schema
+
+- `public.products` has UUID identity, nullable slug with a unique index, SEO title/description/keywords/content/FAQs, image URL/gallery, image variants, image alt-texts, SEO attribute suggestions, category taxonomy, and Marketplace channel fields.
+- `public.plant_market_products` has UUID identity, required unique slug, image URL and image array, but no dedicated SEO title/description/content fields.
+- Both tables have RLS enabled and domain-specific policies. Marketplace and Plant Market remain separate tables and policies.
+- Live product counts at audit time: Marketplace 3; Plant Market 0. No empty or duplicate slugs were observed in either table.
+- No slug history/redirect table was found in the inspected public/private table inventory. Custom slug persistence must not ship until atomic history/redirect handling is added and reviewed.
+
+### Migration-history reconciliation blocker
+
+- Repository branch contains 106 SQL migration files under `supabase/migrations`; the live project reports 102 migration-history entries.
+- Only 34 migration names match exactly; 72 repository filenames and 68 live history names do not have exact counterparts. Some may be renamed/replayed equivalents, so this is not proof that every unmatched migration is unapplied. It is proof that a filename-only replay or guessed baseline is unsafe.
+- Several live objects already exist (including product SEO and image fields) despite their creation migration names not matching the current branch filenames. Reconcile each object and migration intent before producing a forward-only migration.
+- Next reconciliation work: build a migration-name/intent map, compare relevant DDL and function definitions for Marketplace/Plant Market, inspect the remaining migration entries, then generate a minimal reviewed forward-only migration. Do not repair migration history by deleting/reinserting rows or replaying the folder wholesale.
+
+### Security advisor snapshot
+
+- Security advisor reported one anonymous-executable SECURITY DEFINER aggregate RPC: `public.get_green_impact_metrics()`. Its current definition returns aggregate counts and its ACL includes anon/authenticated/service_role. Treat as an intentional public aggregate only after confirming no sensitive row-level data can be inferred; do not revoke blindly.
+- Advisor also reported 13 authenticated-executable SECURITY DEFINER RPCs. The inspected Marketplace admin wrappers delegate to private SECURITY DEFINER functions that check `auth.uid()` and `public.is_admin()`; each other RPC still requires per-function authorization review before any grant changes.
+- Leaked-password protection is disabled in Auth settings. This is a configuration hardening item, not changed during this read-only audit.
+- Performance advisor reported 103 unused indexes; no index was dropped because usage history and workload impact need review.
+
+### Marketplace editor delivery gate
+
+The current editor only saves core product fields and taxonomy. The public product page currently uses generated metadata rather than stored SEO fields and loads only `image_url`. The live schema already contains most Marketplace SEO/media fields, but the current editor does not expose them and slug changes have no redirect history. Implement the UI and public metadata/media consumption only against verified existing fields and tested RPC contracts; defer slug mutation until the redirect-history migration and RPC are reviewed. Plant Market SEO/editor work remains a separate bounded context.
+
+**Release status:** production migration application remains blocked pending full migration-intent reconciliation, backup/recovery plan, advisors review, and explicit release approval. This snapshot does not authorize production DDL or deployment.
