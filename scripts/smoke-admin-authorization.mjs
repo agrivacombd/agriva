@@ -119,6 +119,10 @@ assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics m
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
 
 const ordersPage = read("app/admin/orders/page.tsx");
+assert.ok(ordersPage.includes('requireAdmin("orders.transition")'), "Order status updates must require the orders.transition capability");
+assert.ok(ordersPage.includes('requireAdmin("payments.reconcile")'), "COD collection must require the separate payments.reconcile capability");
+assert.ok(ordersPage.includes("canReconcilePayments"), "COD collection UI must be hidden without the dedicated finance capability");
+assert.ok(!adminDashboard.includes('value="refunded"'), "Routine dashboard order controls must not expose refund status");
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
