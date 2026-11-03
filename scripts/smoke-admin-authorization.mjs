@@ -291,4 +291,5 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
+assert.doesNotMatch(controlCenterNav, /planned: \["Slug redirects"/, "Implemented Marketplace slug redirects must not remain in the planned list");
 console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
