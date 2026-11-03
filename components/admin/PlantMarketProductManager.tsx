@@ -9,6 +9,7 @@ export type PlantMarketAdminProduct = {
   slug: string;
   scientific_name: string | null;
   category: string;
+  category_slug: string;
   description: string | null;
   price: number | string;
   stock: number | string;
@@ -68,10 +69,10 @@ export default function PlantMarketProductManager({ initialProducts }: { initial
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-semibold">পণ্যের নাম<input name="name" required minLength={2} maxLength={160} defaultValue={product.name} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
           <label className="text-sm font-semibold">বৈজ্ঞানিক নাম<input name="scientific_name" maxLength={160} defaultValue={product.scientific_name ?? ""} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
-          <label className="text-sm font-semibold">ক্যাটাগরি<input name="category" required maxLength={100} defaultValue={product.category} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
-          <label className="text-sm font-semibold">মূল্য (৳)<input name="price" type="number" min="0" max="100000000" step="0.01" required defaultValue={product.price} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
+          <label className="text-sm font-semibold">ক্যাটাগরি<input name="category" required maxLength={100} defaultValue={product.category} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>\n          <label className="text-sm font-semibold">Category slug<input name="category_slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxLength={100} defaultValue={product.category_slug} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
+          <label className="text-sm font-semibold">মূল্য (৳)<input name="price" type="number" min="0.01" max="100000000" step="0.01" required defaultValue={product.price} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
           <label className="text-sm font-semibold">স্টক<input name="stock" type="number" min="0" max="100000000" step="0.01" required defaultValue={product.stock} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
-          <label className="text-sm font-semibold">একক<input name="unit" required maxLength={40} defaultValue={product.unit} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
+          <label className="text-sm font-semibold">একক<select name="unit" required defaultValue={product.unit} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 font-normal"><option value="piece">Piece</option><option value="pot">Pot</option><option value="pack">Pack</option><option value="tray">Tray</option></select></label>
           <label className="text-sm font-semibold">গাছের আকার<input name="plant_size" maxLength={100} defaultValue={product.plant_size ?? ""} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
           <label className="text-sm font-semibold">টবের আকার<input name="pot_size" maxLength={100} defaultValue={product.pot_size ?? ""} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
           <label className="text-sm font-semibold">গাছের বয়স<input name="plant_age" maxLength={100} defaultValue={product.plant_age ?? ""} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
