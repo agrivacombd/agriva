@@ -22,7 +22,7 @@ CREATE POLICY marketplace_product_slug_redirects_public_read
   USING (true);
 
 REVOKE ALL ON TABLE public.marketplace_product_slug_redirects FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON TABLE public.marketplace_product_slug_redirects TO anon, authenticated;
+GRANT SELECT (old_slug, product_id) ON TABLE public.marketplace_product_slug_redirects TO anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.admin_update_product_slug(
   p_product_id uuid,
