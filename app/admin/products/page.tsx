@@ -27,7 +27,7 @@ async function saveProduct(formData: FormData) {
   const seoKeywords = String(formData.get("seoKeywords") ?? "").split(",").map(value => value.trim()).filter(Boolean);
   const seoContent = String(formData.get("seoContent") ?? "").trim();
   const seoFaqsRaw = String(formData.get("seoFaqs") ?? "[]");
-  const seoImageAltTexts = String(formData.get("seoImageAltTexts") ?? "").split("\\n").map(value => value.trim()).filter(Boolean);
+  const seoImageAltTexts = String(formData.get("seoImageAltTexts") ?? "").split("\n").map(value => value.trim()).filter(Boolean);
   let seoFaqs: unknown;
   try { seoFaqs = JSON.parse(seoFaqsRaw); } catch { redirect("/admin/products?notice=invalid"); }
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
@@ -51,10 +51,11 @@ async function saveProduct(formData: FormData) {
     p_seo_content: seoContent || null,
     p_seo_faqs: seoFaqs as never,
   });
-  const { error: altTextError } = productError || categoryError || seoError ? { error: productError || categoryError || seoError } : await supabase.rpc("admin_update_product_seo_assistant_details", {
+  const { data: existingSeoDetails, error: existingSeoDetailsError } = productError || categoryError || seoError ? { data: null, error: productError || categoryError || seoError } : await supabase.from("products").select("seo_attribute_suggestions").eq("id", productId).maybeSingle();
+  const { error: altTextError } = productError || categoryError || seoError || existingSeoDetailsError ? { error: productError || categoryError || seoError || existingSeoDetailsError } : await supabase.rpc("admin_update_product_seo_assistant_details", {
     p_product_id: productId,
     p_seo_image_alt_texts: seoImageAltTexts,
-    p_seo_attribute_suggestions: [],
+    p_seo_attribute_suggestions: existingSeoDetails?.seo_attribute_suggestions ?? [],
   });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
@@ -68,7 +69,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const search = String(searchParams?.q ?? "").trim().slice(0, 100).replace(/[%_]/g, "");
   const statusFilter = (["draft", "active", "paused", "sold_out"].includes(searchParams?.status ?? "") ? searchParams?.status : "") as "" | "draft" | "active" | "paused" | "sold_out";
   let productsQuery = supabase.from("products")
-    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,updated_at");
+    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,seo_attribute_suggestions,updated_at");
   if (search) productsQuery = productsQuery.ilike("name", `%${search}%`);
   if (statusFilter) productsQuery = productsQuery.eq("status", statusFilter);
   const { data: products, error } = await productsQuery.order("updated_at", { ascending: false }).limit(100);
@@ -112,7 +113,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
             {!p.image_url && !p.image_urls?.length && <p className="text-sm text-[#718071]">No product images found.</p>}
           </div>
           <label className="mt-4 block text-sm font-bold">Image alt text (প্রতি লাইনে একটি; gallery order অনুযায়ী)
-            <textarea name="seoImageAltTexts" rows={3} maxLength={1000} defaultValue={(p.seo_image_alt_texts ?? []).join("\\n")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="প্রথম ছবির alt text\\nদ্বিতীয় ছবির alt text"/>
+            <textarea name="seoImageAltTexts" rows={3} maxLength={1000} defaultValue={(p.seo_image_alt_texts ?? []).join("\n")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="প্রথম ছবির alt text, এরপর দ্বিতীয় ছবির alt text"/>
           </label>
           <p className="mt-2 text-xs leading-5 text-[#718071]">Admin image upload/replace এখনো বন্ধ: production Storage policy-তে seller-owned upload-ই অনুমোদিত। Access model review না করে এই browser form থেকে upload চালু করা হবে না।</p>
         </section>
