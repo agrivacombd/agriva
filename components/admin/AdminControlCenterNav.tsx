@@ -17,7 +17,7 @@ type AdminModule = {
 const modules: AdminModule[] = [
   { number: "01", title: "Dashboard", links: [{ label: "Overview", href: "/admin", capability: "dashboard.read" }] },
   { number: "02", title: "Website & CMS", links: [{ label: "Articles / Blog", href: "/admin/articles", capability: "content.read" }], planned: ["Pages", "Categories & Tags", "Homepage Builder", "Navigation & Footer", "Media Library"] },
-  { number: "03", title: "Marketplace", links: [{ label: "Product Editor", href: "/admin/products", capability: "catalog.read" }], planned: ["All Products", "Seller Submissions", "Categories", "Inventory", "Product Reviews"] },
+  { number: "03", title: "Marketplace", links: [{ label: "Overview", href: "/admin/marketplace", capability: "catalog.read" }, { label: "Products", href: "/admin/products", capability: "catalog.read" }], planned: ["All Products", "Seller Submissions", "Categories", "Inventory", "Product Reviews"] },
   { number: "04", title: "Plant Market", links: [{ label: "Seller Submissions", href: "/admin/plant-market-products", capability: "catalog.moderate" }], planned: ["All Plant Products", "Plant Product Editor", "Plant Categories", "Inventory"] },
   { number: "05", title: "Sellers & Customers", links: [{ label: "Customers & Sellers", href: "/admin/users", capability: "users.read" }, { label: "Verification", href: "/admin/identity-verification", capability: "identity.review" }], planned: ["Reports"] },
   { number: "06", title: "Orders & Finance", links: [{ label: "Orders", href: "/admin/orders", capability: "orders.read" }], planned: ["Payments", "Refunds", "Commissions", "Payouts"] },
