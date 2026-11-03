@@ -27,11 +27,12 @@ async function saveProduct(formData: FormData) {
   const seoKeywords = String(formData.get("seoKeywords") ?? "").split(",").map(value => value.trim()).filter(Boolean);
   const seoContent = String(formData.get("seoContent") ?? "").trim();
   const seoFaqsRaw = String(formData.get("seoFaqs") ?? "[]");
+  const seoImageAltTexts = String(formData.get("seoImageAltTexts") ?? "").split("\\n").map(value => value.trim()).filter(Boolean);
   let seoFaqs: unknown;
   try { seoFaqs = JSON.parse(seoFaqsRaw); } catch { redirect("/admin/products?notice=invalid"); }
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoContent.length > 10000 || seoKeywords.length > 10 || seoKeywords.some(value => value.length > 60) || !Array.isArray(seoFaqs)) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoContent.length > 10000 || seoKeywords.length > 10 || seoKeywords.some(value => value.length > 60) || seoImageAltTexts.length > 4 || seoImageAltTexts.some(value => value.length > 250) || !Array.isArray(seoFaqs)) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin("catalog.edit");
@@ -50,17 +51,22 @@ async function saveProduct(formData: FormData) {
     p_seo_content: seoContent || null,
     p_seo_faqs: seoFaqs as never,
   });
+  const { error: altTextError } = productError || categoryError || seoError ? { error: productError || categoryError || seoError } : await supabase.rpc("admin_update_product_seo_assistant_details", {
+    p_product_id: productId,
+    p_seo_image_alt_texts: seoImageAltTexts,
+    p_seo_attribute_suggestions: [],
+  });
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  redirect(productError || categoryError || seoError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError || seoError || altTextError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,updated_at")
+    .select("id,slug,name,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_content,seo_faqs,seo_image_alt_texts,updated_at")
     .order("updated_at", { ascending: false }).limit(100);
 
   return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
@@ -72,7 +78,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       <AdminCreateProductForm />
       <div className="mt-6 grid gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0,8)} · Seller {p.farmer_id.slice(0,8)}</p><p className="mt-1 break-all text-xs text-[#7b887d]">Slug: {p.slug ?? "Not set"}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
@@ -83,6 +89,22 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         </div>
+        <section className="mt-5 rounded-xl border border-[#e4eadf] bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-extrabold">Product media gallery</h3><span className="text-xs text-[#718071]">Existing media · view only</span></div>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {[...new Set([...(p.image_urls ?? []), p.image_url].filter((value): value is string => Boolean(value?.trim())))].map((url, index) => (
+              <div key={url} className="min-w-0 rounded-xl border border-[#e4eadf] bg-[#f8faf6] p-3">
+                <a href={url} target="_blank" rel="noreferrer" className="break-all text-xs font-semibold text-emerald-800 underline">Open image {index + 1}</a>
+                <p className="mt-1 break-all text-[11px] text-[#718071]">{url}</p>
+              </div>
+            ))}
+            {!p.image_url && !p.image_urls?.length && <p className="text-sm text-[#718071]">No product images found.</p>}
+          </div>
+          <label className="mt-4 block text-sm font-bold">Image alt text (প্রতি লাইনে একটি; gallery order অনুযায়ী)
+            <textarea name="seoImageAltTexts" rows={3} maxLength={1000} defaultValue={(p.seo_image_alt_texts ?? []).join("\\n")} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal" placeholder="প্রথম ছবির alt text\\nদ্বিতীয় ছবির alt text"/>
+          </label>
+          <p className="mt-2 text-xs leading-5 text-[#718071]">Admin image upload/replace এখনো বন্ধ: production Storage policy-তে seller-owned upload-ই অনুমোদিত। Access model review না করে এই browser form থেকে upload চালু করা হবে না।</p>
+        </section>
         <section className="mt-5 rounded-xl border border-[#e4eadf] bg-[#f8faf6] p-4">
           <h3 className="font-extrabold">SEO ও সার্চ প্রিভিউ</h3>
           <div className="mt-3 grid gap-3 md:grid-cols-2">
