@@ -88,4 +88,4 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION public.admin_update_product_slug(uuid, text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.admin_update_product_slug(uuid, text) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.admin_update_product_slug(uuid, text) TO authenticated;
