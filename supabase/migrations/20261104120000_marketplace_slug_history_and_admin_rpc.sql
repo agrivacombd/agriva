@@ -5,8 +5,9 @@ CREATE TABLE IF NOT EXISTS public.marketplace_product_slug_redirects (
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
   created_at timestamptz NOT NULL DEFAULT now(),
   created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  CONSTRAINT marketplace_product_slug_redirects_slug_format
-    CHECK (old_slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(old_slug) BETWEEN 3 AND 80)
+  -- Preserve existing legacy slugs verbatim, including Bengali/Unicode slugs.
+  CONSTRAINT marketplace_product_slug_redirects_slug_length
+    CHECK (length(old_slug) BETWEEN 1 AND 255)
 );
 
 CREATE INDEX IF NOT EXISTS marketplace_product_slug_redirects_product_id_idx
