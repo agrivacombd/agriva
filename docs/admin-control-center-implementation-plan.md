@@ -112,3 +112,14 @@ Live schema facts verified read-only:
 - There is no shared slug redirect/history table in the inspected public schema.
 
 No DDL, data mutation, or deployment has been performed. The next implementation requires a reviewed migration for slug redirects/history and Plant Market SEO/revision support, then server-side admin RPCs and editors. Apply changes through reviewed migrations and verify RLS/security advisors and regression tests before release.
+
+## Vercel readiness verification (2026-11-03)
+
+- GitHub Actions workflow `AGRIVA CI` completed successfully for commit `0726b30a603c5d19a52fb5ecf49699a7f79c8fd2`.
+- Lint and TypeScript checks passed.
+- All configured regression/smoke tests passed, including Marketplace, Plant Market, admin authorization, checkout/payment hardening, seller schema compatibility and Green Living checks.
+- The production build step completed successfully.
+- Vercel preview deployment for this branch reached `READY`; the preview homepage returned HTTP 200 when fetched.
+- Netlify deploy-preview status is intentionally not used as a Vercel release gate.
+- This PR is still documentation-only. A successful Vercel preview validates the current repository build, not the not-yet-implemented Admin Control Center features.
+- No production deployment, merge, or live database migration was triggered as part of this verification.
