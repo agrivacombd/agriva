@@ -20,7 +20,7 @@ assert.match(migration, /on conflict \(code, visitor_token, product_id\)/i,
   "repeat visits must remain idempotent");
 assert.match(referralRoute, /rpc\("record_attribution_session"/i,
   "the referral redirect must continue creating an attribution session");
-assert.match(forwardMigration, /revoke all on function private\.record_attribution_session\\(text, text, uuid, integer\\)\s+from public, anon, authenticated/i, "private row-returning implementation must not be callable by client roles");
+assert.match(forwardMigration, /revoke all on function private\.record_attribution_session\(text, text, uuid, integer\)\s+from public, anon, authenticated/i, "private row-returning implementation must not be callable by client roles");
 assert.match(forwardMigration, /returns void/i, "forward migration must keep the public attribution RPC output minimal");
 assert.doesNotMatch(referralRoute, /data:\s*\w+.*record_attribution_session/i,
   "the route must not depend on returned attribution row data");
