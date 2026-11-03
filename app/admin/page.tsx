@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { getAvailableAdminCapabilities, requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
 
+const FINANCE_MUTATIONS_ENABLED = false; // Re-enable only after audited service-role RPC workflow is deployed.
+
 async function requireAdmin(capability: AdminCapability = "dashboard.read") {
   const { supabase, user } = await requireAdminPage(capability);
   return { supabase, user };
@@ -24,6 +26,7 @@ async function updateOrderStatus(formData: FormData) {
 
 async function approveCommission(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const commissionId = String(formData.get("commissionId") ?? "");
   if (!commissionId) redirect("/admin?notice=invalid_commission");
   const { supabase } = await requireAdmin("payments.reconcile");
@@ -34,6 +37,7 @@ async function approveCommission(formData: FormData) {
 
 async function approvePayout(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const payoutId = String(formData.get("payoutId") ?? "");
   if (!payoutId) redirect("/admin?notice=invalid_payout");
   const { supabase } = await requireAdmin("payouts.approve");
@@ -44,6 +48,7 @@ async function approvePayout(formData: FormData) {
 
 async function completePayout(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const payoutId = String(formData.get("payoutId") ?? "");
   const reference = String(formData.get("reference") ?? "").trim();
   if (!payoutId || !reference) redirect("/admin?notice=invalid_payout");
@@ -85,8 +90,8 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
   const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "users.read", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
   const canReadPayments = availableAdminCapabilities.has("payments.read") || availableAdminCapabilities.has("payments.reconcile");
   const canReadPayouts = availableAdminCapabilities.has("payouts.read") || availableAdminCapabilities.has("payouts.approve");
-  const canApproveCommissions = availableAdminCapabilities.has("payments.reconcile");
-  const canManagePayouts = availableAdminCapabilities.has("payouts.approve");
+  const canApproveCommissions = FINANCE_MUTATIONS_ENABLED && availableAdminCapabilities.has("payments.reconcile");
+  const canManagePayouts = FINANCE_MUTATIONS_ENABLED && availableAdminCapabilities.has("payouts.approve");
   const canReadOrders = availableAdminCapabilities.has("orders.read");
   const canTransitionOrders = availableAdminCapabilities.has("orders.transition");
   const quickActions = [
