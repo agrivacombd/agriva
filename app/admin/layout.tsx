@@ -11,7 +11,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <>
-      <AdminControlCenterNav />
+      <AdminControlCenterNav>{children}</AdminControlCenterNav>
       {children}
     </>
   );
