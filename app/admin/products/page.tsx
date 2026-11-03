@@ -51,9 +51,21 @@ async function saveProduct(formData: FormData) {
   const seoImageAltTexts = String(formData.get("seoImageAltTexts") ?? "").split("\n").map(value => value.trim()).filter(Boolean);
   let seoFaqs: unknown;
   try { seoFaqs = JSON.parse(seoFaqsRaw); } catch { redirect("/admin/products?notice=invalid"); }
+  const seoFaqsValid = Array.isArray(seoFaqs)
+    && seoFaqs.length <= 8
+    && seoFaqs.every((faq) => {
+      if (!faq || typeof faq !== "object" || Array.isArray(faq)) return false;
+      const item = faq as Record<string, unknown>;
+      return typeof item.question === "string"
+        && item.question.trim().length > 0
+        && item.question.trim().length <= 250
+        && typeof item.answer === "string"
+        && item.answer.trim().length > 0
+        && item.answer.trim().length <= 2000;
+    });
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoContent.length > 10000 || seoKeywords.length > 10 || seoKeywords.some(value => value.length > 60) || seoImageAltTexts.length > 4 || seoImageAltTexts.some(value => value.length > 250) || !Array.isArray(seoFaqs)) {
+  if (!productId || !name || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || seoTitle.length > 70 || seoDescription.length > 160 || seoContent.length > 10000 || seoKeywords.length > 10 || seoKeywords.some(value => value.length > 60) || seoImageAltTexts.length > 4 || seoImageAltTexts.some(value => value.length > 250) || !seoFaqsValid) {
     redirect("/admin/products?notice=invalid");
   }
   const supabase = await requireAdmin("catalog.edit");
