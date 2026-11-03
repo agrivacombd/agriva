@@ -191,7 +191,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
       answer: "পণ্যের নাম ও ধরন, প্যাকেটের পরিমাণ, বিক্রেতার দেওয়া specification, মূল্য, মজুত, ডেলিভারি এবং প্রযোজ্য শর্ত যাচাই করুন। প্রয়োজন হলে অর্ডারের আগে বিক্রেতার কাছে অতিরিক্ত তথ্য চান।",
     },
   ];
-  const customFaqs = (product.seo_faqs ?? []).filter((faq) => Boolean(faq?.question?.trim() && faq?.answer?.trim()));
+  const customFaqs = (Array.isArray(product.seo_faqs) ? product.seo_faqs : []).filter(
+    (faq): faq is { question: string; answer: string } =>
+      Boolean(
+        faq
+        && typeof faq.question === "string"
+        && faq.question.trim().length > 0
+        && typeof faq.answer === "string"
+        && faq.answer.trim().length > 0
+      ),
+  );
   const faqs = customFaqs.length ? customFaqs : defaultFaqs;
   const faqJsonLd = {
     "@context": "https://schema.org",
