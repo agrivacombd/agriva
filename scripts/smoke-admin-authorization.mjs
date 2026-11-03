@@ -18,6 +18,7 @@ const identityQueue = read("app/admin/identity-verification/page.tsx");
 const adminShell = read("components/admin/AdminControlCenterShell.tsx");
 const adminProducts = read("app/admin/products/page.tsx");
 const adminProductPage = read("app/marketplace/[productId]/page.tsx");
+const marketplaceSlugMigration = read("supabase/migrations/20261104120000_marketplace_slug_history_and_admin_rpc.sql");
 const plantMarketEditor = read("app/admin/plant-market/page.tsx");
 const plantMarketManager = read("components/admin/PlantMarketProductManager.tsx");
 const plantMarketManageApi = read("app/api/admin/plant-market-products/manage/route.ts");
@@ -46,6 +47,9 @@ assert.match(adminProducts, /admin_update_product_slug/, "Marketplace slug edits
 assert.match(adminProducts, /marketplace_product_slug_redirects/, "Admin must verify slug-history migration availability");
 assert.match(adminProductPage, /marketplace_product_slug_redirects/, "Public product lookup must resolve historical slugs");
 assert.match(adminProductPage, /if \(normalizeSlug\(productId\) !== product\.slug\) redirect/, "Historical slug requests must redirect to canonical product URLs");
+assert.match(marketplaceSlugMigration, /CHECK \(length\(old_slug\) BETWEEN 1 AND 255\)/, "Slug history must preserve existing Unicode legacy slugs");
+assert.match(marketplaceSlugMigration, /GRANT EXECUTE ON FUNCTION public\.admin_update_product_slug\(uuid, text\) TO authenticated/, "Slug mutation RPC must be callable only by authenticated Admin sessions");
+assert.doesNotMatch(marketplaceSlugMigration, /TO authenticated, service_role/, "Slug mutation RPC must not grant a service-role bypass");
 assert.match(adminDashboard, /md:hidden/, "Dashboard must render a mobile-friendly order card list");
 assert.doesNotMatch(adminDashboard, /orderTotals/, "Dashboard must not retain the unbounded all-order value query");
 assert.ok(adminDashboard.includes("quickActions.map"), "Dashboard shortcuts must be rendered from a capability-filtered action list");
