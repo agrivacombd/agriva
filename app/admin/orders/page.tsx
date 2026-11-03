@@ -44,6 +44,13 @@ async function recordCodCollection(formData: FormData) {
   redirect(error ? "/admin/orders?notice=collection-error" : "/admin/orders?notice=collection-saved");
 }
 
+const orderTransitionOptions: Record<string, { value: OrderStatus; label: string }[]> = {
+  pending: [{ value: "processing", label: "প্রসেসিং" }, { value: "cancelled", label: "বাতিল" }],
+  processing: [{ value: "shipped", label: "শিপড" }, { value: "cancelled", label: "বাতিল" }],
+  shipped: [{ value: "delivered", label: "ডেলিভারি সম্পন্ন" }, { value: "cancelled", label: "বাতিল" }],
+  delivered: [{ value: "completed", label: "সম্পন্ন" }],
+};
+
 const statusLabel: Record<string, string> = {
   pending: "নতুন / অপেক্ষমাণ",
   processing: "প্রসেসিং",
@@ -152,16 +159,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
               </div>
               <div className="rounded-xl border border-[#e4ebe1] p-4">
                 <p className="text-sm font-extrabold">ডেলিভারি অবস্থা</p>
-                {!["cancelled", "completed", "refunded"].includes(status) ? <form action={updateOrderStatus} className="mt-3 space-y-3">
+                {(orderTransitionOptions[status]?.length ?? 0) > 0 ? <form action={updateOrderStatus} className="mt-3 space-y-3">
                   <input type="hidden" name="orderId" value={o.id}/>
                   <label className="block text-xs font-bold text-[#647468]">নতুন status
-                    <select name="status" defaultValue={status === "pending" ? "processing" : status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 text-sm">
-                      <option value="processing">প্রসেসিং / নতুন</option><option value="shipped">শিপড</option><option value="delivered">ডেলিভারি সম্পন্ন</option><option value="completed">সম্পন্ন</option><option value="cancelled">বাতিল</option>
+                    <select name="status" defaultValue={orderTransitionOptions[status]?.[0]?.value ?? status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 text-sm">
+                      {(orderTransitionOptions[status] ?? []).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </select>
                   </label>
                   <button className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</button>
                 </form> : <p className="mt-3 text-xs text-[#748074]">এই terminal status থেকে routine transition করা যাবে না।</p>}
-                <p className="mt-3 text-xs leading-5 text-[#748074]">Status update database authorization মেনে চলে। বাতিল করলে বর্তমান database RPC stock ফেরত দেওয়ার চেষ্টা করে।</p>
+                <p className="mt-3 text-xs leading-5 text-[#748074]">Status update database transition rules মেনে চলে। শুধু pending/processing অবস্থায় বাতিল করলে reserved stock ফেরত আসে; shipment-এর পর stock স্বয়ংক্রিয়ভাবে ফেরত আসে না।</p>
               </div>
 
               {checkout && firstCheckoutOrder && <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 lg:col-span-3">
