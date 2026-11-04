@@ -305,6 +305,8 @@ const contentPublishingMigration = read("supabase/migrations/20261104140000_forw
 assert.ok(contentPublishingMigration.includes("content_drafts_public_published_articles_read"), "published article access must use an explicit public-read policy");
 assert.ok(contentPublishingMigration.includes("USING (status = 'published' AND content_type = 'article')"), "public article RLS must expose only published articles");
 assert.ok(contentPublishingMigration.includes("GRANT SELECT (") && contentPublishingMigration.includes("TO anon;"), "anonymous article reads must be column-scoped");
+assert.ok(contentPublishingMigration.includes("FROM PUBLIC, anon, authenticated"), "content draft privileges must not inherit broad public table SELECT");
+assert.doesNotMatch(contentPublishingMigration.split("TO anon;")[0].split("GRANT SELECT (")[1] ?? "", /created_by|reviewed_by|opportunity_id|competitor_analysis/, "anonymous readers must not receive editorial planning or actor columns");
 assert.ok(contentPublishingMigration.includes("content_draft_revisions"), "content revision history table must be provisioned");
 assert.ok(contentPublishingMigration.includes("content_draft_revision_capture"), "content edits and moderation transitions must capture before-images");
 assert.ok(contentPublishingMigration.includes("content_drafts_workflow_guard"), "content workflow transitions must be enforced by the database");
