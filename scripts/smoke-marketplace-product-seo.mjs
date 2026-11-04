@@ -32,7 +32,7 @@ assert.match(page, /"@type":\s*"FAQPage"/,
   "Saved product FAQs must be represented in FAQ structured data");
 assert.match(page, /product\.seo_faqs/,
   "Public product page must prefer the saved SEO FAQ array");
-assert.ok(page.includes(String.raw`replace(/\\s+\\S*$/`),
+assert.ok(page.includes(String.raw`replace(/\s+\S*$/`),
   "Long product descriptions must truncate at whitespace boundaries rather than matching literal backslashes");
 assert.match(page, /product\.seo_content\?\.trim\(\)/,
   "Public product page must render saved SEO content");
