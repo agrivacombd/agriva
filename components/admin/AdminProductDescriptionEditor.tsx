@@ -36,7 +36,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
   const text = useMemo(() => toText(html), [html]);
   const words = text ? text.split(/\s+/).length : 0;
   const hasKeyword = Boolean(keyword.trim()) && text.toLocaleLowerCase().includes(keyword.trim().toLocaleLowerCase());
-  const hasSections = /<(h2|h3|ul|ol|li)\b/i.test(value);
+  const hasSections = /<(h2|h3|ul|ol|li)\b/i.test(html);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) editorRef.current.innerHTML = value;
@@ -63,6 +63,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
     const outline = `<p><strong>${productName || "পণ্যের নাম"}</strong> সম্পর্কে সংক্ষেপে পরিচিতি লিখুন। পণ্যটি কী, কার জন্য এবং এর প্রধান বৈশিষ্ট্য কী—শুধু যাচাই করা তথ্য দিন।</p><h2>পণ্যের প্রধান বৈশিষ্ট্য</h2><ul><li>উপাদান / জাত / মডেল:</li><li>প্যাক সাইজ / পরিমাণ:</li><li>উৎপত্তিস্থল / প্রস্তুতকারক:</li></ul><h2>ব্যবহার ও উপকারিতা</h2><p>কীভাবে এবং কোন কাজে ব্যবহার করা যায় তা বাস্তব তথ্য দিয়ে লিখুন।</p><h2>সংরক্ষণ ও অতিরিক্ত তথ্য</h2><p>মেয়াদ, সংরক্ষণ, প্যাকেজিং, সতর্কতা বা প্রাসঙ্গিক নির্দেশনা উল্লেখ করুন।</p>`;
     if (editorRef.current) {
       editorRef.current.innerHTML = outline;
+      setHtml(outline);
       onChange(outline);
     }
   }
