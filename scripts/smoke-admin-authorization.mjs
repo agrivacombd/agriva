@@ -10,7 +10,7 @@ const read = (path) => {
 const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
 const permissionService = read("lib/admin/permission-service.ts");
-assert.match(permissionService, /import type \\{ AdminCapability \\} from "@\\/lib\\/admin\\/authz"/, "delegated permissions must use the canonical Admin capability type");
+assert.ok(permissionService.includes('import type { AdminCapability } from "@/lib/admin/authz"'), "delegated permissions must use the canonical Admin capability type");
 assert.match(permissionService, /p_capability: capability/, "delegated permission checks must pass the registered capability unchanged");
 assert.match(permissionService, /typeof data !== "boolean"/, "delegated permission RPC failures must fail closed");
 assert.match(authz, /async function hasDelegatedCapability/, "shared guard must evaluate delegated database grants");
