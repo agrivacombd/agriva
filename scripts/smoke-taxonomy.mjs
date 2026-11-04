@@ -26,6 +26,9 @@ assert.ok(taxonomy.includes("getProductTaxonomy") && taxonomy.includes("function
 assert.ok(categoryPage.includes("hasIndexableCategoryProducts") && categoryPage.includes("category_slug"), "category pages must use stable slugs and avoid indexing empty pages");
 assert.ok(subcategoryPage.includes("hasIndexableSubcategoryProducts") && subcategoryPage.includes("subcategory_slug"), "subcategory pages must use stable slugs and avoid indexing empty pages");
 assert.ok(indexability.includes('.eq("status", "active")') && !indexability.includes("moderation_status"), "indexability must use the deployed products status field");
+assert.ok(indexability.includes('.eq("marketplace_channel", "marketplace")'), "category indexability must count Marketplace listings only, not Plant Market listings");
+assert.ok(categoryPage.includes("hasProducts === false") && !categoryPage.includes("hasProducts !== true"), "a temporary catalogue read failure must not noindex a potentially valid category page");
+assert.ok(subcategoryPage.includes("hasProducts === false") && !subcategoryPage.includes("hasProducts !== true"), "a temporary catalogue read failure must not noindex a potentially valid subcategory page");
 assert.ok(indexability.includes('select("category'), "indexability query must use fields present in production schema");
 assert.ok(sitemap.includes("categoryUrls") && sitemap.includes("matchesSubcategory"), "sitemap must include only populated taxonomy URLs");
 assert.ok(productPage.includes("getProductTaxonomy") && productPage.includes("subcategory.slug"), "product breadcrumb must link to category and subcategory");
