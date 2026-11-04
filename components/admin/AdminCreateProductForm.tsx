@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
-const initial = { name: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds", price: "", stock: "", commission: "", description: "", status: "draft" };
+const initial = { name: "", slug: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds", price: "", stock: "", commission: "", description: "", status: "draft" };
 
 export default function AdminCreateProductForm() {
   const [form, setForm] = useState(initial);
@@ -10,6 +10,7 @@ export default function AdminCreateProductForm() {
   const [loading, setLoading] = useState(false);
   const category = MARKETPLACE_CATEGORIES.find(item => item.slug === form.category_slug);
   const set = (key: keyof typeof initial, value: string) => setForm(current => ({ ...current, [key]: value }));
+  const slugify = (value: string) => value.normalize("NFKD").toLowerCase().trim().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setMessage("");
@@ -25,7 +26,8 @@ export default function AdminCreateProductForm() {
 
   return <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
     <div><h2 className="text-xl font-black">নতুন পণ্য যোগ করুন</h2><p className="mt-1 text-sm text-[#637266]">বাস্তব মূল্য ও স্টক দিন। পণ্য প্রথমে Draft থাকবে।</p></div>
-    <label className="block text-sm font-bold">পণ্যের নাম<input required maxLength={160} value={form.name} onChange={e=>set("name",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="যেমন: Chia Seed — 250g"/></label>
+    <label className="block text-sm font-bold">পণ্যের নাম<input required maxLength={160} value={form.name} onChange={e=>setForm(current=>({...current,name:e.target.value,...(!current.slug ? {slug:slugify(e.target.value)} : {})}))} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="যেমন: Chia Seed — 250g"/></label>
+    <label className="block text-sm font-bold">Product URL Slug<input required maxLength={100} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" value={form.slug} onChange={e=>set("slug",e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,"").replace(/--+/g,"-").replace(/^-|-$/g,""))} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="product-name"/><span className="mt-1 block text-xs font-normal text-[#637266]">URL: /marketplace/{form.slug || "product-slug"} — চাইলে নিজে পরিবর্তন করুন।</span></label>
     <div className="grid gap-4 md:grid-cols-2">
       <label className="text-sm font-bold">ক্যাটাগরি<select required value={form.category_slug} onChange={e=>{const next=MARKETPLACE_CATEGORIES.find(c=>c.slug===e.target.value);setForm(current=>({...current,category_slug:e.target.value,subcategory_slug:next?.subcategories[0]?.slug||""}));}} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal">{MARKETPLACE_CATEGORIES.map(item=><option key={item.slug} value={item.slug}>{item.name}</option>)}</select></label>
       <label className="text-sm font-bold">সাব-ক্যাটাগরি<select required value={form.subcategory_slug} onChange={e=>set("subcategory_slug",e.target.value)} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal">{(category?.subcategories??[]).map(item=><option key={item.slug} value={item.slug}>{item.name}</option>)}</select></label>
