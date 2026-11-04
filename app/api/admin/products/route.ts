@@ -12,6 +12,25 @@ export async function POST(request: NextRequest) {
   const categorySlug = String(body.category_slug || "").trim(), subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug), subcategory = getSubcategory(categorySlug, subcategorySlug);
   const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
+  const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).map(value => value.trim());
+  if (imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
+    return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL জমা দিন।" }, { status: 400 });
+  }
+  if (imageUrls.length) {
+    const [{ data: { user }, error: authError }, supabaseUrl] = await Promise.all([supabase.auth.getUser(), Promise.resolve(process.env.NEXT_PUBLIC_SUPABASE_URL)]);
+    if (authError || !user || !supabaseUrl) return NextResponse.json({ error: "ছবির upload authorization যাচাই করা যায়নি।" }, { status: 401 });
+    try {
+      const base = new URL(supabaseUrl);
+      const valid = imageUrls.every(value => {
+        const image = new URL(value);
+        const prefix = `/storage/v1/object/public/product-images/${user.id}/`;
+        const file = image.pathname.startsWith(prefix) ? image.pathname.slice(prefix.length) : "";
+        return image.origin === base.origin && image.protocol === "https:" && !image.search && !image.hash && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.(?:jpg|png|webp)$/i.test(file);
+      });
+      if (!valid) return NextResponse.json({ error: "শুধু Admin account থেকে আপলোড করা সর্বোচ্চ ৪টি ছবি ব্যবহার করা যাবে।" }, { status: 400 });
+    } catch { return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 }); }
+  }
+  const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
   const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim()).map(value => value.trim());
   if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !Number.isFinite(commission) || commission < 0 || commission > 100 || description.length > 5000 || !category || !subcategory || imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
@@ -37,6 +56,13 @@ export async function POST(request: NextRequest) {
   if (imageUrls.length && data?.id) {
     const { error: imageError } = await supabase.from("products").update({ image_url: imageUrls[0], image_urls: imageUrls }).eq("id", data.id);
     if (imageError) return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ হয়নি। পণ্য Edit করে আবার ছবি যোগ করুন।", product: data }, { status: 201 });
+  }
+  if (imageUrls.length) {
+    const { error: imageError } = await supabase.from("products").update({ image_url: imageUrls[0], image_urls: imageUrls }).eq("slug", slug);
+    if (imageError) {
+      console.error("Admin product image save failed", { code: imageError.code || "unknown" });
+      return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ করা যায়নি। পণ্যটি Edit করে আবার ছবি যোগ করুন।" }, { status: 500 });
+    }
   }
   return NextResponse.json({ product: data }, { status: 201 });
 }
