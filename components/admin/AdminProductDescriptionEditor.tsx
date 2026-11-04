@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
 type Props = { value: string; onChange: (value: string) => void; productName?: string };
 
@@ -60,7 +61,8 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
   }
 
   function insertOutline() {
-    const outline = `<p><strong>${productName || "পণ্যের নাম"}</strong> সম্পর্কে সংক্ষেপে পরিচিতি লিখুন। পণ্যটি কী, কার জন্য এবং এর প্রধান বৈশিষ্ট্য কী—শুধু যাচাই করা তথ্য দিন।</p><h2>পণ্যের প্রধান বৈশিষ্ট্য</h2><ul><li>উপাদান / জাত / মডেল:</li><li>প্যাক সাইজ / পরিমাণ:</li><li>উৎপত্তিস্থল / প্রস্তুতকারক:</li></ul><h2>ব্যবহার ও উপকারিতা</h2><p>কীভাবে এবং কোন কাজে ব্যবহার করা যায় তা বাস্তব তথ্য দিয়ে লিখুন।</p><h2>সংরক্ষণ ও অতিরিক্ত তথ্য</h2><p>মেয়াদ, সংরক্ষণ, প্যাকেজিং, সতর্কতা বা প্রাসঙ্গিক নির্দেশনা উল্লেখ করুন।</p>`;
+    const safeName = (productName || "পণ্যের নাম").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const outline = `<p><strong>${safeName}</strong> সম্পর্কে সংক্ষেপে পরিচিতি লিখুন। পণ্যটি কী, কার জন্য এবং এর প্রধান বৈশিষ্ট্য কী—শুধু যাচাই করা তথ্য দিন।</p><h2>পণ্যের প্রধান বৈশিষ্ট্য</h2><ul><li>উপাদান / জাত / মডেল:</li><li>প্যাক সাইজ / পরিমাণ:</li><li>উৎপত্তিস্থল / প্রস্তুতকারক:</li></ul><h2>ব্যবহার ও উপকারিতা</h2><p>কীভাবে এবং কোন কাজে ব্যবহার করা যায় তা বাস্তব তথ্য দিয়ে লিখুন।</p><h2>সংরক্ষণ ও অতিরিক্ত তথ্য</h2><p>মেয়াদ, সংরক্ষণ, প্যাকেজিং, সতর্কতা বা প্রাসঙ্গিক নির্দেশনা উল্লেখ করুন।</p>`;
     if (editorRef.current) {
       editorRef.current.innerHTML = outline;
       setHtml(outline);
@@ -101,7 +103,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
       <p className="mt-1 text-sm leading-6 text-[#4b5563]">{text.slice(0, 155) || "পণ্যের বিবরণ লিখলে এখানে search snippet-এর preview দেখা যাবে।"}</p>
       <div className="mt-4 border-t pt-3">
         <p className="text-xs font-bold text-[#526454]">পণ্যের বিবরণ Preview</p>
-        <div className="prose prose-sm mt-2 max-w-none break-words text-sm" dangerouslySetInnerHTML={{ __html: html }} />
+        <div className="prose prose-sm mt-2 max-w-none break-words text-sm" dangerouslySetInnerHTML={{ __html: sanitizeProductDescription(html) }} />
       </div>
     </div>}
   </section>;
