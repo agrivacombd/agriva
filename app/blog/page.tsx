@@ -52,6 +52,8 @@ const articles: Article[] = [
   },
 ];
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "কৃষি ব্লগ ও প্রবন্ধ",
   description: "বাংলাদেশের কৃষি, ফসল চাষ, মাটির স্বাস্থ্য, রোগবালাই ও কৃষি প্রযুক্তি নিয়ে AGRIVA ব্লগের লেখা পড়ুন।",
