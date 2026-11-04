@@ -5,6 +5,8 @@ import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import AdminProductImages from "@/components/admin/AdminProductImages";
+import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
+import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin(capability: AdminCapability = "catalog.read") {
@@ -17,7 +19,8 @@ async function saveProduct(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
-  const description = String(formData.get("description") ?? "").trim();
+  const description = sanitizeProductDescription(String(formData.get("description") ?? ""));
+  const descriptionText = productDescriptionToText(description);
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
@@ -29,7 +32,7 @@ async function saveProduct(formData: FormData) {
   if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
       !["draft", "active", "paused", "sold_out"].includes(status) ||
-      (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
+      (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || descriptionText.length > 5000) {
     redirect("/admin/products?notice=invalid");
   }
 
@@ -73,7 +76,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category}/>
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
-          <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
+          <AdminProductDescriptionEditor value={p.description ?? ""} onChange={() => {}} productName={p.name} />
           <AdminProductImages productId={p.id} initialUrls={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)}/>
         </div>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
