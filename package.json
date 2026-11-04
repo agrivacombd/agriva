@@ -32,6 +32,7 @@
     "test:seller-marketplace-submission": "node scripts/smoke-seller-marketplace-submission.mjs",
     "test:seller-schema-compat": "node scripts/smoke-seller-schema-compat.mjs",
     "test:admin-product-rpc-contract": "node scripts/smoke-admin-product-rpc-contract.mjs",
+    "test:admin-product-slug": "node scripts/smoke-admin-product-slug.mjs",
     "test:super-admin-operations": "node scripts/smoke-super-admin-operations.mjs",
     "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs",
     "test:sell-harvest-publication": "node scripts/smoke-sell-harvest-publication.mjs",
