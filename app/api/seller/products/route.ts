@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
   const subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug);
   const subcategory = getSubcategory(categorySlug, subcategorySlug);
-  const submittedImages = Array.isArray(body.image_urls) ? body.image_urls : body.image_url ? [body.image_url] : [];
-  const imageUrls = submittedImages.filter((value: unknown): value is string => typeof value === "string" && value.trim()).map((value: string) => value.trim());
+  const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : body.image_url ? [body.image_url] : [];
+  const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).map((value) => value.trim());
   if (imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL জমা দিন।" }, { status: 400 });
   }
