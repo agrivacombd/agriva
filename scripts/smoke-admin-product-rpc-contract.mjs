@@ -4,7 +4,7 @@ import { strict as assert } from "node:assert";
 
 const route = readFileSync("app/api/admin/products/route.ts", "utf8");
 const migration = readFileSync(
-  "supabase/migrations/20261028200949_admin_create_marketplace_product.sql",
+  "supabase/migrations/20261105120000_admin_marketplace_product_slug.sql",
   "utf8",
 );
 
@@ -33,7 +33,7 @@ assert.match(route, /requireAdminApi\("catalog\.create"\)/, "API must request th
 assert.match(authz, /profile\?\.role !== "admin"/, "shared API guard must authorize admins before calling RPC");
 assert.match(route, /if \(error\)[\s\S]*Admin product creation failed/, "RPC errors must be logged server-side");
 assert.doesNotMatch(route, /error:\s*error\.message/, "database details must not be returned to clients");
-assert.match(migration, /auth\.uid\(\) is null or not public\.is_admin\(\)/, "RPC must independently enforce admin authorization");
+assert.match(migration, /auth\.uid\(\) is null or not public\.is_admin\(\)/i, "RPC must independently enforce admin authorization");
 assert.match(migration, /'draft'/, "admin-created products must start as drafts");
 assert.match(migration, /admin_audit_log/, "admin product creation must be audited");
 assert.match(
