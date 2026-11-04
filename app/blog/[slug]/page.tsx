@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
 import { getPublishedContentArticleBySlug } from "@/lib/content/published-articles";
 
-const articles = [
+const articles: Article[] = [
   {
     slug: "boro-rice-season-preparation",
     category: "ফসল চাষ",
