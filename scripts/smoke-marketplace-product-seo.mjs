@@ -25,8 +25,8 @@ assert.match(page, /"@type":\s*"Product"/,
   "Product JSON-LD must be present");
 assert.match(page, /url:\s*productUrl/,
   "Product JSON-LD must include the canonical product URL");
-assert.match(page, /\.\.\.\(image\s*\?\s*\{\s*image:\s*\[image\]/,
-  "Product JSON-LD must include the uploaded image when present");
+assert.match(page, /\.\.\.\(galleryImages\.length\s*\?\s*\{\s*image:\s*galleryImages/,
+  "Product JSON-LD must include the uploaded product gallery when present");
 assert.match(page, /priceCurrency:\s*"BDT"/,
   "Product offer structured data must use BDT");
 assert.match(page, /"@type":\s*"BreadcrumbList"/,
