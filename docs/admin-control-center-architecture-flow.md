@@ -165,13 +165,15 @@ Issue descriptions are repository audit records, not a substitute for rechecking
 - Authorization smoke tests now cover navigation capability filtering, valid route targets, finance action guards, and Marketplace metrics/error behavior.
 - SSLCommerz endpoints remain disabled (HTTP 410) and the COD-only smoke test remains in CI. This is a mitigation, not an online payment implementation.
 
-## Immediate implementation backlog
+## Immediate implementation backlog (refreshed 2026-11-04)
 
-1. Complete Marketplace editor custom-slug, media and SEO workflow only after the required migration is generated through the supported Supabase workflow and schema drift is reconciled.
-2. Build Plant Market editor as a separate domain-specific vertical slice.
-3. Add slug history/301 redirect tests and canonical metadata checks with reviewed schema changes.
-4. Continue CMS, SEO, Sellers, Orders and Finance modules using explicit capabilities.
-5. Keep SSLCommerz disabled; reconcile #65 migration drift and #68/#69 RPC grants before any payment migration or online-payment activation.
+1. **Marketplace editor — largely implemented on the feature branch:** core fields, taxonomy, SEO metadata/FAQ, gallery/alt text, custom slug RPC, historical slug resolution and canonical redirect are implemented with regression coverage. Admin image upload remains blocked pending a reviewed Storage ownership/policy design. The slug-history migration is branch-only and not applied to Production.
+2. **Plant Market editor — implemented as a separate vertical slice:** separate table/API/editor, capability checks, server-side audit, live constraint validation and moderation boundary. Image/gallery editing remains read-only pending Storage review.
+3. **Sellers & Customers — implemented baseline:** server-side search/role filters, responsive views, separate role mutation capability and verification review notices. Continue end-to-end permission and edge-case testing.
+4. **Orders & Finance — partial:** bounded order list, valid order transition UI and database state-machine hardening are prepared on the branch. COD reconciliation, commission approval, refunds and payouts remain disabled until a dedicated actor-verified, idempotent, audited server-side workflow is implemented.
+5. **CMS / SEO / remaining operations — open:** reconcile content workflow and revision migrations against live schema before connecting database-backed publishing. Then finish content drafts/articles, SEO controls, Green Exchange moderation, reports, audit search/export, settings, AI management and remaining operations modules.
+6. **Phase 0 release blockers — open:** finish content-level comparison of the 38 unmatched repository filenames, 31 unmatched Production history rows and six ambiguous groups; validate the three 20261104 forward-only migrations on an isolated Supabase branch; review remaining security-advisor findings; coordinate leaked-password protection; and complete backup/recovery planning.
+7. Keep SSLCommerz disabled until a separate provider integration, transaction/idempotency design, sandbox suite and approved database rollout are ready. Netlify is not a release gate.
 
 ## Release gates
 
