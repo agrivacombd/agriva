@@ -7,7 +7,7 @@ const editImageField = readFileSync("components/admin/AdminProductImages.tsx", "
 const adminPage = readFileSync("app/admin/products/page.tsx", "utf8");
 const adminApi = readFileSync("app/api/admin/products/route.ts", "utf8");
 const imageApi = readFileSync("app/api/admin/products/images/route.ts", "utf8");
-const migration = readFileSync("supabase/migrations/20261105130000_admin_product_image_gallery.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261105150000_admin_product_image_gallery.sql", "utf8");
 
 assert.match(createForm, /AdminProductImageField/);
 assert.match(createForm, /image_urls: imageUrls/);
