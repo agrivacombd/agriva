@@ -58,6 +58,17 @@ export const ADMIN_CAPABILITIES = [
 
 export type AdminCapability = (typeof ADMIN_CAPABILITIES)[number];
 
+/**
+ * Historical database permission keys mapped to their canonical Admin
+ * capability. Only semantically equivalent identifiers are bridged.
+ */
+export const ADMIN_CAPABILITY_ALIASES: Partial<Record<AdminCapability, readonly string[]>> = {
+  "identity.review": ["users.verify"],
+  "catalog.moderate": ["marketplace.moderate", "plant_market.moderate"],
+  "settings.write": ["settings.manage"],
+  "system.recovery.execute": ["system.recovery"],
+};
+
 type AdminProfile = {
   role: string;
   full_name: string | null;
@@ -110,7 +121,23 @@ const LEGACY_ADMIN_CAPABILITIES = new Set<AdminCapability>([
   "system.health.read",
 ]);
 
-/** Return the legacy-admin capabilities available to the current request in one auth/profile lookup. */
+/** Check a delegated role grant, including explicitly registered legacy DB keys. */
+async function hasDelegatedCapability(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  capability: AdminCapability,
+): Promise<boolean | null> {
+  const candidates = [capability, ...(ADMIN_CAPABILITY_ALIASES[capability] ?? [])];
+  for (const candidate of candidates) {
+    const { data, error } = await supabase.rpc("has_admin_permission", {
+      p_capability: candidate,
+    });
+    if (error || typeof data !== "boolean") return null;
+    if (data) return true;
+  }
+  return false;
+}
+
+/** Resolve legacy Admin and delegated role grants through the same capability registry. */
 export async function getAvailableAdminCapabilities(
   requested: readonly AdminCapability[],
 ): Promise<AdminCapability[]> {
@@ -122,8 +149,16 @@ export async function getAvailableAdminCapabilities(
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  if (profileError || profile?.role !== "admin") return [];
-  return requested.filter((capability) => LEGACY_ADMIN_CAPABILITIES.has(capability));
+  if (profileError || !profile) return [];
+
+  const results = await Promise.all(requested.map(async (capability) => {
+    if (profile.role === "admin" && LEGACY_ADMIN_CAPABILITIES.has(capability)) {
+      return capability;
+    }
+    const granted = await hasDelegatedCapability(supabase, capability);
+    return granted === true ? capability : null;
+  }));
+  return results.filter((capability): capability is AdminCapability => capability !== null);
 }
 
 export async function requireCapability(capability: AdminCapability): Promise<CapabilityResult> {
@@ -139,8 +174,13 @@ export async function requireCapability(capability: AdminCapability): Promise<Ca
     .maybeSingle();
 
   if (profileError) return { ok: false, reason: "authorization_unavailable" };
-  if (profile?.role !== "admin" || !LEGACY_ADMIN_CAPABILITIES.has(capability)) {
-    return { ok: false, reason: "forbidden" };
+  if (!profile) return { ok: false, reason: "forbidden" };
+
+  const legacyAdminAllowed = profile.role === "admin" && LEGACY_ADMIN_CAPABILITIES.has(capability);
+  if (!legacyAdminAllowed) {
+    const delegatedAllowed = await hasDelegatedCapability(supabase, capability);
+    if (delegatedAllowed === null) return { ok: false, reason: "authorization_unavailable" };
+    if (!delegatedAllowed) return { ok: false, reason: "forbidden" };
   }
 
   return {
