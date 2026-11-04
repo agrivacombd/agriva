@@ -77,25 +77,25 @@ async function findArticle(slug: string): Promise<Article | null> {
   if (!published) return null;
 
   const blocks = (published.body_markdown ?? "")
-    .split(/\\n{2,}/)
+    .split(/\n{2,}/)
     .map((block) => block.trim())
     .filter(Boolean);
   const sections: [string, string][] = blocks.map((block, index) => {
-    const lines = block.split("\\n");
-    const headingLine = lines.find((line) => /^#{1,3}\\s+/.test(line));
+    const lines = block.split("\n");
+    const headingLine = lines.find((line) => /^#{1,3}\s+/.test(line));
     const heading = headingLine
-      ? headingLine.replace(/^#{1,3}\\s+/, "").trim()
+      ? headingLine.replace(/^#{1,3}\s+/, "").trim()
       : `অংশ ${index + 1}`;
     const body = lines
-      .filter((line) => !/^#{1,6}\\s+/.test(line))
-      .join("\\n")
+      .filter((line) => !/^#{1,6}\s+/.test(line))
+      .join("\n")
       .replace(/[*_`]/g, "")
       .trim();
     return [heading, body || heading];
   });
 
   if (!sections.length) return null;
-  const wordCount = (published.body_markdown ?? "").trim().split(/\\s+/).filter(Boolean).length;
+  const wordCount = (published.body_markdown ?? "").trim().split(/\s+/).filter(Boolean).length;
   return {
     slug: published.slug,
     category: "নতুন লেখা",
@@ -107,7 +107,9 @@ async function findArticle(slug: string): Promise<Article | null> {
   };
 }
 
-export const dynamicParams = true;\n\nexport function generateStaticParams() {
+export const dynamicParams = true;
+
+export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
 }
 
