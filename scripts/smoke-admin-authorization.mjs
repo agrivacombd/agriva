@@ -13,6 +13,12 @@ const permissionService = read("lib/admin/permission-service.ts");
 assert.match(permissionService, /import type \\{ AdminCapability \\} from "@\\/lib\\/admin\\/authz"/, "delegated permissions must use the canonical Admin capability type");
 assert.match(permissionService, /p_capability: capability/, "delegated permission checks must pass the registered capability unchanged");
 assert.match(permissionService, /typeof data !== "boolean"/, "delegated permission RPC failures must fail closed");
+assert.match(authz, /async function hasDelegatedCapability/, "shared guard must evaluate delegated database grants");
+assert.match(authz, /profile\.role === "admin" && LEGACY_ADMIN_CAPABILITIES\.has\(capability\)/, "legacy Admin access must remain limited to the explicit allowlist");
+assert.match(authz, /if \(!delegatedAllowed\) return \{ ok: false, reason: "forbidden" \}/, "missing delegated grants must be denied");
+assert.match(authz, /ADMIN_CAPABILITY_ALIASES/, "shared authorization must resolve reviewed legacy permission aliases");
+assert.match(authz, /"identity\.review": \["users\.verify"\]/, "identity permission alias must remain explicit");
+assert.match(authz, /"catalog\.moderate": \["marketplace\.moderate", "plant_market\.moderate"\]/, "catalog moderation aliases must remain explicit");
 for (const compatibilityCapability of ["users.verify", "plant_market.moderate", "marketplace.moderate", "farms.manage", "settings.manage", "system.recovery"]) {
   assert.ok(authz.includes(`"${compatibilityCapability}"`), `shared Admin capability registry must retain ${compatibilityCapability}`);
 }
