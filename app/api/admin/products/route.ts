@@ -7,58 +7,65 @@ export async function POST(request: NextRequest) {
   if (!access.ok) return access.response;
   const { supabase } = access;
   const body = await request.json().catch(() => ({}));
-  const name = String(body.name || "").trim(), slug = String(body.slug || "").trim().toLowerCase(), description = String(body.description || "").trim();
-  const price = Number(body.price), stock = Number(body.stock), commission = Number(body.commission);
-  const categorySlug = String(body.category_slug || "").trim(), subcategorySlug = String(body.subcategory_slug || "").trim();
-  const category = getCategory(categorySlug), subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const name = String(body.name || "").trim();
+  const slug = String(body.slug || "").trim().toLowerCase();
+  const description = String(body.description || "").trim();
+  const price = Number(body.price);
+  const stock = Number(body.stock);
+  const commission = Number(body.commission);
+  const categorySlug = String(body.category_slug || "").trim();
+  const subcategorySlug = String(body.subcategory_slug || "").trim();
+  const category = getCategory(categorySlug);
+  const subcategory = getSubcategory(categorySlug, subcategorySlug);
   const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
   const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).map(value => value.trim());
+
   if (imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL জমা দিন।" }, { status: 400 });
   }
-  if (imageUrls.length) {
-    const [{ data: { user }, error: authError }, supabaseUrl] = await Promise.all([supabase.auth.getUser(), Promise.resolve(process.env.NEXT_PUBLIC_SUPABASE_URL)]);
-    if (authError || !user || !supabaseUrl) return NextResponse.json({ error: "ছবির upload authorization যাচাই করা যায়নি।" }, { status: 401 });
-    try {
-      const base = new URL(supabaseUrl);
-      const valid = imageUrls.every(value => {
-        const image = new URL(value);
-        const prefix = `/storage/v1/object/public/product-images/${user.id}/`;
-        const file = image.pathname.startsWith(prefix) ? image.pathname.slice(prefix.length) : "";
-        return image.origin === base.origin && image.protocol === "https:" && !image.search && !image.hash && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.(?:jpg|png|webp)$/i.test(file);
-      });
-      if (!valid) return NextResponse.json({ error: "শুধু Admin account থেকে আপলোড করা সর্বোচ্চ ৪টি ছবি ব্যবহার করা যাবে।" }, { status: 400 });
-    } catch { return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 }); }
-  }
-  const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
-  const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim()).map(value => value.trim());
   if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !Number.isFinite(commission) || commission < 0 || commission > 100 || description.length > 5000 || !category || !subcategory || imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
+      !Number.isFinite(commission) || commission < 0 || commission > 100 || description.length > 5000 || !category || !subcategory) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
   }
+
   if (imageUrls.length) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!storageUrl) return NextResponse.json({ error: "Storage configuration পাওয়া যায়নি।" }, { status: 500 });
+    if (authError || !user || !storageUrl) return NextResponse.json({ error: "ছবির upload authorization যাচাই করা যায়নি।" }, { status: 401 });
     try {
       const origin = new URL(storageUrl).origin;
-      const valid = imageUrls.every(value => { const url = new URL(value); return url.origin === origin && url.protocol === "https:" && url.pathname.startsWith("/storage/v1/object/public/product-images/") && /\\/[0-9a-f-]{8}-[0-9a-f-]{4}-4[0-9a-f-]{3}-[89ab][0-9a-f-]{3}-[0-9a-f-]{12}\\.(?:jpg|png|webp)$/i.test(url.pathname) && !url.search && !url.hash; });
-      if (!valid) return NextResponse.json({ error: "শুধু AGRIVA product storage-এর ছবি ব্যবহার করুন।" }, { status: 400 });
-    } catch { return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 }); }
+      const valid = imageUrls.every(value => {
+        const url = new URL(value);
+        const prefix = `/storage/v1/object/public/product-images/${user.id}/`;
+        const filename = url.pathname.startsWith(prefix) ? url.pathname.slice(prefix.length) : "";
+        return url.origin === origin && url.protocol === "https:" && !url.search && !url.hash &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i.test(filename);
+      });
+      if (!valid) return NextResponse.json({ error: "শুধু Admin account থেকে আপলোড করা সর্বোচ্চ ৪টি ছবি ব্যবহার করা যাবে।" }, { status: 400 });
+    } catch {
+      return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 });
+    }
   }
+
   const { data, error } = await supabase.rpc("admin_create_marketplace_product", {
-    p_name: name, p_slug: slug, p_description: description || null, p_price: price, p_stock: stock,
-    p_commission_percent: commission, p_category_slug: category.slug, p_subcategory_slug: subcategory.slug,
+    p_name: name,
+    p_slug: slug,
+    p_description: description || null,
+    p_price: price,
+    p_stock: stock,
+    p_commission_percent: commission,
+    p_category_slug: category.slug,
+    p_subcategory_slug: subcategory.slug,
   });
   if (error) {
     console.error("Admin product creation failed", { code: error.code || "unknown" });
     return NextResponse.json({ error: error.code === "23505" ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। Product slug migration প্রয়োগ হয়েছে কি না যাচাই করুন।" }, { status: 400 });
   }
-  if (imageUrls.length && data?.id) {
-    const { error: imageError } = await supabase.from("products").update({ image_url: imageUrls[0], image_urls: imageUrls }).eq("id", data.id);
-    if (imageError) return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ হয়নি। পণ্য Edit করে আবার ছবি যোগ করুন।", product: data }, { status: 201 });
-  }
+
   if (imageUrls.length) {
-    const { error: imageError } = await supabase.from("products").update({ image_url: imageUrls[0], image_urls: imageUrls }).eq("slug", slug);
+    const { error: imageError } = await supabase.from("products")
+      .update({ image_url: imageUrls[0], image_urls: imageUrls })
+      .eq("slug", slug);
     if (imageError) {
       console.error("Admin product image save failed", { code: imageError.code || "unknown" });
       return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ করা যায়নি। পণ্যটি Edit করে আবার ছবি যোগ করুন।" }, { status: 500 });
