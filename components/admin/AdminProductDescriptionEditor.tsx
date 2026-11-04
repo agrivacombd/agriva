@@ -31,20 +31,22 @@ function toText(html: string) {
 export default function AdminProductDescriptionEditor({ value, onChange, productName = "" }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [keyword, setKeyword] = useState(productName);
+  const [html, setHtml] = useState(value);
   const [showPreview, setShowPreview] = useState(false);
-  const text = useMemo(() => toText(value), [value]);
+  const text = useMemo(() => toText(html), [html]);
   const words = text ? text.split(/\s+/).length : 0;
   const hasKeyword = Boolean(keyword.trim()) && text.toLocaleLowerCase().includes(keyword.trim().toLocaleLowerCase());
   const hasSections = /<(h2|h3|ul|ol|li)\b/i.test(value);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) editorRef.current.innerHTML = value;
+    setHtml(value);
   }, [value]);
 
   function run(command: string, commandValue?: string) {
     editorRef.current?.focus();
     document.execCommand(command, false, commandValue);
-    if (editorRef.current) onChange(editorRef.current.innerHTML);
+    if (editorRef.current) { setHtml(editorRef.current.innerHTML); onChange(editorRef.current.innerHTML); }
   }
 
   function addLink() {
@@ -78,7 +80,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
       </div>
       <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Product description editor" aria-multiline="true" onInput={event => onChange(event.currentTarget.innerHTML)} className="prose prose-sm max-w-none min-h-48 px-4 py-3 text-sm leading-7 outline-none [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:font-bold [&_li]:ml-5 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:pl-3" data-placeholder="পণ্যের পরিচিতি, বৈশিষ্ট্য, ব্যবহার, প্যাক সাইজ ও যাচাই করা তথ্য লিখুন..." />
     </div>
-    <input type="hidden" name="description" value={value} />
+    <input type="hidden" name="description" value={html} />
     <div className="mt-3 grid gap-3 rounded-xl border border-[#e1e9df] bg-[#f8fbf7] p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
       <label className="text-xs font-bold text-[#385640]">Focus keyword<input value={keyword} onChange={event => setKeyword(event.target.value)} placeholder="যেমন: organic chia seeds" className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal"/></label>
       <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -98,7 +100,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
       <p className="mt-1 text-sm leading-6 text-[#4b5563]">{text.slice(0, 155) || "পণ্যের বিবরণ লিখলে এখানে search snippet-এর preview দেখা যাবে।"}</p>
       <div className="mt-4 border-t pt-3">
         <p className="text-xs font-bold text-[#526454]">পণ্যের বিবরণ Preview</p>
-        <div className="prose prose-sm mt-2 max-w-none break-words text-sm" dangerouslySetInnerHTML={{ __html: value }} />
+        <div className="prose prose-sm mt-2 max-w-none break-words text-sm" dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     </div>}
   </section>;
