@@ -508,4 +508,24 @@ Added Admin authorization smoke assertions for both audit events and input valid
 
 The feature branch now has 110 migration files; Production history still has 102 rows. Re-running the exact-first, unique-normalized one-to-one comparison gives 34 exact pairs and 37 additional normalized pairs (71 total). 39 repository files and 31 Production rows remain unmatched, with the same six ambiguous normalized groups. The new audit migration is an additional branch-only unmatched file; it does not change Production.
 
-The previously recorded 109-file / 38-repository-unmatched count is superseded by this updated 110-file checkpoint. Content-level reconciliation remains open; no migration history was edited and no Production DDL, grants, data or Auth settings were changed.
+The previously recorded 109-file / 38-repository-unmatched count is superseded by this updated 111-file checkpoint. Content-level reconciliation remains open; no migration history was edited and no Production DDL, grants, data or Auth settings were changed.
+
+
+## CMS public publishing and revision-history repair (2026-11-04)
+
+Production read-only inspection confirmed:
+- `public.content_drafts` exists with RLS enabled, but its only live policy is Admin-only `ALL`; no public published-article read policy exists.
+- `public.content_draft_revisions` and legacy `public.article_drafts` do not exist in the inspected Production catalog.
+- The current public `/blog` and `/blog/[slug]` routes previously rendered only hard-coded article data. Admin's Content Drafts UI could set a row to `published`, but that CMS content was not surfaced on the public blog.
+- The existing Content Drafts client used `select("*")`, which is incompatible with a least-privilege column grant.
+
+Branch-only implementation:
+- Added `20261104140000_forward_restore_content_publishing_and_revisions.sql` to create an anon-only, column-scoped read path for rows where `status='published'` and `content_type='article'`; authenticated Admin reads are column-scoped separately and remain subject to the existing Admin RLS policy.
+- Adds the missing immutable `content_draft_revisions` table, Admin-only read policy, before-image trigger, database-enforced editorial state transitions and unique article-slug index.
+- Production duplicate-slug preflight returned zero duplicate article slugs at the time of inspection.
+- Added `lib/content/published-articles.ts` using a dedicated anonymous Supabase client so signed-in visitor roles cannot change public content visibility.
+- Public blog listing and dynamic article detail routes now include published CMS articles while preserving the four existing static articles; route revalidation is set to 60 seconds.
+- Admin Content Drafts now selects explicit editor columns rather than `*`.
+- Admin authorization smoke test asserts public-only published-row policy, column grants, revision capture, workflow guard, anonymous reader filters and dynamic blog integration.
+
+The migration has NOT been applied to Production. Until it is validated on an isolated Supabase branch and separately approved for Production, the existing static blog remains available and newly published CMS rows may not be publicly readable. Creating the isolated Supabase branch is currently paused because the provider requested explicit cost confirmation.
