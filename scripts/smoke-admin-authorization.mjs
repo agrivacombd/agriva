@@ -292,4 +292,13 @@ assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("s
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
 assert.doesNotMatch(controlCenterNav, /planned: \["Slug redirects"/, "Implemented Marketplace slug redirects must not remain in the planned list");
+const adminAuditMigration = read("supabase/migrations/20261104130000_audit_admin_moderation_and_access_revocation.sql");
+assert.ok(adminAuditMigration.includes("'green_exchange.listing.moderated'"), "Green Exchange moderation must write an admin audit event");
+assert.ok(adminAuditMigration.includes("'admin.module_access.revoked'"), "Module access revocation must write an admin audit event");
+assert.ok(adminAuditMigration.includes("'revoked_grants', v_grant_count"), "Access revocation audit must record affected grant count");
+assert.ok(adminAuditMigration.includes("'withdrawn_applications', v_application_count"), "Access revocation audit must record withdrawn application count");
+assert.ok(adminAuditMigration.includes("p_user_id IS NULL") && adminAuditMigration.includes("p_module IS NULL"), "Access revocation RPC must reject null identity and module input");
+assert.ok(adminAuditMigration.includes("GRANT EXECUTE ON FUNCTION public.admin_moderate_green_exchange_listing(uuid, text) TO authenticated, service_role"), "Green Exchange moderation must retain authenticated Admin and trusted server execution");
+assert.ok(adminAuditMigration.includes("GRANT EXECUTE ON FUNCTION public.admin_revoke_market_access(uuid, text, uuid) TO authenticated, service_role"), "Module access revocation must retain authenticated Admin and trusted server execution");
+
 console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
