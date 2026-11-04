@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const initial = { name: "", slug: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds", price: "", stock: "", commission: "", description: "", status: "draft" };
 
@@ -8,19 +9,38 @@ export default function AdminCreateProductForm() {
   const [form, setForm] = useState(initial);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
   const category = MARKETPLACE_CATEGORIES.find(item => item.slug === form.category_slug);
   const set = (key: keyof typeof initial, value: string) => setForm(current => ({ ...current, [key]: value }));
   const slugify = (value: string) => value.normalize("NFKD").toLowerCase().trim().replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 90);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setMessage("");
+    const supabase = createSupabaseBrowserClient();
+    const uploadedPaths: string[] = [];
     try {
-      const response = await fetch("/api/admin/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error("ছবি আপলোড করতে আবার লগইন করুন।");
+      const imageUrls: string[] = [];
+      for (const image of images) {
+        const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
+        const path = user.id + "/" + crypto.randomUUID() + "." + extension;
+        const { error: uploadError } = await supabase.storage.from("product-images").upload(path, image, { contentType: image.type, cacheControl: "3600", upsert: false });
+        if (uploadError) throw new Error("ছবি আপলোড হয়নি। Storage policy ও project global limit যাচাই করুন।");
+        uploadedPaths.push(path);
+        imageUrls.push(supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl);
+      }
+      const response = await fetch("/api/admin/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, image_urls: imageUrls }) });
       const result = await response.json();
       if (!response.ok) { setMessage(result.error || "পণ্য তৈরি করা যায়নি।"); return; }
       setMessage("পণ্যটি তৈরি হয়েছে। Draft হিসেবে রাখা হয়েছে; প্রকাশ করতে Admin product list থেকে status Active করতে হবে।");
+      uploadedPaths.length = 0;
       setForm(initial);
-    } catch { setMessage("নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।"); }
+      setImages([]);
+    } catch (error) {
+      if (uploadedPaths.length) await supabase.storage.from("product-images").remove(uploadedPaths);
+      setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    }
     finally { setLoading(false); }
   }
 
@@ -37,6 +57,7 @@ export default function AdminCreateProductForm() {
       <label className="text-sm font-bold">স্টক / প্যাক সংখ্যা<input required type="number" min="0" step="1" value={form.stock} onChange={e=>set("stock",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্রকৃত স্টক"/></label>
       <label className="text-sm font-bold">রিসেলার কমিশন (%)<input required type="number" min="0" max="100" step="0.01" value={form.commission} onChange={e=>set("commission",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
     </div>
+    <div className="block text-sm font-bold">পণ্যের ছবি (ঐচ্ছিক, সর্বোচ্চ ৪টি)<input type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={loading} onChange={e=>{const files=Array.from(e.target.files??[]);if(files.length>4){setMessage("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।");setImages([]);}else if(files.some(file=>!["image/jpeg","image/png","image/webp"].includes(file.type))){setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।");setImages([]);}else setImages(files);}} className="mt-1.5 block w-full rounded-xl border px-3 py-2.5 font-normal"/><span className="mt-1 block text-xs font-normal text-[#637266]">প্রতিটি ছবির আলাদা MB limit নেই; Supabase project-এর global upload limit প্রযোজ্য।</span>{images.length>0&&<p className="mt-1 text-xs font-normal">{images.length}টি ছবি নির্বাচিত</p>}</div>
     <label className="block text-sm font-bold">বিবরণ<textarea maxLength={5000} rows={4} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="প্যাক সাইজ, প্রকৃত উৎপত্তিস্থল, খাদ্য/বপনের ব্যবহার, প্যাকেজিং ও মেয়াদের তথ্য লিখুন।"/></label>
     <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">চিয়া সিডের ক্ষেত্রে নিশ্চিত করুন এটি মানুষের খাওয়ার উপযোগী। প্রতিটি প্যাক সাইজ (250g, 500g, 1kg) আলাদা পণ্য হিসেবে যোগ করুন, যদি দাম বা স্টক আলাদা হয়। উৎপত্তিস্থল পণ্যভেদে নিশ্চিত করে লিখুন।</p>
     <button disabled={loading} className="w-full rounded-xl bg-[#17452c] px-4 py-3 font-extrabold text-white disabled:opacity-50">{loading ? "তৈরি হচ্ছে..." : "Draft পণ্য তৈরি করুন"}</button>
