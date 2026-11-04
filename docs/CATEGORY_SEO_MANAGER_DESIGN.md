@@ -10,7 +10,7 @@
 - /admin/categories already manages category name, slug, description, active status and sort order through the guarded admin_save_product_category RPC. It is taxonomy management, not an SEO content editor.
 - Category and subcategory public routes have canonical metadata and CollectionPage/Breadcrumb JSON-LD, but no persisted locale-specific title, meta description, intro/body or FAQ editor.
 - Sitemap category URLs are derived from active Marketplace product rows. Keep this guard; do not add empty or thin taxonomy pages to the sitemap.
-- A read-only Production information-schema lookup for category/SEO-named tables returned no matches. This is a preliminary catalog check, not proof that no compatible table exists under another name; re-run the complete catalog inventory and migration lineage check before DDL.
+- A read-only Production catalog inventory (2026-11-04) found no category-specific SEO table in the inspected non-system schemas. `product_categories` and `product_subcategories` contain taxonomy identity, labels, descriptions, active state and sort order; they do not contain locale-specific SEO copy. `content_drafts.meta_title` and `meta_description` belong to the article CMS, while `products` contains product-level SEO fields; neither is a safe substitute for category-scoped content.
 - Product SEO stabilization found and fixed three issues on the feature branch: category indexability counted active products without restricting to the Marketplace channel; transient catalogue lookup errors were treated as noindex; and product-description word-boundary truncation used an incorrectly escaped whitespace regex.
 
 ## 2. Data model proposal
@@ -109,3 +109,18 @@ Extend the existing Categories area; do not create a second taxonomy manager.
 - No taxonomy slug renaming or product reassignment.
 - No auto-translation, AI mass generation, auto-publish or keyword stuffing.
 - No claim that title/description character limits guarantee search ranking.
+
+
+## 10. Production catalog preflight — 2026-11-04 (read-only)
+
+The following checks were performed against the Production project using read-only catalog queries; no DDL, data writes, grants, migration-history edits or deployment occurred.
+
+- No category-specific SEO table or locale-scoped category content columns were found in the inspected non-system schemas.
+- `public.product_categories` is the category taxonomy source of truth: `id`, `name`, `slug`, `description`, `is_active`, `sort_order`, `created_at`, `updated_at`.
+- `public.product_subcategories` is the subcategory taxonomy source of truth: `category_slug`, `slug`, `name`, `description`, `is_active`, `sort_order`, timestamps.
+- `public.content_drafts` has `meta_title` and `meta_description`, but these are article-CMS fields with a different lifecycle and ownership model; do not repurpose them for category SEO.
+- `public.products` has product-level SEO fields and category/subcategory foreign keys; these are not category editorial content.
+- Production migration history returned 102 records, while the checked-out repository contains 112 migration files. The history includes legacy timestamp aliases/replay entries for checkout migrations (including the atomic cart checkout and legacy RPC revoke migrations). These counts and filename similarities do not prove which unmatched DDL is applied. The content-level reconciliation of unmatched files/history rows and six previously identified ambiguous replay groups remains a release blocker.
+- The candidate `public.marketplace_category_seo` table therefore remains a proposal, not an approved migration. Before DDL, complete the migration-content comparison, confirm all relevant RLS/grant conventions and validate on an isolated Supabase development branch.
+
+**Decision:** continue with the existing taxonomy tables as the identity layer and keep category SEO content separate. Do not reuse article CMS fields or product SEO columns, and do not create/apply the proposed table in Production during this phase.
