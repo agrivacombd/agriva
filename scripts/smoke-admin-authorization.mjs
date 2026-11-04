@@ -308,6 +308,9 @@ assert.ok(contentPublishingMigration.includes("GRANT SELECT (") && contentPublis
 assert.ok(contentPublishingMigration.includes("content_draft_revisions"), "content revision history table must be provisioned");
 assert.ok(contentPublishingMigration.includes("content_draft_revision_capture"), "content edits and moderation transitions must capture before-images");
 assert.ok(contentPublishingMigration.includes("content_drafts_workflow_guard"), "content workflow transitions must be enforced by the database");
+assert.ok(contentPublishingMigration.includes("(OLD.status = 'published' AND NEW.status = 'review')"), "published articles must support explicit unpublish back to review");
+assert.ok(contentPublishingMigration.includes("Unpublish first; edit content after it returns to review"), "unpublishing must not permit content edits in the same transition");
+assert.ok(contentPublishingMigration.includes("NEW.reviewed_by := auth.uid()"), "editorial approvals and rejections must bind the reviewer to the current actor");
 const publishedArticleReader = read("lib/content/published-articles.ts");
 assert.ok(publishedArticleReader.includes("persistSession: false"), "public article reader must use an anonymous client without visitor session");
 assert.ok(publishedArticleReader.includes('.eq("status", "published")') && publishedArticleReader.includes('.eq("content_type", "article")'), "public article reader must filter published article rows");
