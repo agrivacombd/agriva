@@ -2,9 +2,9 @@
 
 **Decision:** Combined scope (Products + Categories + Content CMS)  
 **Content languages:** Bengali + English  
-**Execution mode:** Technical plan first; implementation only after this plan and schema preflight are reviewed.  
+**Execution mode:** Technical plan followed by branch-only implementation and validation.  
 **Target branch:** `feat/admin-control-center-architecture-v1`  
-**Related PR:** #217 (draft; do not merge or deploy as part of this planning task)
+**Related PR:** #217 (draft; do not merge or deploy without explicit approval)
 
 ## 1. Executive recommendation
 
@@ -13,27 +13,29 @@ Extend the existing Admin Control Center rather than creating a separate SEO app
 1. Verify and stabilize the existing Product SEO and CMS publishing foundations.
 2. Add a database-backed, bilingual Category SEO manager and enrich category landing pages.
 3. Make Content Studio genuinely bilingual and connect its briefs to the existing review/publish workflow.
-4. Replace demo-only Search Intelligence UI with persisted, source-backed opportunity data and later connect Google Search Console.
+4. Complete Search Intelligence persistence and later connect Google Search Console.
 
 No Production database changes, migration application, PR merge or Production deployment are authorized by this plan.
 
-## 2. Repository audit snapshot
+## 2. Repository and schema audit snapshot
 
-Inspected on 2026-11-04 from `feat/admin-control-center-architecture-v1`:
+Inspected on 2026-11-04 from `feat/admin-control-center-architecture-v1` and read-only Production catalog/history checks:
 
-- PR #217 is open, draft and unmerged; base is `main`. The branch is 173 commits ahead and 0 behind at the comparison snapshot.
+- PR #217 is open, draft and unmerged; base is `main`. The branch is 176 commits ahead at the latest inspected snapshot; confirm live compare before release.
 - Product admin already edits SEO title, description, keywords, SEO body, FAQs and image alt text; slug updates use a dedicated audited RPC and redirect-history table.
 - Public product detail pages already emit canonical metadata, Open Graph/Twitter metadata, Product JSON-LD and BreadcrumbList. Product/category indexing depends on active catalogue data.
 - Category route `/marketplace/category/[categorySlug]` already exists, with taxonomy-backed title/description, canonical, CollectionPage/Breadcrumb structured data and an indexability check. Its SEO copy is currently generated from static taxonomy labels/descriptions; there is no verified per-category bilingual CMS editor in the inspected route.
 - Sitemap currently adds category/subcategory URLs only when active products exist, and includes active Marketplace product URLs. Preserve this useful guard.
 - Content Drafts already has review/approval/publish controls and revision-history UI. The feature branch includes a forward migration intended to add public published-article reads and revision history.
-- Public blog routes merge static articles with published CMS articles through a dedicated anonymous Supabase client. If the CMS migration is absent, the static blog remains available.
+- Public blog routes merge static articles with published CMS articles through a dedicated anonymous Supabase client. Static articles remain available as a fallback.
 - Content Studio currently sends `language: "English"`; its API only distinguishes Bengali vs English and returns a deterministic template (`generatedWith: "template"`), not an AI-generated article.
-- Search Intelligence page currently contains hard-coded seed rows and local-only approve/reject state. A persisted opportunities API exists, but the UI integration and data-source consistency need review.
-- Existing SQL `005_search_intelligence.sql` defines `search_queries` and `search_opportunities`, while the inspected API reads `content_opportunities`. Reconcile table lineage and migrations before wiring or creating more tables.
-- The CMS publishing/revision and security migrations are branch-only according to PR notes. Isolated Supabase validation is a release gate.
+- Search Intelligence page was using hard-coded seed rows and local-only approve/reject state. A persisted Admin API already reads/writes `content_opportunities`; the UI has now been changed on this branch to use that API, subject to CI verification.
+- Migration lineage is not a live mismatch: `005_search_intelligence` creates `search_queries` and the legacy `search_opportunities`; `007_search_opportunity_canonical` creates `content_opportunities` as the canonical opportunity store and explicitly retains the older table for compatibility. Production migration history includes both 005 and 007.
+- Read-only Production catalog checks confirmed `search_queries`, `search_opportunities` and `content_opportunities` exist. At inspection, there were 4 aggregated search-query rows and 0 rows in either opportunity table. No query text or user-level data was retrieved for this count check.
+- The opportunity UI/API integration and review-attribution changes are branch-only until CI and PR review. No Production writes were performed.
+- The CMS publishing/revision and security migrations remain subject to isolated Supabase validation before any release.
 
-This is a code/PR audit, not a live browser or Production database certification. Verify the exact branch head and current CI checks again before implementation.
+This is a code/PR and read-only schema audit, not a live browser or Production release certification. Preview UI was not visually verified.
 
 ## 3. Target information architecture
 
@@ -93,17 +95,18 @@ Use a dedicated table only after confirming no existing compatible table in live
 - Keep the review → approve → publish workflow and revision before-images.
 - Add localization pairing only after locale schema and canonical/hreflang rules are implemented.
 
-### 5.4 Search Intelligence — connect real data
+### 5.4 Search Intelligence — persisted opportunity workflow
 
-- Remove hard-coded seed opportunities from the production UI.
-- Use one canonical opportunities data model. Reconcile `search_opportunities` vs `content_opportunities` and avoid parallel tables with overlapping purpose.
-- Wire the existing Admin API to list, filter, review and transition persisted records.
-- Display source, date range, search count, result count, intent and evidence; distinguish internal site-search demand from Google Search Console metrics.
-- Do not show invented search counts or opportunity scores as real metrics.
+- Use `content_opportunities` as the canonical opportunity model; retain `search_opportunities` only for compatibility until a separately reviewed cleanup.
+- Keep the Admin UI connected to the persisted API, with real loading, empty and error states.
+- Display source-backed search count, result count, intent, opportunity type and status. Do not show fabricated opportunity scores.
+- Record reviewer identity and timestamp on approval/rejection; moving a record into review is not itself a publish action.
+- Opportunity approval must not be represented as article publication. Article publishing remains in Content Drafts.
+- Search tracking and opportunity generation are separate: tracked search queries do not automatically create opportunities.
 - Keep user-level search history private; use aggregate demand only for editorial analysis.
 - Later add Google Search Console OAuth/API integration with explicit account consent and scoped storage.
 
-## 6. Data model proposal (subject to schema reconciliation)
+## 6. Data model
 
 | Entity | Purpose | Decision |
 |---|---|---|
@@ -112,7 +115,8 @@ Use a dedicated table only after confirming no existing compatible table in live
 | `content_draft_revisions` | Editorial before-images | Use only after branch migration is validated |
 | `category_seo_content` | Category/subcategory locale-specific copy | Proposed; first verify no existing compatible table |
 | `content_draft_localizations` | Per-locale article metadata/body | Proposed alternative to overloading one draft row |
-| `search_opportunities` / `content_opportunities` | Search-demand opportunities | Reconcile existing tables before choosing one |
+| `content_opportunities` | Canonical search-demand opportunities | Reuse; migration 007 establishes canonical lineage |
+| `search_opportunities` | Legacy opportunity table | Retain for compatibility; do not wire new UI to it |
 | `seo_audit_results` | Historical technical/editorial audit findings | Later phase; do not add until report retention/use case is defined |
 | Search Console metrics | Clicks, impressions, CTR, position, page/query/date | Later phase; store only required, consented account data |
 
@@ -125,7 +129,7 @@ Every new table requires: explicit RLS policies, least-privilege grants, Admin a
 - Compare repository migration files with live migration history and catalog definitions; do not infer applied state from filenames.
 - Validate CMS publishing/revision and role-grant migrations on an isolated Supabase branch.
 - Inspect existing category/subcategory route, taxonomy, indexability and sitemap end-to-end.
-- Resolve the `search_opportunities` vs `content_opportunities` mismatch.
+- Confirm canonical opportunity lineage (005 → 007) and ensure the Admin UI/API use `content_opportunities`.
 - Produce a migration matrix and release/rollback plan.
 
 **Exit:** no unresolved schema ambiguity for the tables/functions touched by Phase 1; smoke tests and build pass; no Production mutation.
@@ -154,7 +158,7 @@ Every new table requires: explicit RLS policies, least-privilege grants, Admin a
 **Exit:** only approved/published article variants are public; locale canonicals and hreflang are reciprocal; unpublish is safe and revision history is preserved.
 
 ### Phase 4 — Search Intelligence and measurement
-- Connect persisted opportunity API and remove demo-only rows.
+- Complete tests for persisted opportunity listing and state transitions; remove any remaining demo-only behavior.
 - Add Search Console integration after OAuth/permissions review.
 - Track clicks, impressions, CTR, position and indexed pages by locale/page family.
 - Add scheduled audit and actionable issue queue.
@@ -188,11 +192,11 @@ Every new table requires: explicit RLS policies, least-privilege grants, Admin a
 ## 10. Immediate next tickets
 
 1. `SEO-001`: branch/PR/CI/preview and schema preflight.
-2. `SEO-002`: reconcile CMS and Search Intelligence migration/API data models.
+2. `SEO-002`: confirm canonical opportunity model and connect persisted Search Intelligence UI/API (implementation now on branch; CI gate pending).
 3. `SEO-003`: Product SEO regression test and audit UI acceptance.
 4. `SEO-004`: Category SEO schema + Admin editor design (Bengali/English).
 5. `SEO-005`: Category public metadata/rendering/sitemap/hreflang.
 6. `SEO-006`: bilingual Content Studio and CMS localization.
-7. `SEO-007`: Search Intelligence persisted UI + Search Console measurement.
+7. `SEO-007`: Search Intelligence measurement + Search Console integration.
 
-**Recommended immediate implementation after plan approval:** SEO-001 and SEO-002 only. Do not start category schema migration until the live schema reconciliation is complete.
+**Recommended next implementation after the current CI pass:** SEO-003 and SEO-004. Do not start category schema migration until all related live schema checks and isolated-branch validation are complete.
