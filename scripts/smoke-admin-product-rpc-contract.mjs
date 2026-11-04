@@ -4,7 +4,7 @@ import { strict as assert } from "node:assert";
 
 const route = readFileSync("app/api/admin/products/route.ts", "utf8");
 const migration = readFileSync(
-  "supabase/migrations/20261028200949_admin_create_marketplace_product.sql",
+  "supabase/migrations/20261105120000_admin_marketplace_product_slug.sql",
   "utf8",
 );
 
