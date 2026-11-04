@@ -140,9 +140,31 @@ BEGIN
       OR (OLD.status = 'review' AND NEW.status IN ('draft', 'approved', 'rejected'))
       OR (OLD.status = 'approved' AND NEW.status IN ('review', 'published'))
       OR (OLD.status = 'rejected' AND NEW.status = 'draft')
+      OR (OLD.status = 'published' AND NEW.status = 'review')
     ) THEN
       RAISE EXCEPTION 'Invalid content workflow transition: % -> %', OLD.status, NEW.status
         USING ERRCODE = 'check_violation';
+    END IF;
+
+    IF OLD.status = 'published' AND NEW.status = 'review' AND (
+      NEW.title IS DISTINCT FROM OLD.title
+      OR NEW.slug IS DISTINCT FROM OLD.slug
+      OR NEW.body_markdown IS DISTINCT FROM OLD.body_markdown
+      OR NEW.meta_title IS DISTINCT FROM OLD.meta_title
+      OR NEW.meta_description IS DISTINCT FROM OLD.meta_description
+    ) THEN
+      RAISE EXCEPTION 'Unpublish first; edit content after it returns to review'
+        USING ERRCODE = 'check_violation';
+    END IF;
+
+    IF NEW.status IN ('approved', 'rejected') THEN
+      NEW.reviewed_by := auth.uid();
+      NEW.reviewed_at := now();
+    ELSIF NEW.status IN ('draft', 'review') THEN
+      NEW.reviewed_by := NULL;
+      NEW.reviewed_at := NULL;
+    ELSIF NEW.status = 'published' THEN
+      NEW.reviewed_at := now();
     END IF;
   ELSIF OLD.status = 'published' AND (
     NEW.title IS DISTINCT FROM OLD.title
