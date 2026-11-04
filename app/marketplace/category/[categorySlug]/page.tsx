@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `${category.name} কিনুন ও পণ্যের তথ্য দেখুন AGRIVA Marketplace-এ। ${category.description}।`;
   return {
     title, description,
-    ...(hasProducts !== true ? { robots: { index: false, follow: true } } : {}),
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}` },
     keywords: [category.name, `${category.name} বাংলাদেশ`, "কৃষি পণ্য", "AGRIVA Marketplace"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
