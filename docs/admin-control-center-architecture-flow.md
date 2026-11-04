@@ -529,3 +529,11 @@ Branch-only implementation:
 - Admin authorization smoke test asserts public-only published-row policy, column grants, revision capture, workflow guard, anonymous reader filters and dynamic blog integration.
 
 The migration has NOT been applied to Production. Until it is validated on an isolated Supabase branch and separately approved for Production, the existing static blog remains available and newly published CMS rows may not be publicly readable. Creating the isolated Supabase branch is currently paused because the provider requested explicit cost confirmation.
+
+
+### Latest branch verification — 2026-11-04
+
+- GitHub Actions run #2287 passed for commit `3d6bbd60a36eb84a4e25ac07bbb18bfba37ed76b`, including lint, TypeScript, Admin authorization/CMS publishing smoke assertions and the Production build.
+- Vercel preview deployment `dpl_8AJefiDHjRJUn657k6vWAEQ2eUwh` is `READY` for the same commit: https://agriva-p8g6-5d8nqvhg9-agriva1.vercel.app.
+- This is a preview deployment only. PR #217 remains draft/open; no Production deploy or merge was performed.
+- Isolated Supabase branch validation is still blocked on explicit cost approval. Current quoted branch compute cost: USD 0.01344 per hour. No branch has been created.
