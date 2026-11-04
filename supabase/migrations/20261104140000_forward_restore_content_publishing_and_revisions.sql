@@ -18,7 +18,28 @@ GRANT SELECT (
   updated_at,
   content_type,
   status
-) ON TABLE public.content_drafts TO anon, authenticated;
+) ON TABLE public.content_drafts TO anon;
+GRANT SELECT (
+  id,
+  opportunity_id,
+  content_type,
+  title,
+  slug,
+  meta_title,
+  meta_description,
+  primary_keyword,
+  secondary_keywords,
+  search_intent,
+  outline,
+  faq,
+  internal_link_suggestions,
+  competitor_analysis,
+  body_markdown,
+  status,
+  reviewed_at,
+  created_at,
+  updated_at
+) ON TABLE public.content_drafts TO authenticated;
 
 DROP POLICY IF EXISTS content_drafts_public_published_articles_read ON public.content_drafts;
 CREATE POLICY content_drafts_public_published_articles_read
