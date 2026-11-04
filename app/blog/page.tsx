@@ -74,12 +74,12 @@ export default async function ArticlesPage() {
     .filter((article) => !staticSlugs.has(article.slug))
     .map((article) => {
       const body = article.body_markdown ?? "";
-      const words = body.trim() ? body.trim().split(/\\s+/).length : 0;
+      const words = body.trim() ? body.trim().split(/\s+/).length : 0;
       return {
         slug: article.slug,
         category: "নতুন লেখা",
         title: article.title,
-        excerpt: body.replace(/^#{1,6}\\s+/gm, "").replace(/[*_\`>#-]/g, "").replace(/\\s+/g, " ").trim().slice(0, 220),
+        excerpt: body.replace(/^#{1,6}\s+/gm, "").replace(/[*_\`>#-]/g, "").replace(/\s+/g, " ").trim().slice(0, 220),
         date: new Date(article.created_at).toLocaleDateString("bn-BD"),
         readTime: `${Math.max(1, Math.ceil(words / 180))} মিনিট`,
         emoji: "📝",
