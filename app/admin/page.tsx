@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+import { getAvailableAdminCapabilities, requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
-import BrandLogo from "@/components/BrandLogo";
+
+const FINANCE_MUTATIONS_ENABLED = false; // Re-enable only after audited service-role RPC workflow is deployed.
 
 async function requireAdmin(capability: AdminCapability = "dashboard.read") {
   const { supabase, user } = await requireAdminPage(capability);
@@ -14,7 +15,7 @@ async function updateOrderStatus(formData: FormData) {
   "use server";
   const orderId = String(formData.get("orderId") ?? "");
   const status = String(formData.get("status") ?? "");
-  if (!orderId || !["processing", "shipped", "delivered", "completed", "cancelled", "refunded"].includes(status)) {
+  if (!orderId || !["processing", "shipped", "delivered", "completed", "cancelled"].includes(status)) {
     redirect("/admin?notice=invalid_order");
   }
   const { supabase } = await requireAdmin("orders.transition");
@@ -25,9 +26,10 @@ async function updateOrderStatus(formData: FormData) {
 
 async function approveCommission(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const commissionId = String(formData.get("commissionId") ?? "");
   if (!commissionId) redirect("/admin?notice=invalid_commission");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payments.reconcile");
   const { error } = await supabase.rpc("approve_reseller_commission", { p_commission_id: commissionId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=commission_error" : "/admin?notice=commission_approved");
@@ -35,9 +37,10 @@ async function approveCommission(formData: FormData) {
 
 async function approvePayout(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const payoutId = String(formData.get("payoutId") ?? "");
   if (!payoutId) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payouts.approve");
   const { error } = await supabase.rpc("approve_commission_payout", { p_payout_id: payoutId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_error" : "/admin?notice=payout_approved");
@@ -45,10 +48,11 @@ async function approvePayout(formData: FormData) {
 
 async function completePayout(formData: FormData) {
   "use server";
+  if (!FINANCE_MUTATIONS_ENABLED) redirect("/admin?notice=finance_mutations_disabled");
   const payoutId = String(formData.get("payoutId") ?? "");
   const reference = String(formData.get("reference") ?? "").trim();
   if (!payoutId || !reference) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payouts.approve");
   const { error } = await supabase.rpc("complete_commission_payout", {
     p_payout_id: payoutId,
     p_payment_reference: reference,
@@ -56,6 +60,13 @@ async function completePayout(formData: FormData) {
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_complete_error" : "/admin?notice=payout_paid");
 }
+
+const orderTransitionOptions: Record<string, { value: string; label: string }[]> = {
+  pending: [{ value: "processing", label: "Processing" }, { value: "cancelled", label: "Cancelled" }],
+  processing: [{ value: "shipped", label: "Shipped" }, { value: "cancelled", label: "Cancelled" }],
+  shipped: [{ value: "delivered", label: "Delivered" }, { value: "cancelled", label: "Cancelled" }],
+  delivered: [{ value: "completed", label: "Completed" }],
+};
 
 const money = (value: number | string | null | undefined) =>
   new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 2 }).format(Number(value ?? 0));
@@ -76,10 +87,35 @@ const noticeText: Record<string, string> = {
 
 export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const { supabase, user } = await requireAdmin();
+  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "users.read", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
+  const canReadPayments = availableAdminCapabilities.has("payments.read");
+  const canReadPayouts = availableAdminCapabilities.has("payouts.read");
+  const canApproveCommissions = FINANCE_MUTATIONS_ENABLED && availableAdminCapabilities.has("payments.reconcile");
+  const canManagePayouts = FINANCE_MUTATIONS_ENABLED && availableAdminCapabilities.has("payouts.approve");
+  const canReadOrders = availableAdminCapabilities.has("orders.read");
+  const canTransitionOrders = availableAdminCapabilities.has("orders.transition");
+  const quickActions = [
+    { href: "/admin/products", label: "পণ্য ব্যবস্থাপনা", capability: "catalog.edit" },
+    { href: "/admin/green-exchange", label: "Green Exchange মডারেশন", capability: "settings.read" },
+    { href: "/admin/harvest", label: "ফসলের পোস্ট", capability: "harvest.read" },
+    { href: "/admin/transport", label: "পরিবহন পার্টনার যাচাই", capability: "transport.moderate" },
+    { href: "/admin/users", label: "ব্যবহারকারী", capability: "users.read" },
+    { href: "/admin/categories", label: "ক্যাটাগরি", capability: "catalog.edit" },
+    { href: "/admin/settings", label: "সাইট সেটিংস", capability: "settings.write" },
+    { href: "/admin/reports", label: "রিপোর্ট ও CSV", capability: "reports.export" },
+    { href: "/admin/audit", label: "Audit log", capability: "audit.read" },
+    { href: "/admin/opportunities", label: "AI demand", capability: "content.read" },
+    { href: "/admin/orders", label: "অর্ডার ব্যবস্থাপনা", capability: "orders.read" },
+  ].filter((action) => availableAdminCapabilities.has(action.capability));
+  const commissionsCountQuery = canReadPayments ? supabase.from("reseller_commissions").select("id", { count: "exact", head: true }) : Promise.resolve({ count: null, error: null });
+  const payoutsCountQuery = canReadPayouts ? supabase.from("commission_payouts").select("id", { count: "exact", head: true }) : Promise.resolve({ count: null, error: null });
+  const recentOrdersQuery = canReadOrders ? supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity,product:products(name),buyer:profiles!marketplace_orders_buyer_id_fkey(full_name)").order("created_at", { ascending: false }).limit(12) : Promise.resolve({ data: [], error: null });
+  const recentCommissionsQuery = canReadPayments ? supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8) : Promise.resolve({ data: [], error: null });
+  const recentPayoutsQuery = canReadPayouts ? supabase.from("commission_payouts").select("id,reseller_id,amount,status,payment_method,requested_at,payment_reference").order("requested_at", { ascending: false }).limit(8) : Promise.resolve({ data: [], error: null });
 
   const [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
-    commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
+    commissionsCount, payoutsCount, pendingOrdersCount, recentOrders, recentCommissions,
     recentPayouts, opportunities,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -87,18 +123,16 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "reseller"),
     supabase.from("products").select("id", { count: "exact", head: true }),
     supabase.from("marketplace_orders").select("id", { count: "exact", head: true }),
-    supabase.from("reseller_commissions").select("id", { count: "exact", head: true }),
-    supabase.from("commission_payouts").select("id", { count: "exact", head: true }),
-    supabase.from("marketplace_orders").select("total_amount,status,payment_status"),
-    supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity,shipping_address,product:products(name),buyer:profiles!marketplace_orders_buyer_id_fkey(full_name)").order("created_at", { ascending: false }).limit(12),
-    supabase.from("reseller_commissions").select("id,reseller_id,order_id,amount,status,created_at").order("created_at", { ascending: false }).limit(8),
-    supabase.from("commission_payouts").select("id,reseller_id,amount,status,payment_method,requested_at,payment_reference").order("requested_at", { ascending: false }).limit(8),
+    commissionsCountQuery,
+    payoutsCountQuery,
+    supabase.from("marketplace_orders").select("id", { count: "exact", head: true }).in("status", ["pending", "processing"]),
+    recentOrdersQuery,
+    recentCommissionsQuery,
+    recentPayoutsQuery,
     supabase.from("content_opportunities").select("id,keyword,search_count,opportunity_type,status").order("search_count", { ascending: false }).limit(5),
   ]);
 
-  const orders = orderTotals.data ?? [];
-  const revenue = orders.filter(o => !["cancelled", "refunded"].includes(o.status)).reduce((sum, o) => sum + Number(o.total_amount ?? 0), 0);
-  const pendingOrders = orders.filter(o => ["pending", "processing"].includes(o.status)).length;
+  const pendingOrders = pendingOrdersCount.error ? "—" : pendingOrdersCount.count ?? 0;
   const pendingCommissions = (recentCommissions.data ?? []).filter(c => c.status === "pending");
   const pendingPayouts = (recentPayouts.data ?? []).filter(p => ["requested", "approved"].includes(p.status));
   const cards = [
@@ -107,28 +141,21 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     ["রিসেলার", resellersCount.error ? "—" : resellersCount.count ?? 0, "share-2"],
     ["পণ্য", productsCount.error ? "—" : productsCount.count ?? 0, "package"],
     ["মোট অর্ডার", ordersCount.error ? "—" : ordersCount.count ?? 0, "shopping-bag"],
-    ["রিভিউ প্রয়োজন", orderTotals.error ? "—" : pendingOrders, "clipboard-list"],
-    ["কমিশন রেকর্ড", commissionsCount.error ? "—" : commissionsCount.count ?? 0, "wallet"],
-    ["পেআউট রেকর্ড", payoutsCount.error ? "—" : payoutsCount.count ?? 0, "banknote"],
+    ["রিভিউ প্রয়োজন", pendingOrdersCount.error ? "—" : pendingOrders, "clipboard-list"],
+    ["কমিশন রেকর্ড", !canReadPayments || commissionsCount.error ? "—" : commissionsCount.count ?? 0, "wallet"],
+    ["পেআউট রেকর্ড", !canReadPayouts || payoutsCount.error ? "—" : payoutsCount.count ?? 0, "banknote"],
   ];
   const hasDashboardQueryError = [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
-    commissionsCount, payoutsCount, orderTotals, recentOrders, recentCommissions,
-    recentPayouts, opportunities,
+    commissionsCount, payoutsCount, pendingOrdersCount, recentOrders, recentCommissions,
+    recentPayouts, opportunities, pendingOrdersCount,
   ].some((result) => Boolean(result.error));
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
-      <aside className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
-        <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-8">
-          <div><BrandLogo href="/" imageClassName="h-10 w-40 rounded-lg bg-white p-1" /><p className="mt-2 text-xs font-bold uppercase tracking-[.2em] text-emerald-100">Super Admin Console</p></div>
-          <div className="flex items-center gap-3 text-sm"><span className="rounded-full border border-white/20 px-3 py-1.5">Admin verified</span><Link href="/admin/seller-applications" className="rounded-xl bg-lime-300 px-4 py-2 font-bold text-[#17351f] hover:bg-lime-200">Seller applications ↗</Link><Link href="/admin/plant-market-products" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">Plant products ↗</Link><Link href="/dashboard" className="rounded-xl bg-white/10 px-4 py-2 hover:bg-white/20">User dashboard ↗</Link></div>
-        </div>
-      </aside>
-
-      <div className="mx-auto max-w-[1500px] px-5 py-8 lg:px-8">
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1500px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Super Admin Panel</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
+          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Admin Control Center</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
         </div>
 
@@ -141,32 +168,40 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
 
         <section className="mt-5 grid gap-4 lg:grid-cols-[1.4fr_.8fr]">
           <div className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:p-6">
-            <p className="text-sm font-bold text-[#6b786d]">ORDER VALUE SNAPSHOT</p><div className="mt-3 flex flex-wrap items-end justify-between gap-3"><div className="min-w-0"><p className="break-words text-2xl font-black sm:text-3xl">{orderTotals.error ? "ডেটা পাওয়া যায়নি" : money(revenue)}</p><p className="mt-1 text-sm text-[#68786b]">Non-cancelled order value (all time)</p></div><div className="rounded-xl bg-amber-50 px-3 py-3 text-sm sm:px-4"><span className="font-black text-amber-800">{orderTotals.error ? "—" : pendingOrders}</span><span className="ml-2 text-amber-900">অর্ডার প্রসেসিং প্রয়োজন</span></div></div><p className="mt-4 text-xs leading-5 text-[#879187]">এটি অর্ডারের মোট মূল্য; এটি নিট আয় বা নিশ্চিতভাবে আদায় করা টাকা নয়।</p>
+            <p className="text-sm font-bold text-[#6b786d]">NEEDS ATTENTION</p><div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3"><div className="rounded-xl bg-amber-50 p-4"><p className="text-xs font-semibold text-amber-900">অর্ডার অপেক্ষমাণ</p><p className="mt-2 text-2xl font-black text-amber-950">{pendingOrdersCount.error ? "—" : pendingOrders}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-600">সাম্প্রতিক ৮ কমিশনে pending</p><p className="mt-2 text-2xl font-black">{!canReadPayments || recentCommissions.error ? "—" : pendingCommissions.length}</p></div><div className="rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-600">সাম্প্রতিক ৮ পেআউটে pending</p><p className="mt-2 text-2xl font-black">{!canReadPayouts || recentPayouts.error ? "—" : pendingPayouts.length}</p></div></div><p className="mt-4 text-xs leading-5 text-[#879187]">কমিশন ও পেআউটের সংখ্যা সর্বশেষ ৮টি রেকর্ড থেকে; পূর্ণ হিসাব নয়। Finance read permission না থাকলে “—” দেখানো হয়।</p>
           </div>
-          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{[["/admin/products","পণ্য ব্যবস্থাপনা"],["/admin/green-exchange","Green Exchange মডারেশন"],["/admin/harvest","ফসলের পোস্ট"],["/admin/transport","পরিবহন পার্টনার যাচাই"],["/admin/users","ব্যবহারকারী"],["/admin/categories","ক্যাটাগরি"],["/admin/settings","সাইট সেটিংস"],["/admin/reports","রিপোর্ট ও CSV"],["/admin/audit","Audit log"],["/admin/opportunities","AI demand"],["/orders","অর্ডার পেজ"]].map(([href,label])=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
+          <div className="rounded-2xl bg-[#e5efe2] p-6"><p className="text-sm font-bold text-[#356748]">QUICK ACTIONS</p><div className="mt-4 grid grid-cols-2 gap-3">{quickActions.map(({href,label})=><Link key={href} href={href} className="rounded-xl border border-[#cbdcc7] bg-white px-3 py-3 text-sm font-bold transition hover:border-[#36764a] hover:bg-[#f8fbf6]">{label} ↗</Link>)}</div></div>
         </section>
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">সাম্প্রতিক অর্ডার</h2><p className="mt-1 text-sm text-[#748074]">স্ট্যাটাস আপডেট করলে stock ও কমিশনের নিয়ম ডেটাবেস RPC-তে প্রয়োগ হবে।</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">{recentOrders.data?.length ?? 0} recent</span></div>
-          <div className="overflow-x-auto"><table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs uppercase tracking-wide text-[#6d7b6e]"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">Product / buyer</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Payment</th><th className="px-5 py-3">Status / update</th></tr></thead><tbody>{(recentOrders.data ?? []).map(order => <tr key={order.id} className="border-t border-[#edf1ea] align-top"><td className="px-5 py-4"><p className="font-bold">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td><td className="px-5 py-4"><p className="font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></td><td className="px-5 py-4 font-black">{money(order.total_amount)}</td><td className="px-5 py-4"><p className="font-semibold uppercase">{order.payment_method}</p><p className="mt-1 text-xs text-[#7b887d]">{order.payment_status}</p></td><td className="px-5 py-4"><p className="mb-2 inline-flex rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</p><form action={updateOrderStatus} className="flex items-center gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} className="rounded-lg border border-[#d9e3d5] bg-white px-2 py-2 text-xs"><option value="processing">Processing</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option><option value="refunded">Refunded</option></select><button className="rounded-lg bg-[#17452c] px-3 py-2 text-xs font-bold text-white hover:bg-[#22613d]">Save</button></form></td></tr>)}</tbody></table>{recentOrders.error ? <p role="alert" className="p-5 text-sm text-red-800">অর্ডার লোড করা যায়নি। Database permission বা query error যাচাই করুন।</p> : !recentOrders.data?.length && <p className="p-8 text-sm text-[#6b786d]">এখনো কোনো অর্ডার পাওয়া যায়নি।</p>}</div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e7ede4] px-5 py-4"><div><h2 className="text-xl font-black">সাম্প্রতিক অর্ডার</h2><p className="mt-1 text-sm text-[#748074]">স্ট্যাটাস আপডেট করলে stock ও কমিশনের নিয়ম ডেটাবেস RPC-তে প্রয়োগ হবে।</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">{canReadOrders ? recentOrders.data?.length ?? 0 : "—"} recent</span></div>
+          <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[900px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs uppercase tracking-wide text-[#6d7b6e]"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">Product / buyer</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Payment</th><th className="px-5 py-3">Status / update</th></tr></thead><tbody>{(recentOrders.data ?? []).map(order => <tr key={order.id} className="border-t border-[#edf1ea] align-top"><td className="px-5 py-4"><p className="font-bold">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td><td className="px-5 py-4"><p className="font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.buyer as {full_name?:string}|null)?.full_name ?? "Buyer"}</p></td><td className="px-5 py-4 font-black">{money(order.total_amount)}</td><td className="px-5 py-4"><p className="font-semibold uppercase">{order.payment_method}</p><p className="mt-1 text-xs text-[#7b887d]">{order.payment_status}</p></td><td className="px-5 py-4"><p className="mb-2 inline-flex rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</p>{canTransitionOrders && (orderTransitionOptions[order.status]?.length ?? 0) > 0 ? (<form action={updateOrderStatus} className="flex items-center gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} aria-label={`Update order ${order.id.slice(0,8)} status`} className="rounded-lg border border-[#d9e3d5] bg-white px-2 py-2 text-xs">{(orderTransitionOptions[order.status] ?? []).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><button type="submit" className="min-h-10 rounded-lg bg-[#17452c] px-3 py-2 text-xs font-bold text-white hover:bg-[#22613d]">Save</button></form>) : <span className="text-xs text-[#7b887d]">{canTransitionOrders ? "No routine transition available" : "Order transition permission required"}</span>}</td></tr>)}</tbody></table></div>
+          <div className="divide-y divide-[#edf1ea] md:hidden">{(recentOrders.data ?? []).map(order => <article key={order.id} className="space-y-3 p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="text-sm font-black">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></div><span className="shrink-0 rounded-full bg-[#edf4e9] px-2.5 py-1 text-xs font-bold">{order.status}</span></div><div className="min-w-0"><p className="truncate text-sm font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.buyer as {full_name?:string}|null)?.full_name ?? "Buyer"}</p></div><div className="flex items-center justify-between gap-3"><p className="text-lg font-black">{money(order.total_amount)}</p><p className="text-right text-xs text-[#748074]">{order.payment_method?.toUpperCase()} · {order.payment_status}</p></div>{canTransitionOrders && !["cancelled", "completed", "refunded"].includes(order.status) ? (<form action={updateOrderStatus} className="grid grid-cols-[1fr_auto] gap-2"><input type="hidden" name="orderId" value={order.id}/><select name="status" defaultValue={order.status} aria-label={`Update order ${order.id.slice(0,8)} status`} className="min-h-11 min-w-0 rounded-xl border border-[#d9e3d5] bg-white px-3 text-sm">{(orderTransitionOptions[order.status] ?? []).map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><button type="submit" className="min-h-11 rounded-xl bg-[#17452c] px-4 text-sm font-bold text-white">Save</button></form>) : <span className="text-xs text-[#7b887d]">Order transition permission required</span>}</article>)}</div>
+          {!canReadOrders ? <p className="p-5 text-sm text-[#6b786d]">Order preview hidden. orders.read permission is required.</p> : recentOrders.error ? <p role="alert" className="p-5 text-sm text-red-800">অর্ডার লোড করা যায়নি। Database permission বা query error যাচাই করুন।</p> : !recentOrders.data?.length && <p className="p-8 text-sm text-[#6b786d]">এখনো কোনো অর্ডার পাওয়া যায়নি।</p>}
         </section>
 
         <section className="mt-5 grid gap-5 xl:grid-cols-2">
-          <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
-            <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার কমিশন</h2><p className="mt-1 text-sm text-[#748074]">Pending commission approve করুন</p></div>
-            <div className="divide-y divide-[#edf1ea]">{(recentCommissions.data ?? []).map(c => <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold">{money(c.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{c.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Order #{c.order_id.slice(0,8)} · Reseller #{c.reseller_id.slice(0,8)}</p></div>{c.status === "pending" && <form action={approveCommission}><input type="hidden" name="commissionId" value={c.id}/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Approve</button></form>}</div>)}{recentCommissions.error ? <p role="alert" className="p-5 text-sm text-red-800">কমিশন রেকর্ড লোড করা যায়নি।</p> : !recentCommissions.data?.length && <p className="p-6 text-sm text-[#6b786d]">কমিশন রেকর্ড নেই।</p>}</div>
-          </div>
-
-          <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
-            <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার পেআউট</h2><p className="mt-1 text-sm text-[#748074]">Approve এবং পেমেন্ট রেফারেন্সসহ paid mark করুন</p></div>
-            <div className="divide-y divide-[#edf1ea]">{(recentPayouts.data ?? []).map(p => <div key={p.id} className="px-5 py-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-bold">{money(p.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{p.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Reseller #{p.reseller_id.slice(0,8)} · {p.payment_method ?? "Method not set"}</p></div>{p.status === "requested" && <form action={approvePayout}><input type="hidden" name="payoutId" value={p.id}/><button className="rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs font-bold">Approve</button></form>}</div>{["requested","approved"].includes(p.status) && <form action={completePayout} className="mt-3 flex flex-wrap gap-2"><input type="hidden" name="payoutId" value={p.id}/><input name="reference" defaultValue={p.payment_reference ?? ""} required placeholder="Payment transaction/reference" className="min-w-[200px] flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs"/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Mark paid</button></form>}</div>)}{recentPayouts.error ? <p role="alert" className="p-5 text-sm text-red-800">পেআউট রেকর্ড লোড করা যায়নি।</p> : !recentPayouts.data?.length && <p className="p-6 text-sm text-[#6b786d]">পেআউট অনুরোধ নেই।</p>}</div>
-          </div>
+          {canReadPayments ? (
+            <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
+              <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার কমিশন</h2><p className="mt-1 text-sm text-[#748074]">Pending commission approve করুন</p></div>
+              <div className="divide-y divide-[#edf1ea]">{(recentCommissions.data ?? []).map(c => <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold">{money(c.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{c.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Order #{c.order_id.slice(0,8)} · Reseller #{c.reseller_id.slice(0,8)}</p></div>{c.status === "pending" && (canApproveCommissions ? <form action={approveCommission}><input type="hidden" name="commissionId" value={c.id}/><button type="submit" className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Approve</button></form> : <span className="text-xs text-[#7b887d]">Approval permission required</span>)}</div>)}{recentCommissions.error ? <p role="alert" className="p-5 text-sm text-red-800">কমিশন রেকর্ড লোড করা যায়নি।</p> : !recentCommissions.data?.length && <p className="p-6 text-sm text-[#6b786d]">কমিশন রেকর্ড নেই।</p>}</div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#dfe8dc] bg-white p-6"><h2 className="font-black">রিসেলার কমিশন</h2><p className="mt-2 text-sm text-[#748074]">Finance records are hidden. payments.read permission is required.</p></div>
+          )}
+          {canReadPayouts ? (
+            <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
+              <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার পেআউট</h2><p className="mt-1 text-sm text-[#748074]">Approve এবং পেমেন্ট রেফারেন্সসহ paid mark করুন</p></div>
+              <div className="divide-y divide-[#edf1ea]">{(recentPayouts.data ?? []).map(p => <div key={p.id} className="px-5 py-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-bold">{money(p.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{p.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Reseller #{p.reseller_id.slice(0,8)} · {p.payment_method ?? "Method not set"}</p></div>{p.status === "requested" && (canManagePayouts ? <form action={approvePayout}><input type="hidden" name="payoutId" value={p.id}/><button type="submit" className="rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs font-bold">Approve</button></form> : <span className="text-xs text-[#7b887d]">Payout permission required</span>)}</div>{["requested","approved"].includes(p.status) && (canManagePayouts ? <form action={completePayout} className="mt-3 flex flex-wrap gap-2"><input type="hidden" name="payoutId" value={p.id}/><input name="reference" defaultValue={p.payment_reference ?? ""} required placeholder="Payment transaction/reference" className="min-w-[200px] flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs"/><button type="submit" className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Mark paid</button></form> : <p className="mt-3 text-xs text-[#7b887d]">Payout permission required</p>)}</div>)}{recentPayouts.error ? <p role="alert" className="p-5 text-sm text-red-800">পেআউট রেকর্ড লোড করা যায়নি।</p> : !recentPayouts.data?.length && <p className="p-6 text-sm text-[#6b786d]">পেআউট অনুরোধ নেই।</p>}</div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#dfe8dc] bg-white p-6"><h2 className="font-black">রিসেলার পেআউট</h2><p className="mt-2 text-sm text-[#748074]">Payout records are hidden. payouts.read permission is required.</p></div>
+          )}
         </section>
-
         <section className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">AI Search Opportunities</h2><p className="mt-1 text-sm text-[#748074]">জনপ্রিয় search demand থেকে product ও content আইডিয়া</p></div><Link href="/admin/opportunities" className="rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">সব দেখুন ↗</Link></div><div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">{(opportunities.data ?? []).map(item=><div key={item.id} className="rounded-xl bg-[#f7faf5] p-4"><p className="font-bold">{item.keyword}</p><p className="mt-2 text-xs text-[#748074]">{item.search_count} searches · {item.opportunity_type}</p><p className="mt-1 text-xs font-semibold text-[#39724a]">{item.status}</p></div>)}{opportunities.error ? <p role="alert" className="text-sm text-red-800">Search opportunity data লোড করা যায়নি।</p> : !opportunities.data?.length && <p className="text-sm text-[#748074]">এখনো search signal নেই।</p>}</div></section>
         <section className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-xl font-black">AGRIVA Jobs moderation</h2><p className="mt-1 text-sm text-[#748074]">কৃষি চাকরির পোস্ট যাচাই ও প্রকাশের জন্য</p></div><Link href="/admin/jobs" className="rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">চাকরি যাচাই করুন ↗</Link></div></section>
         <LearningCorrectionInbox />
-        <footer className="py-8 text-center text-xs text-[#879187]">AGRIVA Super Admin · Protected by server-side role checks and Supabase RPC authorization.</footer>
+        <footer className="py-8 text-center text-xs text-[#879187]">AGRIVA Admin · Protected by server-side role checks and Supabase RPC authorization.</footer>
       </div>
     </main>
   );

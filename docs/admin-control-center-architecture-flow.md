@@ -1,0 +1,539 @@
+# AGRIVA Admin Control Center — Architecture & Delivery Flow
+
+## Purpose
+
+This document is the implementation baseline for the 11-module AGRIVA Admin navigation. It is intentionally additive: preserve the current public storefront, seller workflows, order lifecycle, and Supabase schema until each change is reviewed and tested.
+
+## Repository baseline (verified against `main`)
+
+- Next.js App Router, React, TypeScript, Tailwind CSS.
+- Supabase Auth + PostgreSQL using `@supabase/ssr` and `@supabase/supabase-js`.
+- `app/admin/layout.tsx` protects the admin route tree with `requireAdminPage("dashboard.read")`.
+- `lib/admin/authz.ts` centralizes the legacy Admin console capability allow-list, currently backed by `profiles.role = 'admin'`; sensitive capabilities such as payment reconciliation and payout approval are deny-by-default.
+- `lib/admin/permission-service.ts` is a separate delegated-admin path backed by `has_admin_permission`; it deliberately does not inherit legacy Admin role grants.
+- `lib/authz/module-access.ts` checks seller/business/farm module grants through `has_module_access`, with the principal bound to the authenticated Supabase session.
+- `supabase/migrations/20261030100000_module_access_foundation.sql` exists in the repository, but production migration drift means its presence in Git does not prove it has been applied to Production.
+- Admin Server Actions and API Route Handlers must authorize independently; the layout guard is not a substitute.
+- Marketplace and Plant Market are separate product domains and must remain separate.
+- Existing CI currently includes lint, TypeScript, regression/smoke checks, and production build.
+- Existing middleware refreshes Supabase sessions and clears invalid refresh-token cookies. Keep its behavior covered while addressing the Next.js middleware-to-proxy convention warning in a separate compatibility change.
+
+## Target module map
+
+| Module | Route namespace | Primary capability family | Initial delivery |
+|---|---|---|---|
+| Dashboard | `/admin` | `dashboard.read` | Existing dashboard; improve navigation/summary incrementally |
+| Website & CMS | `/admin/content/*` | `content.read/edit/publish` | Inventory existing article drafts before adding pages/media |
+| Marketplace | `/admin/marketplace/*` | `catalog.read/create/edit/moderate` | Reuse products and current admin product RPCs |
+| Plant Market | `/admin/plant-market/*` | Separate Plant Market permissions, initially existing admin moderation boundary | Keep table/API/checkout isolated from Marketplace |
+| Sellers & Customers | `/admin/people/*` | `users.read`, `identity.review`, explicit suspension grant | Reuse profiles, verification and seller grants |
+| Orders & Finance | `/admin/commerce/*` | `orders.read/transition`, dedicated finance grants | Read-only overview first; sensitive operations remain gated |
+| Agriculture & Services | `/admin/agriculture/*` | Domain-specific read/moderate grants | Integrate existing farms, crops, jobs, transport and price data |
+| Green Living | `/admin/green-living/*` | Domain-specific grants | Reuse Green Exchange/Impact services |
+| AI Management | `/admin/ai/*` | New AI configuration/usage grants | Server-only provider secrets; no key exposure to browser |
+| SEO & Marketing | `/admin/seo/*` | `content.edit` plus dedicated SEO grants | Canonical, sitemap, redirects and audit |
+| System & Security | `/admin/system/*` | `roles.read`, `audit.read`, `system.health.read`; high-risk actions separately gated | Read-only health/audit first |
+
+Routes above are target route namespaces, not a claim that all pages already exist. Build only the pages backed by verified data and working actions; unavailable modules should be clearly marked as planned rather than linked to fake functionality.
+
+## Layered architecture
+
+1. **UI / route layer** — server-rendered `/admin` pages, shared responsive navigation filtered through the current server-verified legacy Admin capability allow-list, forms and accessible states. Delegated role grants remain a separate authorization path until explicitly integrated.
+2. **Application/use-case layer** — domain-specific server actions and route handlers; parse and validate inputs before calling persistence.
+3. **Authorization layer** — `requireAdminPage`, `requireAdminApi`, capability checks, deny-by-default grants, and explicit high-risk step-up/approval policies.
+4. **Domain/persistence layer** — existing Supabase tables, RLS, constraints, narrowly scoped RPCs, migrations and audit records. Do not duplicate existing entities.
+5. **Integration layer** — Supabase Storage, payment provider, AI providers and external agriculture services. Secrets stay server-side and outbound calls are validated and observable.
+
+## Request and data flow
+
+```mermaid
+flowchart TD
+  A[Admin browser] --> B[Next.js App Router]
+  B --> C[Admin layout guard]
+  C --> D{Authenticated and dashboard access?}
+  D -->|No| E[Login or forbidden route]
+  D -->|Yes| F[Admin module navigation]
+  F --> G[Module page / server component]
+  G --> H[Domain use case / server action / API]
+  H --> I{Capability check for this action}
+  I -->|Denied| J[401 / 403 / 503]
+  I -->|Allowed| K[Input validation]
+  K --> L[Supabase RLS / audited RPC]
+  L --> M[(PostgreSQL)]
+  L --> N[Admin audit log]
+  M --> O[Revalidate affected paths]
+  N --> O
+  O --> P[Updated UI / outcome]
+```
+
+Every mutation must repeat authorization at its own server boundary. Never trust hidden inputs, client navigation visibility, browser success redirects, or a layout-only guard.
+
+## Module interaction / bounded-context flow
+
+```mermaid
+flowchart LR
+  CMS[Website & CMS] --> SEO[SEO & Marketing]
+  Marketplace[Marketplace] --> SEO
+  PlantMarket[Plant Market] --> SEO
+  Sellers[Sellers & Customers] --> Marketplace
+  Sellers --> PlantMarket
+  Marketplace --> Orders[Orders & Finance]
+  PlantMarket --> Orders
+  Agriculture[Agriculture & Services] --> Green[Green Living]
+  AI[AI Management] --> CMS
+  AI --> Agriculture
+  System[System & Security] -. governs .-> CMS
+  System -. governs .-> Marketplace
+  System -. governs .-> PlantMarket
+  System -. governs .-> Sellers
+  System -. governs .-> Orders
+  System -. governs .-> Agriculture
+  System -. governs .-> Green
+  System -. governs .-> AI
+  System -. governs .-> SEO
+```
+
+Arrows describe logical dependencies, not direct database coupling. Cross-domain operations must go through explicit server-side use cases and audited interfaces.
+
+## Core invariants
+
+- Marketplace `public.products` and Plant Market `public.plant_market_products` remain separate domains, APIs, seller rules, permissions, route namespaces and checkout lifecycles.
+- Product UUIDs and order references are immutable. Public slugs are identifiers for URLs only.
+- Custom slug changes require database uniqueness, atomic history/redirect creation, loop/conflict protection, and canonical/OG/JSON-LD/sitemap updates.
+- Seller ownership is read-only in ordinary product editing. Ownership transfer is a separate high-risk operation.
+- Financial mutations (refunds, reconciliation, payouts) require separate permissions, server-side verification, idempotency and audit; they are not ordinary admin CRUD.
+- AI provider credentials and payment secrets never reach client components or logs.
+- Every module needs loading, empty, error, forbidden and success states; responsive and keyboard-accessible navigation.
+- Never run migrations against a live project until project identity, migration history, backup/recovery and explicit release approval are confirmed.
+
+## Delivery sequence
+
+### Phase 0 — Audit and safety baseline
+- Triage open repository issues and reconcile stale issue descriptions against current `main`.
+- Confirm CI and Vercel preview gates.
+- Record production schema drift; keep all database inspection read-only.
+- Agree on route names and capability ownership before creating pages.
+
+### Phase 1 — Admin shell and access model
+- Shared module navigation filters verified links through the server-checked legacy Admin capability allow-list.
+- Add module landing pages only where a real destination exists.
+- Keep page, API and Server Action authorization independent of navigation visibility.
+- Keep high-risk finance actions deny-by-default; commission approval requires `payments.reconcile`, payout approval/completion requires `payouts.approve`.
+- Add navigation, destination integrity and finance action regression checks.
+
+### Phase 2 — Catalogue control (first functional vertical slice)
+- Marketplace landing page provides database-backed product status counts and links to the existing product editor, seller application queue and taxonomy manager.
+- Marketplace product editor: custom slug, category, media, inventory, SEO, preview.
+- Plant Market editor as a separate vertical slice with its own validation and permissions.
+- Add slug history/redirect and revision/audit support only through reviewed migrations.
+- Add collision, redirect, RLS, seller-ownership and canonical metadata tests.
+
+### Phase 3 — CMS and SEO
+- Database-backed pages/articles, categories/tags, publication workflow and revisions.
+- Homepage builder with allow-listed blocks (never arbitrary HTML).
+- Redirect manager, sitemap and SEO audit.
+
+### Phase 4 — People and operations
+- Seller/customer/verification tools.
+- Orders read/transition, then finance only after payment integrity and idempotency blockers are closed.
+- Agriculture/services and Green Living integrations.
+
+### Phase 5 — AI and platform operations
+- AI prompts/providers/usage with server-only secrets and cost controls.
+- System health, audit search/export, role administration and recovery controls with explicit step-up policies.
+
+Each phase is a separate reviewable PR, with CI + Vercel preview evidence. Do not merge or deploy production automatically.
+
+## Open issue triage (snapshot checked 2026-11-04)
+
+| Issue | Finding | Admin/release impact | Action before release |
+|---|---|---|---|
+| #15 Dependency security audit | Issue body says Next.js 14.2.31, but current `main/package.json` specifies Next.js 16.4.3 and React 18.3.1. The issue's package snapshot is stale; current transitive audit and a committed lockfile still need verification. | Do not use the issue's old version as a direct upgrade instruction. | Reproduce clean install, generate/review lockfile, run current `npm audit`, map advisories to actual runtime and choose compatible patched versions. |
+| #65 Production Supabase migration drift | Production-connected schema is missing several repository tables; migration history differs. | Blocks DB-backed Jobs/feature rollout and any blind migration replay. | Reconcile every migration and live schema; backup/rollback plan; explicit production approval. |
+| #68 Payment-event RPC authorization | Historical migration grant is broader than desired; current live grants were read-only verified as denied to anon/authenticated. | Payment-event RPC must not become client callable. | Preserve least privilege; regression-test client denial and trusted server workflow. |
+| #69 Forward-only payment-event grant hardening | Repository migration history can encode a less restrictive grant than current live state. | Migration replay could regress payment security. | Reconcile history; add reviewed forward-only revoke/least-privilege migration only after schema-history review. |
+| #70 Auth and public SECURITY DEFINER review | Leaked-password protection warning and public RPCs require per-function behavior review. | Security hardening needs compatibility tests; do not revoke public RPCs blindly. | Document intended public surface, validate/rate-limit, review Auth rollout and re-run advisor. |
+| #84 SSLCommerz IPN/init hardening | Current `main` has all five SSLCommerz entry points disabled with HTTP 410; the existing smoke test enforces COD-only behavior. The earlier live handler findings are therefore not reachable through those endpoints in the current code. | Online payments remain intentionally unavailable; this is a safe mitigation, not a completed online-payment integration. | Preserve disabled endpoints until a separate verified provider integration, transaction/idempotency design, sandbox suite and approved database rollout are ready. |
+
+Issue descriptions are repository audit records, not a substitute for rechecking the current code and live project immediately before implementing a fix. No issue was closed or marked resolved by this document.
+
+## Implementation progress
+
+- Admin Control Center navigation is mounted under the protected Admin layout and filters links through a server-verified capability list.
+- Marketplace module landing page is implemented with read-only product status metrics and verified links to existing workflows.
+- Commission/payout Server Actions no longer inherit the broad `dashboard.read` grant; they require explicit finance capabilities and their controls are hidden when those capabilities are unavailable.
+- Authorization smoke tests now cover navigation capability filtering, valid route targets, finance action guards, and Marketplace metrics/error behavior.
+- SSLCommerz endpoints remain disabled (HTTP 410) and the COD-only smoke test remains in CI. This is a mitigation, not an online payment implementation.
+
+## Immediate implementation backlog (refreshed 2026-11-04)
+
+1. **Marketplace editor — largely implemented on the feature branch:** core fields, taxonomy, SEO metadata/FAQ, gallery/alt text, custom slug RPC, historical slug resolution and canonical redirect are implemented with regression coverage. Admin image upload remains blocked pending a reviewed Storage ownership/policy design. The slug-history migration is branch-only and not applied to Production.
+2. **Plant Market editor — implemented as a separate vertical slice:** separate table/API/editor, capability checks, server-side audit, live constraint validation and moderation boundary. Image/gallery editing remains read-only pending Storage review.
+3. **Sellers & Customers — implemented baseline:** server-side search/role filters, responsive views, separate role mutation capability and verification review notices. Continue end-to-end permission and edge-case testing.
+4. **Orders & Finance — partial:** bounded order list, valid order transition UI and database state-machine hardening are prepared on the branch. COD reconciliation, commission approval, refunds and payouts remain disabled until a dedicated actor-verified, idempotent, audited server-side workflow is implemented.
+5. **CMS / SEO / remaining operations — open:** reconcile content workflow and revision migrations against live schema before connecting database-backed publishing. Then finish content drafts/articles, SEO controls, Green Exchange moderation, reports, audit search/export, settings, AI management and remaining operations modules.
+6. **Phase 0 release blockers — open:** finish content-level comparison of the 39 unmatched repository filenames, 31 unmatched Production history rows and six ambiguous groups; validate the three 20261104 forward-only migrations on an isolated Supabase branch; review remaining security-advisor findings; coordinate leaked-password protection; and complete backup/recovery planning.
+7. Keep SSLCommerz disabled until a separate provider integration, transaction/idempotency design, sandbox suite and approved database rollout are ready. Netlify is not a release gate.
+
+## Release gates
+
+- CI: lint, TypeScript, all smoke/regression tests and production build pass.
+- Vercel preview: deployment READY; verify the changed admin routes and existing public flows.
+- Supabase: migration diff, RLS/grants, backup/recovery and target project identity reviewed.
+- Security: no client-executable privileged RPCs, no exposed secrets, and all high-risk actions deny by default.
+- Release: reviewed PR and explicit production approval. Netlify is not a release gate for this project.
+
+
+## Production schema reconciliation snapshot (2026-11-04)
+
+Target project confirmed by the user: `dhqaepsbuwhbynagfxpf` (`supabase-coral-clock`, ACTIVE_HEALTHY, PostgreSQL 17.11, us-east-1). All inspection below was read-only; no SQL writes, migrations, data updates, or permission changes were performed.
+
+### Live catalogue schema
+
+- `public.products` has UUID identity, nullable slug with a unique index, SEO title/description/keywords/content/FAQs, image URL/gallery, image variants, image alt-texts, SEO attribute suggestions, category taxonomy, and Marketplace channel fields.
+- `public.plant_market_products` has UUID identity, required unique slug, image URL and image array, but no dedicated SEO title/description/content fields.
+- Both tables have RLS enabled and domain-specific policies. Marketplace and Plant Market remain separate tables and policies.
+- Live product counts at audit time: Marketplace 3; Plant Market 0. No empty or duplicate slugs were observed in either table.
+- No slug history/redirect table was found in the inspected public/private table inventory. Custom slug persistence must not ship until atomic history/redirect handling is added and reviewed.
+
+### Migration-history reconciliation blocker
+
+- Repository branch contains 108 SQL migration files under `supabase/migrations`; the live project reports 102 migration-history entries.
+- 34 rows match exact repository filename and migration name. Prefix-normalization finds 44 additional candidate pairs; six groups contain duplicate/replay-name ambiguity. After one-to-one pairing, 28 repository files and 24 live history rows still have no safe name-based counterpart. Candidate names do not prove equivalent DDL; the ambiguous groups and unmatched files require content-level intent comparison.
+- Several live objects already exist (including product SEO and image fields) despite their creation migration names not matching the current branch filenames. Reconcile each object and migration intent before producing a forward-only migration.
+- Next reconciliation work: complete content-level intent mapping for the 28 repository-only files, 24 live-only rows, and six ambiguous replay groups; compare live object definitions against each migration's intended DDL; then generate a minimal reviewed forward-only migration only if a required object change is missing. Do not repair migration history by deleting/reinserting rows or replaying the folder wholesale.
+
+### Security advisor snapshot
+
+- Security advisor reported one anonymous-executable SECURITY DEFINER aggregate RPC: `public.get_green_impact_metrics()`. Its current definition returns aggregate counts and its ACL includes anon/authenticated/service_role. Treat as an intentional public aggregate only after confirming no sensitive row-level data can be inferred; do not revoke blindly.
+- Advisor also reported 13 authenticated-executable SECURITY DEFINER RPCs. The inspected Marketplace admin wrappers delegate to private SECURITY DEFINER functions that check `auth.uid()` and `public.is_admin()`; each other RPC still requires per-function authorization review before any grant changes.
+- Leaked-password protection is disabled in Auth settings. This is a configuration hardening item, not changed during this read-only audit.
+- Performance advisor reported 103 unused indexes; no index was dropped because usage history and workload impact need review.
+
+### Marketplace editor delivery gate
+
+The current editor only saves core product fields and taxonomy. The public product page currently uses generated metadata rather than stored SEO fields and loads only `image_url`. The live schema already contains most Marketplace SEO/media fields, but the current editor does not expose them and slug changes have no redirect history. Implement the UI and public metadata/media consumption only against verified existing fields and tested RPC contracts; defer slug mutation until the redirect-history migration and RPC are reviewed. Plant Market SEO/editor work remains a separate bounded context.
+
+**Release status:** production migration application remains blocked pending full migration-intent reconciliation, backup/recovery plan, advisors review, and explicit release approval. This snapshot does not authorize production DDL or deployment.
+
+## Phase 0 — Production migration/security reconciliation (read-only, 2026-11-04)
+
+Target: `dhqaepsbuwhbynagfxpf` (`supabase-coral-clock`). The user explicitly confirmed this project should be treated as Production. All checks in this section were read-only; no database DDL, data writes, grants, Auth settings, migration-history rows, or production deployments were changed.
+
+### Migration history cross-check
+
+- Branch migration directory: 106 SQL files. Production migration history: 102 rows.
+- 34 rows match exact repository filename and migration name.
+- 44 additional prefix-normalized candidate pairs were found. Six groups are ambiguous because of duplicate/replay entries (Green Living indexes, truncate privileges, Green Exchange reconcile, Green Living reconcile, atomic cart checkout, and legacy order RPC revocation).
+- After one-to-one pairing, 28 repository migration files and 24 production history rows remain without a safe name-based counterpart.
+- This establishes migration-history drift, not a list of unapplied migrations. Some repo-only effects may already be present in Production under differently named/renamed history rows. Conversely, a matching filename is not proof that its DDL is identical.
+- No attempt was made to repair migration history or replay any migration. Next reconciliation must compare the 28/24 unmatched entries and six ambiguous groups against actual live object definitions and migration SQL intent.
+
+### Security issue cross-check
+
+- Issue #68/#69 payment-event grant hardening: live `public.record_payment_event(uuid,text,text,numeric,text,text,jsonb)` currently has `anon_execute=false`, `authenticated_execute=false`, and `service_role_execute=true`. This is the desired least-privilege runtime state even though the corresponding repository migration name is not an exact live history match. Preserve it; do not re-grant browser execution.
+- `public.is_admin()` is currently SECURITY INVOKER (not SECURITY DEFINER), with `anon_execute=false`, `authenticated_execute=true`, and `service_role_execute=true`; this matches authenticated RLS policy usage and keeps anonymous invocation denied. No grant was changed.
+- Security advisor reported 13 authenticated-executable SECURITY DEFINER functions and one anon-executable aggregate function. Read-only body review found the 12 user/admin workflow functions require `auth.uid()`; admin-only actions additionally check `public.is_admin()` or the admin profile, while checkout/order/Green Exchange functions include actor/ownership checks. These are intentionally authenticated workflow RPCs, not blanket reasons to revoke EXECUTE. Keep the per-function inventory and regression tests.
+- `public.get_green_impact_metrics()` is callable by anon and authenticated but returns aggregate counts only (approved Green Exchange listings, active Marketplace products in a category pattern, completed exchange requests). This appears to be an intentional public aggregate endpoint; assess inference risk and keep its output aggregate-only. Do not revoke without a product compatibility decision.
+- Auth leaked-password protection is disabled. This is a real hardening task, but enabling it can affect signup/password update behavior and requires an Auth configuration rollout and user-flow tests; it was not toggled during this read-only pass.
+- Performance advisor reports 103 unused indexes and one multiple-permissive-policy warning on `green_exchange_listings`. No index or policy was removed; index usage and policy semantics need workload/behavior review first.
+- RLS is enabled on the inspected Marketplace, Plant Market, order and admin audit tables. RLS is not forced on all of them; do not infer that table owners/service-role access is constrained by RLS.
+
+### Phase 0 exit decision
+
+**Status: partially reconciled; no production mutation.**
+
+The security state for payment-event RPC grants is confirmed safe. SECURITY DEFINER warnings have been classified by function intent rather than blindly revoked. Migration drift is quantified, but content-level reconciliation of all 28/24 unmatched entries and six replay groups remains a blocker to any migration application. Auth leaked-password protection and public aggregate exposure review remain open hardening items. No production migration can be declared ready yet.
+
+## Phase 1 — Responsive Admin Shell implementation (branch work)
+
+- Added a shared responsive shell under the protected `/admin` layout.
+- Desktop: persistent 264px sidebar, module grouping, active-route state, searchable navigation and user-dashboard shortcut.
+- Mobile: four primary bottom-navigation destinations (Home, Orders, Marketplace, Plant Market) plus a searchable More sheet; safe-area padding and 48px touch targets.
+- Navigation links are filtered individually by their server-verified capability. Every destination still enforces its own server-side access checks.
+- Planned features are rendered as non-clickable labels. The shell does not fabricate routes for unfinished modules.
+- Dashboard now uses a pending-order count query rather than loading every order amount to compute an all-time value; recent orders render as cards on mobile and a table on desktop.
+- The existing `/admin/orders` route still has its own legacy admin role check. A future capability migration should align that route with `orders.read`/transition policies before delegated admins are introduced.
+
+## Marketplace vertical slice progress
+
+- Marketplace overview remains database-backed and read-only for status metrics.
+- Product editor now supports server-side name search and status filters, core product fields, taxonomy, SEO title/description/keywords/content/FAQ, gallery inspection, and per-image alt text through the existing admin-guarded SEO RPCs.
+- The public Marketplace product page consumes saved SEO title/description/keywords, SEO content, image gallery and alt text; saved FAQ entries are displayed and emitted as FAQ structured data. UUID fallback and canonical slug redirect behavior remain.
+- Existing image URLs are view-only in Admin. Production Storage policies inspected so far authorize seller-owned uploads, not a reviewed Admin upload flow; no client-side policy bypass was added.
+- Custom slug editing, slug history and 301 redirect persistence remain blocked until a forward-only migration/RPC design is reviewed and the full production migration map is reconciled.
+- Marketplace and Plant Market remain separate data and moderation domains.
+
+### Verification status for this implementation slice
+
+- Static source-contract checks were added to `smoke-admin-authorization.mjs` and `smoke-marketplace-product-seo.mjs`.
+- GitHub Actions and Vercel preview results for the latest commit are pending; no successful build, lint, typecheck or route verification is claimed until those checks finish.
+- No PR merge, production deploy or production database write was performed.
+### Additional financial-action boundary found during Phase 1
+
+- The legacy `/admin/orders` page previously allowed COD collection after only checking `profiles.role = 'admin'`. It now uses `orders.read` for the page, `orders.transition` for delivery status changes, and `payments.reconcile` for the COD collection Server Action. The collection form is hidden unless that separate capability is available.
+- `payments.reconcile` remains deny-by-default in the current legacy capability allow-list, so no existing admin receives COD collection permission from this UI until a separately reviewed grant model exists. The database RPC continues to require its own admin check.
+- The main dashboard no longer offers `refunded` as an ordinary order status. Refunds remain outside routine order transitions and require a dedicated reviewed workflow.
+- Regression checks were added for both boundaries. No Production grants or payment records were changed.
+- Dashboard commission and payout data queries are now skipped unless `payments.read`/`payments.reconcile` or `payouts.read`/`payouts.approve` is available. The corresponding KPI and panels show restricted/unavailable state rather than a misleading zero.
+- `/admin/orders` skips checkout collection-ledger queries without `payments.read`; order details remain available under `orders.read`. The COD reconciliation form remains hidden unless `payments.reconcile` is separately granted.
+- Dashboard recent-order preview no longer fetches the full `shipping_address` JSON just to display a buyer name; it selects only the buyer profile's `full_name`.
+### Important residual: capability checks are not yet enforced inside every finance RPC
+
+- The app-level `payments.reconcile` / `payouts.approve` checks now hide finance UI and protect the Server Actions, but Production finance RPCs still grant EXECUTE to `authenticated` and their private SECURITY DEFINER implementations check `public.is_admin()`. Examples include `approve_reseller_commission`, `approve_commission_payout`, `complete_commission_payout`, and `record_cod_collection`.
+- Therefore an authenticated legacy admin could call those RPCs directly and bypass the new app-layer capability boundary. This is a release blocker before introducing delegated Admin roles or claiming finance capabilities are database-enforced. A reviewed migration must add database-side capability grants/checks or move these operations behind a service-role-only RPC invoked exclusively after server-side capability authorization.
+- Production `public.set_marketplace_order_status(uuid,text)` also still accepts `refunded` in its admin branch and restores stock/reverses commissions. The Dashboard and Orders UI no longer expose refund status, but direct authenticated Admin RPC invocation can still request it. A dedicated refund workflow and DB-level restriction remain required.
+- No RPC grants or function bodies were changed in Production. The UI restrictions are mitigation only, not a complete database security fix.
+### Object-level equivalents confirmed for selected unmatched migration intents
+
+- The reseller payout reservation/partial-settlement behavior exists in Production under renamed RPCs: `private.request_commission_payout(numeric,text)` locks the reseller profile, computes approved unpaid commission, subtracts requested/approved payouts, and rejects over-reservation; `private.complete_commission_payout(uuid,text)` locks the approved payout and commission rows, allocates `paid_amount` across commission rows, and rejects insufficient approved balance. These are functional equivalents to the intent of the repository payout-reservation/partial-settlement migrations, but their current authenticated wrappers still rely on the legacy admin role rather than DB-side capability grants.
+- `public.set_marketplace_order_status(uuid,text)` exists as SECURITY DEFINER, requires `auth.uid()`, checks admin or verified seller organization/module access, and enforces seller transitions. Its admin branch still accepts `refunded`, so the routine UI restriction does not close direct RPC invocation.
+- `public.handle_new_user()` exists as SECURITY DEFINER with EXECUTE limited to service_role, and `public.user_role_memberships` exists. The `profiles` table has a `prevent_role_escalation` trigger and its authenticated update policy is owner-only; admin reads use the private admin predicate.
+- `harvest_listings_publish_immediately` trigger and the public `status = 'available'` read policy exist. Owner status updates remain constrained to approved moderation state; the publish trigger is the path that reconciles immediate publication.
+- These checks reduce uncertainty for several high-impact migration intents, but do not replace the outstanding full DDL comparison for all unmatched and ambiguous migration entries.
+### Updated content-level migration reconciliation (read-only, 2026-11-04)
+
+- The normalized filename audit was rerun against the current branch and live `supabase_migrations.schema_migrations` list: 108 repo files, 102 history rows, 71 unique pairs, six ambiguous duplicate-name groups (8 repo entries / 11 DB entries), 29 repo-only names and 20 DB-only names. This supersedes the earlier 34/44 estimate.
+- Live catalog inspection confirms `user_role_memberships`, `content_drafts`, Green Exchange tables, Green Living tables, crop-cycle/farm-finance tables, `paid_amount`, payout RPCs, attribution RPCs, and the Harvest immediate-publication trigger exist. Some have renamed or consolidated migration history.
+- `learning_correction_reports` and `content_draft_revisions` are absent from the inspected Production schema; the corresponding unmatched migrations must not be marked applied. The `content_drafts` table exists but only the `content_drafts_admin_all` policy was visible in the policy inventory; the repo's public published-article column grant/policy was not found in that inventory. Do not enable the public article route on the assumption that its migration ran.
+- `farm_expenses_owner_insert/update` live policies were present, but their crop-cycle ownership predicates were not confirmed by the catalog snapshot; the repo's `fix_farm_record_crop_cycle_scope` intent remains an explicit compare item.
+- `paid_amount` and the payout functions exist in Production, but the inspected public `complete_commission_payout(uuid,text)` reports SECURITY INVOKER while the earlier private implementation/wrapper inventory showed a SECURITY DEFINER implementation. Compare the full schema-qualified function definitions and grants before treating payout settlement as fully reconciled.
+- The repo's payment-event hardening intent is confirmed live: `record_payment_event` is executable only by `service_role` (anon/authenticated denied). The anon resolver restriction and public attribution output minimization must still be compared by exact function ACL and body, not inferred from object existence.
+- Green Exchange and Green Living tables exist; Production policy set includes an extra authenticated admin-read policy for Green Exchange. Review the multiple-permissive-policy advisor warning against these exact policies; do not drop policies as part of reconciliation.
+- This narrows the remaining work to content/DDL comparison for the 29 repo-only, 20 history-only and six ambiguous groups. It does not authorize replay, history editing, or a new migration. Keep Production read-only until a signed-off forward-only diff is produced.
+### Next implementation slice — Plant Market editor
+
+- Added `/admin/plant-market` as a separate catalog workspace, with server-side name/status filters and a mobile-first product editor for plant-specific fields (scientific name, category, care, size, age, price, stock, unit, delivery area, description).
+- Added PATCH API guarded by `catalog.edit`, using the existing Production `plant_market_products` table, RLS admin policy and database write trigger. Active products are prechecked against verified Gardener identity and an unexpired global Plant Market create grant; the database trigger remains the final enforcement boundary.
+- Slug and publication status are not editable here; moderation remains in the separate `catalog.moderate` queue. Images/gallery are read-only because an Admin Storage ownership/policy design is still pending. No migration or Storage policy change was introduced.
+- Plant Market edit API now fails closed if the server-only `SUPABASE_SERVICE_ROLE_KEY`/Supabase URL is unavailable. Before product mutation it records `plant_market.product.update_requested` in `admin_audit_log` through a server-only service-role client; it then marks the event completed/failed. The product update itself still runs through the authenticated user's Supabase session so the existing RLS policy and `guard_plant_market_product_write()` trigger remain in force.
+- The audit insert happens before the mutation; if the audit service is unavailable, no product write occurs. If final audit status update fails after the product update, the initial attempted event remains and the API returns a visible audit-finalization error. No service-role secret is sent to the browser.
+- Plant Market editor validates the live database constraints: price must be greater than zero; stock cannot be negative; unit is restricted to `piece`, `pot`, `pack`, or `tray`; category label and required kebab-case `category_slug` are updated together. This was confirmed against the Production `plant_market_products` table constraints by read-only catalog inspection.
+### Sellers & Customers — responsive user management slice
+
+- `/admin/users` now supports server-side name search and role filters, with desktop table and mobile cards. User IDs are masked in the UI; query failures show an alert instead of a false empty state.
+- Navigation and Dashboard shortcut require `users.read`; role mutation remains a separate `roles.grant` Server Action and the existing database RPC. Routine UI can only switch Farmer/Reseller and cannot promote an Admin or change the signed-in admin's own role.
+- Identity verification queue now returns explicit success/validation/failure notices after Server Action review instead of throwing an unhandled error. Rejection requires a review reason, applicant IDs are masked, and action controls use mobile-sized touch targets.
+### Critical live attribution RPC drift found and forward-only repair drafted
+
+- Exact Production function inspection found `public.record_attribution_session(text,text,uuid,integer)` still returns `attribution_sessions` and has EXECUTE for `anon` and `authenticated`; its private SECURITY DEFINER implementation also had client-role EXECUTE. The referral redirect only consumes success/failure, so this exposes an unnecessary inserted row to anonymous callers.
+- Exact Production ACL inspection found `public.resolve_reseller_attribution(text,text,uuid)` still has EXECUTE for `anon` and returns `reseller_id`/`expires_at`, contrary to the repo's intended authenticated-only resolver migration.
+- Added `supabase/migrations/20261104100000_forward_harden_attribution_rpcs.sql`: the public attribution creation RPC becomes `RETURNS void`, client roles lose direct access to the private row-returning implementation, and anonymous execution is revoked from public/private attribution resolution while authenticated/service-role access remains.
+- Added smoke assertions for the forward migration. This is a draft forward-only repair on the feature branch only. It has NOT been applied to Production; migration-history reconciliation and explicit Production migration approval are still required.
+### Finance RPC bypass and refund state machine — forward-only repair drafted
+
+- Production exact ACL/definition inspection confirmed authenticated EXECUTE on public/private `approve_reseller_commission`, `approve_commission_payout`, `complete_commission_payout`, and `record_cod_collection`; their SECURITY DEFINER bodies use the legacy admin predicate, not fine-grained capabilities.
+- Added `supabase/migrations/20261104110000_forward_harden_admin_finance_and_order_rpcs.sql`. It revokes client/service-role execution from those legacy high-risk finance RPCs until a new audited server-side actor-verified finance workflow is introduced. This intentionally fails closed; current Admin finance capabilities are denied by default.
+- The same migration replaces the private order transition implementation with an explicit state machine, revokes direct client execution of the private implementation, and exposes only a guarded public wrapper. Direct `refunded` status is removed; refund requires a separate workflow. Stock is restored only for pending/processing cancellation, never after dispatch.
+- Dashboard and Orders screens now display only valid next-state options for the current order status, matching the forward migration's state machine.
+- Static regression assertions were added. This migration is branch-only and NOT applied to Production. Full migration history reconciliation and explicit approval remain required.
+### Additional object-level reconciliation details
+
+- Production `content_drafts` has the expected SEO/body/review columns and indexes, but no draft-workflow trigger was attached. Its visible RLS policy is admin-only; anon has table-level SELECT privilege but no public published-row policy was found. This is currently fail-closed under RLS, but if a public published policy is introduced later, column-level grants must be restricted first to avoid exposing review/internal fields. The public `/articles/[slug]` route is currently backed by a static in-code article list, not `content_drafts`.
+- `farm_expenses_owner_insert/update` policies do include the `crop_cycle_id` → same farm + same owner predicate, and use `(SELECT auth.uid())` initplans. This confirms the crop-cycle scope and auth-initplan intents are live under different migration names.
+- `user_role_memberships` has a primary-key index; `handle_new_user()` inserts memberships for normal and anonymous users. `private.admin_set_user_role()` prevents self-change and Admin promotion and inserts `admin_audit_log` records.
+- `private.request_commission_payout()` locks the reseller profile and subtracts requested/approved reservations from approved unpaid commission; `private.complete_commission_payout()` locks payout/profile/commission rows and allocates `paid_amount` in order. These intents are live, but admin payout RPC grants are now covered by the new branch-only deny-by-default forward migration.
+- The three `*_reconcile_replay` SQL files in the repo are intentionally empty comments because Production migration history contains duplicate Green Exchange/Green Living replay entries. Do not replace them with DDL or replay them.
+- `record_attribution_session`/`resolve_reseller_attribution` are not just naming drift: live definitions and ACLs were checked and expose more than intended. The two new forward-only migrations target these concrete gaps; neither is applied to Production.
+- Dashboard and Orders now require `payments.read` / `payouts.read` strictly for finance data; mutation capabilities do not imply read access. All legacy commission approval, payout approval/completion and COD collection Server Actions are hard-disabled until a new audited service-role workflow exists, matching the forward migration that revokes the legacy RPCs.
+ 
+### Marketplace slug history and canonical redirects — branch-only
+- Added `20261104120000_marketplace_slug_history_and_admin_rpc.sql`: an immutable old-slug mapping table, public read-only redirect lookup, authenticated Admin-only slug update RPC, and `admin_audit_log` entry for each change.
+- Public product lookup now resolves old slugs and the product page redirects them to the current canonical slug. Sitemap and metadata continue to use the canonical slug.
+- Production currently contains Bengali/Unicode slugs. The first draft's ASCII-only history constraint would have rejected those old slugs; it was corrected to preserve legacy slugs verbatim (1–255 characters). Current inspected slugs are 29, 31 and 65 characters.
+- The RPC is granted to `authenticated` only (not `service_role`) and checks `auth.uid()` plus `public.is_admin()`. No Production migration has been applied.
+- Repository migration-file count is now 109 after the slug-history migration; do not infer applied status from the filename count.
+
+
+## Phase 0 continuation — live ACL recheck (2026-11-04 13:27 +06:00)
+
+This section supersedes older count snapshots above where the numbers differ. Target remains Production project `dhqaepsbuwhbynagfxpf`; checks below were read-only.
+
+### Current inventory checkpoint
+
+- Current feature branch contains 109 SQL files under `supabase/migrations` (verified from the branch audit); Production `schema_migrations` currently returns 102 rows.
+- This count difference is not an unapplied-migration list. The live history contains renamed/replayed entries, so no bulk replay or migration-history edits are safe.
+- The next deterministic reconciliation artifact must be a per-file matrix with: repository filename, normalized intent, candidate live history row(s), live catalog object evidence, equivalent/not-equivalent/unknown verdict, and proposed forward-only action. The current connector exposes live migration rows and individual repository files but not a complete repository directory listing; do not claim that matrix is complete until every filename has been enumerated and compared.
+
+### Exact live function ACL checkpoint
+
+Read-only `has_function_privilege` inspection reconfirmed:
+
+| Function | anon EXECUTE | authenticated EXECUTE | SECURITY DEFINER |
+|---|---:|---:|---:|
+| `public.record_attribution_session(text,text,uuid,integer)` | yes | yes | no |
+| `private.record_attribution_session(text,text,uuid,integer)` | yes | yes | yes |
+| `public.resolve_reseller_attribution(text,text,uuid)` | yes | yes | no |
+| `private.resolve_reseller_attribution(text,text,uuid)` | yes | yes | yes |
+| `public.approve_reseller_commission(uuid)` | no | yes | no |
+| `private.approve_reseller_commission(uuid)` | no | yes | yes |
+| `public.approve_commission_payout(uuid)` | no | yes | no |
+| `private.approve_commission_payout(uuid)` | no | yes | yes |
+| `public.complete_commission_payout(uuid,text)` | no | yes | no |
+| `private.complete_commission_payout(uuid,text)` | no | yes | yes |
+| `public.record_cod_collection(uuid,numeric,text)` | no | yes | yes |
+| `public.set_marketplace_order_status(uuid,text)` | no | yes | yes |
+| `private.set_marketplace_order_status(uuid,text)` | no | yes | yes |
+
+Service-role checks also returned EXECUTE for these objects in the live project; the branch-only forward migrations have not been applied, so their intended revocations are not reflected in Production. Do not interpret service-role EXECUTE as proof that a trusted workflow exists.
+
+### Current security advisor checkpoint
+
+The latest Production security advisor still reports:
+- 1 anon-executable SECURITY DEFINER function: `public.get_green_impact_metrics()`.
+- 13 authenticated-executable SECURITY DEFINER functions, including checkout/order, Green Exchange, COD collection and order-status functions.
+- Leaked-password protection disabled.
+
+These are findings requiring per-function body/actor/ownership and data-exposure review. Authenticated SECURITY DEFINER is not automatically a vulnerability: checkout and seller workflows may require it, but must retain explicit actor binding, ownership checks, input validation and safe search_path. The public aggregate function must remain only if its returned aggregates cannot expose sensitive inference.
+
+### Schema existence checkpoint
+
+The current catalog query confirmed `public.content_drafts`, `public.green_exchange_listings`, `public.marketplace_orders`, and `public.plant_market_products` exist. It did not find `public.content_draft_revisions`, `public.learning_correction_reports`, or `public.marketplace_product_slug_redirects` in Production. The latter is expected because the slug-history migration remains branch-only. Missing revision/correction objects must be compared with their repository migration intent before any CMS workflow is connected to them.
+
+### Safe next actions
+
+1. Enumerate all 109 repository migration filenames and compare them one by one with the 102 live history rows and live catalog definitions. The present connector does not provide a directory-list endpoint, so this remains an explicit blocker rather than a guessed reconciliation.
+2. Review all 14 advisor findings by exact function definition and call site; retain safe actor-bound user workflows, harden only confirmed gaps.
+3. Enable leaked-password protection through the Supabase Auth project settings after coordinating rollout impact; this is a Production configuration change and has not been performed.
+4. Validate the three branch-only forward migrations on an isolated Supabase development branch before considering any Production approval.
+5. Keep Production schema, data, grants and Auth settings unchanged until the migration matrix, backup/recovery plan and explicit release approval are complete.
+
+
+### Full filename/history comparison (enumerated 2026-11-04)
+
+The repository migration directory was enumerated through the GitHub Contents API and compared with the full Production migration-history response. Matching was performed exact-name first, then by removing timestamp/legacy numeric prefixes, with one-to-one pairing only.
+
+- 109 repository SQL files; 102 Production history rows.
+- 34 exact filename/name pairs.
+- 37 additional unique normalized one-to-one pairs.
+- 71 total safe name pairs.
+- 38 repository filenames and 31 Production history rows remain unmatched after those pairs. These unmatched sets include the six ambiguous normalized groups below; they are not proof of missing DDL.
+- Ambiguous groups (do not pair by name alone):
+  - `green_living_fk_indexes`: 2 repository files / 2 duplicate Production rows.
+  - `revoke_client_truncate_privileges`: 2 repository files / 1 Production row.
+  - `green_exchange_reconcile`: 1 repository file / 2 duplicate Production rows.
+  - `green_living_reconcile`: 1 repository file / 2 duplicate Production rows.
+  - `atomic_marketplace_cart_checkout`: 1 repository file / 2 differently named Production rows.
+  - `revoke_legacy_public_order_rpc_overload`: 1 repository file / 2 differently named Production rows.
+
+The unmatched repository files are:
+`20261024090000_learning_correction_reports`,
+`20261024100000_publish_approved_learning_corrections`,
+`20261025100000_harden_learning_correction_reports`,
+`20261025164429_secure_profile_role_updates`,
+`20261025174500_public_published_article_read`,
+`20261025180000_add_user_role_memberships`,
+`20261025190000_enforce_content_draft_workflow`,
+`20261025193000_content_review_attribution`,
+`20261025200000_allow_content_unpublish_to_review`,
+`20261025210000_content_draft_revision_history`,
+`20261025220000_restrict_anon_is_admin_execution`,
+`20261025230000_sync_signup_role_memberships`,
+`20261025240000_index_unindexed_foreign_keys`,
+`20261025250000_fix_farm_record_crop_cycle_scope`,
+`20261025260000_optimize_rls_auth_uid_initplans`,
+`20261026233419_reserve_reseller_payout_balance`,
+`20261026233500_harden_marketplace_order_transitions`,
+`20261026233518_fix_partial_commission_payout_settlement`,
+`20261027120000_restrict_payment_event_rpc_grants`,
+`20261027173503_green_exchange`,
+`20261027182446_green_living_platform`,
+`20261027182720_green_living_fk_indexes`,
+`20261027210000_minimize_attribution_rpc_output`,
+`20261027220000_restrict_anonymous_attribution_resolution`,
+`20261027230000_revoke_client_truncate_privileges`,
+`20261030150000_remove_harvest_admin_approval`,
+`20261030181320_revoke_client_truncate_privileges`,
+`20261030183610_green_exchange_reconcile`,
+`20261030183617_green_living_reconcile`,
+`20261030183622_green_living_fk_indexes`,
+`20261030183624_green_exchange_reconcile_replay`,
+`20261030183633_green_living_reconcile_replay`,
+`20261030183642_green_living_fk_indexes_replay`,
+`20261102161719_atomic_marketplace_cart_checkout`,
+`20261102161728_revoke_legacy_public_order_rpc_overload`,
+`20261104100000_forward_harden_attribution_rpcs`,
+`20261104110000_forward_harden_admin_finance_and_order_rpcs`,
+`20261104120000_marketplace_slug_history_and_admin_rpc`.
+
+The Production-only history names are:
+`028_admin_bootstrap_product_creation`,
+`product_seo_fields_compat`,
+`product_form_feature_controls`,
+`feature_control_policy_performance_and_is_admin_grants`,
+`product_form_feature_foreign_key_indexes`,
+`feature_control_jwt_rls_initplan_fix`,
+`index_existing_foreign_keys`,
+`split_public_and_authenticated_read_policies`,
+`remove_overlapping_products_read_policy`,
+`rls_auth_uid_initplan_optimization`,
+`repair_profile_role_memberships_api`,
+`create_harvest_listings_forward_compat`,
+`add_plant_market_taxonomy`,
+`seller_product_multiple_images_and_storage`,
+`20261030103000_admin_product_seo_landing_fields`,
+`seller_product_details_and_profile_fields`,
+`marketplace_image_seo_pipeline`,
+`admin_seo_image_alt_and_attribute_suggestions`,
+`grant_seller_profile_update_fields`,
+`security_performance_advisor_hardening`,
+`revoke_client_truncate_privileges`,
+`20261030235200_green_exchange_reconcile` (two rows),
+`20261030235210_green_living_reconcile` (two rows),
+`20261030235220_green_living_fk_indexes` (two rows),
+`atomic_marketplace_cart_checkout`,
+`revoke_legacy_public_order_rpc_overload`,
+`20261101090000_atomic_marketplace_cart_checkout`,
+`20261101100000_revoke_legacy_public_order_rpc_overload`.
+
+The list is a deterministic name-level inventory, not a DDL equivalence verdict. Content-level reconciliation remains open for all unmatched and ambiguous entries. In particular, the three 20261104 forward-only migrations are branch-only by design and must be validated against an isolated database before any Production release decision.
+
+
+## Phase 0 continuation — Admin audit gap fixed on branch (2026-11-04)
+
+Read-only review of all 14 current Production security-advisor findings found two Admin mutation RPCs with no direct `admin_audit_log` insert and no table trigger that records the actual grant/listing mutation:
+- `public.admin_moderate_green_exchange_listing(uuid,text)` updated moderation status without an explicit admin audit event.
+- `public.admin_revoke_market_access(uuid,text,uuid)` changed `user_module_grants`; the related application-withdrawal trigger logged the application change, but the grant mutation itself had no explicit audit event.
+
+Added branch-only migration `20261104130000_audit_admin_moderation_and_access_revocation.sql`:
+- Records actor, listing, moderation status for Green Exchange moderation.
+- Records actor, target user, module, scope, revoked grant count and withdrawn application count for module access revocation.
+- Rejects null target user/module/scope combinations before mutation.
+- Keeps the existing authenticated Admin and trusted service-role execution contract; function bodies still enforce the authenticated Admin identity.
+- Audit insert is in the same database transaction as the mutation, so an audit failure rolls back the mutation.
+
+Added Admin authorization smoke assertions for both audit events and input validation. The smoke script passes a JavaScript syntax check. This migration has not been applied to Production.
+
+### Updated migration count after the audit migration
+
+The feature branch now has 110 migration files; Production history still has 102 rows. Re-running the exact-first, unique-normalized one-to-one comparison gives 34 exact pairs and 37 additional normalized pairs (71 total). 39 repository files and 31 Production rows remain unmatched, with the same six ambiguous normalized groups. The new audit migration is an additional branch-only unmatched file; it does not change Production.
+
+The previously recorded 109-file / 38-repository-unmatched count is superseded by this updated 111-file checkpoint. Content-level reconciliation remains open; no migration history was edited and no Production DDL, grants, data or Auth settings were changed.
+
+
+## CMS public publishing and revision-history repair (2026-11-04)
+
+Production read-only inspection confirmed:
+- `public.content_drafts` exists with RLS enabled, but its only live policy is Admin-only `ALL`; no public published-article read policy exists.
+- `public.content_draft_revisions` and legacy `public.article_drafts` do not exist in the inspected Production catalog.
+- The current public `/blog` and `/blog/[slug]` routes previously rendered only hard-coded article data. Admin's Content Drafts UI could set a row to `published`, but that CMS content was not surfaced on the public blog.
+- The existing Content Drafts client used `select("*")`, which is incompatible with a least-privilege column grant.
+
+Branch-only implementation:
+- Added `20261104140000_forward_restore_content_publishing_and_revisions.sql` to create an anon-only, column-scoped read path for rows where `status='published'` and `content_type='article'`; authenticated Admin reads are column-scoped separately and remain subject to the existing Admin RLS policy.
+- Adds the missing immutable `content_draft_revisions` table, Admin-only read policy, before-image trigger, database-enforced editorial state transitions and unique article-slug index.
+- Production duplicate-slug preflight returned zero duplicate article slugs at the time of inspection.
+- Added `lib/content/published-articles.ts` using a dedicated anonymous Supabase client so signed-in visitor roles cannot change public content visibility.
+- Public blog listing and dynamic article detail routes now include published CMS articles while preserving the four existing static articles; route revalidation is set to 60 seconds.
+- Admin Content Drafts now selects explicit editor columns rather than `*`.
+- Admin authorization smoke test asserts public-only published-row policy, column grants, revision capture, workflow guard, anonymous reader filters and dynamic blog integration.
+
+The migration has NOT been applied to Production. Until it is validated on an isolated Supabase branch and separately approved for Production, the existing static blog remains available and newly published CMS rows may not be publicly readable. Creating the isolated Supabase branch is currently paused because the provider requested explicit cost confirmation.
+
+
+### Latest branch verification — 2026-11-04
+
+- GitHub Actions run #2287 passed for commit `3d6bbd60a36eb84a4e25ac07bbb18bfba37ed76b`, including lint, TypeScript, Admin authorization/CMS publishing smoke assertions and the Production build.
+- Vercel preview deployment `dpl_8AJefiDHjRJUn657k6vWAEQ2eUwh` is `READY` for the same commit: https://agriva-p8g6-5d8nqvhg9-agriva1.vercel.app.
+- This is a preview deployment only. PR #217 remains draft/open; no Production deploy or merge was performed.
+- Isolated Supabase branch validation is still blocked on explicit cost approval. Current quoted branch compute cost: USD 0.01344 per hour. No branch has been created.

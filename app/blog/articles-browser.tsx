@@ -13,7 +13,7 @@ type Article = {
   emoji: string;
 };
 
-const categories = ["সব লেখা", "ফসল চাষ", "মাটির স্বাস্থ্য", "রোগবালাই", "সবজি"];
+const categories = ["সব লেখা", "নতুন লেখা", "ফসল চাষ", "মাটির স্বাস্থ্য", "রোগবালাই", "সবজি"];
 
 export default function ArticlesBrowser({ articles }: { articles: Article[] }) {
   const [activeCategory, setActiveCategory] = useState("সব লেখা");

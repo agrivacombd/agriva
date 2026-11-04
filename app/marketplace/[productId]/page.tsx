@@ -20,6 +20,13 @@ type ProductRecord = {
   unit?: string | null;
   description: string | null;
   image_url?: string | null;
+  image_urls?: string[] | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string[] | null;
+  seo_image_alt_texts?: string[] | null;
+  seo_content?: string | null;
+  seo_faqs?: { question: string; answer: string }[] | null;
   commission_percent?: number | null;
 };
 
@@ -37,9 +44,28 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,seo_keywords,seo_image_alt_texts,seo_content,seo_faqs";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
+
+  // Resolve retired Marketplace slugs to their current active product. The page
+  // redirects to the canonical current slug after this lookup.
+  const { data: slugRedirect } = await supabase
+    .from("marketplace_product_slug_redirects")
+    .select("product_id")
+    .eq("old_slug", normalized)
+    .maybeSingle();
+  if (slugRedirect?.product_id) {
+    const { data: redirectedProduct } = await supabase
+      .from("products")
+      .select(columns)
+      .eq("id", slugRedirect.product_id)
+      .eq("status", "active")
+      .eq("marketplace_channel", "marketplace")
+      .maybeSingle();
+    if (redirectedProduct) return redirectedProduct as ProductRecord;
+  }
+
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
   const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   return (byId as ProductRecord | null) ?? null;
@@ -53,17 +79,20 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
 
   const name = cleanText(product.name);
-  const title = name.toLocaleLowerCase().includes("bangladesh")
+  const title = cleanText(product.seo_title || (name.toLocaleLowerCase().includes("bangladesh")
     ? name + " | AGRIVA"
-    : name + " in Bangladesh | AGRIVA";
-  const description = product.description && product.description.trim()
-    ? cleanText(product.description).slice(0, 155)
-    : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
-  const image = product.image_url || undefined;
+    : name + " in Bangladesh | AGRIVA"));
+  const description = product.seo_description?.trim()
+    ? cleanText(product.seo_description).slice(0, 160)
+    : product.description && product.description.trim()
+      ? cleanText(product.description).slice(0, 155)
+      : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
+  const images = [...new Set([...(product.image_urls ?? []), product.image_url].filter((value): value is string => Boolean(value?.trim())))].slice(0, 4);
 
   return {
     title,
     description,
+    ...(product.seo_keywords?.length ? { keywords: product.seo_keywords } : {}),
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
     openGraph: {
@@ -72,13 +101,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       type: "website",
       locale: "bn_BD",
       url: "/marketplace/" + product.slug,
-      ...(image ? { images: [{ url: image, alt: name + " product image" }] } : {}),
+      ...(images.length ? { images: images.map((url, index) => ({ url, alt: product.seo_image_alt_texts?.[index] || name + " product image" })) } : {}),
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: images.length ? "summary_large_image" : "summary",
       title,
       description,
-      ...(image ? { images: [image] } : {}),
+      ...(images.length ? { images } : {}),
     },
   };
 }
@@ -98,9 +127,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isSample = product.id.startsWith("sample-");
   const hasRealPrice = !isSample && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const hasStock = product.stock !== null && product.stock !== undefined;
-  const image = product.image_url?.trim() || undefined;
+  const productImages = [...new Set([...(product.image_urls ?? []), product.image_url].filter((value): value is string => Boolean(value?.trim())))].slice(0, 4);
   const description = product.description?.trim() || "";
-  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
+  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\s+\S*$/, "") + "…" : description;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
   const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
@@ -119,7 +148,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "@type": "Product",
     name: product.name,
     url: productUrl,
-    ...(image ? { image: [image] } : {}),
+    ...(productImages.length ? { image: productImages } : {}),
     ...(description ? { description } : {}),
     category: product.category || undefined,
     ...(hasRealPrice ? {
@@ -142,7 +171,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       { "@type": "ListItem", position: category ? 4 : 3, name: product.name, item: productUrl },
     ],
   };
-  const faqs = [
+  const defaultFaqs = [
     {
       question: product.name + " এর দাম কত?",
       answer: product.price !== null && product.price !== undefined
@@ -162,11 +191,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
       answer: "পণ্যের নাম ও ধরন, প্যাকেটের পরিমাণ, বিক্রেতার দেওয়া specification, মূল্য, মজুত, ডেলিভারি এবং প্রযোজ্য শর্ত যাচাই করুন। প্রয়োজন হলে অর্ডারের আগে বিক্রেতার কাছে অতিরিক্ত তথ্য চান।",
     },
   ];
+  const customFaqs = (Array.isArray(product.seo_faqs) ? product.seo_faqs : []).filter(
+    (faq): faq is { question: string; answer: string } =>
+      Boolean(
+        faq
+        && typeof faq.question === "string"
+        && faq.question.trim().length > 0
+        && typeof faq.answer === "string"
+        && faq.answer.trim().length > 0
+      ),
+  );
+  const faqs = customFaqs.length ? customFaqs : defaultFaqs;
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer },
+    })),
+  };
 
   return (
     <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }} />
 
       <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-y-2 text-sm text-slate-500">
@@ -187,16 +237,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-5 sm:min-h-[420px] sm:p-8 md:h-[560px] md:min-h-0 md:p-10">
-            {image ? (
-              <img
-                src={image}
-                alt={product.name + " — product photo on AGRIVA Marketplace"}
-                width={900}
-                height={900}
-                fetchPriority="high"
-                decoding="async"
-                className="block h-[260px] w-full max-w-[560px] rounded-2xl object-contain sm:h-[360px] md:h-[480px]"
-              />
+            {productImages.length ? (
+              <div className={productImages.length === 1 ? "w-full max-w-[560px]" : "grid w-full max-w-[560px] grid-cols-2 gap-3"}>
+                {productImages.map((src, index) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt={product.seo_image_alt_texts?.[index] || product.name + " — product photo on AGRIVA Marketplace"}
+                    width={900}
+                    height={900}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    className={productImages.length === 1 ? "block h-[260px] w-full rounded-2xl object-contain sm:h-[360px] md:h-[480px]" : "block h-[150px] w-full rounded-xl object-contain sm:h-[220px]"}
+                  />
+                ))}
+              </div>
             ) : (
               <div className="flex max-w-xs flex-col items-center text-center">
                 <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span>
@@ -256,8 +312,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
                 {description && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">বিবরণ</dt><dd className="mt-3 min-w-0 text-sm leading-8 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-3"><summary className="inline-flex min-h-10 cursor-pointer items-center rounded-lg font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
+                {product.seo_content?.trim() && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">অতিরিক্ত পণ্য তথ্য</dt><dd className="mt-3 whitespace-pre-line break-words text-sm leading-8 text-slate-700">{product.seo_content}</dd></div>}
               </dl>
-              {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
+              {!description && !product.seo_content?.trim() && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
 
             <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">

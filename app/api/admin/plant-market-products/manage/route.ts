@@ -1,0 +1,120 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { requireAdminApi } from "@/lib/admin/authz";
+
+const textField = (value: unknown, max: number) => {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string") return undefined;
+  const clean = value.trim();
+  return clean.length <= max ? clean || null : undefined;
+};
+
+export async function PATCH(request: NextRequest) {
+  const access = await requireAdminApi("catalog.edit");
+  if (!access.ok) return access.response;
+
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return NextResponse.json({ error: "সঠিক পণ্য তথ্য পাঠান।" }, { status: 400 });
+  }
+
+  const id = typeof body.id === "string" ? body.id : "";
+  const name = textField(body.name, 160);
+  const scientificName = textField(body.scientific_name, 160);
+  const category = textField(body.category, 100);
+  const categorySlug = textField(body.category_slug, 100);
+  const description = textField(body.description, 5000);
+  const unit = textField(body.unit, 40);
+  const plantSize = textField(body.plant_size, 100);
+  const potSize = textField(body.pot_size, 100);
+  const plantAge = textField(body.plant_age, 100);
+  const sunlight = textField(body.sunlight, 500);
+  const watering = textField(body.watering, 500);
+  const floweringSeason = textField(body.flowering_season, 160);
+  const deliveryArea = textField(body.delivery_area, 500);
+  const price = Number(body.price);
+  const stock = Number(body.stock);
+
+  if (!id || name === undefined || !name || name.length < 2 ||
+      scientificName === undefined || category === undefined || !category || categorySlug === undefined || !categorySlug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(categorySlug) ||
+      description === undefined || unit === undefined || !unit ||
+      plantSize === undefined || potSize === undefined || plantAge === undefined ||
+      sunlight === undefined || watering === undefined || floweringSeason === undefined ||
+      deliveryArea === undefined ||
+      !Number.isFinite(price) || price <= 0 || price > 100000000 ||
+      !Number.isFinite(stock) || stock < 0 || stock > 100000000 || !["piece", "pot", "pack", "tray"].includes(String(unit))) {
+    return NextResponse.json({ error: "নাম, ক্যাটাগরি, মূল্য, স্টক ও অন্যান্য ফিল্ডের সীমা যাচাই করুন।" }, { status: 400 });
+  }
+
+
+  const { data: current, error: lookupError } = await access.supabase
+    .from("plant_market_products")
+    .select("id,seller_id,status")
+    .eq("id", id)
+    .maybeSingle();
+  if (lookupError || !current) {
+    return NextResponse.json({ error: "Plant Market পণ্যটি পাওয়া যায়নি।" }, { status: 404 });
+  }
+
+  // The database trigger independently enforces seller verification and an active
+  // create grant for active listings. Check first to return a useful admin message.
+  if (current.status === "active") {
+    const [{ data: grant, error: grantError }, { data: gardener, error: gardenerError }] = await Promise.all([
+      access.supabase.from("user_module_grants").select("id")
+        .eq("user_id", current.seller_id).eq("module", "plant_market")
+        .eq("permission", "create").eq("scope_type", "global").is("scope_id", null).eq("status", "active")
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`).maybeSingle(),
+      access.supabase.from("gardener_profiles").select("user_id")
+        .eq("user_id", current.seller_id).eq("verification_status", "verified").maybeSingle(),
+    ]);
+    if (grantError || gardenerError || !grant || !gardener) {
+      return NextResponse.json({ error: "Seller-এর verified Gardener পরিচয় ও active Plant Market create grant না থাকায় প্রকাশিত পণ্য সম্পাদনা করা যাচ্ছে না। আগে seller access review করুন।" }, { status: 409 });
+    }
+  }
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!serviceRoleKey || !supabaseUrl) {
+    return NextResponse.json({ error: "Admin audit service is not configured; no product changes were made." }, { status: 503 });
+  }
+  const auditClient = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const changedFields = [
+    "name", "scientific_name", "category", "category_slug", "description", "price", "stock", "unit",
+    "plant_size", "pot_size", "plant_age", "sunlight", "watering", "flowering_season", "delivery_area",
+  ];
+  const { data: auditEvent, error: auditError } = await auditClient.from("admin_audit_log").insert({
+    admin_id: access.user.id,
+    action: "plant_market.product.update_requested",
+    entity_type: "plant_market_product",
+    entity_id: id,
+    metadata: { changed_fields: changedFields, stage: "requested" },
+  }).select("id").single();
+  if (auditError || !auditEvent) {
+    return NextResponse.json({ error: "Audit event could not be recorded; no product changes were made." }, { status: 503 });
+  }
+
+  const { data, error } = await access.supabase.from("plant_market_products").update({
+    name, scientific_name: scientificName, category, category_slug: categorySlug, description, price, stock, unit,
+    plant_size: plantSize, pot_size: potSize, plant_age: plantAge, sunlight, watering,
+    flowering_season: floweringSeason, delivery_area: deliveryArea,
+    updated_at: new Date().toISOString(),
+  }).eq("id", id).select("id,name,status,updated_at").maybeSingle();
+
+  if (error || !data) {
+    await auditClient.from("admin_audit_log").update({
+      action: "plant_market.product.update_failed",
+      metadata: { changed_fields: changedFields, stage: "failed", database_error_code: error?.code ?? "NO_ROW_UPDATED" },
+    }).eq("id", auditEvent.id);
+    return NextResponse.json({ error: "পণ্য সংরক্ষণ করা যায়নি। Database policy বা product validation যাচাই করুন।" }, { status: 409 });
+  }
+  const { error: auditFinalizeError } = await auditClient.from("admin_audit_log").update({
+    action: "plant_market.product.updated",
+    metadata: { changed_fields: changedFields, stage: "completed" },
+  }).eq("id", auditEvent.id);
+  if (auditFinalizeError) {
+    return NextResponse.json({ error: "পণ্য সংরক্ষিত হয়েছে, কিন্তু audit status finalize হয়নি। Admin audit log যাচাই করুন।" }, { status: 500 });
+  }
+  return NextResponse.json({ product: data });
+}
