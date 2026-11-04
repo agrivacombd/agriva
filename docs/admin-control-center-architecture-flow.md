@@ -395,3 +395,93 @@ The current catalog query confirmed `public.content_drafts`, `public.green_excha
 3. Enable leaked-password protection through the Supabase Auth project settings after coordinating rollout impact; this is a Production configuration change and has not been performed.
 4. Validate the three branch-only forward migrations on an isolated Supabase development branch before considering any Production approval.
 5. Keep Production schema, data, grants and Auth settings unchanged until the migration matrix, backup/recovery plan and explicit release approval are complete.
+
+
+### Full filename/history comparison (enumerated 2026-11-04)
+
+The repository migration directory was enumerated through the GitHub Contents API and compared with the full Production migration-history response. Matching was performed exact-name first, then by removing timestamp/legacy numeric prefixes, with one-to-one pairing only.
+
+- 109 repository SQL files; 102 Production history rows.
+- 34 exact filename/name pairs.
+- 37 additional unique normalized one-to-one pairs.
+- 71 total safe name pairs.
+- 38 repository filenames and 31 Production history rows remain unmatched after those pairs. These unmatched sets include the six ambiguous normalized groups below; they are not proof of missing DDL.
+- Ambiguous groups (do not pair by name alone):
+  - `green_living_fk_indexes`: 2 repository files / 2 duplicate Production rows.
+  - `revoke_client_truncate_privileges`: 2 repository files / 1 Production row.
+  - `green_exchange_reconcile`: 1 repository file / 2 duplicate Production rows.
+  - `green_living_reconcile`: 1 repository file / 2 duplicate Production rows.
+  - `atomic_marketplace_cart_checkout`: 1 repository file / 2 differently named Production rows.
+  - `revoke_legacy_public_order_rpc_overload`: 1 repository file / 2 differently named Production rows.
+
+The unmatched repository files are:
+`20261024090000_learning_correction_reports`,
+`20261024100000_publish_approved_learning_corrections`,
+`20261025100000_harden_learning_correction_reports`,
+`20261025164429_secure_profile_role_updates`,
+`20261025174500_public_published_article_read`,
+`20261025180000_add_user_role_memberships`,
+`20261025190000_enforce_content_draft_workflow`,
+`20261025193000_content_review_attribution`,
+`20261025200000_allow_content_unpublish_to_review`,
+`20261025210000_content_draft_revision_history`,
+`20261025220000_restrict_anon_is_admin_execution`,
+`20261025230000_sync_signup_role_memberships`,
+`20261025240000_index_unindexed_foreign_keys`,
+`20261025250000_fix_farm_record_crop_cycle_scope`,
+`20261025260000_optimize_rls_auth_uid_initplans`,
+`20261026233419_reserve_reseller_payout_balance`,
+`20261026233500_harden_marketplace_order_transitions`,
+`20261026233518_fix_partial_commission_payout_settlement`,
+`20261027120000_restrict_payment_event_rpc_grants`,
+`20261027173503_green_exchange`,
+`20261027182446_green_living_platform`,
+`20261027182720_green_living_fk_indexes`,
+`20261027210000_minimize_attribution_rpc_output`,
+`20261027220000_restrict_anonymous_attribution_resolution`,
+`20261027230000_revoke_client_truncate_privileges`,
+`20261030150000_remove_harvest_admin_approval`,
+`20261030181320_revoke_client_truncate_privileges`,
+`20261030183610_green_exchange_reconcile`,
+`20261030183617_green_living_reconcile`,
+`20261030183622_green_living_fk_indexes`,
+`20261030183624_green_exchange_reconcile_replay`,
+`20261030183633_green_living_reconcile_replay`,
+`20261030183642_green_living_fk_indexes_replay`,
+`20261102161719_atomic_marketplace_cart_checkout`,
+`20261102161728_revoke_legacy_public_order_rpc_overload`,
+`20261104100000_forward_harden_attribution_rpcs`,
+`20261104110000_forward_harden_admin_finance_and_order_rpcs`,
+`20261104120000_marketplace_slug_history_and_admin_rpc`.
+
+The Production-only history names are:
+`028_admin_bootstrap_product_creation`,
+`product_seo_fields_compat`,
+`product_form_feature_controls`,
+`feature_control_policy_performance_and_is_admin_grants`,
+`product_form_feature_foreign_key_indexes`,
+`feature_control_jwt_rls_initplan_fix`,
+`index_existing_foreign_keys`,
+`split_public_and_authenticated_read_policies`,
+`remove_overlapping_products_read_policy`,
+`rls_auth_uid_initplan_optimization`,
+`repair_profile_role_memberships_api`,
+`create_harvest_listings_forward_compat`,
+`add_plant_market_taxonomy`,
+`seller_product_multiple_images_and_storage`,
+`20261030103000_admin_product_seo_landing_fields`,
+`seller_product_details_and_profile_fields`,
+`marketplace_image_seo_pipeline`,
+`admin_seo_image_alt_and_attribute_suggestions`,
+`grant_seller_profile_update_fields`,
+`security_performance_advisor_hardening`,
+`revoke_client_truncate_privileges`,
+`20261030235200_green_exchange_reconcile` (two rows),
+`20261030235210_green_living_reconcile` (two rows),
+`20261030235220_green_living_fk_indexes` (two rows),
+`atomic_marketplace_cart_checkout`,
+`revoke_legacy_public_order_rpc_overload`,
+`20261101090000_atomic_marketplace_cart_checkout`,
+`20261101100000_revoke_legacy_public_order_rpc_overload`.
+
+The list is a deterministic name-level inventory, not a DDL equivalence verdict. Content-level reconciliation remains open for all unmatched and ambiguous entries. In particular, the three 20261104 forward-only migrations are branch-only by design and must be validated against an isolated database before any Production release decision.
