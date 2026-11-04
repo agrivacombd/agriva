@@ -11,9 +11,20 @@ export async function POST(request: NextRequest) {
   const price = Number(body.price), stock = Number(body.stock), commission = Number(body.commission);
   const categorySlug = String(body.category_slug || "").trim(), subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug), subcategory = getSubcategory(categorySlug, subcategorySlug);
+  const submittedImages: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
+  const imageUrls = submittedImages.filter((value): value is string => typeof value === "string" && value.trim()).map(value => value.trim());
   if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !Number.isFinite(commission) || commission < 0 || commission > 100 || description.length > 5000 || !category || !subcategory) {
+      !Number.isFinite(commission) || commission < 0 || commission > 100 || description.length > 5000 || !category || !subcategory || imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
+  }
+  if (imageUrls.length) {
+    const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!storageUrl) return NextResponse.json({ error: "Storage configuration পাওয়া যায়নি।" }, { status: 500 });
+    try {
+      const origin = new URL(storageUrl).origin;
+      const valid = imageUrls.every(value => { const url = new URL(value); return url.origin === origin && url.protocol === "https:" && url.pathname.startsWith("/storage/v1/object/public/product-images/") && /\\/[0-9a-f-]{8}-[0-9a-f-]{4}-4[0-9a-f-]{3}-[89ab][0-9a-f-]{3}-[0-9a-f-]{12}\\.(?:jpg|png|webp)$/i.test(url.pathname) && !url.search && !url.hash; });
+      if (!valid) return NextResponse.json({ error: "শুধু AGRIVA product storage-এর ছবি ব্যবহার করুন।" }, { status: 400 });
+    } catch { return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 }); }
   }
   const { data, error } = await supabase.rpc("admin_create_marketplace_product", {
     p_name: name, p_slug: slug, p_description: description || null, p_price: price, p_stock: stock,
@@ -22,6 +33,10 @@ export async function POST(request: NextRequest) {
   if (error) {
     console.error("Admin product creation failed", { code: error.code || "unknown" });
     return NextResponse.json({ error: error.code === "23505" ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। Product slug migration প্রয়োগ হয়েছে কি না যাচাই করুন।" }, { status: 400 });
+  }
+  if (imageUrls.length && data?.id) {
+    const { error: imageError } = await supabase.from("products").update({ image_url: imageUrls[0], image_urls: imageUrls }).eq("id", data.id);
+    if (imageError) return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ হয়নি। পণ্য Edit করে আবার ছবি যোগ করুন।", product: data }, { status: 201 });
   }
   return NextResponse.json({ product: data }, { status: 201 });
 }
