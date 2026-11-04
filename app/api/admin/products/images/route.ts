@@ -8,7 +8,10 @@ export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
   const productId = String(body.productId || "").trim();
   const submitted: unknown[] = Array.isArray(body.image_urls) ? body.image_urls : [];
-  const imageUrls = submitted.filter((value): value is string => typeof value === "string" && value.trim().length > 0).map(value => value.trim());
+  const imageUrls = submitted.reduce<string[]>((result, value) => {
+    if (typeof value === "string" && value.trim().length > 0) result.push(value.trim());
+    return result;
+  }, []);
   if (!productId || imageUrls.length > 4 || imageUrls.length !== submitted.length) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL দিন।" }, { status: 400 });
   }
