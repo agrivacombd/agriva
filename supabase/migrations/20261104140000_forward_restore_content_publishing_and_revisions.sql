@@ -45,7 +45,7 @@ DROP POLICY IF EXISTS content_drafts_public_published_articles_read ON public.co
 CREATE POLICY content_drafts_public_published_articles_read
   ON public.content_drafts
   FOR SELECT
-  TO anon, authenticated
+  TO anon
   USING (status = 'published' AND content_type = 'article');
 
 -- Immutable before-images for content edits and workflow transitions.
