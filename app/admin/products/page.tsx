@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
+import AdminProductImageField from "@/components/admin/AdminProductImageField";
 import AdminProductImages from "@/components/admin/AdminProductImages";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
@@ -24,6 +25,18 @@ async function saveProduct(formData: FormData) {
   const status = String(formData.get("status") ?? "");
   const categorySlug = String(formData.get("category_slug") ?? "").trim();
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
+  const rawImages = String(formData.get("image_urls") ?? "[]");
+  let imageUrls: string[] = [];
+  try {
+    const parsed: unknown = JSON.parse(rawImages);
+    if (!Array.isArray(parsed) || parsed.length > 4 || parsed.some(value => typeof value !== "string")) throw new Error("invalid images");
+    imageUrls = parsed.map(value => value.trim()).filter(Boolean);
+    const storageBase = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (imageUrls.length && (!storageBase || imageUrls.some(value => {
+      try { const url = new URL(value); return url.origin !== new URL(storageBase).origin || !url.pathname.startsWith("/storage/v1/object/public/product-images/") || url.protocol !== "https:" || url.search || url.hash; }
+      catch { return true; }
+    }))) throw new Error("invalid image url");
+  } catch { redirect("/admin/products?notice=invalid"); }
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
   if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 || !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 || !["draft","active","paused","sold_out"].includes(status) || (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
@@ -37,11 +50,12 @@ async function saveProduct(formData: FormData) {
   const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_taxonomy", {
     p_product_id: productId, p_category_slug: categorySlug || null, p_subcategory_slug: subcategorySlug || null,
   });
+  const { error: imageError } = productError || categoryError ? { error: productError || categoryError } : await supabase.from("products").update({ image_url: imageUrls[0] ?? null, image_urls: imageUrls }).eq("id", productId);
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  redirect(productError || categoryError || imageError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
@@ -72,6 +86,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold md:col-span-2 xl:col-span-3">বিবরণ<textarea name="description" rows={3} maxLength={5000} defaultValue={p.description ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <AdminProductImages productId={p.id} initialUrls={Array.isArray(p.image_urls) && p.image_urls.length ? p.image_urls : p.image_url ? [p.image_url] : []} />
         </div>
+        <AdminProductImageField initialImages={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)} />
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
       </form>)}
       {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
