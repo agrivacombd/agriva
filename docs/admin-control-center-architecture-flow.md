@@ -341,3 +341,57 @@ The security state for payment-event RPC grants is confirmed safe. SECURITY DEFI
 - Production currently contains Bengali/Unicode slugs. The first draft's ASCII-only history constraint would have rejected those old slugs; it was corrected to preserve legacy slugs verbatim (1–255 characters). Current inspected slugs are 29, 31 and 65 characters.
 - The RPC is granted to `authenticated` only (not `service_role`) and checks `auth.uid()` plus `public.is_admin()`. No Production migration has been applied.
 - Repository migration-file count is now 109 after the slug-history migration; do not infer applied status from the filename count.
+
+
+## Phase 0 continuation — live ACL recheck (2026-11-04 13:27 +06:00)
+
+This section supersedes older count snapshots above where the numbers differ. Target remains Production project `dhqaepsbuwhbynagfxpf`; checks below were read-only.
+
+### Current inventory checkpoint
+
+- Current feature branch contains 109 SQL files under `supabase/migrations` (verified from the branch audit); Production `schema_migrations` currently returns 102 rows.
+- This count difference is not an unapplied-migration list. The live history contains renamed/replayed entries, so no bulk replay or migration-history edits are safe.
+- The next deterministic reconciliation artifact must be a per-file matrix with: repository filename, normalized intent, candidate live history row(s), live catalog object evidence, equivalent/not-equivalent/unknown verdict, and proposed forward-only action. The current connector exposes live migration rows and individual repository files but not a complete repository directory listing; do not claim that matrix is complete until every filename has been enumerated and compared.
+
+### Exact live function ACL checkpoint
+
+Read-only `has_function_privilege` inspection reconfirmed:
+
+| Function | anon EXECUTE | authenticated EXECUTE | SECURITY DEFINER |
+|---|---:|---:|---:|
+| `public.record_attribution_session(text,text,uuid,integer)` | yes | yes | no |
+| `private.record_attribution_session(text,text,uuid,integer)` | yes | yes | yes |
+| `public.resolve_reseller_attribution(text,text,uuid)` | yes | yes | no |
+| `private.resolve_reseller_attribution(text,text,uuid)` | yes | yes | yes |
+| `public.approve_reseller_commission(uuid)` | no | yes | no |
+| `private.approve_reseller_commission(uuid)` | no | yes | yes |
+| `public.approve_commission_payout(uuid)` | no | yes | no |
+| `private.approve_commission_payout(uuid)` | no | yes | yes |
+| `public.complete_commission_payout(uuid,text)` | no | yes | no |
+| `private.complete_commission_payout(uuid,text)` | no | yes | yes |
+| `public.record_cod_collection(uuid,numeric,text)` | no | yes | yes |
+| `public.set_marketplace_order_status(uuid,text)` | no | yes | yes |
+| `private.set_marketplace_order_status(uuid,text)` | no | yes | yes |
+
+Service-role checks also returned EXECUTE for these objects in the live project; the branch-only forward migrations have not been applied, so their intended revocations are not reflected in Production. Do not interpret service-role EXECUTE as proof that a trusted workflow exists.
+
+### Current security advisor checkpoint
+
+The latest Production security advisor still reports:
+- 1 anon-executable SECURITY DEFINER function: `public.get_green_impact_metrics()`.
+- 13 authenticated-executable SECURITY DEFINER functions, including checkout/order, Green Exchange, COD collection and order-status functions.
+- Leaked-password protection disabled.
+
+These are findings requiring per-function body/actor/ownership and data-exposure review. Authenticated SECURITY DEFINER is not automatically a vulnerability: checkout and seller workflows may require it, but must retain explicit actor binding, ownership checks, input validation and safe search_path. The public aggregate function must remain only if its returned aggregates cannot expose sensitive inference.
+
+### Schema existence checkpoint
+
+The current catalog query confirmed `public.content_drafts`, `public.green_exchange_listings`, `public.marketplace_orders`, and `public.plant_market_products` exist. It did not find `public.content_draft_revisions`, `public.learning_correction_reports`, or `public.marketplace_product_slug_redirects` in Production. The latter is expected because the slug-history migration remains branch-only. Missing revision/correction objects must be compared with their repository migration intent before any CMS workflow is connected to them.
+
+### Safe next actions
+
+1. Enumerate all 109 repository migration filenames and compare them one by one with the 102 live history rows and live catalog definitions. The present connector does not provide a directory-list endpoint, so this remains an explicit blocker rather than a guessed reconciliation.
+2. Review all 14 advisor findings by exact function definition and call site; retain safe actor-bound user workflows, harden only confirmed gaps.
+3. Enable leaked-password protection through the Supabase Auth project settings after coordinating rollout impact; this is a Production configuration change and has not been performed.
+4. Validate the three branch-only forward migrations on an isolated Supabase development branch before considering any Production approval.
+5. Keep Production schema, data, grants and Auth settings unchanged until the migration matrix, backup/recovery plan and explicit release approval are complete.
