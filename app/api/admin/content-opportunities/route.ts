@@ -40,7 +40,9 @@ export async function PATCH(request: NextRequest) {
 
   // Moving an opportunity into the review queue is editorial work. Approval or
   // rejection is a publishing decision and requires the stronger capability.
-  const auth = await requireAdminApi(nextStatus === "review" ? "content.edit" : "content.publish");
+  const auth = nextStatus === "review"
+    ? await requireAdminApi("content.edit")
+    : await requireAdminApi("content.publish");
   if (!auth.ok) return auth.response;
 
   const { data: current, error: readError } = await auth.supabase
@@ -71,8 +73,7 @@ export async function PATCH(request: NextRequest) {
   const { data: updated, error: updateError } = await auth.supabase
     .from("content_opportunities")
     .update({ status: nextStatus, ...reviewFields })
-    .eq("id", id)
-    .eq("status", current.status)
+    .eq("id", id).eq("status", current.status)
     .select("id,status,reviewed_at,reviewed_by")
     .maybeSingle();
 
