@@ -189,7 +189,18 @@ Every new table requires: explicit RLS policies, least-privilege grants, Admin a
 - No merge of PR #217 and no Production deploy.
 - No fabricated keyword volume, Google rank, clicks or impressions.
 
-## 10. Immediate next tickets
+## 10. Latest branch work (2026-11-04)
+
+- SEO-003 review identified three concrete defects and fixed them on the feature branch:
+  1. Category/subcategory indexability now counts only active Marketplace-channel products, preventing Plant Market-only listings from making a Marketplace category indexable.
+  2. A transient category product-catalogue read failure now returns an unknown indexability result without forcing a false noindex directive. Confirmed empty categories still remain noindex.
+  3. Product long-description summaries now use a real whitespace regex for word-boundary truncation instead of matching literal backslash characters.
+- Regression assertions were added to the taxonomy and product SEO smoke scripts. Latest test commit: 892df56852b56e2d9f7e095a047355d9391c0b83. Vercel preview status for this commit is success; GitHub Actions run #2308 remained queued at the last check, so test pass is not yet certified.
+- SEO-004 design is documented in docs/CATEGORY_SEO_MANAGER_DESIGN.md. It proposes a bilingual, locale-scoped category/subcategory content model, Admin lifecycle, public rendering, canonical/hreflang rules, sitemap constraints, RLS and isolated-migration validation. It intentionally does not add a migration or change Production.
+- The current /admin/categories route is retained as the taxonomy source of truth; the SEO editor should extend it rather than duplicate taxonomy management.
+- Production schema/catalog checks were read-only. No Production DDL, data writes, grants, deployment or PR merge occurred.
+
+## 11. Immediate next tickets
 
 1. `SEO-001`: branch/PR/CI/preview and schema preflight.
 2. `SEO-002`: confirm canonical opportunity model and connect persisted Search Intelligence UI/API (implementation now on branch; CI gate pending).
