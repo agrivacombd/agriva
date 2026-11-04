@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
+import { getPublishedContentArticleBySlug } from "@/lib/content/published-articles";
 
 const articles = [
   {
@@ -58,15 +59,61 @@ const articles = [
   },
 ];
 
-type Article = (typeof articles)[number];
+type Article = {
+  slug: string;
+  category: string;
+  title: string;
+  readTime: string;
+  emoji: string;
+  intro: string;
+  sections: [string, string][];
+};
 
-export function generateStaticParams() {
+async function findArticle(slug: string): Promise<Article | null> {
+  const staticArticle = articles.find((item) => item.slug === slug);
+  if (staticArticle) return staticArticle;
+
+  const published = await getPublishedContentArticleBySlug(slug);
+  if (!published) return null;
+
+  const blocks = (published.body_markdown ?? "")
+    .split(/\\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  const sections: [string, string][] = blocks.map((block, index) => {
+    const lines = block.split("\\n");
+    const headingLine = lines.find((line) => /^#{1,3}\\s+/.test(line));
+    const heading = headingLine
+      ? headingLine.replace(/^#{1,3}\\s+/, "").trim()
+      : `অংশ ${index + 1}`;
+    const body = lines
+      .filter((line) => !/^#{1,6}\\s+/.test(line))
+      .join("\\n")
+      .replace(/[*_`]/g, "")
+      .trim();
+    return [heading, body || heading];
+  });
+
+  if (!sections.length) return null;
+  const wordCount = (published.body_markdown ?? "").trim().split(/\\s+/).filter(Boolean).length;
+  return {
+    slug: published.slug,
+    category: "নতুন লেখা",
+    title: published.title,
+    readTime: `${Math.max(1, Math.ceil(wordCount / 180))} মিনিট`,
+    emoji: "📝",
+    intro: sections[0][1].slice(0, 420),
+    sections,
+  };
+}
+
+export const dynamicParams = true;\n\nexport function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const article = articles.find((item) => item.slug === slug);
+  const article = await findArticle(slug);
   if (!article) return { title: "লেখা পাওয়া যায়নি" };
   return {
     title: article.title,
@@ -79,7 +126,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const article: Article | undefined = articles.find((item) => item.slug === slug);
+  const article = await findArticle(slug);
   if (!article) notFound();
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const articleUrl = `${siteUrl}/blog/${article.slug}`;
