@@ -129,7 +129,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasStock = product.stock !== null && product.stock !== undefined;
   const productImages = [...new Set([...(product.image_urls ?? []), product.image_url].filter((value): value is string => Boolean(value?.trim())))].slice(0, 4);
   const description = product.description?.trim() || "";
-  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
+  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\s+\S*$/, "") + "…" : description;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
   const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
