@@ -1,5 +1,6 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ADMIN_CAPABILITY_ALIASES } from "@/lib/admin/authz";
 import type { AdminCapability } from "@/lib/admin/authz";
 
 export type { AdminCapability };
@@ -20,13 +21,15 @@ export async function checkAdminPermission(capability: AdminCapability): Promise
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return { allowed: false, reason: "unauthenticated" };
 
-  const { data, error } = await supabase.rpc("has_admin_permission", {
-    p_capability: capability,
-  });
-  if (error || typeof data !== "boolean") {
-    return { allowed: false, reason: "authorization_unavailable" };
+  const candidates = [capability, ...(ADMIN_CAPABILITY_ALIASES[capability] ?? [])];
+  for (const candidate of candidates) {
+    const { data, error } = await supabase.rpc("has_admin_permission", {
+      p_capability: candidate,
+    });
+    if (error || typeof data !== "boolean") {
+      return { allowed: false, reason: "authorization_unavailable" };
+    }
+    if (data) return { allowed: true, userId: user.id };
   }
-  return data
-    ? { allowed: true, userId: user.id }
-    : { allowed: false, reason: "forbidden" };
+  return { allowed: false, reason: "forbidden" };
 }
