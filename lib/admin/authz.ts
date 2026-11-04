@@ -44,6 +44,16 @@ export const ADMIN_CAPABILITIES = [
   "payouts.read",
   "payouts.approve",
   "system.recovery.execute",
+
+  // Compatibility identifiers still used by the delegated-permission RPC.
+  // Keep them in this registry so every authorization layer shares one type.
+  // They are intentionally NOT added to LEGACY_ADMIN_CAPABILITIES.
+  "users.verify",
+  "plant_market.moderate",
+  "marketplace.moderate",
+  "farms.manage",
+  "settings.manage",
+  "system.recovery",
 ] as const;
 
 export type AdminCapability = (typeof ADMIN_CAPABILITIES)[number];
