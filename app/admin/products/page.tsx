@@ -76,7 +76,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category}/>
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
-          <AdminProductDescriptionEditor value={p.description ?? ""} onChange={() => {}} productName={p.name} />
+          <AdminProductDescriptionEditor value={sanitizeProductDescription(p.description ?? "")} onChange={() => {}} productName={p.name} />
           <AdminProductImages productId={p.id} initialUrls={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)}/>
         </div>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
