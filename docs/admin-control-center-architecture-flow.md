@@ -172,7 +172,7 @@ Issue descriptions are repository audit records, not a substitute for rechecking
 3. **Sellers & Customers — implemented baseline:** server-side search/role filters, responsive views, separate role mutation capability and verification review notices. Continue end-to-end permission and edge-case testing.
 4. **Orders & Finance — partial:** bounded order list, valid order transition UI and database state-machine hardening are prepared on the branch. COD reconciliation, commission approval, refunds and payouts remain disabled until a dedicated actor-verified, idempotent, audited server-side workflow is implemented.
 5. **CMS / SEO / remaining operations — open:** reconcile content workflow and revision migrations against live schema before connecting database-backed publishing. Then finish content drafts/articles, SEO controls, Green Exchange moderation, reports, audit search/export, settings, AI management and remaining operations modules.
-6. **Phase 0 release blockers — open:** finish content-level comparison of the 38 unmatched repository filenames, 31 unmatched Production history rows and six ambiguous groups; validate the three 20261104 forward-only migrations on an isolated Supabase branch; review remaining security-advisor findings; coordinate leaked-password protection; and complete backup/recovery planning.
+6. **Phase 0 release blockers — open:** finish content-level comparison of the 39 unmatched repository filenames, 31 unmatched Production history rows and six ambiguous groups; validate the three 20261104 forward-only migrations on an isolated Supabase branch; review remaining security-advisor findings; coordinate leaked-password protection; and complete backup/recovery planning.
 7. Keep SSLCommerz disabled until a separate provider integration, transaction/idempotency design, sandbox suite and approved database rollout are ready. Netlify is not a release gate.
 
 ## Release gates
@@ -487,3 +487,25 @@ The Production-only history names are:
 `20261101100000_revoke_legacy_public_order_rpc_overload`.
 
 The list is a deterministic name-level inventory, not a DDL equivalence verdict. Content-level reconciliation remains open for all unmatched and ambiguous entries. In particular, the three 20261104 forward-only migrations are branch-only by design and must be validated against an isolated database before any Production release decision.
+
+
+## Phase 0 continuation — Admin audit gap fixed on branch (2026-11-04)
+
+Read-only review of all 14 current Production security-advisor findings found two Admin mutation RPCs with no direct `admin_audit_log` insert and no table trigger that records the actual grant/listing mutation:
+- `public.admin_moderate_green_exchange_listing(uuid,text)` updated moderation status without an explicit admin audit event.
+- `public.admin_revoke_market_access(uuid,text,uuid)` changed `user_module_grants`; the related application-withdrawal trigger logged the application change, but the grant mutation itself had no explicit audit event.
+
+Added branch-only migration `20261104130000_audit_admin_moderation_and_access_revocation.sql`:
+- Records actor, listing, moderation status for Green Exchange moderation.
+- Records actor, target user, module, scope, revoked grant count and withdrawn application count for module access revocation.
+- Rejects null target user/module/scope combinations before mutation.
+- Keeps the existing authenticated Admin and trusted service-role execution contract; function bodies still enforce the authenticated Admin identity.
+- Audit insert is in the same database transaction as the mutation, so an audit failure rolls back the mutation.
+
+Added Admin authorization smoke assertions for both audit events and input validation. The smoke script passes a JavaScript syntax check. This migration has not been applied to Production.
+
+### Updated migration count after the audit migration
+
+The feature branch now has 110 migration files; Production history still has 102 rows. Re-running the exact-first, unique-normalized one-to-one comparison gives 34 exact pairs and 37 additional normalized pairs (71 total). 39 repository files and 31 Production rows remain unmatched, with the same six ambiguous normalized groups. The new audit migration is an additional branch-only unmatched file; it does not change Production.
+
+The previously recorded 109-file / 38-repository-unmatched count is superseded by this updated 110-file checkpoint. Content-level reconciliation remains open; no migration history was edited and no Production DDL, grants, data or Auth settings were changed.
