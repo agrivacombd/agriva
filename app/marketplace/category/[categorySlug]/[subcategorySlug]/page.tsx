@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = `${subcategory.name} ও ${category.name}-এর কৃষি পণ্য দেখুন AGRIVA Marketplace-এ।`;
   return {
     title, description,
-    ...(hasProducts !== true ? { robots: { index: false, follow: true } } : {}),
+    ...(hasProducts === false ? { robots: { index: false, follow: true } } : {}),
     alternates: { canonical: `/marketplace/category/${category.slug}/${subcategory.slug}` },
     keywords: [subcategory.name, category.name, "কৃষি পণ্য বাংলাদেশ", "AGRIVA"],
     openGraph: { title, description, type: "website", locale: "bn_BD" },
