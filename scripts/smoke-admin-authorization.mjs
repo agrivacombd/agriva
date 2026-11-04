@@ -301,4 +301,21 @@ assert.ok(adminAuditMigration.includes("p_user_id IS NULL") && adminAuditMigrati
 assert.ok(adminAuditMigration.includes("GRANT EXECUTE ON FUNCTION public.admin_moderate_green_exchange_listing(uuid, text) TO authenticated, service_role"), "Green Exchange moderation must retain authenticated Admin and trusted server execution");
 assert.ok(adminAuditMigration.includes("GRANT EXECUTE ON FUNCTION public.admin_revoke_market_access(uuid, text, uuid) TO authenticated, service_role"), "Module access revocation must retain authenticated Admin and trusted server execution");
 
+const contentPublishingMigration = read("supabase/migrations/20261104140000_forward_restore_content_publishing_and_revisions.sql");
+assert.ok(contentPublishingMigration.includes("content_drafts_public_published_articles_read"), "published article access must use an explicit public-read policy");
+assert.ok(contentPublishingMigration.includes("USING (status = 'published' AND content_type = 'article')"), "public article RLS must expose only published articles");
+assert.ok(contentPublishingMigration.includes("GRANT SELECT (") && contentPublishingMigration.includes("TO anon;"), "anonymous article reads must be column-scoped");
+assert.ok(contentPublishingMigration.includes("content_draft_revisions"), "content revision history table must be provisioned");
+assert.ok(contentPublishingMigration.includes("content_draft_revision_capture"), "content edits and moderation transitions must capture before-images");
+assert.ok(contentPublishingMigration.includes("content_drafts_workflow_guard"), "content workflow transitions must be enforced by the database");
+const publishedArticleReader = read("lib/content/published-articles.ts");
+assert.ok(publishedArticleReader.includes("persistSession: false"), "public article reader must use an anonymous client without visitor session");
+assert.ok(publishedArticleReader.includes('.eq("status", "published")') && publishedArticleReader.includes('.eq("content_type", "article")'), "public article reader must filter published article rows");
+const publicBlog = read("app/blog/page.tsx");
+const publicArticle = read("app/blog/[slug]/page.tsx");
+assert.ok(publicBlog.includes("getPublishedContentArticles"), "blog listing must include published CMS articles");
+assert.ok(publicArticle.includes("getPublishedContentArticleBySlug") && publicArticle.includes("dynamicParams = true"), "published CMS articles must resolve by dynamic public slug");
+const contentDraftClient = read("app/admin/content-drafts/ContentDraftsClient.tsx");
+assert.ok(!contentDraftClient.includes('from("content_drafts").select("*")'), "admin content editor must request only explicitly granted columns");
+
 console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
