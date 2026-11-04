@@ -58,8 +58,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const title = name.toLocaleLowerCase().includes("bangladesh")
     ? name + " | AGRIVA"
     : name + " in Bangladesh | AGRIVA";
-  const description = product.description && product.description.trim()
-    ? cleanText(product.description).slice(0, 155)
+  const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
+  const description = descriptionText
+    ? descriptionText.slice(0, 155)
     : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
   const image = product.image_url || undefined;
 
@@ -102,8 +103,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasStock = product.stock !== null && product.stock !== undefined;
   const galleryImages = [...new Set([...(Array.isArray(product.image_urls) ? product.image_urls : []), product.image_url].filter((value): value is string => typeof value === "string" && value.trim().length > 0))].slice(0, 4);
   const image = galleryImages[0];
-  const description = product.description?.trim() || "";
-  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
+  const description = sanitizeProductDescription(product.description || "");
+  const descriptionText = productDescriptionToText(description);
+  const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
   const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
