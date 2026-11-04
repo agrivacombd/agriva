@@ -63,12 +63,13 @@ export async function POST(request: NextRequest) {
   }
 
   if (imageUrls.length) {
-    const { error: imageError } = await supabase.from("products")
-      .update({ image_url: imageUrls[0], image_urls: imageUrls })
-      .eq("slug", slug);
+    const { error: imageError } = await supabase.rpc("admin_update_product_images", {
+      p_product_id: data.id,
+      p_image_urls: imageUrls,
+    });
     if (imageError) {
       console.error("Admin product image save failed", { code: imageError.code || "unknown" });
-      return NextResponse.json({ error: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ করা যায়নি। পণ্যটি Edit করে আবার ছবি যোগ করুন।" }, { status: 500 });
+      return NextResponse.json({ product: data, warning: "পণ্য তৈরি হয়েছে, তবে ছবিগুলো সংরক্ষণ করা যায়নি। পণ্যটি Edit করে আবার ছবি যোগ করুন।" }, { status: 201 });
     }
   }
   return NextResponse.json({ product: data }, { status: 201 });
