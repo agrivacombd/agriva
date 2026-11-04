@@ -26,7 +26,7 @@ export async function PATCH(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "ছবির URL সঠিক নয়।" }, { status: 400 });
   }
-  const { error } = await supabase.from("products").update({ image_url: imageUrls[0] ?? null, image_urls: imageUrls }).eq("id", productId);
+  const { error } = await supabase.rpc("admin_update_product_images", { p_product_id: productId, p_image_urls: imageUrls });
   if (error) {
     console.error("Admin product image update failed", { code: error.code || "unknown" });
     return NextResponse.json({ error: "ছবিগুলো সংরক্ষণ করা যায়নি।" }, { status: 400 });
