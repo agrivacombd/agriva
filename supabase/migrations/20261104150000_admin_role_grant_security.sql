@@ -167,6 +167,13 @@ BEGIN
   );
 
   IF p_role_key = 'super_admin' THEN
+    -- Serialize every Super Admin revocation globally. Per-target locks alone
+    -- allow concurrent revocations of different users to both observe a count
+    -- of 2 and remove the final two assignments.
+    PERFORM pg_advisory_xact_lock(
+      hashtextextended('admin:super_admin:global', 0)
+    );
+
     SELECT count(*) INTO v_active_super_admins
     FROM public.admin_user_roles ur
     JOIN public.admin_roles r ON r.id = ur.role_id
