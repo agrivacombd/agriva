@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const MAX_IMAGES = 4;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function AdminProductImageField({ initialImages = [] }: { initialImages?: string[] }) {
+  const inputId = useId();
   const [images, setImages] = useState<string[]>(initialImages.slice(0, MAX_IMAGES));
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -51,8 +52,8 @@ export default function AdminProductImageField({ initialImages = [] }: { initial
   }
 
   return <div className="space-y-2 md:col-span-2 xl:col-span-3">
-    <label htmlFor="admin-product-images" className="block text-sm font-bold">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৪টি)</span></label>
-    <input id="admin-product-images" type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={loading || images.length >= MAX_IMAGES}
+    <label htmlFor={inputId} className="block text-sm font-bold">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৪টি)</span></label>
+    <input id={inputId} type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={loading || images.length >= MAX_IMAGES}
       onChange={event => { void chooseImages(event.target.files); event.currentTarget.value = ""; }}
       className="block w-full rounded-xl border px-3 py-2.5 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>
     <input type="hidden" name="image_urls" value={JSON.stringify(images)}/>
