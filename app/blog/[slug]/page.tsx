@@ -107,6 +107,8 @@ async function findArticle(slug: string): Promise<Article | null> {
   };
 }
 
+export const revalidate = 60;
+
 export const dynamicParams = true;
 
 export function generateStaticParams() {
