@@ -283,10 +283,18 @@ assert.ok(jobsMigration.includes("p_status is null or p_status not in ('publishe
 
 const opportunityApi = read("app/api/admin/content-opportunities/route.ts");
 assert.ok(opportunityApi.includes('requireAdminApi("content.read")'), "content opportunity reads must request content.edit");
-assert.ok(opportunityApi.includes('requireAdminApi("content.publish")'), "content publication transitions must request content.publish");
+assert.ok(opportunityApi.includes('requireAdminApi("content.edit")'), "moving an opportunity into review must require content.edit");
+assert.ok(opportunityApi.includes('requireAdminApi("content.publish")'), "approval and rejection must require content.publish");
 assert.ok(!opportunityApi.includes("async function requireAdmin()"), "content opportunity API must use the shared guard rather than a local duplicate");
 assert.ok(opportunityApi.includes('const transitions: Record<string, string[]>'), "opportunity status changes must use an explicit transition map");
 assert.ok(opportunityApi.includes('.eq("id", id).eq("status", current.status)'), "opportunity status update must be conditional to prevent stale writes");
+assert.ok(opportunityApi.includes("reviewed_by: auth.user.id"), "approval and rejection must record the authenticated reviewer");
+assert.ok(opportunityApi.includes("reviewed_at: new Date().toISOString()"), "approval and rejection must record a review timestamp");
+const searchIntelligencePage = read("app/admin/search-intelligence/page.tsx");
+assert.ok(searchIntelligencePage.includes("/api/admin/content-opportunities?status=all"), "Search Intelligence must load persisted opportunity records");
+assert.ok(searchIntelligencePage.includes('method: "PATCH"'), "Search Intelligence decisions must persist through the Admin API");
+assert.ok(!searchIntelligencePage.includes("const seed"), "Search Intelligence must not ship hard-coded demo opportunities");
+assert.ok(!searchIntelligencePage.includes("opportunity score"), "Search Intelligence must not present fabricated opportunity scores");
 assert.ok(opportunityApi.includes("Opportunity changed; reload before trying again"), "opportunity API must reject stale status updates");
 
 const superAdminPage = read("app/super-admin/page.tsx");
