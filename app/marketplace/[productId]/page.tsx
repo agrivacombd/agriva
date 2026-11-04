@@ -20,6 +20,7 @@ type ProductRecord = {
   unit?: string | null;
   description: string | null;
   image_url?: string | null;
+  image_urls?: string[] | null;
   commission_percent?: number | null;
 };
 
@@ -37,7 +38,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -98,7 +99,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const isSample = product.id.startsWith("sample-");
   const hasRealPrice = !isSample && product.price !== null && Number.isFinite(Number(product.price)) && Number(product.price) >= 0;
   const hasStock = product.stock !== null && product.stock !== undefined;
-  const image = product.image_url?.trim() || undefined;
+  const galleryImages = [...new Set([...(Array.isArray(product.image_urls) ? product.image_urls : []), product.image_url].filter((value): value is string => typeof value === "string" && value.trim().length > 0))].slice(0, 4);
+  const image = galleryImages[0];
   const description = product.description?.trim() || "";
   const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
@@ -119,7 +121,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     "@type": "Product",
     name: product.name,
     url: productUrl,
-    ...(image ? { image: [image] } : {}),
+    ...(galleryImages.length ? { image: galleryImages } : {}),
     ...(description ? { description } : {}),
     category: product.category || undefined,
     ...(hasRealPrice ? {
@@ -188,15 +190,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-5 sm:min-h-[420px] sm:p-8 md:h-[560px] md:min-h-0 md:p-10">
             {image ? (
-              <img
-                src={image}
-                alt={product.name + " — product photo on AGRIVA Marketplace"}
-                width={900}
-                height={900}
-                fetchPriority="high"
-                decoding="async"
-                className="block h-[260px] w-full max-w-[560px] rounded-2xl object-contain sm:h-[360px] md:h-[480px]"
-              />
+              <div className="flex w-full max-w-[560px] flex-col items-center gap-3">
+                <img
+                  src={image}
+                  alt={product.name + " — product photo on AGRIVA Marketplace"}
+                  width={900}
+                  height={900}
+                  fetchPriority="high"
+                  decoding="async"
+                  className="block h-[260px] w-full rounded-2xl object-contain sm:h-[330px] md:h-[400px]"
+                />
+                {galleryImages.length > 1 && <div className="grid w-full grid-cols-3 gap-2">
+                  {galleryImages.slice(1).map((src, index) => <img key={src} src={src} alt={product.name + " — additional product photo " + (index + 2)} loading="lazy" decoding="async" className="h-20 w-full rounded-xl border border-emerald-900/10 bg-white object-cover sm:h-24" />)}
+                </div>}
+              </div>
             ) : (
               <div className="flex max-w-xs flex-col items-center text-center">
                 <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span>

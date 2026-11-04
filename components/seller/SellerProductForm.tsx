@@ -4,7 +4,7 @@ import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const INITIAL_FORM = { name: "", price: "", stock: "", unit: "kg", description: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds" };
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_IMAGES = 4;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const UNIT_OPTIONS = [
   { value: "kg", label: "কেজি (kg)" },
@@ -17,74 +17,78 @@ const UNIT_OPTIONS = [
 
 export default function ProductForm() {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
+  const [images, setImages] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((category) => category.slug === form.category_slug);
   const set = (key: keyof typeof INITIAL_FORM, value: string) => setForm((current) => ({ ...current, [key]: value }));
 
   useEffect(() => {
-    if (!preview) return;
-    return () => URL.revokeObjectURL(preview);
-  }, [preview]);
+    const urls = images.map((file) => URL.createObjectURL(file));
+    setPreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [images]);
 
-  function chooseImage(file?: File) {
+  function chooseImages(files: FileList | null) {
     setMessage("");
-    if (!file) { setImage(null); setPreview(""); return; }
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setImage(null); setPreview(""); setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।"); return;
+    const selected = Array.from(files ?? []);
+    if (selected.length > MAX_IMAGES) {
+      setImages([]);
+      setMessage("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।");
+      return;
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-      setImage(null); setPreview(""); setMessage("ছবির সাইজ সর্বোচ্চ ৫ MB হতে পারবে।"); return;
+    const invalid = selected.find((file) => !ALLOWED_IMAGE_TYPES.includes(file.type));
+    if (invalid) {
+      setImages([]);
+      setMessage("শুধু JPG, PNG অথবা WebP ছবি আপলোড করুন।");
+      return;
     }
-    setImage(file);
-    setPreview(URL.createObjectURL(file));
+    setImages(selected);
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setLoading(true); setMessage("");
     const supabase = createSupabaseBrowserClient();
-    let uploadedPath: string | null = null;
+    const uploadedPaths: string[] = [];
     try {
-      let imageUrl: string | null = null;
-      if (image) {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError || !user) throw new Error("ছবি আপলোড করতে আবার লগইন করুন।");
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error("ছবি আপলোড করতে আবার লগইন করুন।");
+
+      const imageUrls: string[] = [];
+      for (const image of images) {
         const extension = image.type === "image/png" ? "png" : image.type === "image/webp" ? "webp" : "jpg";
-        uploadedPath = `${user.id}/${crypto.randomUUID()}.${extension}`;
-        const { error: uploadError } = await supabase.storage.from("product-images").upload(uploadedPath, image, {
+        const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadError } = await supabase.storage.from("product-images").upload(path, image, {
           contentType: image.type,
           cacheControl: "3600",
           upsert: false,
         });
         if (uploadError) {
-          uploadedPath = null;
           console.error("Product image upload failed", uploadError.message);
-          throw new Error("ছবি আপলোড করা যায়নি। আপনার seller account ও Storage policy যাচাই করুন।");
+          throw new Error("ছবি আপলোড করা যায়নি। Storage-এর সর্বোচ্চ ফাইল সাইজ ও seller policy যাচাই করুন।");
         }
-        imageUrl = supabase.storage.from("product-images").getPublicUrl(uploadedPath).data.publicUrl;
+        uploadedPaths.push(path);
+        imageUrls.push(supabase.storage.from("product-images").getPublicUrl(path).data.publicUrl);
       }
+
       const res = await fetch("/api/seller/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, image_url: imageUrl }),
+        body: JSON.stringify({ ...form, image_url: imageUrls[0] ?? null, image_urls: imageUrls }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (uploadedPath) {
-          const { error: cleanupError } = await supabase.storage.from("product-images").remove([uploadedPath]);
-          if (cleanupError) console.warn("Could not clean up rejected product image", cleanupError.message);
-          else uploadedPath = null;
-        }
-        throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
-      }
-      uploadedPath = null;
+      if (!res.ok) throw new Error(data.error || "পণ্য জমা দেওয়া যায়নি।");
+
+      uploadedPaths.length = 0;
       setMessage("পণ্যটি অ্যাডমিন পর্যালোচনার জন্য জমা হয়েছে। অনুমোদনের আগে এটি মার্কেটপ্লেসে দেখাবে না।");
       setForm(INITIAL_FORM);
-      setImage(null);
-      setPreview("");
+      setImages([]);
     } catch (error) {
+      if (uploadedPaths.length) {
+        const { error: cleanupError } = await supabase.storage.from("product-images").remove(uploadedPaths);
+        if (cleanupError) console.warn("Could not clean up rejected product images", cleanupError.message);
+      }
       setMessage(error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setLoading(false);
@@ -104,10 +108,11 @@ export default function ProductForm() {
     </div>
     <p className="rounded-xl bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">আপনার নির্বাচিত একক অনুযায়ী মূল্য ও স্টক গণনা হবে। যেমন: ৳500 / কেজি এবং স্টক 100 কেজি।</p>
     <div className="space-y-2">
-      <label className="block text-sm font-bold" htmlFor="product-image">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৫ MB)</span></label>
-      <input id="product-image" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>chooseImage(e.target.files?.[0])} className="block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>
-      {preview && <div className="flex items-center gap-4"><img src={preview} alt="পণ্যের ছবির preview" className="h-28 w-28 rounded-xl border object-cover"/><button type="button" onClick={()=>chooseImage()} className="text-sm font-bold text-red-700">ছবি সরান</button></div>}
-      <p className="text-xs text-[#748074]">JPG, PNG বা WebP। আপনার নিজের ছবি ব্যবহার করুন।</p>
+      <label className="block text-sm font-bold" htmlFor="product-images">পণ্যের ছবি <span className="font-normal text-[#748074]">(ঐচ্ছিক, সর্বোচ্চ ৪টি)</span></label>
+      <input id="product-images" type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={loading} onChange={e=>chooseImages(e.target.files)} className="block w-full rounded-xl border px-4 py-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-[#edf4e9] file:px-3 file:py-2 file:font-bold"/>
+      <p className="text-xs text-[#748074]">JPG, PNG বা WebP। প্রতিটি ছবির জন্য আলাদা MB সীমা নেই; Supabase project-এর global upload limit প্রযোজ্য।</p>
+      {previews.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{previews.map((src,index)=><div key={src} className="space-y-1"><img src={src} alt={`পণ্যের ছবির preview ${index+1}`} className="h-28 w-full rounded-xl border object-cover"/><p className="text-xs text-[#748074]">ছবি {index+1}</p></div>)}</div>}
+      {images.length > 0 && <button type="button" disabled={loading} onClick={()=>setImages([])} className="text-sm font-bold text-red-700">সব ছবি সরান</button>}
     </div>
     <div><label className="text-sm font-bold">পণ্যের বিবরণ<textarea maxLength={5000} value={form.description} onChange={e=>set("description",e.target.value)} className="mt-2 min-h-32 w-full rounded-xl border px-4 py-3" placeholder="ওজন, উৎপত্তিস্থল, প্যাকেজিং, উপাদান ও মেয়াদোত্তীর্ণের তথ্য দিন..."/></label></div>
     <p className="rounded-xl bg-amber-50 p-3 text-sm leading-6 text-amber-900">পণ্যের সঠিক ওজন/প্যাক সাইজ, উপাদান, উৎস এবং মেয়াদোত্তীর্ণের তথ্য দিন। যাচাই ও অনুমোদনের আগে পণ্য প্রকাশ হবে না। রিসেলার কমিশন প্ল্যাটফর্মের নীতিমালা অনুযায়ী নির্ধারিত হবে।</p>
