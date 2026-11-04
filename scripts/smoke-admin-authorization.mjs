@@ -9,6 +9,13 @@ const read = (path) => {
 
 const layout = read("app/admin/layout.tsx");
 const authz = read("lib/admin/authz.ts");
+const permissionService = read("lib/admin/permission-service.ts");
+assert.match(permissionService, /import type \\{ AdminCapability \\} from "@\\/lib\\/admin\\/authz"/, "delegated permissions must use the canonical Admin capability type");
+assert.match(permissionService, /p_capability: capability/, "delegated permission checks must pass the registered capability unchanged");
+assert.match(permissionService, /typeof data !== "boolean"/, "delegated permission RPC failures must fail closed");
+for (const compatibilityCapability of ["users.verify", "plant_market.moderate", "marketplace.moderate", "farms.manage", "settings.manage", "system.recovery"]) {
+  assert.ok(authz.includes(`"${compatibilityCapability}"`), `shared Admin capability registry must retain ${compatibilityCapability}`);
+}
 const adminDashboard = read("app/admin/page.tsx");
 const ordersPage = read("app/admin/orders/page.tsx");
 const controlCenterNav = read("components/admin/AdminControlCenterNav.tsx");
