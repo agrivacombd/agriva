@@ -200,4 +200,23 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
-console.log("Admin authorization, financial capability boundaries, harvest moderation, and publication-policy regression checks passed.");
+
+const seoPagesMigration = read("supabase/migrations/20261106120000_seo_landing_pages.sql");
+assert.ok(seoPagesMigration.includes("ALTER TABLE public.seo_landing_pages ENABLE ROW LEVEL SECURITY"), "SEO landing pages must enforce RLS");
+assert.ok(seoPagesMigration.includes("status = 'published'"), "public SEO landing pages must be publication-only");
+assert.ok(seoPagesMigration.includes("p.role = 'admin'"), "SEO landing page editing must be restricted to admin profiles");
+const seoPageApi = read("app/api/admin/seo-pages/route.ts");
+assert.ok(seoPageApi.includes('requireAdminApi("content.read")'), "SEO page list must require content read capability");
+assert.ok(seoPageApi.includes('requireAdminApi("content.edit")'), "SEO page edits must require content edit capability");
+const seoWorkflowApi = read("app/api/admin/seo-pages/workflow/route.ts");
+assert.ok(seoWorkflowApi.includes('requireAdminApi("content.publish")'), "SEO page approval and publication must require content publish capability");
+assert.ok(seoWorkflowApi.includes('.eq("id", current.id).eq("status", current.status)'), "SEO page transitions must reject stale updates");
+assert.ok(read("app/admin/seo-pages/page.tsx").includes('requireAdminPage("content.read")'), "SEO page editor must be protected by the shared page guard");
+assert.ok(read("app/landing/[slug]/page.tsx").includes('.eq("status","published")'), "public landing route must only resolve published pages");
+const cmsBlogPage = read("app/blog/[slug]/page.tsx");
+assert.ok(cmsBlogPage.includes('.eq("status","published")') && cmsBlogPage.includes('.eq("content_type","article")'), "public blog route must only resolve published article content");
+const sitemap = read("app/sitemap.ts");
+assert.ok(sitemap.includes('eq("noindex", false)'), "noindex landing pages must be excluded from the sitemap");
+assert.ok(sitemap.includes('${base}/blog/${article.slug}'), "published CMS articles must be included in the sitemap");
+assert.ok(sitemap.includes('${base}/landing/${page.slug}'), "published SEO landing pages must be included in the sitemap");
+\nconsole.log("Admin authorization, financial capability boundaries, CMS editorial workflow, SEO landing pages, harvest moderation, and publication-policy regression checks passed.");
