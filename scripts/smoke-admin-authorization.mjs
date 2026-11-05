@@ -80,6 +80,18 @@ assert.ok(dashboardPage.includes('requireAdmin("commissions.approve")'), "commis
 assert.ok(dashboardPage.includes('requireAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
 assert.ok(dashboardPage.includes('requireAdmin("payouts.complete")'), "payout completion must require its dedicated capability");
 
+const financialMigration = read("supabase/migrations/20261105190000_enforce_financial_admin_capabilities.sql");
+assert.ok(financialMigration.includes("public.has_admin_permission('commissions.approve')"), "commission approval RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("public.has_admin_permission('payouts.approve')"), "payout approval RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("public.has_admin_permission('payouts.complete')"), "payout completion RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("('commissions.approve'), ('payouts.complete')"), "super admin role must receive the explicit financial permissions");
+const permissionService = read("lib/admin/permission-service.ts");
+assert.ok(permissionService.includes('"commissions.approve"') && permissionService.includes('"payouts.complete"'), "delegated permission service must declare financial capabilities");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"commissions.approve\")"), "commission UI must query delegated permission");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"payouts.approve\")"), "payout approval UI must query delegated permission");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"payouts.complete\")"), "payout completion UI must query delegated permission");
+assert.ok(dashboardPage.includes('p.status === "approved" && canCompletePayout'), "only separately approved payouts may show the completion action");
+
 const reportsPage = read("app/admin/reports/page.tsx");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
