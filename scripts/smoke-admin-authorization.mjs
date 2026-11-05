@@ -76,9 +76,9 @@ for (const path of [
 }
 
 const dashboardPage = read("app/admin/page.tsx");
-assert.ok(dashboardPage.includes('requireAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
-assert.ok(dashboardPage.includes('requireAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
-assert.ok(dashboardPage.includes('requireAdmin("payouts.complete")'), "payout completion must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("payouts.complete")'), "payout completion must require its dedicated capability");
 
 const financialMigration = read("supabase/migrations/20261105190000_enforce_financial_admin_capabilities.sql");
 assert.ok(financialMigration.includes("public.has_admin_permission('commissions.approve')"), "commission approval RPC must enforce delegated permission in the database");
