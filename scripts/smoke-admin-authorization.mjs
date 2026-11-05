@@ -75,6 +75,13 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const accessControlPage = read("app/admin/access-control/page.tsx");
+assert.ok(accessControlPage.includes('checkAdminPermission("roles.grant")'), "access control overview must require the delegated role-management permission");
+assert.ok(accessControlPage.includes('from("admin_roles")') && accessControlPage.includes('from("admin_role_permissions")') && accessControlPage.includes('from("admin_user_roles")'), "access control overview must read canonical role and assignment tables");
+assert.ok(accessControlPage.includes("Read-only review"), "role access overview must not expose unreviewed grant/revoke controls");
+assert.ok(accessControlPage.includes("expires_at"), "role access overview must account for expiring assignments");
+assert.ok(dashboardPage.includes("/admin/access-control"), "admin dashboard must provide a shortcut to access control");
+
 const dashboardPage = read("app/admin/page.tsx");
 assert.ok(dashboardPage.includes('requireFinanceAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
 assert.ok(dashboardPage.includes('requireFinanceAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
