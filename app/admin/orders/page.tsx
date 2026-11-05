@@ -1,16 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
 type OrderStatus = "processing" | "shipped" | "delivered" | "completed" | "cancelled";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "orders.read") {
+  const { supabase } = await requireAdminPage(capability);
   return supabase;
 }
 
@@ -22,7 +18,7 @@ async function updateOrderStatus(formData: FormData) {
   if (!/^[0-9a-f-]{36}$/i.test(orderId) || !allowed.includes(status)) {
     redirect("/admin/orders?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("orders.transition");
   const { error } = await supabase.rpc("set_marketplace_order_status", {
     p_order_id: orderId,
     p_status: status,
@@ -39,7 +35,7 @@ async function recordCodCollection(formData: FormData) {
   const amount = Number(formData.get("collectedAmount"));
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
   if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0) redirect("/admin/orders?notice=invalid");
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("orders.transition");
   const { error } = await supabase.rpc("record_cod_collection", {
     p_checkout_id: checkoutId, p_collected_amount: amount, p_note: note || null,
   });

@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
-async function requireAdmin() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=%2Fadmin%2Fgreen-exchange");
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profile?.role !== "admin") redirect("/dashboard");
+async function requireAdmin(capability: AdminCapability = "content.read") {
+  const { supabase } = await requireAdminPage(capability, "/login?next=%2Fadmin%2Fgreen-exchange");
   return supabase;
 }
 
@@ -19,7 +15,7 @@ async function moderateListing(formData: FormData) {
   if (!listingId || !/^[0-9a-f-]{36}$/i.test(listingId) || !["approved", "rejected", "pending"].includes(status)) {
     redirect("/admin/green-exchange?notice=invalid");
   }
-  const supabase = await requireAdmin();
+  const supabase = await requireAdmin("content.publish");
   const { error } = await supabase.rpc("admin_moderate_green_exchange_listing", {
     p_listing_id: listingId,
     p_moderation_status: status,

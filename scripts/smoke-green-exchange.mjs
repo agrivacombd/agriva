@@ -22,7 +22,7 @@ assert.match(board, /moderation_status", "approved"/);
 assert.match(board, /green_exchange_requests/);
 assert.match(board, /respond_green_exchange_request/);
 assert.match(adminPage, /admin_moderate_green_exchange_listing/);
-assert.ok(adminPage.includes('profile?.role !== "admin"'), "moderation UI must check the server-side admin role");
+assert.ok(adminPage.includes('requireAdmin("content.publish")'), "moderation UI must require the shared content publish capability");
 assert.match(adminPage, /moderation_status/);
 assert.match(board, /বিনিময়ের অনুরোধ দিন/);
 assert.match(board, /ব্যক্তিগত ফোন নম্বর বা বাড়ির ঠিকানা পোস্টে লিখবেন না/);

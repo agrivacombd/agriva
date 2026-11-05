@@ -42,7 +42,9 @@ export const ADMIN_CAPABILITIES = [
   "payments.reconcile",
   "orders.refund.request",
   "payouts.read",
+  "commissions.approve",
   "payouts.approve",
+  "payouts.complete",
   "system.recovery.execute",
 ] as const;
 

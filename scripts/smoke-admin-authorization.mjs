@@ -15,7 +15,7 @@ assert.match(authz, /profileError/, "shared guard must fail closed when profile 
 assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\.has\(capability\)/, "shared guard must explicitly check the requested capability");
 assert.match(authz, /authorization_unavailable/, "authorization lookup failures must be distinguishable from ordinary denial");
 const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
-assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|payouts\.approve|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
+assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|commissions\.approve|payouts\.approve|payouts\.complete|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -75,11 +75,31 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const dashboardPage = read("app/admin/page.tsx");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireFinanceAdmin("payouts.complete")'), "payout completion must require its dedicated capability");
+
+const financialMigration = read("supabase/migrations/20261105190000_enforce_financial_admin_capabilities.sql");
+assert.ok(financialMigration.includes("public.has_admin_permission('commissions.approve')"), "commission approval RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("public.has_admin_permission('payouts.approve')"), "payout approval RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("public.has_admin_permission('payouts.complete')"), "payout completion RPC must enforce delegated permission in the database");
+assert.ok(financialMigration.includes("('commissions.approve'), ('payouts.complete')"), "super admin role must receive the explicit financial permissions");
+const permissionService = read("lib/admin/permission-service.ts");
+assert.ok(permissionService.includes('"commissions.approve"') && permissionService.includes('"payouts.complete"'), "delegated permission service must declare financial capabilities");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"commissions.approve\")"), "commission UI must query delegated permission");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"payouts.approve\")"), "payout approval UI must query delegated permission");
+assert.ok(dashboardPage.includes("checkAdminPermission(\"payouts.complete\")"), "payout completion UI must query delegated permission");
+assert.ok(dashboardPage.includes('p.status === "approved" && canCompletePayout'), "only separately approved payouts may show the completion action");
+
 const reportsPage = read("app/admin/reports/page.tsx");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
 
 const ordersPage = read("app/admin/orders/page.tsx");
+assert.ok(ordersPage.includes('requireAdminPage(capability)'), "admin orders page must use the shared capability guard");
+assert.ok(ordersPage.includes('async function requireAdmin(capability: AdminCapability = "orders.read")'), "admin orders page must declare its default read capability");
+assert.ok(ordersPage.includes('requireAdmin("orders.transition")'), "order mutations must request the order transition capability");
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
@@ -90,9 +110,16 @@ assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page 
 assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
 
 const harvestPage = read("app/admin/harvest/page.tsx");
-assert.ok(harvestPage.includes('requireAdminPage("harvest.read")'), "harvest admin page must remain read-only");
-assert.ok(!harvestPage.includes("admin_moderate_harvest_listing"), "Sell My Harvest must not expose admin approval actions");
-assert.ok(!harvestPage.includes('name="action"'), "Sell My Harvest admin overview must not offer moderation decisions");
+assert.ok(harvestPage.includes('requireAdminPage("harvest.read")'), "harvest admin page must use the shared read capability");
+assert.ok(harvestPage.includes('requireAdminPage("harvest.moderate")'), "harvest moderation action must require its own capability");
+assert.ok(harvestPage.includes('supabase.rpc("admin_moderate_harvest_listing"'), "harvest moderation must use the audited admin RPC");
+assert.ok(harvestPage.includes('decision === "reject" && !note'), "harvest rejection must require a reason");
+assert.ok(harvestPage.includes('listing.status === "sold_out"'), "sold out harvest listings must not be reactivated");
+assert.ok(harvestPage.includes('name="decision" value="pause"'), "harvest admin must offer pause action");
+assert.ok(harvestPage.includes('name="decision" value="approve"'), "harvest admin must offer resume action");
+const harvestResumeMigration = read("supabase/migrations/20261105180000_prevent_resuming_sold_out_harvest.sql");
+assert.ok(harvestResumeMigration.includes("FOR UPDATE"), "harvest moderation must lock the listing row before transition");
+assert.ok(harvestResumeMigration.includes("p_status = 'approved' AND v_previous_status = 'sold_out'"), "database RPC must prevent sold-out listings from being reactivated");
 
 const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
 assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
@@ -133,14 +160,10 @@ for (const [path, capability] of sharedGuardPages) {
   assert.ok(source.includes(`async function requireAdmin(capability: AdminCapability = "${capability}")`), `${path} must declare its default read capability`);
 }
 
-for (const path of [
-  "app/admin/opportunities/page.tsx",
-  "app/admin/audit/page.tsx",
-]) {
-  const source = read(path);
-  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
-  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
-}
+assert.ok(read("app/admin/opportunities/page.tsx").includes('requireAdminPage("content.read")'), "opportunities page must use the shared content read capability");
+assert.ok(read("app/admin/green-exchange/page.tsx").includes('requireAdmin("content.publish")'), "Green Exchange moderation must request the content publish capability");
+assert.ok(read("app/admin/reports/page.tsx").includes('requireAdminPage("reports.export")'), "reports page must use the shared export capability guard");
+assert.ok(read("app/admin/audit/page.tsx").includes('requireAdminPage("audit.read")'), "audit page must use the shared audit capability guard");
 
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
@@ -177,4 +200,4 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
-console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
+console.log("Admin authorization, financial capability boundaries, harvest moderation, and publication-policy regression checks passed.");
