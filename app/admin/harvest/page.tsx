@@ -32,7 +32,6 @@ async function moderateHarvestListing(formData: FormData) {
   });
   revalidatePath("/admin/harvest");
   revalidatePath("/sell-my-harvest");
-  revalidatePath("/marketplace");
   redirect(error ? "/admin/harvest?notice=error" : "/admin/harvest?notice=updated");
 }
 
@@ -61,7 +60,7 @@ export default async function AdminHarvestPage({ searchParams }: { searchParams:
       <div className="aspect-[4/3] overflow-hidden rounded-xl bg-emerald-50">{item.image_urls?.[0] ? <img src={item.image_urls[0]} alt={item.crop_name} className="h-full w-full object-cover"/> : <div className="grid h-full place-items-center text-4xl">🌾</div>}</div>
       <div><div className="flex flex-wrap items-start justify-between gap-2"><h2 className="text-xl font-black">{item.crop_name}{item.variety ? " · " + item.variety : ""}</h2><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold">{statusName(item.status)}</span></div><p className="mt-1 text-sm text-slate-600">বিক্রেতা: {item.seller_name} · {item.upazila ? item.upazila + ", " : ""}{item.district}</p><p className="mt-2 text-sm font-bold">৳{Number(item.price_per_unit).toLocaleString("en-BD")} / {unitName(item.unit)} · পরিমাণ {Number(item.quantity).toLocaleString("en-BD")} {unitName(item.unit)}</p><p className="mt-1 text-xs text-slate-500">পোস্ট: {new Date(item.created_at).toLocaleString("bn-BD")} · মডারেশন: {item.moderation_status}</p>{item.moderation_note && <p className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">নোট: {item.moderation_note}</p>}
       <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-        {item.status === "paused" && item.status !== "sold_out" && <form action={moderateHarvestListing} className="flex flex-wrap items-center gap-2"><input type="hidden" name="listing_id" value={item.id}/><input type="hidden" name="decision" value="approve"/><button className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">আবার চালু করুন</button></form>}
+        {item.status === "paused" && item.moderation_status === "pending" && <form action={moderateHarvestListing} className="flex flex-wrap items-center gap-2"><input type="hidden" name="listing_id" value={item.id}/><input type="hidden" name="decision" value="approve"/><button className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">আবার চালু করুন</button></form>}
         {item.status === "available" && <form action={moderateHarvestListing} className="flex flex-wrap items-center gap-2"><input type="hidden" name="listing_id" value={item.id}/><input type="hidden" name="decision" value="pause"/><button className="min-h-10 rounded-lg border border-amber-300 px-4 py-2 text-sm font-bold text-amber-900">সাময়িক বন্ধ</button></form>}
         {item.status !== "sold_out" && item.moderation_status !== "rejected" && <form action={moderateHarvestListing} className="flex flex-wrap items-center gap-2"><input type="hidden" name="listing_id" value={item.id}/><input type="hidden" name="decision" value="reject"/><input name="note" required maxLength={500} placeholder="প্রত্যাখ্যানের কারণ" aria-label="প্রত্যাখ্যানের কারণ" className="min-h-10 w-48 rounded-lg border border-slate-300 px-3 text-sm"/><button className="min-h-10 rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-800">প্রত্যাখ্যান</button></form>}
       </div></div>
