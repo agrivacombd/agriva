@@ -205,6 +205,10 @@ const publicContentMigration = read("supabase/migrations/20261105183411_harden_p
 assert.ok(publicContentMigration.includes("REVOKE ALL ON TABLE public.content_drafts FROM anon"), "anonymous content draft access must be revoked before narrow grants");
 assert.ok(publicContentMigration.includes("GRANT SELECT (") && publicContentMigration.includes("body_markdown"), "public article read must use an explicit safe column allowlist");
 assert.ok(publicContentMigration.includes("status = 'published' AND content_type = 'article'"), "anonymous readers must only access published article rows");
+const contentWorkflowApi = read("app/admin/content-drafts/workflow/route.ts");
+assert.ok(contentWorkflowApi.includes("markdown.trim().slice(0, 50000)"), "article workflow must bound body size for moderation transitions");
+assert.ok(contentWorkflowApi.includes("body.meta_title.trim().slice(0, 160)"), "article workflow must bound metadata title size");
+assert.ok(contentWorkflowApi.includes("body.meta_description.trim().slice(0, 320)"), "article workflow must bound metadata description size");
 const seoPagesMigration = read("supabase/migrations/20261105183331_seo_landing_pages.sql");
 assert.ok(seoPagesMigration.includes("ALTER TABLE public.seo_landing_pages ENABLE ROW LEVEL SECURITY"), "SEO landing pages must enforce RLS");
 assert.ok(seoPagesMigration.includes("status = 'published'"), "public SEO landing pages must be publication-only");
