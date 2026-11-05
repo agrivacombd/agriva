@@ -27,7 +27,7 @@ async function approveCommission(formData: FormData) {
   "use server";
   const commissionId = String(formData.get("commissionId") ?? "");
   if (!commissionId) redirect("/admin?notice=invalid_commission");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("commissions.approve");
   const { error } = await supabase.rpc("approve_reseller_commission", { p_commission_id: commissionId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=commission_error" : "/admin?notice=commission_approved");
@@ -37,7 +37,7 @@ async function approvePayout(formData: FormData) {
   "use server";
   const payoutId = String(formData.get("payoutId") ?? "");
   if (!payoutId) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payouts.approve");
   const { error } = await supabase.rpc("approve_commission_payout", { p_payout_id: payoutId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_error" : "/admin?notice=payout_approved");
@@ -48,7 +48,7 @@ async function completePayout(formData: FormData) {
   const payoutId = String(formData.get("payoutId") ?? "");
   const reference = String(formData.get("reference") ?? "").trim();
   if (!payoutId || !reference) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin();
+  const { supabase } = await requireAdmin("payouts.complete");
   const { error } = await supabase.rpc("complete_commission_payout", {
     p_payout_id: payoutId,
     p_payment_reference: reference,
