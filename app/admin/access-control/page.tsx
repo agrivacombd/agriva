@@ -53,7 +53,7 @@ export default async function AdminAccessControlPage() {
   const activeAssignments = assignments.filter((item) => roleIds.has(item.role_id) && (!item.expires_at || new Date(item.expires_at).getTime() > Date.now()));
   const userIds = [...new Set(activeAssignments.map((item) => item.user_id))];
   const profilesResult = userIds.length
-    ? await supabase.from("profiles").select("id,full_name,email").in("id", userIds)
+    ? await supabase.from("profiles").select("id,full_name").in("id", userIds)
     : { data: [], error: null };
   const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
   const permissionsByRole = new Map<string, string[]>();
@@ -99,7 +99,7 @@ export default async function AdminAccessControlPage() {
           <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs text-[#6d7b6e]"><tr><th className="px-3 py-3">Admin</th><th className="px-3 py-3">Role</th><th className="px-3 py-3">Scope</th><th className="px-3 py-3">Granted</th><th className="px-3 py-3">Expires</th></tr></thead><tbody>{activeAssignments.map((assignment) => {
             const profile = profiles.get(assignment.user_id);
             const role = rolesById.get(assignment.role_id);
-            return <tr key={assignment.id} className="border-t border-[#edf1ea]"><td className="px-3 py-3"><p className="font-semibold">{profile?.full_name || "Unnamed admin"}</p><p className="text-xs text-[#7b887d]">{profile?.email || assignment.user_id.slice(0, 8) + "…"}</p></td><td className="px-3 py-3 font-semibold">{role?.display_name ?? "Unknown role"}</td><td className="px-3 py-3">{assignment.scope_type}{assignment.scope_id ? " · " + assignment.scope_id.slice(0, 8) : ""}</td><td className="px-3 py-3">{new Date(assignment.granted_at).toLocaleDateString("en-GB")}</td><td className="px-3 py-3">{assignment.expires_at ? new Date(assignment.expires_at).toLocaleDateString("en-GB") : "No expiry"}</td></tr>;
+            return <tr key={assignment.id} className="border-t border-[#edf1ea]"><td className="px-3 py-3"><p className="font-semibold">{profile?.full_name || "Unnamed admin"}</p><p className="text-xs text-[#7b887d]">{assignment.user_id.slice(0, 8) + "…"}</p></td><td className="px-3 py-3 font-semibold">{role?.display_name ?? "Unknown role"}</td><td className="px-3 py-3">{assignment.scope_type}{assignment.scope_id ? " · " + assignment.scope_id.slice(0, 8) : ""}</td><td className="px-3 py-3">{new Date(assignment.granted_at).toLocaleDateString("en-GB")}</td><td className="px-3 py-3">{assignment.expires_at ? new Date(assignment.expires_at).toLocaleDateString("en-GB") : "No expiry"}</td></tr>;
           })}</tbody></table>{!hasError && !activeAssignments.length ? <p className="p-5 text-sm text-[#718072]">কোনো active role assignment নেই।</p> : null}</div>
         </section>
 
