@@ -5,7 +5,7 @@ export type AdminCapability =
   | "dashboard.read" | "users.read" | "users.verify" | "roles.grant"
   | "plant_market.moderate" | "marketplace.moderate" | "harvest.moderate"
   | "transport.moderate" | "farms.manage" | "payments.read"
-  | "payments.reconcile" | "payouts.approve" | "audit.read"
+  | "payments.reconcile" | "commissions.approve" | "payouts.approve" | "payouts.complete" | "audit.read"
   | "settings.manage" | "system.recovery";
 export type AdminPermissionResult =
   | { allowed: true; userId: string }
