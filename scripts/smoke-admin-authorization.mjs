@@ -133,14 +133,11 @@ for (const [path, capability] of sharedGuardPages) {
   assert.ok(source.includes(`async function requireAdmin(capability: AdminCapability = "${capability}")`), `${path} must declare its default read capability`);
 }
 
-for (const path of [
-  "app/admin/opportunities/page.tsx",
-  "app/admin/audit/page.tsx",
-]) {
-  const source = read(path);
-  assert.ok(source.includes("authError || !user"), `${path} must fail closed on session lookup errors`);
-  assert.ok(source.includes('profileError || profile?.role !== "admin"'), `${path} must fail closed on profile lookup errors and non-admin roles`);
-}
+const opportunitiesPage = read("app/admin/opportunities/page.tsx");
+assert.ok(opportunitiesPage.includes("authError || !user"), "opportunities page must fail closed on session lookup errors");
+assert.ok(opportunitiesPage.includes('profileError || profile?.role !== "admin"'), "opportunities page must fail closed on profile lookup errors and non-admin roles");
+assert.ok(read("app/admin/reports/page.tsx").includes('requireAdminPage("reports.export")'), "reports page must use the shared export capability guard");
+assert.ok(read("app/admin/audit/page.tsx").includes('requireAdminPage("audit.read")'), "audit page must use the shared audit capability guard");
 
 const transportAdmin = read("app/admin/transport/page.tsx");
 assert.ok(transportAdmin.includes("admin_set_transport_partner_verification"), "transport status changes must use the admin-only RPC");
