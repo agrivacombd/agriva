@@ -17,7 +17,8 @@ export async function PATCH(request: NextRequest) {
   }
 
   const action = body.action;
-  const access = action === "published"
+  const publicationActions = ["published", "approved", "rejected", "review"];
+  const access = publicationActions.includes(action)
     ? await requireAdminApi("content.publish")
     : await requireAdminApi("content.edit");
   if (!access.ok) return access.response;
@@ -43,13 +44,14 @@ export async function PATCH(request: NextRequest) {
     if (!title || title.length > 160 || !slugPattern.test(slug) || slug.length > 180) {
       return NextResponse.json({ error: "Title or slug is invalid." }, { status: 400 });
     }
-    const { error } = await supabase.from("content_drafts").update({
+    const { data, error } = await supabase.from("content_drafts").update({
       title, slug, body_markdown: markdown,
       meta_title: typeof body.meta_title === "string" ? body.meta_title.slice(0, 160) : null,
       meta_description: typeof body.meta_description === "string" ? body.meta_description.slice(0, 320) : null,
       ...(current.status === "approved" ? { status: "review", reviewed_at: null } : current.status === "rejected" ? { status: "draft", reviewed_at: null } : {}),
-    }).eq("id", current.id).eq("status", current.status);
+    }).eq("id", current.id).eq("status", current.status).select("id").maybeSingle();
     if (error) return NextResponse.json({ error: "Could not save draft." }, { status: 500 });
+    if (!data) return NextResponse.json({ error: "Draft changed; reload and try again." }, { status: 409 });
     return NextResponse.json({ ok: true });
   }
 
