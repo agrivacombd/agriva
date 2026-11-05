@@ -15,7 +15,7 @@ assert.match(authz, /profileError/, "shared guard must fail closed when profile 
 assert.match(authz, /LEGACY_ADMIN_CAPABILITIES\.has\(capability\)/, "shared guard must explicitly check the requested capability");
 assert.match(authz, /authorization_unavailable/, "authorization lookup failures must be distinguishable from ordinary denial");
 const legacyCapabilityPolicy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
-assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|payouts\.approve|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
+assert.doesNotMatch(legacyCapabilityPolicy, /payments\.reconcile|orders\.refund\.request|commissions\.approve|payouts\.approve|payouts\.complete|system\.recovery\.execute/, "high-risk financial and recovery capabilities must remain deny-by-default");
 
 const collectRouteHandlers = (directory) => {
   if (!existsSync(directory)) return [];
@@ -74,6 +74,11 @@ for (const path of [
   assert.match(source, /"use server"/, `${path} expected to contain server actions`);
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
+
+const dashboardPage = read("app/admin/page.tsx");
+assert.ok(dashboardPage.includes('requireAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireAdmin("payouts.approve")'), "payout approval must require its dedicated capability");
+assert.ok(dashboardPage.includes('requireAdmin("payouts.complete")'), "payout completion must require its dedicated capability");
 
 const reportsPage = read("app/admin/reports/page.tsx");
 assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics must be hidden if any source query fails");
@@ -183,4 +188,4 @@ assert.ok(moduleDirectory.includes('type="search"'), "super admin directory must
 assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("sm:grid-cols-2") && moduleDirectory.includes("xl:grid-cols-4"), "super admin directory must adapt from mobile to desktop");
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
-console.log("Admin authorization, read-only harvest overview, and publication-policy regression checks passed.");
+console.log("Admin authorization, financial capability boundaries, harvest moderation, and publication-policy regression checks passed.");
