@@ -17,7 +17,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const action = body.action;
-  const capability = action === "publish" ? "content.publish" : "content.edit";
+  const capability = action === "published" ? "content.publish" : "content.edit";
   const access = await requireAdminApi(capability);
   if (!access.ok) return access.response;
 
