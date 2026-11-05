@@ -5,8 +5,9 @@ const transitions: Record<string, string[]> = { draft: ["review"], review: ["dra
 export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => null);
   if (!body || typeof body.id !== "string" || typeof body.action !== "string") return NextResponse.json({ error: "Page id and action are required." }, { status: 400 });
-  const capability = body.action === "draft" || body.action === "review" ? "content.edit" : "content.publish";
-  const access = await requireAdminApi(capability);
+  const access = body.action === "draft" || body.action === "review"
+    ? await requireAdminApi("content.edit")
+    : await requireAdminApi("content.publish");
   if (!access.ok) return access.response;
   const { data: current, error: readError } = await access.supabase.from("seo_landing_pages").select("id,status,title,slug,body_markdown").eq("id", body.id).maybeSingle();
   if (readError || !current) return NextResponse.json({ error: "Landing page not found." }, { status: 404 });
