@@ -93,9 +93,13 @@ assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page 
 assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
 
 const harvestPage = read("app/admin/harvest/page.tsx");
-assert.ok(harvestPage.includes('requireAdminPage("harvest.read")'), "harvest admin page must remain read-only");
-assert.ok(!harvestPage.includes("admin_moderate_harvest_listing"), "Sell My Harvest must not expose admin approval actions");
-assert.ok(!harvestPage.includes('name="action"'), "Sell My Harvest admin overview must not offer moderation decisions");
+assert.ok(harvestPage.includes('requireAdminPage("harvest.read")'), "harvest admin page must use the shared read capability");
+assert.ok(harvestPage.includes('requireAdminPage("harvest.moderate")'), "harvest moderation action must require its own capability");
+assert.ok(harvestPage.includes('supabase.rpc("admin_moderate_harvest_listing"'), "harvest moderation must use the audited admin RPC");
+assert.ok(harvestPage.includes('decision === "reject" && !note'), "harvest rejection must require a reason");
+assert.ok(harvestPage.includes('listing.status === "sold_out"'), "sold out harvest listings must not be reactivated");
+assert.ok(harvestPage.includes('name="decision" value="pause"'), "harvest admin must offer pause action");
+assert.ok(harvestPage.includes('name="decision" value="approve"'), "harvest admin must offer resume action");
 
 const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
 assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
