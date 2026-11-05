@@ -38,12 +38,12 @@ assert.match(migration, /'draft'/, "admin-created products must start as drafts"
 assert.match(migration, /admin_audit_log/, "admin product creation must be audited");
 assert.match(
   migration,
-  /revoke all on function public\.admin_create_marketplace_product\([\s\S]*?\) from public, anon;/,
+  /revoke all on function public\.admin_create_marketplace_product\([\s\S]*?\) from public, anon;/i,
   "RPC must not be executable by public or anonymous roles",
 );
 assert.match(
   migration,
-  /grant execute on function public\.admin_create_marketplace_product\([\s\S]*?\) to authenticated;/,
+  /grant execute on function public\.admin_create_marketplace_product\([\s\S]*?\) to authenticated;/i,
   "RPC must be executable by authenticated users (with admin checks inside the function)",
 );
 
