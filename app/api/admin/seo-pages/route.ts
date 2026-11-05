@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
   const title = cleanText(body.title, 160);
   if (!slugPattern.test(slug) || !title) return NextResponse.json({ error: "A title and valid URL slug are required." }, { status: 400 });
   const faq = Array.isArray(body.faq) ? body.faq.slice(0, 20).filter((item: unknown) => item && typeof item === "object").map((item: any) => ({ question: cleanText(item.question, 240), answer: cleanText(item.answer, 2000) })).filter((item: any) => item.question && item.answer) : [];
+  const canonicalUrl = safeLink(body.canonical_url);
+  const ctaUrl = safeLink(body.cta_url);
+  if ((body.canonical_url && !canonicalUrl) || (body.cta_url && !ctaUrl)) return NextResponse.json({ error: "Canonical and CTA links must be HTTPS or safe internal paths." }, { status: 400 });
   const values = {
     slug, title, meta_title: cleanText(body.meta_title, 160) || null,
     meta_description: cleanText(body.meta_description, 320) || null,
