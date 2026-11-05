@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/admin/authz";
 
 export default async function AdminReportsPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const { supabase } = await requireAdminPage("reports.export");
 
   const [orders, products, commissions, payouts] = await Promise.all([
     supabase.from("marketplace_orders").select("id,created_at,status,payment_status,payment_method,total_amount,quantity").order("created_at",{ascending:false}).limit(5000),
