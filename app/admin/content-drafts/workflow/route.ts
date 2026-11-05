@@ -48,7 +48,7 @@ export async function PATCH(request: NextRequest) {
       title, slug, body_markdown: markdown,
       meta_title: typeof body.meta_title === "string" ? body.meta_title.slice(0, 160) : null,
       meta_description: typeof body.meta_description === "string" ? body.meta_description.slice(0, 320) : null,
-      ...(current.status === "approved" ? { status: "review", reviewed_at: null } : current.status === "rejected" ? { status: "draft", reviewed_at: null } : {}),
+      ...(current.status === "approved" ? { status: "review", reviewed_at: null } : current.status === "review" || current.status === "rejected" ? { status: "draft", reviewed_at: null } : {}),
     }).eq("id", current.id).eq("status", current.status).select("id").maybeSingle();
     if (error) return NextResponse.json({ error: "Could not save draft." }, { status: 500 });
     if (!data) return NextResponse.json({ error: "Draft changed; reload and try again." }, { status: 409 });
