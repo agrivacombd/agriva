@@ -2,12 +2,23 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+import { checkAdminPermission, type AdminCapability as DelegatedAdminCapability } from "@/lib/admin/permission-service";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
 import BrandLogo from "@/components/BrandLogo";
 
 async function requireAdmin(capability: AdminCapability = "dashboard.read") {
   const { supabase, user } = await requireAdminPage(capability);
   return { supabase, user };
+}
+
+async function requireFinanceAdmin(capability: Extract<DelegatedAdminCapability, "commissions.approve" | "payouts.approve" | "payouts.complete">) {
+  const permission = await checkAdminPermission(capability);
+  if (!permission.allowed) {
+    if (permission.reason === "unauthenticated") redirect("/login");
+    redirect("/dashboard?notice=forbidden");
+  }
+  const { supabase } = await requireAdminPage("dashboard.read");
+  return supabase;
 }
 
 async function updateOrderStatus(formData: FormData) {
@@ -27,7 +38,7 @@ async function approveCommission(formData: FormData) {
   "use server";
   const commissionId = String(formData.get("commissionId") ?? "");
   if (!commissionId) redirect("/admin?notice=invalid_commission");
-  const { supabase } = await requireAdmin("commissions.approve");
+  const supabase = await requireFinanceAdmin("commissions.approve");
   const { error } = await supabase.rpc("approve_reseller_commission", { p_commission_id: commissionId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=commission_error" : "/admin?notice=commission_approved");
@@ -37,7 +48,7 @@ async function approvePayout(formData: FormData) {
   "use server";
   const payoutId = String(formData.get("payoutId") ?? "");
   if (!payoutId) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin("payouts.approve");
+  const supabase = await requireFinanceAdmin("payouts.approve");
   const { error } = await supabase.rpc("approve_commission_payout", { p_payout_id: payoutId });
   revalidatePath("/admin");
   redirect(error ? "/admin?notice=payout_error" : "/admin?notice=payout_approved");
@@ -48,7 +59,7 @@ async function completePayout(formData: FormData) {
   const payoutId = String(formData.get("payoutId") ?? "");
   const reference = String(formData.get("reference") ?? "").trim();
   if (!payoutId || !reference) redirect("/admin?notice=invalid_payout");
-  const { supabase } = await requireAdmin("payouts.complete");
+  const supabase = await requireFinanceAdmin("payouts.complete");
   const { error } = await supabase.rpc("complete_commission_payout", {
     p_payout_id: payoutId,
     p_payment_reference: reference,
@@ -76,6 +87,14 @@ const noticeText: Record<string, string> = {
 
 export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const { supabase, user } = await requireAdmin();
+  const [commissionApproval, payoutApproval, payoutCompletion] = await Promise.all([
+    checkAdminPermission("commissions.approve"),
+    checkAdminPermission("payouts.approve"),
+    checkAdminPermission("payouts.complete"),
+  ]);
+  const canApproveCommission = commissionApproval.allowed;
+  const canApprovePayout = payoutApproval.allowed;
+  const canCompletePayout = payoutCompletion.allowed;
 
   const [
     profilesCount, farmersCount, resellersCount, productsCount, ordersCount,
@@ -154,12 +173,12 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
         <section className="mt-5 grid gap-5 xl:grid-cols-2">
           <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
             <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার কমিশন</h2><p className="mt-1 text-sm text-[#748074]">Pending commission approve করুন</p></div>
-            <div className="divide-y divide-[#edf1ea]">{(recentCommissions.data ?? []).map(c => <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold">{money(c.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{c.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Order #{c.order_id.slice(0,8)} · Reseller #{c.reseller_id.slice(0,8)}</p></div>{c.status === "pending" && <form action={approveCommission}><input type="hidden" name="commissionId" value={c.id}/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Approve</button></form>}</div>)}{recentCommissions.error ? <p role="alert" className="p-5 text-sm text-red-800">কমিশন রেকর্ড লোড করা যায়নি।</p> : !recentCommissions.data?.length && <p className="p-6 text-sm text-[#6b786d]">কমিশন রেকর্ড নেই।</p>}</div>
+            <div className="divide-y divide-[#edf1ea]">{(recentCommissions.data ?? []).map(c => <div key={c.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"><div><p className="font-bold">{money(c.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{c.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Order #{c.order_id.slice(0,8)} · Reseller #{c.reseller_id.slice(0,8)}</p></div>{c.status === "pending" && canApproveCommission && <form action={approveCommission}><input type="hidden" name="commissionId" value={c.id}/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Approve</button></form>}</div>)}{recentCommissions.error ? <p role="alert" className="p-5 text-sm text-red-800">কমিশন রেকর্ড লোড করা যায়নি।</p> : !recentCommissions.data?.length && <p className="p-6 text-sm text-[#6b786d]">কমিশন রেকর্ড নেই।</p>}</div>
           </div>
 
           <div className="overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white">
             <div className="border-b border-[#e7ede4] px-5 py-4"><h2 className="text-xl font-black">রিসেলার পেআউট</h2><p className="mt-1 text-sm text-[#748074]">Approve এবং পেমেন্ট রেফারেন্সসহ paid mark করুন</p></div>
-            <div className="divide-y divide-[#edf1ea]">{(recentPayouts.data ?? []).map(p => <div key={p.id} className="px-5 py-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-bold">{money(p.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{p.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Reseller #{p.reseller_id.slice(0,8)} · {p.payment_method ?? "Method not set"}</p></div>{p.status === "requested" && <form action={approvePayout}><input type="hidden" name="payoutId" value={p.id}/><button className="rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs font-bold">Approve</button></form>}</div>{["requested","approved"].includes(p.status) && <form action={completePayout} className="mt-3 flex flex-wrap gap-2"><input type="hidden" name="payoutId" value={p.id}/><input name="reference" defaultValue={p.payment_reference ?? ""} required placeholder="Payment transaction/reference" className="min-w-[200px] flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs"/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Mark paid</button></form>}</div>)}{recentPayouts.error ? <p role="alert" className="p-5 text-sm text-red-800">পেআউট রেকর্ড লোড করা যায়নি।</p> : !recentPayouts.data?.length && <p className="p-6 text-sm text-[#6b786d]">পেআউট অনুরোধ নেই।</p>}</div>
+            <div className="divide-y divide-[#edf1ea]">{(recentPayouts.data ?? []).map(p => <div key={p.id} className="px-5 py-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="font-bold">{money(p.amount)} <span className="ml-2 rounded-full bg-[#f3f5f1] px-2 py-1 text-xs">{p.status}</span></p><p className="mt-1 text-xs text-[#7b887d]">Reseller #{p.reseller_id.slice(0,8)} · {p.payment_method ?? "Method not set"}</p></div>{p.status === "requested" && canApprovePayout && <form action={approvePayout}><input type="hidden" name="payoutId" value={p.id}/><button className="rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs font-bold">Approve</button></form>}</div>{p.status === "approved" && canCompletePayout && <form action={completePayout} className="mt-3 flex flex-wrap gap-2"><input type="hidden" name="payoutId" value={p.id}/><input name="reference" defaultValue={p.payment_reference ?? ""} required placeholder="Payment transaction/reference" className="min-w-[200px] flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2 text-xs"/><button className="rounded-xl bg-[#17452c] px-3 py-2 text-xs font-bold text-white">Mark paid</button></form>}</div>)}{recentPayouts.error ? <p role="alert" className="p-5 text-sm text-red-800">পেআউট রেকর্ড লোড করা যায়নি।</p> : !recentPayouts.data?.length && <p className="p-6 text-sm text-[#6b786d]">পেআউট অনুরোধ নেই।</p>}</div>
           </div>
         </section>
 
