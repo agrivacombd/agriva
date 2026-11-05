@@ -201,11 +201,11 @@ assert.ok(moduleDirectory.includes("grid-cols-1") && moduleDirectory.includes("s
 assert.ok(moduleDirectory.includes("No matching admin tools"), "module search must have an empty state");
 
 
-const publicContentMigration = read("supabase/migrations/20261106193000_harden_public_content_drafts_read.sql");
+const publicContentMigration = read("supabase/migrations/20261105183411_harden_public_content_drafts_read.sql");
 assert.ok(publicContentMigration.includes("REVOKE ALL ON TABLE public.content_drafts FROM anon"), "anonymous content draft access must be revoked before narrow grants");
 assert.ok(publicContentMigration.includes("GRANT SELECT (") && publicContentMigration.includes("body_markdown"), "public article read must use an explicit safe column allowlist");
 assert.ok(publicContentMigration.includes("status = 'published' AND content_type = 'article'"), "anonymous readers must only access published article rows");
-const seoPagesMigration = read("supabase/migrations/20261106120000_seo_landing_pages.sql");
+const seoPagesMigration = read("supabase/migrations/20261105183331_seo_landing_pages.sql");
 assert.ok(seoPagesMigration.includes("ALTER TABLE public.seo_landing_pages ENABLE ROW LEVEL SECURITY"), "SEO landing pages must enforce RLS");
 assert.ok(seoPagesMigration.includes("status = 'published'"), "public SEO landing pages must be publication-only");
 assert.ok(seoPagesMigration.includes("p.role = 'admin'"), "SEO landing page editing must be restricted to admin profiles");
