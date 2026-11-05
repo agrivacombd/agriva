@@ -6,7 +6,7 @@ type SitemapProduct = { slug: string; updated_at?: string | null; category?: str
 type SitemapPlantProduct = { slug: string; updated_at?: string | null };
 type SitemapJob = { slug: string; updated_at: string | null };
 type SitemapExchangeListing = { slug: string; updated_at: string | null };
-type SitemapLandingPage = { slug: string; updated_at: string | null };
+type SitemapLandingPage = { slug: string; updated_at: string | null };\ntype SitemapArticle = { slug: string; updated_at: string | null };
 const isValidSlug = (slug: unknown): slug is string => typeof slug === "string" && /^[a-z0-9\u0980-\u09ff]+(?:-[a-z0-9\u0980-\u09ff]+)*$/.test(slug);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -17,23 +17,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let plantProducts: SitemapPlantProduct[] = [];
   let jobs: SitemapJob[] = [];
   let exchangeListings: SitemapExchangeListing[] = [];
-  let landingPages: SitemapLandingPage[] = [];
+  let landingPages: SitemapLandingPage[] = [];\n  let cmsArticles: SitemapArticle[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
   const now = new Date();
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [productResult, plantProductResult, jobsResult, exchangeResult, landingResult] = await Promise.all([
+    const [productResult, plantProductResult, jobsResult, exchangeResult, landingResult, articleResult] = await Promise.all([
       supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").not("slug", "is", null).limit(5000),
       supabase.from("plant_market_products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).limit(5000),
       supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).limit(5000),
       supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").limit(5000),
-      supabase.from("seo_landing_pages").select("slug,updated_at").eq("status", "published").eq("noindex", false).limit(2000),
+      supabase.from("seo_landing_pages").select("slug,updated_at").eq("status", "published").eq("noindex", false).limit(2000),\n      supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").limit(2000),
     ]);
     if (!plantProductResult.error && plantProductResult.data) plantProducts = (plantProductResult.data as SitemapPlantProduct[]).filter((product) => isValidSlug(product.slug));
     if (!jobsResult.error && jobsResult.data) jobs = (jobsResult.data as SitemapJob[]).filter((job) => isValidSlug(job.slug));
     if (!exchangeResult.error && exchangeResult.data) exchangeListings = (exchangeResult.data as SitemapExchangeListing[]).filter((listing) => isValidSlug(listing.slug));
-    if (!landingResult.error && landingResult.data) landingPages = (landingResult.data as SitemapLandingPage[]).filter((page) => isValidSlug(page.slug));
+    if (!landingResult.error && landingResult.data) landingPages = (landingResult.data as SitemapLandingPage[]).filter((page) => isValidSlug(page.slug));\n    if (!articleResult.error && articleResult.data) cmsArticles = (articleResult.data as SitemapArticle[]).filter((article) => isValidSlug(article.slug));
     if (!productResult.error && productResult.data) {
       products = (productResult.data as SitemapProduct[]).filter((product) => isValidSlug(product.slug));
       categoryUrls = MARKETPLACE_CATEGORIES.flatMap((category) => {
@@ -131,7 +131,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
-    ...landingPages.map((page) => ({
+    ...cmsArticles.map((article) => ({\n      url: `${base}/blog/${article.slug}`,\n      lastModified: article.updated_at ? new Date(article.updated_at) : now,\n      changeFrequency: "monthly" as const,\n      priority: 0.7,\n    })),\n    ...landingPages.map((page) => ({
       url: `${base}/landing/${page.slug}`,
       lastModified: page.updated_at ? new Date(page.updated_at) : now,
       changeFrequency: "monthly" as const,
