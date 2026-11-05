@@ -45,7 +45,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Title or slug is invalid." }, { status: 400 });
     }
     const { data, error } = await supabase.from("content_drafts").update({
-      title, slug, body_markdown: markdown,
+      title, slug, body_markdown: markdown.slice(0, 50000),
       meta_title: typeof body.meta_title === "string" ? body.meta_title.slice(0, 160) : null,
       meta_description: typeof body.meta_description === "string" ? body.meta_description.slice(0, 320) : null,
       ...(current.status === "approved" ? { status: "review", reviewed_at: null } : current.status === "review" || current.status === "rejected" ? { status: "draft", reviewed_at: null } : {}),
