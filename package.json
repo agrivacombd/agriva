@@ -42,7 +42,8 @@
     "test:identity-verification": "node scripts/smoke-identity-verification-workflow.mjs",
     "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs",
     "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
-    "test:marketplace-product-image-gallery": "node scripts/smoke-marketplace-product-image-gallery.mjs"
+    "test:marketplace-product-image-gallery": "node scripts/smoke-marketplace-product-image-gallery.mjs",
+    "test:admin-product-image-gallery": "node scripts/smoke-admin-product-image-gallery.mjs"
   },
   "dependencies": {
     "next": "16.4.3",

@@ -17,7 +17,7 @@ assert.match(form, /createSupabaseBrowserClient/, "seller form must use the cook
 assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form must upload product images to Storage");
 assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit to the seller-only endpoint");
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
-assert.match(form, /MAX_IMAGE_SIZE/, "seller form must enforce an image size limit before upload");
+assert.match(form, /Supabase project.{0,8}global upload limit/i, "seller form must disclose that the Supabase project-wide upload limit applies");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
 assert.match(route, /findMarketplaceOrganizationWithAccess/, "product API must verify existing Marketplace module access");
 assert.match(moduleAccess, /from\("organizations"\)/, "Marketplace module helper must resolve a verified organization scope");

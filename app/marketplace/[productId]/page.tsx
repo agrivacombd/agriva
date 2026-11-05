@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
+import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
 type ProductPageProps = { params: Promise<{ productId: string }> };
 type ProductRecord = {
@@ -57,8 +58,9 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const title = name.toLocaleLowerCase().includes("bangladesh")
     ? name + " | AGRIVA"
     : name + " in Bangladesh | AGRIVA";
-  const description = product.description && product.description.trim()
-    ? cleanText(product.description).slice(0, 155)
+  const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
+  const description = descriptionText
+    ? descriptionText.slice(0, 155)
     : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
   const image = product.image_url || undefined;
 
@@ -101,8 +103,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const hasStock = product.stock !== null && product.stock !== undefined;
   const galleryImages = [...new Set([...(Array.isArray(product.image_urls) ? product.image_urls : []), product.image_url].filter((value): value is string => typeof value === "string" && value.trim().length > 0))].slice(0, 4);
   const image = galleryImages[0];
-  const description = product.description?.trim() || "";
-  const descriptionSummary = description.length > 260 ? description.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : description;
+  const description = sanitizeProductDescription(product.description || "");
+  const descriptionText = productDescriptionToText(description);
+  const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
   const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
@@ -122,7 +125,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     name: product.name,
     url: productUrl,
     ...(galleryImages.length ? { image: galleryImages } : {}),
-    ...(description ? { description } : {}),
+    ...(descriptionText ? { description: descriptionText } : {}),
     category: product.category || undefined,
     ...(hasRealPrice ? {
       offers: {
@@ -262,7 +265,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">বিবরণ</dt><dd className="mt-3 min-w-0 text-sm leading-8 text-slate-700"><p className="whitespace-pre-line break-words">{descriptionSummary}</p>{description.length > 260 && <details className="mt-3"><summary className="inline-flex min-h-10 cursor-pointer items-center rounded-lg font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ পড়ুন <span aria-hidden="true" className="ml-1">＋</span></summary><p className="mt-3 whitespace-pre-line break-words">{description}</p></details>}</dd></div>}
+                {description && <div className="border-t border-slate-100 py-5"><dt className="text-base font-extrabold text-slate-900">বিবরণ</dt><dd className="product-description-content prose prose-sm mt-3 min-w-0 max-w-none break-words text-sm leading-8 text-slate-700 [&_h2]:mb-2 [&_h2]:mt-5 [&_h2]:text-xl [&_h2]:font-extrabold [&_h3]:mb-2 [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-bold [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-300 [&_blockquote]:pl-4" dangerouslySetInnerHTML={{ __html: description }} /></div>}
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
