@@ -3,6 +3,12 @@ import { requireAdminApi } from "@/lib/admin/authz";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const cleanText = (value: unknown, max: number) => typeof value === "string" ? value.trim().slice(0, max) : "";
+const safeLink = (value: unknown) => {
+  const raw = cleanText(value, 500);
+  if (!raw) return null;
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  try { const parsed = new URL(raw); return parsed.protocol === "https:" ? parsed.toString() : null; } catch { return null; }
+};
 
 export async function GET() {
   const access = await requireAdminApi("content.read");
@@ -25,13 +31,13 @@ export async function POST(request: NextRequest) {
   const values = {
     slug, title, meta_title: cleanText(body.meta_title, 160) || null,
     meta_description: cleanText(body.meta_description, 320) || null,
-    canonical_url: cleanText(body.canonical_url, 500) || null,
+    canonical_url: canonicalUrl,
     noindex: body.noindex === true,
     hero_title: cleanText(body.hero_title, 180) || null,
     hero_description: cleanText(body.hero_description, 1000) || null,
     body_markdown: typeof body.body_markdown === "string" ? body.body_markdown.slice(0, 50000) : "",
     faq, cta_label: cleanText(body.cta_label, 80) || null,
-    cta_url: cleanText(body.cta_url, 500) || null,
+    cta_url: ctaUrl,
   };
   const id = typeof body.id === "string" ? body.id : null;
   const query = id
