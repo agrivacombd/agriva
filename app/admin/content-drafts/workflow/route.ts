@@ -17,8 +17,9 @@ export async function PATCH(request: NextRequest) {
   }
 
   const action = body.action;
-  const capability = action === "published" ? "content.publish" : "content.edit";
-  const access = await requireAdminApi(capability);
+  const access = action === "published"
+    ? await requireAdminApi("content.publish")
+    : await requireAdminApi("content.edit");
   if (!access.ok) return access.response;
 
   const { supabase, user } = access;
