@@ -80,6 +80,9 @@ assert.ok(reportsPage.includes("errors.length === 0 ?"), "admin report metrics m
 assert.ok(reportsPage.includes("ডেটা অসম্পূর্ণ থাকায় ভুল সারাংশ এড়াতে"), "admin reports must explain why incomplete metrics are withheld");
 
 const ordersPage = read("app/admin/orders/page.tsx");
+assert.ok(ordersPage.includes('requireAdminPage(capability)'), "admin orders page must use the shared capability guard");
+assert.ok(ordersPage.includes('async function requireAdmin(capability: AdminCapability = "orders.read")'), "admin orders page must declare its default read capability");
+assert.ok(ordersPage.includes('requireAdmin("orders.transition")'), "order mutations must request the order transition capability");
 assert.ok(ordersPage.includes("error: ordersError"), "admin orders page must retain query errors");
 assert.ok(ordersPage.includes('role="alert"'), "admin orders page must surface query failures instead of presenting an empty state");
 assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders page must not show an empty state when the query failed");
