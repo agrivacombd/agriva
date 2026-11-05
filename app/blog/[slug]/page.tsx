@@ -12,7 +12,7 @@ async function getCmsArticle(slug:string):Promise<CmsArticle|null>{
   const {data,error}=await supabase.from("content_drafts").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at").eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
   return error||!data?null:data as CmsArticle;
 }
-function CmsMarkdown({body}:{body:string}){return <div className="space-y-4">{body.split(/\\r?\\n/).map((line,index)=>{const v=line.trim();if(!v)return <div key={index}/>;if(v.startsWith("## "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(3)}</h2>;if(v.startsWith("### "))return <h3 key={index} className="pt-3 text-xl font-black">{v.slice(4)}</h3>;if(v.startsWith("# "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(2)}</h2>;if(v.startsWith("- "))return <p key={index} className="pl-4">• {v.slice(2)}</p>;return <p key={index} className="leading-8">{v}</p>})}</div>}
+function CmsMarkdown({body}:{body:string}){return <div className="space-y-4">{body.split(/\r?\n/).map((line,index)=>{const v=line.trim();if(!v)return <div key={index}/>;if(v.startsWith("## "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(3)}</h2>;if(v.startsWith("### "))return <h3 key={index} className="pt-3 text-xl font-black">{v.slice(4)}</h3>;if(v.startsWith("# "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(2)}</h2>;if(v.startsWith("- "))return <p key={index} className="pl-4">• {v.slice(2)}</p>;return <p key={index} className="leading-8">{v}</p>})}</div>}
 
 
 const articles = [
@@ -95,7 +95,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const { slug } = await params;
   const cmsArticle = await getCmsArticle(slug);
   if (cmsArticle) {
-    const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://agriva.com.bd").replace(/\\/$/,"");
+    const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://agriva.com.bd").replace(/\/+$/,"");
     const url=`${siteUrl}/blog/${cmsArticle.slug}`;
     const jsonLd={"@context":"https://schema.org","@type":"Article",headline:cmsArticle.title,description:cmsArticle.meta_description||undefined,url,mainEntityOfPage:{"@type":"WebPage","@id":url},author:{"@type":"Organization",name:"AGRIVA",url:siteUrl},publisher:{"@type":"Organization",name:"AGRIVA",url:siteUrl},datePublished:cmsArticle.created_at,dateModified:cmsArticle.updated_at||cmsArticle.created_at,inLanguage:"bn-BD"};
     return <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#183a27] sm:px-6 sm:py-12"><ReadingProgress/><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd).replace(/</g,"\\\\u003c")}}/><article className="mx-auto max-w-3xl"><nav className="text-sm font-semibold text-emerald-800"><Link href="/">হোম</Link> / <Link href="/blog">Blog</Link></nav><header className="mt-7 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9"><h1 className="text-3xl font-black leading-tight text-slate-950 sm:text-4xl">{cmsArticle.title}</h1><p className="mt-4 text-sm text-slate-500">AGRIVA Blog · {new Date(cmsArticle.created_at).toLocaleDateString("bn-BD")}</p>{cmsArticle.meta_description&&<p className="mt-5 leading-8 text-slate-700">{cmsArticle.meta_description}</p>}</header><section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm sm:p-9"><CmsMarkdown body={cmsArticle.body_markdown||""}/></section><div className="mt-7"><ShareArticle title={cmsArticle.title}/></div></article></main>;
