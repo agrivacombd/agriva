@@ -80,7 +80,7 @@ assert.ok(accessControlPage.includes('checkAdminPermission("roles.grant")'), "ac
 assert.ok(accessControlPage.includes('from("admin_roles")') && accessControlPage.includes('from("admin_role_permissions")') && accessControlPage.includes('from("admin_user_roles")'), "access control overview must read canonical role and assignment tables");
 assert.ok(accessControlPage.includes("Read-only review"), "role access overview must not expose unreviewed grant/revoke controls");
 assert.ok(accessControlPage.includes("expires_at"), "role access overview must account for expiring assignments");
-assert.ok(dashboardPage.includes("/admin/access-control"), "admin dashboard must provide a shortcut to access control");
+assert.ok(read("app/admin/page.tsx").includes("/admin/access-control"), "admin dashboard must provide a shortcut to access control");
 
 const dashboardPage = read("app/admin/page.tsx");
 assert.ok(dashboardPage.includes('requireFinanceAdmin("commissions.approve")'), "commission approval must require its dedicated capability");
