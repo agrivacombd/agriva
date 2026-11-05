@@ -17,10 +17,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   const action = body.action;
-  const publicationActions = ["published", "approved", "rejected", "review"];
-  const access = publicationActions.includes(action)
-    ? await requireAdminApi("content.publish")
-    : await requireAdminApi("content.edit");
+  const access = await requireAdminApi("content.edit");
   if (!access.ok) return access.response;
 
   const { supabase, user } = access;
@@ -57,6 +54,12 @@ export async function PATCH(request: NextRequest) {
 
   if (typeof action !== "string" || !transitions[current.status]?.includes(action)) {
     return NextResponse.json({ error: "Invalid workflow transition." }, { status: 409 });
+  }
+
+  const publicationRequired = ["approved", "rejected", "published"].includes(action) || (action === "review" && ["approved", "published"].includes(current.status));
+  if (publicationRequired) {
+    const publishAccess = await requireAdminApi("content.publish");
+    if (!publishAccess.ok) return publishAccess.response;
   }
 
   const title = typeof body.title === "string" ? body.title.trim() : current.title;
