@@ -100,6 +100,9 @@ assert.ok(harvestPage.includes('decision === "reject" && !note'), "harvest rejec
 assert.ok(harvestPage.includes('listing.status === "sold_out"'), "sold out harvest listings must not be reactivated");
 assert.ok(harvestPage.includes('name="decision" value="pause"'), "harvest admin must offer pause action");
 assert.ok(harvestPage.includes('name="decision" value="approve"'), "harvest admin must offer resume action");
+const harvestResumeMigration = read("supabase/migrations/20261105180000_prevent_resuming_sold_out_harvest.sql");
+assert.ok(harvestResumeMigration.includes("FOR UPDATE"), "harvest moderation must lock the listing row before transition");
+assert.ok(harvestResumeMigration.includes("p_status = 'approved' AND v_previous_status = 'sold_out'"), "database RPC must prevent sold-out listings from being reactivated");
 
 const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
 assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
