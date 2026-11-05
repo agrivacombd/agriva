@@ -90,6 +90,8 @@ jobs:
       - name: Plant Market independent checkout and order lifecycle regression test
         if: hashFiles('scripts/smoke-plant-market-checkout.mjs') != ''
         run: npm run test:plant-market-checkout
+      - name: Plant Market public-read RLS regression test
+        run: npm run test:plant-market-public-read-rls
       - name: Green Living schema, privacy, and SEO regression test
         run: npm run test:green-living-platform
       - name: Production build
