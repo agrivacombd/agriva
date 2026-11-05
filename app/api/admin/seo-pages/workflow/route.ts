@@ -5,13 +5,16 @@ const transitions: Record<string, string[]> = { draft: ["review"], review: ["dra
 export async function PATCH(request: NextRequest) {
   const body = await request.json().catch(() => null);
   if (!body || typeof body.id !== "string" || typeof body.action !== "string") return NextResponse.json({ error: "Page id and action are required." }, { status: 400 });
-  const access = body.action === "draft" || body.action === "review"
-    ? await requireAdminApi("content.edit")
-    : await requireAdminApi("content.publish");
+  const access = await requireAdminApi("content.edit");
   if (!access.ok) return access.response;
   const { data: current, error: readError } = await access.supabase.from("seo_landing_pages").select("id,status,title,slug,body_markdown").eq("id", body.id).maybeSingle();
   if (readError || !current) return NextResponse.json({ error: "Landing page not found." }, { status: 404 });
   if (!transitions[current.status]?.includes(body.action)) return NextResponse.json({ error: "Invalid page status transition." }, { status: 409 });
+  const publicationRequired = ["approved", "published"].includes(body.action) || (body.action === "review" && ["approved", "published"].includes(current.status));
+  if (publicationRequired) {
+    const publishAccess = await requireAdminApi("content.publish");
+    if (!publishAccess.ok) return publishAccess.response;
+  }
   if (["approved", "published"].includes(body.action) && (!current.title?.trim() || !current.slug || !current.body_markdown?.trim())) return NextResponse.json({ error: "Title, URL slug and page content are required before approval." }, { status: 409 });
   if (body.action === "published" && current.status !== "approved") return NextResponse.json({ error: "Only approved pages can be published." }, { status: 409 });
   const { data, error } = await access.supabase.from("seo_landing_pages").update({
