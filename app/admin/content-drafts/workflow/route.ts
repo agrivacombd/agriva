@@ -64,7 +64,7 @@ export async function PATCH(request: NextRequest) {
 
   const title = typeof body.title === "string" ? body.title.trim() : current.title;
   const slug = typeof body.slug === "string" ? body.slug.trim() : current.slug;
-  const markdown = typeof body.body_markdown === "string" ? body.body_markdown.trim() : current.body_markdown?.trim();
+  const markdown = typeof body.body_markdown === "string" ? body.body_markdown.trim().slice(0, 50000) : current.body_markdown?.trim();
   if (action === "approved" || action === "published") {
     if (!title || title.length > 160 || !slugPattern.test(slug) || !markdown) {
       return NextResponse.json({ error: "A valid title, slug and completed article body are required." }, { status: 409 });
@@ -78,8 +78,8 @@ export async function PATCH(request: NextRequest) {
     ...(body.title !== undefined ? { title } : {}),
     ...(body.slug !== undefined ? { slug } : {}),
     ...(body.body_markdown !== undefined ? { body_markdown: markdown } : {}),
-    ...(body.meta_title !== undefined ? { meta_title: body.meta_title } : {}),
-    ...(body.meta_description !== undefined ? { meta_description: body.meta_description } : {}),
+    ...(body.meta_title !== undefined ? { meta_title: typeof body.meta_title === "string" ? body.meta_title.trim().slice(0, 160) : null } : {}),
+    ...(body.meta_description !== undefined ? { meta_description: typeof body.meta_description === "string" ? body.meta_description.trim().slice(0, 320) : null } : {}),
   }).eq("id", current.id).eq("status", current.status).select("id,slug").maybeSingle();
 
   if (update.error) return NextResponse.json({ error: "Workflow update failed." }, { status: 500 });
