@@ -17,6 +17,7 @@ const modules: AdminModule[] = [
   { title: "Agriculture jobs", description: "Review and moderate job posts.", href: "/admin/jobs", icon: "💼", category: "Marketplace" },
   { title: "Content Studio", description: "Create and review editorial content.", href: "/admin/content-studio", icon: "✍️", category: "Content & discovery" },
   { title: "Content drafts", description: "Review saved content drafts.", href: "/admin/content-drafts", icon: "📝", category: "Content & discovery" },
+  { title: "SEO landing pages", description: "Build, review and publish search landing pages with metadata and FAQ schema.", href: "/admin/seo-pages", icon: "🌐", category: "Content & discovery" },
   { title: "AI content", description: "Access the existing AI-assisted content workflow.", href: "/admin/ai-content", icon: "✨", category: "Content & discovery" },
   { title: "Articles", description: "Manage published and draft articles.", href: "/admin/articles", icon: "📰", category: "Content & discovery" },
   { title: "Search intelligence", description: "Review search demand and discovery signals.", href: "/admin/search-intelligence", icon: "🔎", category: "Content & discovery" },

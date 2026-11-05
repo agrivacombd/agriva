@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ArticlesBrowser from "../articles/articles-browser";
+import { createClient } from "@supabase/supabase-js";
 
 type Article = {
   slug: string;
@@ -66,7 +67,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ArticlesPage() {
+export default async function ArticlesPage() {
+  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let cmsArticles: Article[] = [];
+  if(url&&key){
+    const supabase=createClient(url,key);
+    const {data}=await supabase.from("content_drafts").select("slug,title,meta_description,primary_keyword,created_at").eq("status","published").eq("content_type","article").order("created_at",{ascending:false}).limit(100);
+    cmsArticles=(data||[]).map((item)=>({slug:item.slug,category:item.primary_keyword||"কৃষি জ্ঞান",title:item.title,excerpt:item.meta_description||"AGRIVA-তে প্রকাশিত কৃষি বিষয়ক লেখা।",date:item.created_at,readTime:"পড়ুন",emoji:"🌱"}));
+  }
+  const displayArticles=[...cmsArticles,...articles.filter((article)=>!cmsArticles.some((item)=>item.slug===article.slug))];
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const listingJsonLd = {
     "@context": "https://schema.org",
@@ -76,7 +85,7 @@ export default function ArticlesPage() {
     url: `${siteUrl}/blog`,
     inLanguage: "bn-BD",
     isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
-    mainEntity: { "@type": "ItemList", itemListElement: articles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/blog/${article.slug}` })) },
+    mainEntity: { "@type": "ItemList", itemListElement: displayArticles.map((article, index) => ({ "@type": "ListItem", position: index + 1, name: article.title, url: `${siteUrl}/blog/${article.slug}` })) },
   };
 
   return (
@@ -97,10 +106,10 @@ export default function ArticlesPage() {
       <section className="mx-auto max-w-6xl px-4 py-9 sm:px-6 sm:py-12 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div><p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Read & grow</p><h2 className="mt-2 text-2xl font-black sm:text-3xl">সাম্প্রতিক লেখা</h2><p className="mt-2 text-sm leading-6 text-slate-600">কৃষি বিষয়ে ধারণা ও অভিজ্ঞতা জানুন।</p></div>
-          <p className="text-sm font-semibold text-slate-500">{articles.length}টি লেখা</p>
+          <p className="text-sm font-semibold text-slate-500">{displayArticles.length}টি লেখা</p>
         </div>
 
-        <ArticlesBrowser articles={articles} />
+        <ArticlesBrowser articles={displayArticles} />
         <aside className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">মাটি, জাত, মৌসুম ও এলাকার আবহাওয়া অনুযায়ী কৃষি পরামর্শ ভিন্ন হতে পারে। নির্দিষ্ট সিদ্ধান্তের আগে স্থানীয় কৃষি কর্মকর্তা বা সরকারি নির্দেশনা যাচাই করুন।</aside>
       </section>
     </main>
