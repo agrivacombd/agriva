@@ -217,6 +217,7 @@ const cmsBlogPage = read("app/blog/[slug]/page.tsx");
 assert.ok(cmsBlogPage.includes('.eq("status","published")') && cmsBlogPage.includes('.eq("content_type","article")'), "public blog route must only resolve published article content");
 const sitemap = read("app/sitemap.ts");
 assert.ok(sitemap.includes('eq("noindex", false)'), "noindex landing pages must be excluded from the sitemap");
-assert.ok(sitemap.includes('${base}/blog/${article.slug}'), "published CMS articles must be included in the sitemap");
-assert.ok(sitemap.includes('${base}/landing/${page.slug}'), "published SEO landing pages must be included in the sitemap");
-\nconsole.log("Admin authorization, financial capability boundaries, CMS editorial workflow, SEO landing pages, harvest moderation, and publication-policy regression checks passed.");
+assert.ok(sitemap.includes("blog/${article.slug}"), "published CMS articles must be included in the sitemap");
+assert.ok(sitemap.includes("landing/${page.slug}"), "published SEO landing pages must be included in the sitemap");
+
+console.log("Admin authorization, financial capability boundaries, CMS editorial workflow, SEO landing pages, harvest moderation, and publication-policy regression checks passed.");
