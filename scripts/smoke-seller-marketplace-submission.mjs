@@ -15,6 +15,8 @@ const permissionMigration = readFileSync("supabase/migrations/20261102161650_sep
 
 assert.match(form, /createSupabaseBrowserClient/, "seller form must use the cookie-aware Supabase browser client");
 assert.match(form, /storage\.from\("product-images"\)\.upload/, "seller form must upload product images to Storage");
+assert.match(form, /Product URL Slug/, "seller form must expose a custom product URL slug field");
+assert.match(form, /slugEdited/, "seller form must preserve manually edited slugs when the product name changes");
 assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit to the seller-only endpoint");
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /Supabase project.{0,8}global upload limit/i, "seller form must disclose that the Supabase project-wide upload limit applies");
@@ -23,6 +25,9 @@ assert.match(route, /findMarketplaceOrganizationWithAccess/, "product API must v
 assert.match(moduleAccess, /from\("organizations"\)/, "Marketplace module helper must resolve a verified organization scope");
 assert.match(moduleAccess, /\.eq\("status", "verified"\)/, "Marketplace module helper must reject unverified organizations");
 assert.match(moduleAccess, /checkModuleAccess\("marketplace", permission/, "Marketplace module helper must verify the requested permission");
+assert.match(route, /const slug = String\(body\.slug \|\| ""\)/, "seller API must read the submitted custom slug");
+assert.match(route, /test\(slug\)/, "seller API must validate the submitted slug");
+assert.match(route, /error\.code === "23505"/, "duplicate seller slugs must return a clear error");
 assert.match(route, /marketplace_channel:\s*"marketplace"/, "product API must store only Marketplace channel products");
 assert.match(route, /status: "draft"/, "seller products must await moderation");
 assert.match(route, /product-images/, "product API must validate product image URLs against the configured bucket");
