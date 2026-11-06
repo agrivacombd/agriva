@@ -28,6 +28,8 @@ const legacyAllowlist = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split
 for (const highRisk of ["payments.reconcile", "orders.refund.request", "payouts.approve", "system.recovery.execute"]) {
   assert.ok(!legacyAllowlist.includes(highRisk), `legacy admin allowlist must not grant ${highRisk}`);
 }
+assert.ok(legacyAllowlist.includes("green_exchange.read"), "legacy Admin must retain Green Exchange read access");
+assert.ok(legacyAllowlist.includes("green_exchange.moderate"), "legacy Admin must retain Green Exchange moderation access");
 
 // RBAC mutation RPCs must use the existing public permission helper and be actor-bound.
 assert.match(roleGrant, /public\.has_admin_permission\('roles\.grant'\)/);
