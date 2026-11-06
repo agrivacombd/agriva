@@ -22,7 +22,7 @@ type ProductRecord = {
   description: string | null;
   image_url?: string | null;
   image_urls?: string[] | null;
-  commission_percent?: number | null;
+  commission_percent?: number | null;\n  seo_title?: string | null;\n  seo_description?: string | null;\n  focus_keyword?: string | null;\n  related_keywords?: string[] | null;\n  brand?: string | null;\n  origin?: string | null;\n  highlights?: string[] | null;\n  usage_instructions?: string | null;\n  image_alt?: string | null;
 };
 
 function normalizeSlug(value: string) {
@@ -39,7 +39,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,focus_keyword,related_keywords,brand,origin,highlights,usage_instructions,image_alt";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -126,7 +126,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     url: productUrl,
     ...(galleryImages.length ? { image: galleryImages } : {}),
     ...(descriptionText ? { description: descriptionText } : {}),
-    category: product.category || undefined,
+    category: product.category || undefined,\n    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),\n    ...(product.origin ? { countryOfOrigin: product.origin } : {}),\n    ...(product.related_keywords?.length ? { keywords: product.related_keywords.join(", ") } : {}),\n    ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),
     ...(hasRealPrice ? {
       offers: {
         "@type": "Offer",
