@@ -18,7 +18,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Audit all locked dependencies
+        run: npm audit --audit-level=moderate
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
