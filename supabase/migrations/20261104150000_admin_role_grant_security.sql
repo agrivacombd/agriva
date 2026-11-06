@@ -34,7 +34,7 @@ BEGIN
 
   -- A generic delegated roles.grant capability is not sufficient. Only an
   -- active Super Admin assignment may manage the RBAC control plane.
-  IF NOT private.has_admin_permission('roles.grant')
+  IF NOT public.has_admin_permission('roles.grant')
      OR NOT EXISTS (
        SELECT 1
        FROM public.admin_user_roles ur
@@ -135,7 +135,7 @@ BEGIN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
   END IF;
 
-  IF NOT private.has_admin_permission('roles.grant')
+  IF NOT public.has_admin_permission('roles.grant')
      OR NOT EXISTS (
        SELECT 1
        FROM public.admin_user_roles ur
