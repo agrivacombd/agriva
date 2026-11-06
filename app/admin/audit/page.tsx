@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 
 export default async function AdminAuditPage() {
