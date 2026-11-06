@@ -8,7 +8,8 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
   const {slug}=await params;const supabase=await createSupabaseServerClient();
   const {data}=await supabase.from("plant_market_products").select("name,description,image_url,seo_title,seo_description").eq("slug",slug).eq("status","active").maybeSingle();
   if(!data)return {title:"Plant Market পণ্য পাওয়া যায়নি | AGRIVA",robots:{index:false,follow:false}};
-  const title=(data.seo_title||`${data.name} | AGRIVA Plant Market`).slice(0,70),description=(data.seo_description||data.description||`${data.name} — AGRIVA Plant Market-এ গাছ ও বাগান সামগ্রী।`).slice(0,160);\n  return {title,description,alternates:{canonical:`/plant-market/${encodeURIComponent(slug)}`},openGraph:{type:"website",title,description,images:data.image_url?[data.image_url]:[]},twitter:{card:data.image_url?"summary_large_image":"summary",title,description,images:data.image_url?[data.image_url]:[]}};
+  const title=(data.seo_title||`${data.name} | AGRIVA Plant Market`).slice(0,70),description=(data.seo_description||data.description||`${data.name} — AGRIVA Plant Market-এ গাছ ও বাগান সামগ্রী।`).slice(0,160);
+  return {title,description,alternates:{canonical:`/plant-market/${encodeURIComponent(slug)}`},openGraph:{type:"website",title,description,images:data.image_url?[data.image_url]:[]},twitter:{card:data.image_url?"summary_large_image":"summary",title,description,images:data.image_url?[data.image_url]:[]}};
 }
 export default async function PlantMarketProductPage({params}:Props){
   const {slug}=await params;const supabase=await createSupabaseServerClient();
