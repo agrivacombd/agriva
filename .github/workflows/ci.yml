@@ -31,11 +31,15 @@ jobs:
         if: github.event_name == 'pull_request' && github.head_ref == 'fix/dependency-security-2026-11'
         run: |
           if ! git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
+            cp package-lock.json /tmp/agriva-package-lock.json
+            git fetch origin "${GITHUB_HEAD_REF}"
+            git checkout -B "${GITHUB_HEAD_REF}" "origin/${GITHUB_HEAD_REF}"
+            cp /tmp/agriva-package-lock.json package-lock.json
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add package-lock.json
             git commit -m "chore: add deterministic npm lockfile"
-            git push origin "HEAD:${GITHUB_HEAD_REF}"
+            git push origin "${GITHUB_HEAD_REF}"
           fi
       - name: Capture dependency audit report
         run: npm audit --json > npm-audit.json || true
