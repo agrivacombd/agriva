@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createClient } from "@supabase/supabase-js";
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 const required = [
   "SUPABASE_URL",
@@ -18,8 +19,8 @@ for (const key of required) {
   if (!process.env[key]) throw new Error(`Missing required environment variable: ${key}`);
 }
 
-const missingTransportId = "00000000-0000-4000-8000-000000000001";
-const missingListingId = "00000000-0000-4000-8000-000000000002";
+const missingTransportId = randomUUID();
+const missingListingId = randomUUID();
 
 async function signedInClient(email, password) {
   const client = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
@@ -89,6 +90,18 @@ await expectRpc(
   assertAuthorizedButMissing,
   "delegated Green Exchange RPC",
 );
+
+const [delegatedTransportGrant, delegatedGreenGrant, delegatedAuditGrant] = await Promise.all([
+  delegated.rpc("has_admin_permission", { p_capability: "transport.moderate" }),
+  delegated.rpc("has_admin_permission", { p_capability: "green_exchange.moderate" }),
+  delegated.rpc("has_admin_permission", { p_capability: "audit.read" }),
+]);
+assert.equal(delegatedTransportGrant.error, null);
+assert.equal(delegatedTransportGrant.data, true, "delegated fixture must have transport.moderate");
+assert.equal(delegatedGreenGrant.error, null);
+assert.equal(delegatedGreenGrant.data, true, "delegated fixture must have green_exchange.moderate");
+assert.equal(delegatedAuditGrant.error, null);
+assert.equal(delegatedAuditGrant.data, true, "delegated fixture must have audit.read");
 
 const [nonAdminAudit, legacyAudit, delegatedAudit] = await Promise.all([
   nonAdmin.from("admin_audit_log").select("id").limit(1),
