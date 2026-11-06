@@ -33,14 +33,14 @@ export default async function AdminArticleReviewPage({
   if (error || !article) notFound();
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] px-5 py-10 text-[#17351f]">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1100px]">
         <Link href="/admin/articles" className="text-sm font-bold text-emerald-800">← Article review queue</Link>
-        <header className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#a47b20]">Editorial review · {article.status}</p>
+        <header className="relative mt-6 overflow-hidden rounded-[28px] bg-[#123b27] p-6 text-white shadow-sm sm:p-8">
+          <p className="text-xs font-bold uppercase tracking-[.18em] text-emerald-200">AGRIVA · GROWTH, SEO & ANALYTICS · {article.status}</p>
           <h1 className="mt-3 text-3xl font-black">{article.title}</h1>
-          <p className="mt-3 text-sm text-[#647468]">Keyword: {article.keyword} · Intent: {article.search_intent ?? "—"}</p>
-          <p className="mt-2 break-all text-xs text-[#647468]">Slug: {article.slug}</p>
+          <p className="mt-3 text-sm text-emerald-50/90">Keyword: {article.keyword} · Intent: {article.search_intent ?? "—"}</p>
+          <p className="mt-2 break-all text-xs text-emerald-100">Slug: {article.slug}</p>
         </header>
         <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-black">SEO metadata</h2>
