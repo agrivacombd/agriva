@@ -76,6 +76,7 @@ export default function CategoryProductDetails({ categorySlug, onChange }: Props
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {fields.map(field => <label key={field.key} className="block text-sm font-bold">{field.label}<input value={values[field.key] ?? ""} onChange={event => update(field.key, event.target.value)} maxLength={180} placeholder={field.placeholder} className="mt-1.5 w-full rounded-xl border border-[#d4dfd3] bg-white px-3 py-2.5 text-sm font-normal"/></label>)}
     </div>
+    <div className="rounded-xl border border-[#e1e9df] bg-white p-4"><p className="text-[11px] font-extrabold uppercase tracking-wide text-[#718073]">Product details preview</p>{highlights.length > 0 && <><h4 className="mt-3 text-sm font-extrabold text-[#244b32]">প্রধান বৈশিষ্ট্য</h4><ul className="mt-1 list-disc space-y-1 pl-5 text-sm leading-6 text-[#46584a]">{highlights.map((item, index) => <li key={index}>{item}</li>)}</ul></>}{filled.length > 0 && <><h4 className="mt-3 text-sm font-extrabold text-[#244b32]">পণ্যের বিস্তারিত তথ্য</h4><dl className="mt-2 grid gap-2 sm:grid-cols-2">{filled.map(field => <div key={field.key} className="flex flex-wrap justify-between gap-2 border-b border-[#edf1eb] pb-2 text-sm"><dt className="font-semibold text-[#68796b]">{field.label}</dt><dd className="font-bold text-[#243d2b]">{values[field.key]}</dd></div>)}</dl></>}</div>
     <p className="text-xs text-[#718073]">{highlights.length + filled.length}টি তথ্য যোগ করা হয়েছে। এগুলো পণ্যের বিবরণের সঙ্গে সুন্দরভাবে দেখানো হবে।</p>
   </section>;
 }
