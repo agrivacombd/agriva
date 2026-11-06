@@ -18,7 +18,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Install dependencies and generate deterministic lockfile
+        run: |
+          if [ ! -f package-lock.json ]; then
+            npm install --package-lock-only --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+          fi
+          npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Capture dependency audit report
+        run: npm audit --json > npm-audit.json || true
+      - name: Upload dependency audit artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dependency-audit-${{ github.run_id }}
+          path: |
+            package-lock.json
+            npm-audit.json
+          if-no-files-found: warn
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
