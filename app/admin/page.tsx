@@ -87,7 +87,7 @@ const noticeText: Record<string, string> = {
 
 export default async function AdminPage({ searchParams }: { searchParams?: { notice?: string } }) {
   const { supabase, user } = await requireAdmin();
-  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "users.read", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
+  const availableAdminCapabilities = new Set<string>(await getAvailableAdminCapabilities(["payments.read", "payments.reconcile", "payouts.read", "payouts.approve", "orders.read", "orders.transition", "catalog.read", "catalog.edit", "settings.read", "harvest.read", "transport.moderate", "users.read", "roles.grant", "reports.export", "audit.read", "content.read", "settings.write"]));
   const canReadPayments = availableAdminCapabilities.has("payments.read");
   const canReadPayouts = availableAdminCapabilities.has("payouts.read");
   const canApproveCommissions = FINANCE_MUTATIONS_ENABLED && availableAdminCapabilities.has("payments.reconcile");
@@ -118,29 +118,29 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     commissionsCount, payoutsCount, pendingOrdersCount, recentOrders, recentCommissions,
     recentPayouts, opportunities,
   ] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "farmer"),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "reseller"),
-    supabase.from("products").select("id", { count: "exact", head: true }),
-    supabase.from("marketplace_orders").select("id", { count: "exact", head: true }),
+    (availableAdminCapabilities.has("users.read") ? supabase.from("profiles").select("id", { count: "exact", head: true }) : Promise.resolve({ count: null, error: null })),
+    (availableAdminCapabilities.has("users.read") ? supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "farmer") : Promise.resolve({ count: null, error: null })),
+    (availableAdminCapabilities.has("users.read") ? supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "reseller") : Promise.resolve({ count: null, error: null })),
+    (availableAdminCapabilities.has("catalog.read") ? supabase.from("products").select("id", { count: "exact", head: true }) : Promise.resolve({ count: null, error: null })),
+    (canReadOrders ? supabase.from("marketplace_orders").select("id", { count: "exact", head: true }) : Promise.resolve({ count: null, error: null })),
     commissionsCountQuery,
     payoutsCountQuery,
-    supabase.from("marketplace_orders").select("id", { count: "exact", head: true }).in("status", ["pending", "processing"]),
+    (canReadOrders ? supabase.from("marketplace_orders").select("id", { count: "exact", head: true }).in("status", ["pending", "processing"]) : Promise.resolve({ count: null, error: null })),
     recentOrdersQuery,
     recentCommissionsQuery,
     recentPayoutsQuery,
-    supabase.from("content_opportunities").select("id,keyword,search_count,opportunity_type,status").order("search_count", { ascending: false }).limit(5),
+    (availableAdminCapabilities.has("content.read") ? supabase.from("content_opportunities").select("id,keyword,search_count,opportunity_type,status").order("search_count", { ascending: false }).limit(5) : Promise.resolve({ data: [], error: null })),
   ]);
 
   const pendingOrders = pendingOrdersCount.error ? "—" : pendingOrdersCount.count ?? 0;
   const pendingCommissions = (recentCommissions.data ?? []).filter(c => c.status === "pending");
   const pendingPayouts = (recentPayouts.data ?? []).filter(p => ["requested", "approved"].includes(p.status));
   const cards = [
-    ["মোট ব্যবহারকারী", profilesCount.error ? "—" : profilesCount.count ?? 0, "users"],
-    ["কৃষক", farmersCount.error ? "—" : farmersCount.count ?? 0, "sprout"],
-    ["রিসেলার", resellersCount.error ? "—" : resellersCount.count ?? 0, "share-2"],
-    ["পণ্য", productsCount.error ? "—" : productsCount.count ?? 0, "package"],
-    ["মোট অর্ডার", ordersCount.error ? "—" : ordersCount.count ?? 0, "shopping-bag"],
+    ["মোট ব্যবহারকারী", !availableAdminCapabilities.has("users.read") || profilesCount.error ? "—" : profilesCount.count ?? 0, "users"],
+    ["কৃষক", !availableAdminCapabilities.has("users.read") || farmersCount.error ? "—" : farmersCount.count ?? 0, "sprout"],
+    ["রিসেলার", !availableAdminCapabilities.has("users.read") || resellersCount.error ? "—" : resellersCount.count ?? 0, "share-2"],
+    ["পণ্য", !availableAdminCapabilities.has("catalog.read") || productsCount.error ? "—" : productsCount.count ?? 0, "package"],
+    ["মোট অর্ডার", !canReadOrders || ordersCount.error ? "—" : ordersCount.count ?? 0, "shopping-bag"],
     ["রিভিউ প্রয়োজন", pendingOrdersCount.error ? "—" : pendingOrders, "clipboard-list"],
     ["কমিশন রেকর্ড", !canReadPayments || commissionsCount.error ? "—" : commissionsCount.count ?? 0, "wallet"],
     ["পেআউট রেকর্ড", !canReadPayouts || payoutsCount.error ? "—" : payoutsCount.count ?? 0, "banknote"],
