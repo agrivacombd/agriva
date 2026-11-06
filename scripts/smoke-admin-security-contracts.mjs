@@ -88,4 +88,4 @@ assert.match(content, /content_drafts_workflow_guard/);
 assert.match(content, /content_drafts_public_published_articles_read/);
 assert.match(content, /NEW\.reviewed_by := auth\.uid\(\)/);
 
-console.log("Admin security contract checks passed. Known gap: Transport verification has no admin_audit_log event yet.");
+console.log("Admin security contract checks passed. Transport verification now writes an atomic audit event.");
