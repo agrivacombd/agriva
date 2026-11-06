@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
+import ProductImageGallery from "@/components/marketplace/ProductImageGallery";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
@@ -203,20 +204,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <div className="relative flex min-h-[300px] items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 p-5 sm:min-h-[420px] sm:p-8 md:h-[560px] md:min-h-0 md:p-10">
             {image ? (
-              <div className="flex w-full max-w-[560px] flex-col items-center gap-3">
-                <img
-                  src={image}
-                  alt={product.image_alt || (product.name + " — product photo on AGRIVA Marketplace")}
-                  width={900}
-                  height={900}
-                  fetchPriority="high"
-                  decoding="async"
-                  className="block h-[260px] w-full rounded-2xl object-contain sm:h-[330px] md:h-[400px]"
-                />
-                {galleryImages.length > 1 && <div className="grid w-full grid-cols-3 gap-2">
-                  {galleryImages.slice(1).map((src, index) => <img key={src} src={src} alt={product.name + " — additional product photo " + (index + 2)} loading="lazy" decoding="async" className="h-20 w-full rounded-xl border border-emerald-900/10 bg-white object-cover sm:h-24" />)}
-                </div>}
-              </div>
+              <ProductImageGallery
+                images={galleryImages}
+                productName={product.name}
+                imageAlt={product.image_alt || (product.name + " — product photo on AGRIVA Marketplace")}
+              />
             ) : (
               <div className="flex max-w-xs flex-col items-center text-center">
                 <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span>
