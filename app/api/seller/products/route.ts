@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     seo_title: seoTitle || null,
     seo_description: seoDescription || null,
     focus_keyword: focusKeyword || null,
-    related_keywords: relatedKeywords,
+    seo_keywords: relatedKeywords,
     brand: brand || null,
     origin: origin || null,
     highlights,
