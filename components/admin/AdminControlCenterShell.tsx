@@ -96,15 +96,39 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
   const [moreOpen, setMoreOpen] = useState(false);
   const desktopSearchRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
+  const moreButtonRef = useRef<HTMLButtonElement>(null);
+  const wasMoreOpen = useRef(false);
   const normalizedQuery = query.trim().toLocaleLowerCase();
 
   useEffect(() => {
-    if (!moreOpen) return;
+    if (!moreOpen) {
+      if (wasMoreOpen.current) moreButtonRef.current?.focus();
+      wasMoreOpen.current = false;
+      return;
+    }
+    wasMoreOpen.current = true;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     mobileSearchRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMoreOpen(false);
+      if (event.key === "Escape") {
+        setMoreOpen(false);
+        return;
+      }
+      if (event.key === "Tab") {
+        const dialog = document.getElementById("admin-mobile-more");
+        const focusable = dialog?.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
@@ -217,7 +241,7 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
               </Link>
             ) : null;
           })}
-          <button type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-controls="admin-mobile-more" className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold transition ${moreOpen ? "bg-emerald-50 text-emerald-800" : "text-slate-500 hover:bg-slate-50"}`}>
+          <button ref={moreButtonRef} type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-controls="admin-mobile-more" className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold transition ${moreOpen ? "bg-emerald-50 text-emerald-800" : "text-slate-500 hover:bg-slate-50"}`}>
             <Menu size={18} aria-hidden="true"/><span>More</span>
           </button>
         </div>
