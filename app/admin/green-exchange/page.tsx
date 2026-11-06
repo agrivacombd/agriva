@@ -56,14 +56,9 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
     .limit(100);
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6">
-      <div className="mx-auto max-w-6xl">
-        <Link href="/admin" className="text-sm font-bold text-emerald-800 underline underline-offset-4">← Admin Dashboard</Link>
-        <header className="mt-5">
-          <p className="text-xs font-extrabold uppercase tracking-widest text-emerald-700">AGRIVA ADMIN</p>
-          <h1 className="mt-2 text-3xl font-extrabold">Green Exchange মডারেশন</h1>
-          <p className="mt-2 max-w-2xl leading-7 text-slate-600">পোস্টের মান ও নিরাপত্তা যাচাই করে অনুমোদন দিন। অনুমোদিত ও সক্রিয় পোস্টই পাবলিক বোর্ড এবং sitemap-এ দেখানো হবে।</p>
-        </header>
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <div className="mx-auto max-w-[1500px]">
+        <header className="relative overflow-hidden rounded-[28px] bg-[#123b27] p-6 text-white sm:p-8"><div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[28px] border-white/5"/><div className="relative"><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · AGRICULTURE & SERVICES</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Green Exchange মডারেশন</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50/90">পোস্টের মান ও নিরাপত্তা যাচাই করে অনুমোদন দিন। অনুমোদিত ও সক্রিয় পোস্টই পাবলিক বোর্ড এবং sitemap-এ দেখানো হবে।</p></div></header>
         {params.notice && noticeLabels[params.notice] && <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-white p-4">{noticeLabels[params.notice]}</p>}
         <nav aria-label="মডারেশন স্ট্যাটাস" className="mt-6 flex flex-wrap gap-2">
           {(["pending", "approved", "rejected"] as const).map((item) => (
