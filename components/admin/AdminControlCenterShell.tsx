@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, PanelsTopLeft, Store, Sprout, Users, ShoppingBag,
   Wheat, Leaf, Bot, Megaphone, ShieldCheck, Search, ChevronRight,
-  Menu, X, Home, ExternalLink, Command, ArrowUpRight,
+  Menu, X, Home, ExternalLink, ArrowUpRight,
 } from "lucide-react";
 
 export type AdminShellLink = { label: string; href: string; capability?: string };
