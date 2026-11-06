@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
-type Props = { value: string; onChange: (value: string) => void; productName?: string };
+type Props = { value: string; onChange?: (value: string) => void; productName?: string };
 
 const tools = [
   { label: "B", command: "bold", title: "Bold" },
@@ -47,7 +47,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
   function run(command: string, commandValue?: string) {
     editorRef.current?.focus();
     document.execCommand(command, false, commandValue);
-    if (editorRef.current) { setHtml(editorRef.current.innerHTML); onChange(editorRef.current.innerHTML); }
+    if (editorRef.current) { setHtml(editorRef.current.innerHTML); onChange?.(editorRef.current.innerHTML); }
   }
 
   function addLink() {
@@ -66,7 +66,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
     if (editorRef.current) {
       editorRef.current.innerHTML = outline;
       setHtml(outline);
-      onChange(outline);
+      onChange?.(outline);
     }
   }
 
@@ -81,7 +81,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
         <button type="button" onMouseDown={event => event.preventDefault()} onClick={addLink} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Link</button>
         <button type="button" onClick={insertOutline} className="ml-auto min-h-9 rounded-lg bg-[#e8f2e6] px-3 text-xs font-bold text-[#17452c] hover:bg-[#dcebd9]">SEO outline বসান</button>
       </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Product description editor" aria-multiline="true" onInput={event => { setHtml(event.currentTarget.innerHTML); onChange(event.currentTarget.innerHTML); }} className="prose prose-sm max-w-none min-h-48 px-4 py-3 text-sm leading-7 outline-none [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:font-bold [&_li]:ml-5 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:pl-3" data-placeholder="পণ্যের পরিচিতি, বৈশিষ্ট্য, ব্যবহার, প্যাক সাইজ ও যাচাই করা তথ্য লিখুন..." />
+      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Product description editor" aria-multiline="true" onInput={event => { setHtml(event.currentTarget.innerHTML); onChange?.(event.currentTarget.innerHTML); }} className="prose prose-sm max-w-none min-h-48 px-4 py-3 text-sm leading-7 outline-none [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:font-bold [&_li]:ml-5 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:pl-3" data-placeholder="পণ্যের পরিচিতি, বৈশিষ্ট্য, ব্যবহার, প্যাক সাইজ ও যাচাই করা তথ্য লিখুন..." />
     </div>
     <input type="hidden" name="description" value={html} />
     <div className="mt-3 grid gap-3 rounded-xl border border-[#e1e9df] bg-[#f8fbf7] p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
