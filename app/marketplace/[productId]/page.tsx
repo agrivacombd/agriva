@@ -271,7 +271,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
                 <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="border-t border-slate-100 py-5"><ProductDescription html={description} /></div>}
+                {description && <div className="border-t border-slate-100 py-5"><dt className="sr-only">বিবরণ</dt><dd><ProductDescription html={description} /></dd></div>}
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
