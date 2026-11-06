@@ -80,6 +80,8 @@ assert.ok(financePage.includes('checkAdminPermission("payments.read")'), "financ
 assert.ok(financePage.includes('from("commission_payouts")') && financePage.includes('from("reseller_commissions")'), "finance overview must read payout and commission ledgers");
 assert.ok(financePage.includes("Read-only · Finance"), "finance overview must not expose unreviewed money movement actions");
 assert.ok(financePage.includes("latest 100"), "finance summaries must disclose their bounded reporting window");
+assert.ok(!financePage.includes("payment_reference"), "finance overview must not fetch unused sensitive payment references");
+assert.ok(financePage.includes('hasError ? "—" : taka(pendingCommissionTotal)'), "finance totals must not present zero values when source queries fail");
 assert.ok(read("app/admin/page.tsx").includes("/admin/finance"), "admin dashboard must link to finance operations");
 
 const accessControlPage = read("app/admin/access-control/page.tsx");
@@ -87,6 +89,8 @@ assert.ok(accessControlPage.includes('checkAdminPermission("roles.grant")'), "ac
 assert.ok(accessControlPage.includes('from("admin_roles")') && accessControlPage.includes('from("admin_role_permissions")') && accessControlPage.includes('from("admin_user_roles")'), "access control overview must read canonical role and assignment tables");
 assert.ok(accessControlPage.includes("Read-only review"), "role access overview must not expose unreviewed grant/revoke controls");
 assert.ok(accessControlPage.includes("expires_at"), "role access overview must account for expiring assignments");
+assert.ok(accessControlPage.includes("profilesResult.error"), "access-control overview must include profile lookup failures in its error state");
+assert.ok(accessControlPage.includes('hasError ? "—" : roles.length'), "access-control counts must not present zero values when source queries fail");
 assert.ok(read("app/admin/page.tsx").includes("/admin/access-control"), "admin dashboard must provide a shortcut to access control");
 
 const dashboardPage = read("app/admin/page.tsx");
