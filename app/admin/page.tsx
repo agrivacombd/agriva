@@ -155,7 +155,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
     <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-[1500px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">Platform overview</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Admin Control Center</h1><p className="mt-2 text-sm text-[#637266]">ব্যবহারকারী, পণ্য, অর্ডার, রিসেলার কমিশন ও পেআউট—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
+          <div><p className="text-sm font-bold uppercase tracking-[.18em] text-[#a47b20]">COMMAND CENTER · OPERATIONAL OVERVIEW</p><h1 className="mt-2 text-3xl font-black sm:text-4xl">Command Center</h1><p className="mt-2 text-sm text-[#637266]">AGRIVA-র ব্যবহারকারী, Marketplace, orders, pending work ও operational alerts—এক জায়গা থেকে পর্যবেক্ষণ করুন।</p></div>
           <div className="rounded-2xl border border-[#dce7d8] bg-white px-4 py-3 text-sm"><span className="text-[#758277]">Signed in as</span><p className="mt-1 max-w-[260px] truncate font-bold">{user.email ?? user.id}</p></div>
         </div>
 
