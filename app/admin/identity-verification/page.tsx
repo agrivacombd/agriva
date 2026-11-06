@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin/authz";
@@ -30,9 +29,8 @@ export default async function IdentityVerificationAdminPage({searchParams}:{sear
   }));
   return {app,data,evidence:signed.filter((url):url is string=>Boolean(url))};
  }));
- return <main className="min-h-screen bg-[#f5f8f2] px-4 py-8 text-[#173b2d] sm:px-6"><div className="mx-auto max-w-6xl">
-  <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123f30] p-5 text-white"><div><p className="text-xs font-bold uppercase tracking-widest text-[#c9dfca]">AGRIVA • ADMIN</p><h1 className="mt-1 text-2xl font-black">Identity verification queue</h1></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-  <p className="mt-5 text-sm leading-6 text-[#637568]">প্রতিটি আবেদন ও private evidence যাচাই করে অনুমোদন বা প্রত্যাখ্যান করুন। Approve করলে সংশ্লিষ্ট module grant কার্যকর হয়। Plant Market ও Marketplace-এর পরিচয়/প্রতিষ্ঠান যাচাইও সম্পন্ন হয়।</p>
+ return <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#173b2d] sm:px-6 lg:px-8 lg:py-8"><div className="mx-auto max-w-[1500px]">
+  <header className="relative overflow-hidden rounded-[28px] bg-[#123f30] p-6 text-white sm:p-8"><div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[28px] border-white/5"/><div className="relative"><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · PEOPLE & TRUST</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Identity verification</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50/90 sm:text-base">Private evidence ও applicant details যাচাই করে module access অনুমোদন বা প্রত্যাখ্যান করুন। সিদ্ধান্তের সঙ্গে প্রয়োজনীয় review note সংরক্ষণ করুন।</p></div></header>
   {searchParams?.notice&&<p role={searchParams.notice==="error"?"alert":"status"} className={`mt-4 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice==="saved"?"border-emerald-200 bg-emerald-50 text-emerald-900":"border-red-200 bg-red-50 text-red-900"}`}>{searchParams.notice==="saved"?"আবেদনের সিদ্ধান্ত সংরক্ষিত হয়েছে।":searchParams.notice==="reason"?"প্রত্যাখ্যানের আগে কারণ লিখুন।":searchParams.notice==="invalid"?"আবেদনের তথ্য সঠিক নয়।":"আবেদন পর্যালোচনা করা যায়নি। Permission ও database workflow যাচাই করুন।"}</p>}
   {error&&<p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">আবেদন তালিকা লোড করা যায়নি। Identity workflow migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
   <div className="mt-6 space-y-4">{items.map(({app,data,evidence})=><article key={app.id} className="rounded-2xl border border-[#e1e9df] bg-white p-5 shadow-sm">
