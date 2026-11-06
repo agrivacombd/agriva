@@ -350,7 +350,8 @@ const adminRoleGrantMigration = read("supabase/migrations/20261104150000_admin_r
 assert.ok(adminRoleGrantMigration.includes("REVOKE INSERT, UPDATE, DELETE ON TABLE"), "direct authenticated RBAC table writes must be revoked");
 assert.ok(adminRoleGrantMigration.includes("public.admin_grant_user_role"), "role grants must use the audited RPC");
 assert.ok(adminRoleGrantMigration.includes("public.admin_revoke_user_role"), "role revocations must use the audited RPC");
-assert.ok(adminRoleGrantMigration.includes("private.has_admin_permission('roles.grant')"), "role mutation must require the roles.grant capability");
+assert.ok(adminRoleGrantMigration.includes("public.has_admin_permission('roles.grant')"), "role mutation must require the existing public permission-check RPC");
+assert.doesNotMatch(adminRoleGrantMigration, /private\.has_admin_permission/, "role grant migration must not call an undefined private permission helper");
 assert.ok(adminRoleGrantMigration.includes("r.role_key = 'super_admin'"), "delegated roles.grant alone must not authorize RBAC administration");
 assert.ok(adminRoleGrantMigration.includes("p_user_id = v_actor"), "self-grant and self-revoke must be rejected");
 assert.ok(adminRoleGrantMigration.includes("'admin.role.granted'") && adminRoleGrantMigration.includes("'admin.role.revoked'"), "role grant and revoke must write audit events transactionally");
