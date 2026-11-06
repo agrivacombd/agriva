@@ -5,8 +5,8 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import ProductSeoEditor from "@/components/seller/ProductSeoEditor";
 
 const INITIAL_FORM = { name:"",price:"",stock:"",unit:"kg",description:"",category_slug:"premium-food-grains",subcategory_slug:"edible-seeds",seo_title:"",seo_description:"",focus_keyword:"",related_keywords:"",brand:"",origin:"",highlights:"",usage_instructions:"",image_alt:"" };
-const MAX_IMAGES=4;
-const ALLOWED_IMAGE_TYPES=["image/jpeg","image/png","image/webp"];
+const MAX_IMAGES = 4;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg","image/png","image/webp"];
 const UNIT_OPTIONS=[{value:"kg",label:"কেজি (kg)"},{value:"g",label:"গ্রাম (g)"},{value:"piece",label:"পিস (piece)"},{value:"pack",label:"প্যাকেট (pack)"},{value:"liter",label:"লিটার (liter)"},{value:"bag",label:"বস্তা (bag)"}];
 export default function ProductForm(){
  const [form,setForm]=useState(INITIAL_FORM),[images,setImages]=useState<File[]>([]),[previews,setPreviews]=useState<string[]>([]),[message,setMessage]=useState(""),[loading,setLoading]=useState(false);
