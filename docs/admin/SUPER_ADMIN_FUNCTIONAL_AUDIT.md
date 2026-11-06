@@ -36,7 +36,7 @@
 | Agriculture & Services | Job moderation | Working | Status filters and a guarded moderation server action/RPC exist. |
 | Agriculture & Services | Harvest listings | Partial | Admin page is read-only. Listings are public on submission and the page explicitly has no moderation action. |
 | Agriculture & Services | Transport partner verification | Working | Partner filters and verified/rejected/suspended action exist behind `transport.moderate`. |
-| Agriculture & Services | Green Exchange moderation | Working | Approve/reject/return-to-pending action exists and revalidates public board and sitemap paths. |
+| Agriculture & Services | Green Exchange moderation | Partial | Approve/reject/return-to-pending action exists and revalidates public board and sitemap paths. Its page/action still uses a direct legacy `profiles.role === admin` guard rather than the shared capability helper. |
 | Agriculture & Services | Farms, crops, crop advisory and market prices | Missing | No corresponding Admin management pages/workflows found in the audited route tree. |
 | Growth, SEO & Analytics | Search-demand intelligence | Working | Persisted opportunity records, status filters and review updates exist; approval does not itself publish content. |
 | Growth, SEO & Analytics | SEO content drafts | Partial | Persistent draft generation/list/revision workflow exists. Final publishing is a separate reviewed workflow and not completed from this module. |
@@ -44,8 +44,8 @@
 | Growth, SEO & Analytics | Content Studio brief generation | Prototype | Brief-generation UI/API exists, but generated brief is held in client state and is not a persistent CMS publishing workflow. |
 | Growth, SEO & Analytics | AI Content Intelligence prototype | Prototype | Page explicitly states draft/status changes are not persisted to CMS/database. Kept out of primary navigation. |
 | Growth, SEO & Analytics | Technical SEO audit, canonical/indexing controls and redirects manager | Missing | No consolidated Admin workspace for technical SEO, indexing directives or redirect management found. Product slug redirect support is explicitly guarded/disabled when unavailable. |
-| Growth, SEO & Analytics | Reports and analytics | Partial | Basic bounded reporting and CSV export exist; no complete traffic/search analytics integration or configurable reporting pipeline found. |
-| System & Security | Audit log viewer | Partial | Reads the latest 100 audit events. Page/source notes coverage is limited (for example product updates and user-role changes); not all sensitive actions are proven to be audited. |
+| Growth, SEO & Analytics | Reports and analytics | Partial | Basic bounded reporting and CSV export exist; the page uses a direct legacy admin-role check, and no complete traffic/search analytics integration or configurable reporting pipeline was found. |
+| System & Security | Audit log viewer | Partial | Reads the latest 100 audit events. It still uses a direct legacy `profiles.role === admin` guard; coverage is limited (for example product updates and user-role changes), and not all sensitive actions are proven to be audited. |
 | System & Security | Site settings | Partial | Site identity, support details, homepage content and checkout flags can be updated via an RPC. This is not a full system/integration settings console. |
 | System & Security | Capability authorization | Partial | Shared capability registry, legacy-admin allowlist, delegated permission RPC checks and deny-by-default high-risk capabilities exist. Full role-grant administration UI and end-to-end permission matrix tests are absent. |
 | System & Security | System health, backups and integrations monitoring | Missing | No complete Admin health dashboard, backup verification/restore workflow or integration monitoring console found. |
@@ -56,7 +56,7 @@
 2. **Audit coverage:** Extend and test audit events for every sensitive mutation before enabling finance, role-grant or recovery workflows.
 3. **Harvest:** Decide whether the product requirement remains intentionally read-only or whether moderation/report/takedown controls are required. Do not silently imply that the current page moderates listings.
 4. **SEO:** Product SEO fields are not equivalent to a full technical SEO control plane. Canonical/indexing, sitemap diagnostics, redirect management and bulk metadata remain separate gaps.
-5. **Authorization:** `requireAdminPage` / `requireAdminApi` and delegated grants must be tested against real roles and RLS policies. The existence of a capability string is not proof of an active grant.
+5. **Authorization:** `requireAdminPage` / `requireAdminApi` and delegated grants must be tested against real roles and RLS policies. Green Exchange, Audit and Reports still contain direct legacy admin-role checks; migrate them deliberately to the shared capability model after compatibility testing. The existence of a capability string is not proof of an active grant.
 6. **Publishing:** Search Intelligence approval, content-draft generation, article review and public publication are distinct steps. Keep them distinct until a single audited publishing flow is designed.
 
 ## UI/UX Phase 1 implementation coverage
