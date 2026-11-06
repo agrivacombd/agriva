@@ -37,6 +37,8 @@ export const ADMIN_CAPABILITIES = [
   "reports.export",
   "transport.read",
   "transport.moderate",
+  "green_exchange.read",
+  "green_exchange.moderate",
   "system.health.read",
   "payments.read",
   "payments.reconcile",
@@ -118,6 +120,8 @@ const LEGACY_ADMIN_CAPABILITIES = new Set<AdminCapability>([
   "reports.export",
   "transport.read",
   "transport.moderate",
+  "green_exchange.read",
+  "green_exchange.moderate",
   "system.health.read",
 ]);
 
