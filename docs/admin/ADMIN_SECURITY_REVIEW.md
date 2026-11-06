@@ -12,11 +12,11 @@
 | Delegated permission RPC | Partial | `public.has_admin_permission(text)` checks the current authenticated user's active global role assignment. Actual deployed role grants and RLS behavior were not runtime-tested. |
 | Finance RPC boundary | Blocked | UI mutation flag is false; high-risk finance RPC execution is revoked from client roles by the forward hardening migration. Do not re-enable before dedicated service-role/RPC design and reconciliation tests. |
 | Role grant/revoke RPC | Partial | Direct client table writes are revoked; actor-bound grant/revoke RPCs require `roles.grant` and active global `super_admin`, prohibit self-change, protect the final Super Admin and write audit events. |
-| RLS coverage | Partial | Important ownership and admin policies exist for the reviewed domains. A complete live policy inventory, grants inventory and role-by-role negative test has not been run. |
-| Audit coverage | Partial | Several mutations are audited, but Transport verification is missing a write to `admin_audit_log`; other workflows use separate event tables. The Audit UI reads only a bounded recent slice. |
+| RLS coverage | Partial | Forward policy updates now support explicit delegated reads for Transport, Green Exchange and Audit Log. A complete live policy inventory, grants inventory and role-by-role negative test has not been run. |
+| Audit coverage | Partial | Transport verification now writes an atomic before/after status event to `admin_audit_log`; other workflows use separate event tables. The Audit UI still reads only a bounded recent slice. |
 | Environment verification | Blocked | Latest Preview is unavailable due Vercel build rate limit. Supabase migration state and live RLS/RPC behavior have not been verified. |
 
-## 2. Concrete issue found and corrected in this branch
+## 2. Concrete issues found and corrected in this branch
 
 The new role-management migration `20261104150000_admin_role_grant_security.sql` called `private.has_admin_permission('roles.grant')`, but the reviewed permission helper is defined as `public.has_admin_permission(text)`. This would make the role grant/revoke RPC fail at runtime if no separate private helper existed.
 
@@ -24,7 +24,7 @@ The new role-management migration `20261104150000_admin_role_grant_security.sql`
 - Updated `scripts/smoke-admin-authorization.mjs` to assert the real function contract and reject the undefined private reference.
 - This is a source-level correction only. The migration is not applied to any Supabase environment.
 
-## 3. Authorization and RPC inventory
+### Transport and Green Exchange forward hardening\n\nAdded `20261106130000_admin_transport_green_exchange_audit_security.sql` without editing earlier migrations. Transport verification now accepts either legacy Admin or `transport.moderate`, locks the target row, validates status/note, and writes the previous/new status in `admin_audit_log` in the same transaction. Transport queue reads now include `transport.read`. Green Exchange moderation now accepts legacy Admin or `green_exchange.moderate`; its read policy supports `green_exchange.read`. Audit Log RLS supports `audit.read`.\n\nThe Green Exchange, Audit and Reports pages now use the shared `requireAdminPage` capability guard. Reports and CSV export remain gated by `reports.export`.\n\n## 3. Authorization and RPC inventory
 
 | Workflow | Application guard | Database enforcement | Audit evidence | Remaining verification |
 |---|---|---|---|---|
@@ -39,13 +39,13 @@ The new role-management migration `20261104150000_admin_role_grant_security.sql`
 | Admin RBAC grant/revoke | RPC-level check | Direct table writes revoked; actor must have `roles.grant` and active global `super_admin`; no self-change; last Super Admin protected | Transactional `admin_audit_log` | Apply only to isolated DB; verify role table read RLS and role-permission seeding |
 | Identity/module application review | `identity.review` | `admin_review_module_application`; trigger syncs module grants and identity records | `module_access_application_events` | Verify private evidence storage, signed URLs, approval/rejection rollback and actor binding |
 | Jobs moderation | `jobs.moderate` | `admin_moderate_job_post` validates admin, transition and note | `job_moderation_events` | Verify table RLS, retention and audit UI visibility |
-| Transport verification | `transport.moderate` | `admin_set_transport_partner_verification` validates admin/status/note | **No `admin_audit_log` insert found**; reviewed_by/reviewed_at are stored on row | Add append-only event/audit write before treating as complete |
-| Green Exchange moderation | Legacy direct admin-role page guard | `admin_moderate_green_exchange_listing` validates actor/status | `admin_audit_log` in latest forward migration | Migrate page to shared capability guard; test RPC and RLS in isolated DB |
+| Transport verification | `transport.moderate` | Forward migration accepts legacy Admin or delegated capability; row is locked and status/note validated | Atomic `admin_audit_log` event captures previous/new status and note length | Run isolated negative/positive role tests; verify deployed migration state |
+| Green Exchange moderation | `green_exchange.moderate` shared guard | Forward RPC accepts legacy Admin or delegated capability; status validated and row locked | `admin_audit_log` captures previous/new status | Run isolated negative/positive role tests; verify deployed migration state |
 | Module access revocation | API/UI path requires admin | `admin_revoke_market_access` validates actor/module/scope | `admin_audit_log` includes grant/application counts | Verify caller capability, organization scope and replay behavior |
 | Site settings | `settings.write` | `admin_update_site_setting` validates admin and key/value path | `admin_audit_log` | Confirm setting allowlist, max lengths and no secret values in metadata |
-| Audit viewer | Legacy direct admin-role page guard | RLS and admin read policies must be confirmed against deployed schema | Reads latest 100 rows | Add shared `audit.read` guard, pagination/filtering and export permission boundary |
+| Audit viewer | `audit.read` shared guard | Forward RLS policy allows legacy Admin or delegated `audit.read` | Reads latest 100 rows | Run isolated RLS tests; add pagination/filtering and export permission boundary |
 
-## 4. RLS and privilege review checklist
+## 4. Automated test harnesses\n\n- `npm run test:admin-security-contracts` checks the source-level security contracts and known high-risk deny-by-default rules.\n- `npm run test:admin-authz-integration` runs real authenticated RPC/RLS checks against a dedicated isolated Supabase project. It requires four pre-provisioned test accounts: non-admin, legacy Admin, delegated Admin with `transport.moderate`, `green_exchange.moderate`, `audit.read`, and delegated Admin without those grants. Credentials are read only from environment variables; no secrets are committed.\n- Integration test RPC calls use random non-existent entity UUIDs. Authorized users must pass the permission boundary and receive `P0002`; unauthorized users must receive `42501`, so no business rows are mutated.\n\nThe integration harness is committed but has not yet been executed because a dedicated branch/project and test-account fixtures have not been approved/provisioned.\n\n## 5. RLS and privilege review checklist
 
 Before calling this audit complete, run these checks against an isolated Supabase branch with representative users:
 
@@ -62,7 +62,7 @@ Before calling this audit complete, run these checks against an isolated Supabas
 - [ ] Audit events capture actor, entity, action, timestamp and safe before/after or changed-field metadata without secrets or unnecessary PII.
 - [ ] Role revocation and user suspension behavior is tested with existing sessions and token refresh/revocation semantics.
 
-## 5. Priority remediation queue
+## 6. Priority remediation queue
 
 ### P0 — before enabling sensitive operations
 1. Add an audit event to Transport partner verification and a regression test.
@@ -81,7 +81,7 @@ Before calling this audit complete, run these checks against an isolated Supabas
 2. Add system health, backup verification and integration status pages.
 3. Add audit export only behind `audit.export`, with access logging and PII minimization.
 
-## 6. Evidence limitations
+## 7. Evidence limitations
 
 This review reads committed application code and SQL migration files only. It does not establish:
 - which migrations are applied to production,
