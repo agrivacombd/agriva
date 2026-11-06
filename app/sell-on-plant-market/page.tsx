@@ -3,7 +3,7 @@ import Link from "next/link";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
-const pageUrl = \`\${siteUrl}/sell-on-plant-market\`;
+const pageUrl = `${siteUrl}/sell-on-plant-market`;
 
 export const metadata: Metadata = {
   title: "Plant Market Seller হন | AGRIVA-তে গাছ ও চারা বিক্রি করুন",
@@ -251,7 +251,7 @@ export default function SellOnPlantMarketPage() {
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => (
               <article key={category.title} className="group flex items-center gap-4 rounded-2xl border border-[#e0e9dc] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#b9d0b5] hover:shadow-md">
-                <span className={\`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl \${category.tone}\`} aria-hidden="true">{category.icon}</span>
+                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl ${category.tone}`} aria-hidden="true">{category.icon}</span>
                 <div>
                   <h3 className="font-extrabold text-[#244b32]">{category.title}</h3>
                   <p className="mt-1 text-sm leading-5 text-[#718074]">{category.detail}</p>
