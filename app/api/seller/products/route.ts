@@ -24,6 +24,15 @@ export async function POST(request: NextRequest) {
   const stock = Number(body.stock);
   const unit = String(body.unit || "").trim();
   const description = String(body.description || "").trim();
+  const seoTitle = String(body.seo_title || "").trim();
+  const seoDescription = String(body.seo_description || "").trim();
+  const focusKeyword = String(body.focus_keyword || "").trim();
+  const relatedKeywords = String(body.related_keywords || "").split(",").map((value: string) => value.trim()).filter(Boolean).slice(0,10);
+  const highlights = String(body.highlights || "").split(/\r?\n/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
+  const brand = String(body.brand || "").trim();
+  const origin = String(body.origin || "").trim();
+  const usageInstructions = String(body.usage_instructions || "").trim();
+  const imageAlt = String(body.image_alt || "").trim();
   const categorySlug = String(body.category_slug || "").trim();
   const subcategorySlug = String(body.subcategory_slug || "").trim();
   const category = getCategory(categorySlug);
@@ -36,7 +45,7 @@ export async function POST(request: NextRequest) {
   const imageUrl = imageUrls[0] ?? null;
 
   if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !(ALLOWED_UNITS as readonly string[]).includes(unit) || !category || !subcategory || description.length > 5000) {
+      !(ALLOWED_UNITS as readonly string[]).includes(unit) || !category || !subcategory || description.length > 5000 || seoTitle.length > 70 || seoDescription.length > 200 || focusKeyword.length > 100 || relatedKeywords.some((value: string) => value.length > 80) || brand.length > 120 || origin.length > 120 || highlights.some((value: string) => value.length > 200) || usageInstructions.length > 2000 || imageAlt.length > 180) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, বিক্রয় একক, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
@@ -71,6 +80,15 @@ export async function POST(request: NextRequest) {
     stock,
     unit,
     description,
+    seo_title: seoTitle || null,
+    seo_description: seoDescription || null,
+    focus_keyword: focusKeyword || null,
+    seo_keywords: relatedKeywords,
+    brand: brand || null,
+    origin: origin || null,
+    highlights,
+    usage_instructions: usageInstructions || null,
+    image_alt: imageAlt || null,
     image_url: imageUrl,
     image_urls: imageUrls,
     status: "draft",

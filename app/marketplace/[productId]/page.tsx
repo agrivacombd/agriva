@@ -23,6 +23,15 @@ type ProductRecord = {
   image_url?: string | null;
   image_urls?: string[] | null;
   commission_percent?: number | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  focus_keyword?: string | null;
+  seo_keywords?: string[] | null;
+  brand?: string | null;
+  origin?: string | null;
+  highlights?: string[] | null;
+  usage_instructions?: string | null;
+  image_alt?: string | null;
 };
 
 function normalizeSlug(value: string) {
@@ -39,7 +48,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -55,13 +64,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
 
   const name = cleanText(product.name);
-  const title = name.toLocaleLowerCase().includes("bangladesh")
-    ? name + " | AGRIVA"
-    : name + " in Bangladesh | AGRIVA";
+  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") ? name + " | AGRIVA" : name + " in Bangladesh | AGRIVA";
+  const title = cleanText(product.seo_title || defaultTitle).slice(0, 70);
   const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
-  const description = descriptionText
-    ? descriptionText.slice(0, 155)
-    : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
+  const description = cleanText(product.seo_description || descriptionText || ("Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.")).slice(0, 160);
   const image = product.image_url || undefined;
 
   return {
@@ -127,6 +133,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ...(galleryImages.length ? { image: galleryImages } : {}),
     ...(descriptionText ? { description: descriptionText } : {}),
     category: product.category || undefined,
+    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+    ...(product.origin ? { countryOfOrigin: product.origin } : {}),
+    ...((product.focus_keyword || product.seo_keywords?.length) ? { keywords: [product.focus_keyword, ...(product.seo_keywords || [])].filter(Boolean).join(", ") } : {}),
+    ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),
     ...(hasRealPrice ? {
       offers: {
         "@type": "Offer",
@@ -196,7 +206,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="flex w-full max-w-[560px] flex-col items-center gap-3">
                 <img
                   src={image}
-                  alt={product.name + " — product photo on AGRIVA Marketplace"}
+                  alt={product.image_alt || (product.name + " — product photo on AGRIVA Marketplace")}
                   width={900}
                   height={900}
                   fetchPriority="high"
@@ -230,6 +240,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
               {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
             </p>
+            {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-5 rounded-2xl border bg-white p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
+            {product.usage_instructions && <section className="mt-4 rounded-2xl bg-emerald-50 p-4"><h2 className="font-black">ব্যবহার ও প্রয়োগ নির্দেশনা</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{product.usage_instructions}</p></section>}
+            {(product.brand || product.origin) && <p className="mt-3 text-sm text-slate-600">{product.brand ? "ব্র্যান্ড: " + product.brand : ""}{product.brand && product.origin ? " · " : ""}{product.origin ? "উৎপত্তিস্থল: " + product.origin : ""}</p>}
 
             <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">বর্তমান তালিকাভুক্ত মূল্য</p>

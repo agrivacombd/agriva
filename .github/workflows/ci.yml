@@ -62,6 +62,8 @@ jobs:
         run: npm run test:seller-marketplace-submission
       - name: Seller production schema compatibility regression test
         run: npm run test:seller-schema-compat
+      - name: Seller product SEO editor regression test
+        run: npm run test:seller-product-seo-editor
       - name: Marketplace four-image upload regression test
         run: npm run test:marketplace-product-image-gallery
       - name: Admin product image gallery regression test
