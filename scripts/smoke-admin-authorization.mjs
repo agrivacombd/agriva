@@ -75,6 +75,13 @@ for (const path of [
   assert.match(source, /requireAdmin\(/, `${path} server actions must call a server-side admin guard`);
 }
 
+const financePage = read("app/admin/finance/page.tsx");
+assert.ok(financePage.includes('checkAdminPermission("payments.read")'), "finance overview must require the delegated finance read capability");
+assert.ok(financePage.includes('from("commission_payouts")') && financePage.includes('from("reseller_commissions")'), "finance overview must read payout and commission ledgers");
+assert.ok(financePage.includes("Read-only · Finance"), "finance overview must not expose unreviewed money movement actions");
+assert.ok(financePage.includes("latest 100"), "finance summaries must disclose their bounded reporting window");
+assert.ok(read("app/admin/page.tsx").includes("/admin/finance"), "admin dashboard must link to finance operations");
+
 const accessControlPage = read("app/admin/access-control/page.tsx");
 assert.ok(accessControlPage.includes('checkAdminPermission("roles.grant")'), "access control overview must require the delegated role-management permission");
 assert.ok(accessControlPage.includes('from("admin_roles")') && accessControlPage.includes('from("admin_role_permissions")') && accessControlPage.includes('from("admin_user_roles")'), "access control overview must read canonical role and assignment tables");
