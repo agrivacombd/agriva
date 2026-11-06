@@ -109,10 +109,9 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const { error: slugHistoryError } = await supabase.from("marketplace_product_slug_redirects").select("old_slug").limit(0);
   const slugHistoryAvailable = !slugHistoryError;
 
-  return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
-    <div className="mx-auto max-w-7xl">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Catalogue management</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-      <h1 className="mt-7 text-3xl font-black">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, taxonomy, gallery alt text ও SEO তথ্য পরিবর্তন করুন। Slug পরিবর্তন এখন permanent redirect history সহ সংরক্ষিত হয়; migration না থাকলে field disabled থাকবে।</p>
+  return <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+    <div className="mx-auto max-w-[1500px]">
+      <header className="relative overflow-hidden rounded-[28px] bg-[#123b27] p-6 text-white sm:p-8"><div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[28px] border-white/5"/><div className="relative"><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · MARKETPLACE</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">পণ্য ব্যবস্থাপনা</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50/90">নাম, বিবরণ, মূল্য, স্টক, taxonomy, gallery alt text ও SEO তথ্য পরিচালনা করুন। Slug redirect history migration না থাকলে disabled থাকবে।</p></div></header>
       <form method="get" className="mt-5 grid gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:grid-cols-[minmax(0,1fr)_180px_auto_auto] sm:items-end">
         <label className="text-sm font-bold">পণ্য খুঁজুন<input name="q" type="search" maxLength={100} defaultValue={search} placeholder="পণ্যের নাম লিখুন..." className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] px-3 font-normal"/></label>
         <label className="text-sm font-bold">স্ট্যাটাস<select name="status" defaultValue={statusFilter} className="mt-1.5 min-h-11 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 font-normal"><option value="">সব স্ট্যাটাস</option><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
