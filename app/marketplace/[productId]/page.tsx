@@ -22,7 +22,16 @@ type ProductRecord = {
   description: string | null;
   image_url?: string | null;
   image_urls?: string[] | null;
-  commission_percent?: number | null;\n  seo_title?: string | null;\n  seo_description?: string | null;\n  focus_keyword?: string | null;\n  related_keywords?: string[] | null;\n  brand?: string | null;\n  origin?: string | null;\n  highlights?: string[] | null;\n  usage_instructions?: string | null;\n  image_alt?: string | null;
+  commission_percent?: number | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  focus_keyword?: string | null;
+  related_keywords?: string[] | null;
+  brand?: string | null;
+  origin?: string | null;
+  highlights?: string[] | null;
+  usage_instructions?: string | null;
+  image_alt?: string | null;
 };
 
 function normalizeSlug(value: string) {
@@ -55,13 +64,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
 
   const name = cleanText(product.name);
-  const title = name.toLocaleLowerCase().includes("bangladesh")
-    ? name + " | AGRIVA"
-    : name + " in Bangladesh | AGRIVA";
+  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") ? name + " | AGRIVA" : name + " in Bangladesh | AGRIVA";
+  const title = cleanText(product.seo_title || defaultTitle).slice(0, 70);
   const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
-  const description = descriptionText
-    ? descriptionText.slice(0, 155)
-    : "Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.";
+  const description = cleanText(product.seo_description || descriptionText || ("Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.")).slice(0, 160);
   const image = product.image_url || undefined;
 
   return {
@@ -126,7 +132,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     url: productUrl,
     ...(galleryImages.length ? { image: galleryImages } : {}),
     ...(descriptionText ? { description: descriptionText } : {}),
-    category: product.category || undefined,\n    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),\n    ...(product.origin ? { countryOfOrigin: product.origin } : {}),\n    ...(product.related_keywords?.length ? { keywords: product.related_keywords.join(", ") } : {}),\n    ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),
+    category: product.category || undefined,
+    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
+    ...(product.origin ? { countryOfOrigin: product.origin } : {}),
+    ...(product.related_keywords?.length ? { keywords: product.related_keywords.join(", ") } : {}),
+    ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),\n    ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),\n    ...(product.origin ? { countryOfOrigin: product.origin } : {}),\n    ...(product.related_keywords?.length ? { keywords: product.related_keywords.join(", ") } : {}),\n    ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),
     ...(hasRealPrice ? {
       offers: {
         "@type": "Offer",
@@ -196,7 +206,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="flex w-full max-w-[560px] flex-col items-center gap-3">
                 <img
                   src={image}
-                  alt={product.name + " — product photo on AGRIVA Marketplace"}
+                  alt={product.image_alt || (product.name + " — product photo on AGRIVA Marketplace")}
                   width={900}
                   height={900}
                   fetchPriority="high"
