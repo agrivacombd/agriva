@@ -64,17 +64,14 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
   const partners = data ?? [];
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
-      <header className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
-          <div><Link href="/" className="text-2xl font-black">AGRIVA<span className="text-[#d9b85b]">.</span></Link><p className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-emerald-100">Transport partner review</p></div>
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <header className="relative overflow-hidden rounded-[28px] bg-[#123b27] text-white shadow-sm">
+        <div className="relative mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
+          <div><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · AGRICULTURE & SERVICES</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">পরিবহন পার্টনার যাচাই</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-emerald-50/90">গাড়ির তথ্য ও নিবন্ধন যাচাই করে partner approval পরিচালনা করুন।</p></div>
           <Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">← অ্যাডমিন প্যানেল</Link>
         </div>
       </header>
-      <div className="mx-auto max-w-6xl px-5 py-8">
-        <p className="text-sm font-bold uppercase tracking-[.16em] text-[#a47b20]">Partner verification</p>
-        <h1 className="mt-2 text-3xl font-black sm:text-4xl">পরিবহন পার্টনার যাচাই</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">গাড়ির তথ্য, নিবন্ধন নম্বর ও যোগাযোগের তথ্য যাচাই করে আবেদন অনুমোদন, প্রত্যাখ্যান বা স্থগিত করুন। শুধু যাচাইকৃত পার্টনাররা ভাড়ার অফার দিতে পারবেন।</p>
+      <div className="mx-auto max-w-[1500px] py-6">
 
         {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border px-4 py-3 text-sm font-semibold ${searchParams.notice === "error" || searchParams.notice === "invalid" ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}>{noticeLabels[searchParams.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
 
