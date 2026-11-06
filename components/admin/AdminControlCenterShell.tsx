@@ -224,9 +224,9 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
           </div>
         </header>
 
-        <main id="admin-main-content" tabIndex={-1} className="min-h-[calc(100vh-68px)] pb-24 outline-none lg:pb-8">
+        <div id="admin-main-content" tabIndex={-1} className="min-h-[calc(100vh-68px)] pb-24 outline-none lg:pb-8">
           {children}
-        </main>
+        </div>
       </div>
 
       <nav aria-label="Mobile admin navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dce6da] bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-8px_24px_rgba(20,50,30,.08)] backdrop-blur-xl lg:hidden">
