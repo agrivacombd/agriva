@@ -41,7 +41,8 @@
     "test:identity-verification": "node scripts/smoke-identity-verification-workflow.mjs",
     "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs",
     "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
-    "test:admin-security-contracts": "node scripts/smoke-admin-security-contracts.mjs"
+    "test:admin-security-contracts": "node scripts/smoke-admin-security-contracts.mjs",
+    "test:admin-authz-integration": "node scripts/test-admin-authz-integration.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
