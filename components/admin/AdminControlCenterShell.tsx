@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -44,6 +44,14 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMoreOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [moreOpen]);
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const filteredModules = useMemo(() => modules.map((module) => ({
     ...module,
@@ -124,7 +132,7 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
             {dashboardLink ? <Link href={dashboardLink.href} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50"><Home size={14}/> Overview</Link> : null}
           </div>
         </header>
-        <div className="min-h-[calc(100vh-64px)] pb-24 lg:pb-0">{children}</div>
+        <main id="admin-main-content" tabIndex={-1} className="min-h-[calc(100vh-64px)] pb-24 outline-none lg:pb-0">{children}</main>
       </div>
 
       <nav aria-label="Mobile admin navigation" className="fixed inset-x-0 bottom-0 z-50 border-t border-[#dce6da] bg-white/95 px-2 pb-[max(env(safe-area-inset-bottom),8px)] pt-2 shadow-[0_-8px_24px_rgba(20,50,30,.08)] backdrop-blur lg:hidden">
@@ -139,7 +147,7 @@ export default function AdminControlCenterShell({ modules, children }: Props) {
         </div>
         {moreOpen ? (
           <div id="admin-mobile-more" className="absolute inset-x-2 bottom-[calc(100%+8px)] max-h-[65vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl">
-            <div className="mb-3 flex items-center justify-between"><p className="text-sm font-black">All admin modules</p><button type="button" onClick={() => setMoreOpen(false)} aria-label="Close navigation"><X size={18}/></button></div>
+            <div className="mb-3 flex items-center justify-between"><p id="admin-mobile-more-title" className="text-sm font-black">All admin modules</p><button type="button" onClick={() => setMoreOpen(false)} aria-label="Close navigation"><X size={18}/></button></div>
             <label className="mb-3 flex h-10 items-center gap-2 rounded-xl border border-slate-200 px-3"><Search size={15} className="text-slate-400"/><input aria-label="Search admin modules" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pages..." className="min-w-0 flex-1 text-sm outline-none"/></label>
             <div className="space-y-4">{filteredModules.map((module) => renderModule(module, true))}</div>
             <Link href="/dashboard" className="mt-4 flex min-h-10 items-center gap-2 border-t border-slate-100 pt-3 text-sm font-semibold text-slate-500"><Home size={15}/> User dashboard</Link>
