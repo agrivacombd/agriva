@@ -104,14 +104,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     return acc;
   }, {});
 
-  return <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6">
-    <div className="mx-auto max-w-7xl">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
-        <div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">COD order operations · বাংলাদেশ</p></div>
-        <Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link>
+  return <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+    <div className="mx-auto max-w-[1500px]">
+      <header className="relative overflow-hidden rounded-[28px] bg-[#123b27] p-6 text-white sm:p-8">
+        <div className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[28px] border-white/5" />
+        <div className="relative">
+          <p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · ORDERS & FINANCE</p>
+          <h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Orders & Delivery</h1>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50/90 sm:text-base">অর্ডারের ঠিকানা, COD-তে আদায়যোগ্য টাকা এবং delivery progress এক জায়গায় পরিচালনা করুন। Delivered মানেই টাকা আদায় হয়েছে—এমন ধরে নেওয়া হয় না।</p>
+        </div>
       </header>
-      <h1 className="mt-7 text-3xl font-black">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">অর্ডারের ঠিকানা, COD-তে আদায়যোগ্য টাকা এবং ডেলিভারির অবস্থা এক জায়গা থেকে দেখুন। Delivered মানেই টাকা আদায় হয়েছে—এমন ধরে নেওয়া হয় না।</p>
       {!canReadPayments && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">COD collection ledger ও reconciliation details hidden. The separate payments.read capability is required.</p>}
 
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
@@ -119,7 +121,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       </p>}
       {ordersError && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
 
-      <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <section aria-label="Order status filters" className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {[
           ["all", "সব অর্ডার", (orders ?? []).length],
           ["processing", "নতুন / প্রসেসিং", (counts.processing ?? 0) + (counts.pending ?? 0)],
@@ -132,7 +134,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
         </Link>)}
       </section>
 
-      <section className="mt-6 space-y-4">
+      <section aria-label="Orders list" className="mt-6 space-y-4">
         {filtered.map((o) => {
           const address = o.shipping_address && typeof o.shipping_address === "object" && !Array.isArray(o.shipping_address) ? o.shipping_address as Record<string, unknown> : {};
           const buyerName = addressLine(address.fullName ?? address.name) || "নাম দেওয়া নেই";
