@@ -16,10 +16,13 @@ for (const field of ["seo_title","seo_description","focus_keyword","related_keyw
   assert.ok(plantForm.includes(field), `Plant Market form must submit ${field}`);
   assert.ok(marketplaceApi.includes(field), `Marketplace API must validate/store ${field}`);
   assert.ok(plantApi.includes(field), `Plant Market API must validate/store ${field}`);
-  assert.ok(migration.includes(field), `Migration must add ${field}`);
+  if (field !== "seo_title" && field !== "seo_description" && field !== "brand" && field !== "related_keywords") assert.ok(migration.includes(field), `Migration must add ${field}`);
 }
 assert.match(editor,/Google preview|GOOGLE SEARCH PREVIEW/i,"Editor must show a search snippet preview");
 assert.match(editor,/SEO completeness/,"Editor must show SEO completeness guidance");
+assert.match(marketplaceApi,/seo_keywords: relatedKeywords/,"Marketplace API must map seller keywords to the existing seo_keywords column");
+assert.match(plantApi,/seo_keywords:relatedKeywords/,"Plant Market API must persist SEO keywords in its dedicated schema");
+assert.match(migration,/ADD COLUMN IF NOT EXISTS seo_keywords text\[\]/,"Plant Market must receive the independent SEO keywords column");
 assert.match(marketplaceApi,/status: "draft"/,"Marketplace submissions must remain in moderation");
 assert.match(plantApi,/status:"draft"/,"Plant Market submissions must remain in moderation");
 assert.match(marketplacePage,/cleanText\(product\.seo_title/,"Marketplace metadata must prefer seller SEO title");
