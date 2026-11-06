@@ -45,7 +45,6 @@ export default async function AdminAccessControlPage() {
     supabase.from("admin_user_roles").select("id,user_id,role_id,scope_type,scope_id,granted_at,expires_at").order("granted_at", { ascending: false }),
   ]);
 
-  const hasError = Boolean(rolesResult.error || permissionsResult.error || assignmentsResult.error);
   const roles = (rolesResult.data ?? []) as RoleRow[];
   const permissions = permissionsResult.data ?? [];
   const assignments = assignmentsResult.data ?? [];
@@ -56,6 +55,7 @@ export default async function AdminAccessControlPage() {
     ? await supabase.from("profiles").select("id,full_name").in("id", userIds)
     : { data: [], error: null };
   const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
+  const hasError = Boolean(rolesResult.error || permissionsResult.error || assignmentsResult.error || profilesResult.error);
   const permissionsByRole = new Map<string, string[]>();
   for (const item of permissions) {
     permissionsByRole.set(item.role_id, [...(permissionsByRole.get(item.role_id) ?? []), item.capability]);
@@ -71,9 +71,9 @@ export default async function AdminAccessControlPage() {
         </header>
 
         <section className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Configured roles</p><p className="mt-2 text-3xl font-black">{roles.length}</p></div>
-          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Active assignments</p><p className="mt-2 text-3xl font-black">{activeAssignments.length}</p></div>
-          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Granted capabilities</p><p className="mt-2 text-3xl font-black">{permissions.length}</p></div>
+          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Configured roles</p><p className="mt-2 text-3xl font-black">{hasError ? "—" : roles.length}</p></div>
+          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Active assignments</p><p className="mt-2 text-3xl font-black">{hasError ? "—" : activeAssignments.length}</p></div>
+          <div className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Granted capabilities</p><p className="mt-2 text-3xl font-black">{hasError ? "—" : permissions.length}</p></div>
         </section>
 
         {hasError || profilesResult.error ? <div role="alert" className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">Access-control তথ্য সম্পূর্ণভাবে লোড হয়নি। কোনো role বা permission পরিবর্তন করবেন না; database policy ও query error যাচাই করুন।</div> : null}
