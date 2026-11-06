@@ -74,13 +74,9 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
-        <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Intelligence</p>
-        <h1 className="mt-3 text-3xl font-black sm:text-4xl">Live Content Opportunities</h1>
-        <p className="mt-3 max-w-3xl text-[#647468]">
-          Live view of search-driven article, product and tool opportunities. Approval is required before publication.
-        </p>
+    <main className="min-h-[calc(100vh-64px)] bg-[#f5f8f3] px-4 py-6 text-[#17351f] sm:px-6 lg:px-8 lg:py-8">
+      <section className="mx-auto max-w-[1500px]">
+        <header className="relative overflow-hidden rounded-[28px] bg-[#123b27] p-6 text-white sm:p-8"><div className="relative"><p className="text-xs font-black uppercase tracking-[.2em] text-emerald-200">AGRIVA · GROWTH, SEO & ANALYTICS</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Live Content Opportunities</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50/90">Search-driven article, product ও tool opportunity review করুন। Publication-এর আগে approval আবশ্যক।</p></div></header>
 
         <div className="mt-6 flex flex-wrap gap-2" aria-label="Filter opportunities by status">
           {filters.map((status) => (
@@ -101,7 +97,7 @@ export default function Page() {
         {loading ? (
           <p className="mt-8 text-sm text-[#647468]" role="status">Loading opportunities…</p>
         ) : (
-          <section className="mt-4 overflow-hidden rounded-3xl bg-white shadow-sm">
+          <section className="mt-4 overflow-hidden rounded-2xl border border-[#e0e9dd] bg-white shadow-sm">
             {rows.length === 0 ? (
               <p className="p-8 text-sm text-[#647468]">No opportunities found for this filter.</p>
             ) : rows.map((row) => (
