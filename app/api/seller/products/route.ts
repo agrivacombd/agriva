@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 100 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !(ALLOWED_UNITS as readonly string[]).includes(unit) || !category || !subcategory || description.length > 5000 || seoTitle.length > 70 || seoDescription.length > 200 || focusKeyword.length > 100 || relatedKeywords.some((value: string) => value.length > 80) || brand.length > 120 || origin.length > 120 || highlights.some((value: string) => value.length > 200) || usageInstructions.length > 2000 || imageAlt.length > 180) {
-    return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, বিক্রয় একক, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
+    return NextResponse.json({ error: "পণ্যের নাম, বৈধ URL slug (ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও হাইফেন), ক্যাটাগরি, বিক্রয় একক, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
 
   if (imageUrls.length) {
