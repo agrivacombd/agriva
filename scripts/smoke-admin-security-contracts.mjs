@@ -7,6 +7,10 @@ const authz = read("lib/admin/authz.ts");
 const roleGrant = read("supabase/migrations/20261104150000_admin_role_grant_security.sql");
 const finance = read("supabase/migrations/20261104110000_forward_harden_admin_finance_and_order_rpcs.sql");
 const transport = read("supabase/migrations/20261022130000_admin_transport_partner_verification.sql");
+const transportForward = read("supabase/migrations/20261106100000_admin_transport_green_exchange_audit_security.sql");
+const greenExchangePage = read("app/admin/green-exchange/page.tsx");
+const auditPage = read("app/admin/audit/page.tsx");
+const reportsPage = read("app/admin/reports/page.tsx");
 const jobs = read("supabase/migrations/20261025110000_agriculture_jobs_marketplace.sql");
 const identity = read("supabase/migrations/20261030110000_identity_verification_workflow.sql");
 const greenExchange = read("supabase/migrations/20261104130000_audit_admin_moderation_and_access_revocation.sql");
@@ -55,11 +59,28 @@ assert.match(greenExchange, /'green_exchange\.listing\.moderated'/);
 assert.match(greenExchange, /'admin\.module_access\.revoked'/);
 assert.match(users, /'user\.role_changed'/);
 
-// Known audit gap is made explicit rather than silently treated as complete.
-const transportRpc = transport.slice(transport.indexOf("create or replace function public.admin_set_transport_partner_verification"));
-assert.match(transportRpc, /p\.role = 'admin'/);
-assert.match(transportRpc, /p_status not in \('verified', 'rejected', 'suspended'\)/);
-assert.doesNotMatch(transportRpc, /admin_audit_log/, "Transport verification still needs an append-only admin audit event");
+// Forward-only Transport hardening: shared capability boundary + atomic audit event.
+assert.match(transport, /create or replace function public\.admin_set_transport_partner_verification/);
+assert.match(transportForward, /public\.has_admin_permission\('transport\.moderate'\)/);
+assert.match(transportForward, /public\.is_admin\(\)/);
+assert.match(transportForward, /FOR UPDATE/);
+assert.match(transportForward, /'transport\.partner\.verification\.updated'/);
+assert.match(transportForward, /previous_status/);
+assert.match(transportForward, /new_status/);
+assert.match(transportForward, /INSERT INTO public\.admin_audit_log/);
+assert.match(transportForward, /public\.has_admin_permission\('transport\.read'\)/);
+assert.match(transportForward, /public\.has_admin_permission\('audit\.read'\)/);
+assert.match(transportForward, /public\.has_admin_permission\('green_exchange\.moderate'\)/);
+assert.match(transportForward, /public\.has_admin_permission\('green_exchange\.read'\)/);
+
+// All three Admin pages must use the shared capability guard rather than profile-role checks.
+assert.match(greenExchangePage, /requireAdminPage\(capability/);
+assert.match(greenExchangePage, /requireAdmin\("green_exchange\.moderate"\)/);
+assert.doesNotMatch(greenExchangePage, /profile\?\.role !== "admin"/);
+assert.match(auditPage, /requireAdminPage\("audit\.read"\)/);
+assert.doesNotMatch(auditPage, /profile\?\.role !== "admin"/);
+assert.match(reportsPage, /requireAdminPage\("reports\.export"\)/);
+assert.doesNotMatch(reportsPage, /profile\?\.role !== "admin"/);
 
 // Content publication must retain a DB-enforced state machine and before-image history.
 assert.match(content, /content_draft_revisions/);
