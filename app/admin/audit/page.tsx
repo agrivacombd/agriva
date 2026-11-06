@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPage } from "@/lib/admin/authz";
 
 export default async function AdminAuditPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) redirect("/login");
-  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
-  if (profileError || profile?.role !== "admin") redirect("/dashboard");
+  const { supabase } = await requireAdminPage("audit.read");
 
   const { data: entries, error } = await supabase.from("admin_audit_log")
     .select("id,admin_id,action,entity_type,entity_id,metadata,created_at")
