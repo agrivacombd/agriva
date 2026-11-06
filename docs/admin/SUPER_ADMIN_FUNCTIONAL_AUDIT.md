@@ -35,7 +35,7 @@
 | People & Trust | Delegated role and permission management UI | Missing | Capability registry and delegated permission checks exist, but no complete Admin UI to create/review role grants was found. |
 | Agriculture & Services | Job moderation | Working | Status filters and a guarded moderation server action/RPC exist. |
 | Agriculture & Services | Harvest listings | Partial | Admin page is read-only. Listings are public on submission and the page explicitly has no moderation action. |
-| Agriculture & Services | Transport partner verification | Working | Partner filters and verified/rejected/suspended action exist behind `transport.moderate`. |
+| Agriculture & Services | Transport partner verification | Partial | Partner filters and verified/rejected/suspended action exist behind `transport.moderate`; database RPC stores reviewer identity/time but the reviewed migration has no `admin_audit_log` insert. |
 | Agriculture & Services | Green Exchange moderation | Partial | Approve/reject/return-to-pending action exists and revalidates public board and sitemap paths. Its page/action still uses a direct legacy `profiles.role === admin` guard rather than the shared capability helper. |
 | Agriculture & Services | Farms, crops, crop advisory and market prices | Missing | No corresponding Admin management pages/workflows found in the audited route tree. |
 | Growth, SEO & Analytics | Search-demand intelligence | Working | Persisted opportunity records, status filters and review updates exist; approval does not itself publish content. |
@@ -50,7 +50,7 @@
 | System & Security | Capability authorization | Partial | Shared capability registry, legacy-admin allowlist, delegated permission RPC checks and deny-by-default high-risk capabilities exist. Full role-grant administration UI and end-to-end permission matrix tests are absent. |
 | System & Security | System health, backups and integrations monitoring | Missing | No complete Admin health dashboard, backup verification/restore workflow or integration monitoring console found. |
 
-## Route consolidation note\n\nThe legacy `/admin/opportunities` URL now redirects to the canonical `/admin/search-intelligence` workspace so the same persisted opportunity dataset is not maintained through two competing Admin screens.\n\n## High-priority blockers and safeguards
+## Route consolidation note\n\nThe legacy `/admin/opportunities` URL now redirects to the canonical `/admin/search-intelligence` workspace so the same persisted opportunity dataset is not maintained through two competing Admin screens.\n\n## Security review follow-up\n\nA deeper source review found and corrected an invalid permission-helper reference in the new role grant/revoke migration. The role RPC now calls the existing `public.has_admin_permission(text)` helper. A dedicated security review and static regression command were added; see `docs/admin/ADMIN_SECURITY_REVIEW.md` and `npm run test:admin-security-contracts`. Transport verification remains Partial until its audit event is added.\n\n## High-priority blockers and safeguards
 
 1. **Finance:** Keep COD reconciliation, commissions, payouts and refunds blocked until a reviewed service-role/RPC workflow, idempotency, reconciliation controls and audit coverage are verified. Do not switch `FINANCE_MUTATIONS_ENABLED` on as a UI-only change.
 2. **Audit coverage:** Extend and test audit events for every sensitive mutation before enabling finance, role-grant or recovery workflows.
