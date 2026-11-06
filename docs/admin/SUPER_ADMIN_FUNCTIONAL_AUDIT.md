@@ -50,7 +50,7 @@
 | System & Security | Capability authorization | Partial | Shared capability registry, legacy-admin allowlist, delegated permission RPC checks and deny-by-default high-risk capabilities exist. Full role-grant administration UI and end-to-end permission matrix tests are absent. |
 | System & Security | System health, backups and integrations monitoring | Missing | No complete Admin health dashboard, backup verification/restore workflow or integration monitoring console found. |
 
-## High-priority blockers and safeguards
+## Route consolidation note\n\nThe legacy `/admin/opportunities` URL now redirects to the canonical `/admin/search-intelligence` workspace so the same persisted opportunity dataset is not maintained through two competing Admin screens.\n\n## High-priority blockers and safeguards
 
 1. **Finance:** Keep COD reconciliation, commissions, payouts and refunds blocked until a reviewed service-role/RPC workflow, idempotency, reconciliation controls and audit coverage are verified. Do not switch `FINANCE_MUTATIONS_ENABLED` on as a UI-only change.
 2. **Audit coverage:** Extend and test audit events for every sensitive mutation before enabling finance, role-grant or recovery workflows.
