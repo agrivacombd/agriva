@@ -2,22 +2,18 @@
 
 import { useMemo, useState } from "react";
 
-type ProductDescriptionProps = {
-  html: string;
-};
+type ProductDescriptionProps = { html: string };
 
 function normalizeDescription(input: string) {
-  return input
-    // A single legacy <br> is treated as a natural line wrap; repeated breaks
-    // become a real paragraph boundary instead of a stack of blank lines.
-    .replace(/(?:\s*<br\s*\/?\s*>\s*){2,}/gi, "</p><p>")
-    .replace(/<br\s*\/?\s*>/gi, " ")
-    .replace(/\s{2,}/g, " ")
-    .replace(/<p>\s*<\/p>/gi, "")
-    .replace(/^(?!\s*<(p|h2|h3|ul|ol|blockquote)\b)/i, "<p>")
-    .replace(/(?<!>)\s*$/, "</p>")
-    .replace(/<p>\s*(<(h2|h3|ul|ol|blockquote)\b)/gi, "$1")
-    .replace(/(<\/(h2|h3|ul|ol|blockquote)>)\s*<\/p>/gi, "$1");
+  const cleaned = input
+    // Legacy descriptions often use repeated <br> tags as visual spacing.
+    // Collapse every run into a single natural space; keep real paragraphs/lists.
+    .replace(/(?:\s*<br\s*\/?\s*>\s*)+/gi, " ")
+    .replace(/[\t\r\n ]{2,}/g, " ")
+    .trim();
+
+  if (/<(p|h2|h3|ul|ol|blockquote)\b/i.test(cleaned)) return cleaned;
+  return cleaned ? "<p>" + cleaned + "</p>" : "";
 }
 
 export default function ProductDescription({ html }: ProductDescriptionProps) {
@@ -34,7 +30,7 @@ export default function ProductDescription({ html }: ProductDescriptionProps) {
       </div>
       <div className="relative px-4 py-5 sm:px-6 sm:py-6">
         <div
-          className={"product-description-content break-words text-[15px] leading-[1.9] text-slate-700 sm:text-base sm:leading-[1.9] [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-lg [&_h2]:font-extrabold [&_h2]:text-slate-900 [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-slate-900 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:pl-1 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline [&_a]:underline-offset-4 [&_blockquote]:my-4 [&_blockquote]:rounded-r-xl [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-400 [&_blockquote]:bg-emerald-50 [&_blockquote]:px-4 [&_blockquote]:py-3"}
+          className="product-description-content break-words text-[15px] leading-[1.9] text-slate-700 sm:text-base sm:leading-[1.9] [&_p]:my-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:text-lg [&_h2]:font-extrabold [&_h2]:text-slate-900 [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-slate-900 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-6 [&_li]:pl-1 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline [&_a]:underline-offset-4 [&_blockquote]:my-4 [&_blockquote]:rounded-r-xl [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-400 [&_blockquote]:bg-emerald-50 [&_blockquote]:px-4 [&_blockquote]:py-3"
           dangerouslySetInnerHTML={{ __html: normalized }}
           style={isLong && !expanded ? { maxHeight: 560, overflow: "hidden" } : undefined}
         />
