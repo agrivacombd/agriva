@@ -9,7 +9,6 @@ type Payout = {
   amount: number | string;
   status: string;
   payment_method: string | null;
-  payment_reference: string | null;
   requested_at: string;
   approved_at: string | null;
   paid_at: string | null;
@@ -44,7 +43,7 @@ export default async function AdminFinancePage() {
   const supabase = await createSupabaseServerClient();
   const [payoutResult, commissionResult] = await Promise.all([
     supabase.from("commission_payouts")
-      .select("id,reseller_id,amount,status,payment_method,payment_reference,requested_at,approved_at,paid_at")
+      .select("id,reseller_id,amount,status,payment_method,requested_at,approved_at,paid_at")
       .order("requested_at", { ascending: false }).limit(100),
     supabase.from("reseller_commissions")
       .select("id,reseller_id,order_id,amount,paid_amount,status,created_at")
@@ -69,10 +68,10 @@ export default async function AdminFinancePage() {
       {hasError ? <div role="alert" className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">Finance data সম্পূর্ণভাবে লোড হয়নি। কোনো financial action করবেন না; database access ও query error যাচাই করুন।</div> : null}
 
       <section className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Pending commissions · latest 100</p><p className="mt-2 text-2xl font-black">{taka(pendingCommissionTotal)}</p><p className="mt-1 text-xs text-[#879187]">{commissions.filter((item) => item.status === "pending").length} pending entries</p></article>
-        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Payout approval queue</p><p className="mt-2 text-2xl font-black">{taka(requestedPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{payouts.filter((item) => item.status === "requested").length} requests</p></article>
-        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Approved · awaiting payment</p><p className="mt-2 text-2xl font-black">{taka(approvedPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{payouts.filter((item) => item.status === "approved").length} payouts</p></article>
-        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Paid payouts · latest 100</p><p className="mt-2 text-2xl font-black">{taka(paidPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{payouts.filter((item) => item.status === "paid").length} completed payouts</p></article>
+        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Pending commissions · latest 100</p><p className="mt-2 text-2xl font-black">{hasError ? "—" : taka(pendingCommissionTotal)}</p><p className="mt-1 text-xs text-[#879187]">{hasError ? "ডেটা অনুপলব্ধ" : `${commissions.filter((item) => item.status === "pending").length} pending entries`}</p></article>
+        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Payout approval queue</p><p className="mt-2 text-2xl font-black">{hasError ? "—" : taka(requestedPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{hasError ? "ডেটা অনুপলব্ধ" : `${payouts.filter((item) => item.status === "requested").length} requests`}</p></article>
+        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Approved · awaiting payment</p><p className="mt-2 text-2xl font-black">{hasError ? "—" : taka(approvedPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{hasError ? "ডেটা অনুপলব্ধ" : `${payouts.filter((item) => item.status === "approved").length} payouts`}</p></article>
+        <article className="rounded-2xl border border-[#dfe8dc] bg-white p-5"><p className="text-sm text-[#6b786d]">Paid payouts · latest 100</p><p className="mt-2 text-2xl font-black">{hasError ? "—" : taka(paidPayoutTotal)}</p><p className="mt-1 text-xs text-[#879187]">{hasError ? "ডেটা অনুপলব্ধ" : `${payouts.filter((item) => item.status === "paid").length} completed payouts`}</p></article>
       </section>
 
       <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5">
