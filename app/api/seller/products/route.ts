@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   const seoDescription = String(body.seo_description || "").trim();
   const focusKeyword = String(body.focus_keyword || "").trim();
   const relatedKeywords = String(body.related_keywords || "").split(",").map((value: string) => value.trim()).filter(Boolean).slice(0,10);
-  const highlights = String(body.highlights || "").split("\\n").map((value: string) => value.trim()).filter(Boolean).slice(0,5);
+  const highlights = String(body.highlights || "").split(/\r?\n/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
   const brand = String(body.brand || "").trim();
   const origin = String(body.origin || "").trim();
   const usageInstructions = String(body.usage_instructions || "").trim();
@@ -80,6 +80,15 @@ export async function POST(request: NextRequest) {
     stock,
     unit,
     description,
+    seo_title: seoTitle || null,
+    seo_description: seoDescription || null,
+    focus_keyword: focusKeyword || null,
+    related_keywords: relatedKeywords,
+    brand: brand || null,
+    origin: origin || null,
+    highlights,
+    usage_instructions: usageInstructions || null,
+    image_alt: imageAlt || null,
     image_url: imageUrl,
     image_urls: imageUrls,
     status: "draft",
