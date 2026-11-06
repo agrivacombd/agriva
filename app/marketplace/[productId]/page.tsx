@@ -135,7 +135,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     category: product.category || undefined,
     ...(product.brand ? { brand: { "@type": "Brand", name: product.brand } } : {}),
     ...(product.origin ? { countryOfOrigin: product.origin } : {}),
-    ...(product.seo_keywords?.length ? { keywords: product.related_keywords.join(", ") } : {}),
+    ...((product.focus_keyword || product.seo_keywords?.length) ? { keywords: [product.focus_keyword, ...(product.seo_keywords || [])].filter(Boolean).join(", ") } : {}),
     ...(product.highlights?.length ? { additionalProperty: product.highlights.slice(0,5).map((value) => ({ "@type": "PropertyValue", name: "Product highlight", value })) } : {}),
     ...(hasRealPrice ? {
       offers: {
