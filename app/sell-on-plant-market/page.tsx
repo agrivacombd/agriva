@@ -172,7 +172,7 @@ export default function SellOnPlantMarketPage() {
                   role="img"
                   aria-label="সবুজ গাছপালায় ভরা একটি নার্সারি"
                   className="absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: "linear-gradient(180deg,rgba(14,43,27,.02) 35%,rgba(14,43,27,.65) 100%),url('https://images.unsplash.com/photo- nursery')" }}
+                  style={{ backgroundImage: "linear-gradient(180deg,rgba(14,43,27,.02) 35%,rgba(14,43,27,.65) 100%),url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=1400&q=85')" }}
                 />
                 <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8">
                   <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-white/80">Grow your plant business</p>
