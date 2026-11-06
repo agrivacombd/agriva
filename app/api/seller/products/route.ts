@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
+  const slug = String(body.slug || "").trim().toLowerCase();
   const price = Number(body.price);
   const stock = Number(body.stock);
   const unit = String(body.unit || "").trim();
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
   }
   const imageUrl = imageUrls[0] ?? null;
 
-  if (!name || name.length > 160 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
+  if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 100 || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !(ALLOWED_UNITS as readonly string[]).includes(unit) || !category || !subcategory || description.length > 5000 || seoTitle.length > 70 || seoDescription.length > 200 || focusKeyword.length > 100 || relatedKeywords.some((value: string) => value.length > 80) || brand.length > 120 || origin.length > 120 || highlights.some((value: string) => value.length > 200) || usageInstructions.length > 2000 || imageAlt.length > 180) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, সাব-ক্যাটাগরি, বিক্রয় একক, মূল্য ও স্টক যাচাই করুন।" }, { status: 400 });
   }
@@ -67,9 +68,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const slugBase = name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 100) || "product";
-  const slug = `${slugBase}-${crypto.randomUUID().slice(0, 8)}`;
-  const { data, error } = await supabase.from("products").insert({
+   const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id,
     name,
     slug,
@@ -93,11 +92,11 @@ export async function POST(request: NextRequest) {
     image_urls: imageUrls,
     status: "draft",
     marketplace_channel: "marketplace",
-  }).select("id,name,category,category_slug,subcategory_slug,image_url,status,unit").single();
+  }).select("id,name,slug,category,category_slug,subcategory_slug,image_url,status,unit").single();
 
   if (error) {
     console.error("Seller marketplace product creation failed", { code: error.code || "unknown" });
-    return NextResponse.json({ error: "পণ্য সংরক্ষণ করা যায়নি। Database migration ও তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
+    return NextResponse.json({ error: error.code === "23505" ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
   }
   return NextResponse.json({ product: data }, { status: 201 });
 }
