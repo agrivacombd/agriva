@@ -87,9 +87,9 @@ export default function GoogleAnalytics() {
               window.gtag('js', new Date());
               window.gtag('consent', 'default', {
                 analytics_storage: 'granted',
-                ad_storage: 'denied',
-                ad_user_data: 'denied',
-                ad_personalization: 'denied'
+                ad_storage: '${consent?.marketing ? "granted" : "denied"}',
+                ad_user_data: '${consent?.marketing ? "granted" : "denied"}',
+                ad_personalization: '${consent?.marketing ? "granted" : "denied"}'
               });
               window.gtag('config', '${measurementId}', {
                 anonymize_ip: true,
