@@ -240,7 +240,7 @@ assert.ok(seoWorkflowApi.includes('.eq("id", current.id).eq("status", current.st
 assert.ok(read("app/admin/seo-pages/page.tsx").includes('requireAdminPage("content.read")'), "SEO page editor must be protected by the shared page guard");
 assert.ok(read("app/landing/[slug]/page.tsx").includes('.eq("status","published")'), "public landing route must only resolve published pages");
 const cmsBlogPage = read("app/blog/[slug]/page.tsx");
-assert.ok(cmsBlogPage.includes('.eq("status","published")') && cmsBlogPage.includes('.eq("content_type","article")'), "public blog route must only resolve published article content");
+assert.ok(cmsBlogPage.includes('from("published_articles")'), "public blog route must resolve content only through the security-invoker published-articles view");
 const sitemap = read("app/sitemap.ts");
 assert.ok(sitemap.includes('eq("noindex", false)'), "noindex landing pages must be excluded from the sitemap");
 assert.ok(sitemap.includes("blog/${article.slug}"), "published CMS articles must be included in the sitemap");
