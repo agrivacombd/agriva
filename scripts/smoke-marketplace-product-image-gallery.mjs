@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const form = readFileSync("components/seller/SellerProductForm.tsx", "utf8");
 const api = readFileSync("app/api/seller/products/route.ts", "utf8");
 const detail = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+const gallery = readFileSync("components/marketplace/ProductImageGallery.tsx", "utf8");
 const migration = readFileSync("supabase/migrations/20261105140000_marketplace_product_image_gallery.sql", "utf8");
 
 assert.match(form, /const MAX_IMAGES = 4/);
@@ -13,7 +14,9 @@ assert.match(form, /image_urls: imageUrls/);
 assert.match(api, /imageUrls\.length > 4/);
 assert.match(api, /image_urls: imageUrls/);
 assert.match(detail, /image_urls\?: string\[\] \| null/);
-assert.match(detail, /galleryImages\.slice\(1\)/);
+assert.match(detail, /<ProductImageGallery[\s\S]*?images=\{galleryImages\}/);
+assert.match(gallery, /images\.map\(\(src, index\)/);
+assert.match(gallery, /src=\{activeImage\}/);
 assert.match(migration, /add column if not exists image_urls text\[\]/);
 assert.match(migration, /check \(cardinality\(image_urls\) <= 4\)/);
 assert.match(migration, /set file_size_limit = null/);
