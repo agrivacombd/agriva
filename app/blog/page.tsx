@@ -30,10 +30,8 @@ async function getPublishedArticles(): Promise<Article[]> {
   if (!url || !key) return [];
   const supabase = createClient(url, key);
   const { data, error } = await supabase
-    .from("content_drafts")
+    .from("published_articles")
     .select("title,slug,meta_description,primary_keyword,updated_at")
-    .eq("status", "published")
-    .eq("content_type", "article")
     .order("updated_at", { ascending: false })
     .limit(100);
   if (error || !data) return [];

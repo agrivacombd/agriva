@@ -47,11 +47,9 @@ async function getArticle(slug: string): Promise<ArticleData | null> {
   if (!url || !key) return null;
   const supabase = createClient(url, key);
   const { data, error } = await supabase
-    .from("content_drafts")
+    .from("published_articles")
     .select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at")
     .eq("slug", slug)
-    .eq("status", "published")
-    .eq("content_type", "article")
     .maybeSingle();
   if (error || !data) return null;
   return data as ArticleData;
