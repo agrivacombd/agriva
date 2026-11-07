@@ -1,4 +1,4 @@
--- Draft migration: do not apply to production until explicitly approved.
+-- AGRIVA product SEO Studio: additive production schema migration.
 ALTER TABLE public.products
   ADD COLUMN IF NOT EXISTS brand_name text,
   ADD COLUMN IF NOT EXISTS sku text,
