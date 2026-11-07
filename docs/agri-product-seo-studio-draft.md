@@ -1,4 +1,4 @@
-# AGRIVA Agricultural Product SEO Studio — Draft
+# AGRIVA Agricultural Product SEO Studio
 
 ## Research basis
 
@@ -45,4 +45,4 @@ This is a repository-code audit, not a live crawl or a verified production datab
 
 ## Draft-only safety
 
-Migration `20261027210000_agri_product_seo_fields.sql` adds fields and an admin-only creation RPC. It has not been applied to any database. Review RLS, migration compatibility, constraints and RPC privileges; run CI and test against a disposable/staging database before any production approval. No deployment or publication is part of this change.
+Migration `20261107130000_agri_product_seo_studio.sql` adds the structured fields, aligns `moderation_status` with the existing public product-detail visibility gate (preserving existing active listings as approved), and installs an audited admin-only creation RPC. The migration is additive; it does not publish newly submitted products. New studio records remain moderation-pending. The existing SKU unique index is reused when present.
