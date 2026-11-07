@@ -13,7 +13,7 @@ const sections: { group: string; items: { title: string; desc: string; href: str
   ]},
   { group: "People & money", items: [
     { title: "ব্যবহারকারী", desc: "Account, role ও onboarding", href: "/admin/users", icon: "👥" },
-    { title: "কমিশন ও payout", desc: "রিসেলার কমিশন ও settlement overview", href: "/admin/finance", icon: "💳" },
+    { title: "কমিশন ও payout", desc: "Finance operations, commission ও settlement overview", href: "/admin/finance", icon: "💳" },
     { title: "Transport", desc: "Transport partner ও booking operations", href: "/admin/transport", icon: "🚚" },
   ]},
   { group: "Content & growth", items: [
