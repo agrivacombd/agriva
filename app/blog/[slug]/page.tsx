@@ -9,7 +9,7 @@ async function getCmsArticle(slug:string):Promise<CmsArticle|null>{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if(!url||!key)return null;
   const supabase=createClient(url,key);
-  const {data,error}=await supabase.from("content_drafts").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at").eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
+  const {data,error}=await supabase.from("published_articles").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at").eq("slug",slug).maybeSingle();
   return error||!data?null:data as CmsArticle;
 }
 function CmsMarkdown({body}:{body:string}){return <div className="space-y-4">{body.split(/\r?\n/).map((line,index)=>{const v=line.trim();if(!v)return <div key={index}/>;if(v.startsWith("## "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(3)}</h2>;if(v.startsWith("### "))return <h3 key={index} className="pt-3 text-xl font-black">{v.slice(4)}</h3>;if(v.startsWith("# "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(2)}</h2>;if(v.startsWith("- "))return <p key={index} className="pl-4">• {v.slice(2)}</p>;return <p key={index} className="leading-8">{v}</p>})}</div>}
