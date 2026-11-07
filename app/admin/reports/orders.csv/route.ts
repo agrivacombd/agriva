@@ -7,7 +7,7 @@ function csvCell(value: unknown) {
   // Quoting a CSV field does not prevent spreadsheet formula evaluation.
   // Prefix potentially dangerous leading characters so exported text is inert
   // when opened in common spreadsheet applications.
-  if (/^[\\u0000-\\u0020]*[=+\\-@]/.test(text) || /^[\\t\\r]/.test(text)) {
+  if (/^[\u0000-\u0020]*[=+\-@]/.test(text) || /^[\t\r]/.test(text)) {
     text = "'" + text;
   }
 
