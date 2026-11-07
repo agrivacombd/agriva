@@ -19,6 +19,15 @@ ALTER TABLE public.products
   ADD COLUMN IF NOT EXISTS seo_review_status text NOT NULL DEFAULT 'needs_review'
     CHECK (seo_review_status IN ('needs_review','ready','blocked'));
 
+-- The production product-detail route already gates public visibility on moderation_status.
+-- Preserve currently active listings as approved; new studio submissions remain pending.
+ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS moderation_status text NOT NULL DEFAULT 'pending'
+    CHECK (moderation_status IN ('pending','approved','rejected'));
+UPDATE public.products
+SET moderation_status = CASE WHEN status = 'active' THEN 'approved' ELSE 'pending' END
+WHERE moderation_status = 'pending' AND status = 'active';
+
 CREATE UNIQUE INDEX IF NOT EXISTS products_sku_unique
   ON public.products (sku) WHERE sku IS NOT NULL AND length(trim(sku)) > 0;
 CREATE INDEX IF NOT EXISTS products_seo_review_status_idx
