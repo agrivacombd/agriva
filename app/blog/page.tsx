@@ -72,7 +72,7 @@ export default async function ArticlesPage() {
   let cmsArticles: Article[] = [];
   if(url&&key){
     const supabase=createClient(url,key);
-    const {data}=await supabase.from("content_drafts").select("slug,title,meta_description,primary_keyword,created_at").eq("status","published").eq("content_type","article").order("created_at",{ascending:false}).limit(100);
+    const {data}=await supabase.from("published_articles").select("slug,title,meta_description,primary_keyword,created_at").order("created_at",{ascending:false}).limit(100);
     cmsArticles=(data||[]).map((item)=>({slug:item.slug,category:item.primary_keyword||"কৃষি জ্ঞান",title:item.title,excerpt:item.meta_description||"AGRIVA-তে প্রকাশিত কৃষি বিষয়ক লেখা।",date:item.created_at,readTime:"পড়ুন",emoji:"🌱"}));
   }
   const displayArticles=[...cmsArticles,...articles.filter((article)=>!cmsArticles.some((item)=>item.slug===article.slug))];

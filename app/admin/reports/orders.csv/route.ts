@@ -2,7 +2,15 @@ import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 
 function csvCell(value: unknown) {
-  const text = value == null ? "" : String(value);
+  let text = value == null ? "" : String(value);
+
+  // Quoting a CSV field does not prevent spreadsheet formula evaluation.
+  // Prefix potentially dangerous leading characters so exported text is inert
+  // when opened in common spreadsheet applications.
+  if (/^[\u0000-\u0020]*[=+\-@]/.test(text) || /^[\t\r]/.test(text)) {
+    text = "'" + text;
+  }
+
   return '"' + text.replace(/"/g, '""') + '"';
 }
 
