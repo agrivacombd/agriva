@@ -38,22 +38,27 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
   }
 
   return <main className="min-h-screen overflow-hidden bg-[#f7f9f5] pb-28 text-[#17351f] md:pb-0">
-    <section className="relative isolate overflow-hidden bg-[#123f2b] text-white">
+    <section className="relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_82%_20%,rgba(190,242,100,.18),transparent_32%),linear-gradient(120deg,#0b3826_0%,#145c3a_58%,#1b6b40_100%)] text-white">
       <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 -z-10 h-96 w-96 rounded-full border-[56px] border-white/[0.06]" />
       <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 left-[42%] -z-10 h-72 w-72 rounded-full border-[44px] border-lime-200/[0.07]" />
       <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-4 py-9 sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:px-8 lg:py-14">
         <div className="max-w-3xl">
           <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[10px] font-extrabold tracking-[.16em] text-lime-200">AGRIVA MARKETPLACE</p>
-          <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]">কৃষির প্রয়োজনীয় পণ্য, <span className="text-lime-300">সহজেই খুঁজুন</span></h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base sm:leading-8">বীজ, সার, ফসল সুরক্ষা ও কৃষিযন্ত্রসহ প্রয়োজনীয় কৃষিপণ্য খুঁজে দাম ও প্রাপ্যতার তথ্য দেখুন। পছন্দের পণ্য থেকে সরাসরি বিস্তারিত জেনে বিক্রেতার সঙ্গে যোগাযোগ করুন।</p>
+          <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]">কৃষির সব প্রয়োজন, <span className="text-lime-300">এক নির্ভরযোগ্য মার্কেটপ্লেসে</span></h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base sm:leading-8">বীজ, সার, ফসল সুরক্ষা, কৃষিযন্ত্র ও প্রয়োজনীয় উপকরণ—সবকিছু এক জায়গায় খুঁজুন। পণ্যের ছবি, দাম ও মজুত যাচাই করে আত্মবিশ্বাসের সঙ্গে কেনাকাটার সিদ্ধান্ত নিন।</p>
           <a href="#catalogue" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] transition hover:bg-lime-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#123f2b]">পণ্য খুঁজুন <span aria-hidden="true">↓</span></a>
         </div>
         <div className="hidden w-full max-w-xs rounded-3xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm lg:block">
-          <p className="text-xs font-bold text-lime-200">কেনাকাটা শুরু করুন</p>
-          <p className="mt-2 text-xl font-black leading-snug">আপনার প্রয়োজনের পণ্য বেছে নিন</p>
-          <p className="mt-2 text-sm leading-6 text-emerald-50/75">সার্চ অথবা ক্যাটাগরি ব্যবহার করে দ্রুত পণ্য খুঁজে নিন।</p>
-          <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-50/90"><span className="h-2 w-2 rounded-full bg-lime-300" /> সহজ সার্চ ও ক্যাটাগরি</div>
-          <div className="mt-2 flex items-center gap-2 text-xs font-semibold text-emerald-50/90"><span className="h-2 w-2 rounded-full bg-lime-300" /> পরিষ্কার দাম ও পণ্যের তথ্য</div>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-extrabold uppercase tracking-[.16em] text-lime-200">Smart shopping</p>
+            <span className="rounded-full border border-lime-200/20 bg-lime-200/10 px-2.5 py-1 text-[10px] font-bold text-lime-100">AGRIVA</span>
+          </div>
+          <p className="mt-3 text-2xl font-black leading-snug">সঠিক পণ্য, সঠিক সিদ্ধান্ত</p>
+          <p className="mt-2 text-sm leading-6 text-emerald-50/75">আপনার কেনাকাটার পুরো অভিজ্ঞতা সাজানো হয়েছে সহজে খুঁজে পাওয়া ও তথ্য বুঝে সিদ্ধান্ত নেওয়ার জন্য।</p>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-3"><span className="text-xl">⌕</span><p className="mt-2 text-xs font-extrabold">স্মার্ট সার্চ</p><p className="mt-1 text-[10px] leading-4 text-emerald-50/65">নাম ও ক্যাটাগরি</p></div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-3"><span className="text-xl">৳</span><p className="mt-2 text-xs font-extrabold">দাম ও মজুত</p><p className="mt-1 text-[10px] leading-4 text-emerald-50/65">এক নজরে তথ্য</p></div>
+          </div>
         </div>
       </div>
     </section>
