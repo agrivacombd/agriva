@@ -42,7 +42,6 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "AGRIVA",
     locale: "bn_BD",
-    url: siteUrl,
     title: "AGRIVA — কৃষি ও কৃষকের ডিজিটাল প্ল্যাটফর্ম",
     description: "কৃষি পণ্য, ফসল সহায়তা, কৃষি চাকরি ও CV Builder—এক জায়গায়।",
   },
