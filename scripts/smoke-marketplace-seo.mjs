@@ -57,4 +57,25 @@ assert.match(middleware, /request\.nextUrl\.pathname === "\/en" \|\| request\.ne
 assert.match(siteChrome, /document\.documentElement\.lang = english \? "en" : "bn"/, "Client-side route transitions must keep document language in sync");
 assert.match(englishLayout, /twitter:\s*\{[\s\S]*title: "AGRIVA \| Digital Agriculture Platform"/, "English routes must not inherit Bangla Twitter metadata");
 
+
+// Shared root Open Graph metadata must not force every route to advertise the homepage URL.
+assert.match(rootLayout, /openGraph:\s*\{[\s\S]*siteName: "AGRIVA"/, "Root layout should keep shared Open Graph defaults");
+assert.doesNotMatch(rootLayout, /openGraph:\s*\{[^}]*url:/, "Root Open Graph URL must not be inherited as the homepage URL on every route");
+
+// Explicit Bangla-English equivalents must publish reciprocal, self-referencing hreflang metadata.
+const banglaHome = readFileSync("app/page.tsx", "utf8");
+const englishHome = readFileSync("app/en/page.tsx", "utf8");
+const banglaCalculators = readFileSync("app/agriculture-calculators/page.tsx", "utf8");
+const englishCalculators = readFileSync("app/en/agriculture-calculators/page.tsx", "utf8");
+for (const [label, source, self, alternate] of [
+  ["Bangla homepage", banglaHome, "/", "/en"],
+  ["English homepage", englishHome, "/en", "/"],
+  ["Bangla calculator directory", banglaCalculators, "/agriculture-calculators", "/en/agriculture-calculators"],
+  ["English calculator directory", englishCalculators, "/en/agriculture-calculators", "/agriculture-calculators"],
+]) {
+  assert.ok(source.includes("canonical: `" + self + "`") || source.includes('canonical: "' + self + '"'), `${label} must declare its self canonical`);
+  assert.match(source, /languages:\s*\{/, `${label} must declare language alternates`);
+  assert.ok(source.includes(alternate), `${label} must reference its paired locale route`);
+}
+
 console.log("Marketplace SEO and locale language regression checks passed.");
