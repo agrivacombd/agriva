@@ -9,6 +9,7 @@ const verificationMeta: Record<string, { name: string; key: string }> = {
 };
 
 export default async function GrowthVerification() {
+  let rows: { provider_key: string; config: unknown }[] = [];
   try {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase
@@ -16,13 +17,15 @@ export default async function GrowthVerification() {
       .select("provider_key,config")
       .eq("category", "verification")
       .eq("enabled", true);
-    return <>{(data ?? []).map((item) => {
-      const definition = verificationMeta[item.provider_key];
-      const token = (item.config as Record<string, unknown> | null)?.[definition?.key ?? "token"];
-      if (!definition || typeof token !== "string" || !token || /[<>\u0000-\u001f]/.test(token)) return null;
-      return <meta key={item.provider_key} name={definition.name} content={token}/>;
-    })}</>;
+    rows = data ?? [];
   } catch {
     return null;
   }
+
+  return <>{rows.map((item) => {
+    const definition = verificationMeta[item.provider_key];
+    const token = (item.config as Record<string, unknown> | null)?.[definition?.key ?? "token"];
+    if (!definition || typeof token !== "string" || !token || /[<>\u0000-\u001f]/.test(token)) return null;
+    return <meta key={item.provider_key} name={definition.name} content={token} />;
+  })}</>;
 }
