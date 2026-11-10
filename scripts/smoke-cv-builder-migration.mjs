@@ -43,3 +43,10 @@ assert.ok(client.includes("navigator.share") && client.includes("navigator.clipb
 assert.ok(client.includes("window.print()"), "PDF export should use the browser print pipeline");
 assert.ok(client.includes("does not attach a PDF file"), "text sharing must clearly disclose that it does not attach the PDF");
 console.log("CV Builder export and share checks passed.");
+
+assert.ok(client.includes('counter(page)') && client.includes('counter(pages)'), "print pages should expose page numbering where supported");
+assert.ok(client.includes("Noto Sans Bengali") && client.includes("Hind Siliguri"), "CV should provide Bengali-capable font fallbacks");
+assert.ok(client.includes("#cv-preview article { break-inside: avoid-page"), "individual experience and education records should stay together when possible");
+assert.ok(client.includes("#cv-preview > div { display: block !important"), "multi-column templates should become a single-column print layout");
+assert.ok(client.includes("orphans: 3") && client.includes("widows: 3"), "print paragraphs should avoid isolated lines");
+console.log("CV Builder pagination and print typography checks passed.");
