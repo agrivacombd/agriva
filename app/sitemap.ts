@@ -33,6 +33,9 @@ async function fetchAllSitemapRows<T>(
 }
 
 
+// Query Supabase at request time, not during the static production build.
+export const dynamic = "force-dynamic";
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
