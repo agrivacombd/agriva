@@ -60,7 +60,7 @@ assert.match(englishLayout, /twitter:\s*\{[\s\S]*title: "AGRIVA \| Digital Agric
 
 // Shared root Open Graph metadata must not force every route to advertise the homepage URL.
 assert.match(rootLayout, /openGraph:\s*\{[\s\S]*siteName: "AGRIVA"/, "Root layout should keep shared Open Graph defaults");
-assert.doesNotMatch(rootLayout, /openGraph:\s*\{[\s\S]*?url:\s*siteUrl/, "Root Open Graph URL must not be inherited as the homepage URL on every route");
+assert.doesNotMatch(rootLayout, /openGraph:\s*\{[^}]*url:/, "Root Open Graph URL must not be inherited as the homepage URL on every route");
 
 // Explicit Bangla-English equivalents must publish reciprocal, self-referencing hreflang metadata.
 const banglaHome = readFileSync("app/page.tsx", "utf8");
