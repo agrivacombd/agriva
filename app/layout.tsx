@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
+import { headers } from "next/headers";
 import PwaRegister from "./pwa-register";
 import SiteChrome from "@/components/site/SiteChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
@@ -71,17 +71,13 @@ const organizationJsonLd = {
   knowsLanguage: ["bn", "en"],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get("x-agriva-locale") === "en" ? "en" : "bn";
+
   return (
-    <html lang="bn">
+    <html lang={locale}>
       <body>
-        <Script id="agriva-locale-html-lang" strategy="beforeInteractive">
-          {`(function () {
-            var pathname = window.location.pathname;
-            document.documentElement.lang =
-              pathname === "/en" || pathname.startsWith("/en/") ? "en" : "bn";
-          })();`}
-        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
