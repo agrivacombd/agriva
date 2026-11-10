@@ -11,6 +11,7 @@ const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
 const searchLayout = readFileSync("app/search/layout.tsx", "utf8");
 const rootLayout = readFileSync("app/layout.tsx", "utf8");
+const englishLayout = readFileSync("app/en/layout.tsx", "utf8");
 const siteChrome = readFileSync("components/site/SiteChrome.tsx", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
