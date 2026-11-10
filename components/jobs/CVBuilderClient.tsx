@@ -208,7 +208,7 @@ export default function CVBuilderPage() {
 
       <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-black">{labels.preview}</h2><span className="text-xs font-bold text-slate-500">{selected.name}</span></div>
-        <article id="cv-preview" className="cv-paper mx-auto min-h-[1123px] w-full max-w-[794px] overflow-visible bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: isBn ? "Arial, sans-serif" : "Arial, sans-serif"}}>
+        <article id="cv-preview" className="cv-paper mx-auto min-h-[1123px] w-full max-w-[794px] overflow-visible bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: '"Noto Sans Bengali", "Hind Siliguri", "SolaimanLipi", Arial, sans-serif'}}>
           <header className="p-7 text-white sm:p-9" style={{background:selected.accent}}>
             <div className="flex items-start gap-4">
               {/^https?:\/\//i.test(cv.photoUrl.trim())&&<img src={cv.photoUrl.trim()} alt="" className="h-20 w-20 rounded-xl border-2 border-white/60 object-cover" />}
@@ -230,16 +230,33 @@ export default function CVBuilderPage() {
     </div>
     <style jsx global>{`
       @media print {
-        @page { size: A4; margin: 10mm; }
-        body { background: white !important; }
+        @page {
+          size: A4;
+          margin: 12mm 10mm 16mm;
+          @bottom-center { content: "Page " counter(page) " of " counter(pages); font: 9pt Arial, sans-serif; color: #64748b; }
+        }
+        html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
         body * { visibility: hidden !important; }
         #cv-preview, #cv-preview * { visibility: visible !important; }
-        #cv-preview { position: static !important; display: block !important; width: 190mm !important; max-width: none !important; min-height: 0 !important; height: auto !important; margin: 0 auto !important; overflow: visible !important; box-shadow: none !important; }
-        #cv-preview > header, #cv-preview > div, #cv-preview > footer { break-inside: auto; }
-        #cv-preview section { break-inside: avoid-page; page-break-inside: avoid; }
-        #cv-preview h2 { break-after: avoid-page; page-break-after: avoid; }
+        #cv-preview {
+          position: static !important; display: block !important; box-sizing: border-box !important;
+          width: 190mm !important; max-width: none !important; min-height: 0 !important;
+          height: auto !important; margin: 0 auto !important; overflow: visible !important;
+          box-shadow: none !important; ring: 0 !important; background: #fff !important;
+          color: #0f172a !important; font-size: 10pt !important; line-height: 1.35 !important;
+        }
+        #cv-preview > header { break-inside: avoid-page; page-break-inside: avoid; }
+        #cv-preview > div { display: block !important; padding: 8mm !important; }
+        #cv-preview > div > aside { display: block !important; margin: 0 0 6mm !important; }
+        #cv-preview > div > div { display: block !important; }
+        #cv-preview > div > div > section { margin-bottom: 6mm !important; }
+        #cv-preview > footer { break-inside: avoid-page; }
+        #cv-preview section { break-inside: auto; page-break-inside: auto; }
+        #cv-preview article { break-inside: avoid-page; page-break-inside: avoid; }
+        #cv-preview h2, #cv-preview h3 { break-after: avoid-page; page-break-after: avoid; }
+        #cv-preview p { orphans: 3; widows: 3; }
         #cv-preview p, #cv-preview span { overflow-wrap: anywhere; }
-        .cv-paper { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #cv-preview * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       }
     `}</style>
   </main>;
