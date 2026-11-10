@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import FarmCostCalculator from "@/components/tools/FarmCostCalculator";
 
 export const metadata: Metadata = {
-  title: "Farm Cost Calculator Bangladesh | কৃষি খরচ হিসাব | AGRIVA",
-  description: "Calculate total farming cost, cost per acre and cost per kg with AGRIVA Farm Cost Calculator. Track seed, fertilizer, labour, irrigation and other farm expenses.",
+  title: "Farm Cost Calculator | কৃষি খরচ হিসাব",
+  description: "Calculate farm cost per acre and per kg. Track seed, fertilizer, labour, irrigation and other expenses with AGRIVA.",
   alternates: { canonical: "/tools/farm-cost-calculator" },
   keywords: ["farm cost calculator Bangladesh", "farming cost calculator", "agriculture cost calculator", "কৃষি খরচ হিসাব", "চাষের খরচ ক্যালকুলেটর"],
 };
