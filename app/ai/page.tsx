@@ -90,6 +90,18 @@ export default function AIPage() {
             {notice && <p className="mt-3 text-sm text-[#657467]" role="status">{notice}</p>}
           </form>
         </section>
+        <section className="mt-10 rounded-2xl border border-[#e0e8dc] bg-white p-5 sm:p-7" aria-labelledby="ai-guide">
+          <h2 id="ai-guide" className="text-xl font-black">AGRIVA AI-কে কী ধরনের প্রশ্ন করবেন?</h2>
+          <p className="mt-3 leading-7 text-[#526557]">ফসলের লক্ষণ, মাটির অবস্থা, সেচের পরিকল্পনা, সার ব্যবস্থাপনা বা সাধারণ কৃষি জ্ঞান নিয়ে নির্দিষ্ট প্রশ্ন লিখুন। ভালো উত্তর পেতে ফসলের নাম, জাত জানা থাকলে জাত, গাছের বয়স, এলাকার নাম এবং সমস্যাটি কখন থেকে হচ্ছে—এসব তথ্য দিন।</p>
+          <h3 className="mt-5 font-bold">প্রশ্নের উদাহরণ</h3>
+          <ul className="mt-2 list-disc space-y-2 pl-5 leading-7 text-[#526557]">
+            <li>ধানের পাতায় বাদামী দাগ দেখা যাচ্ছে—কোন লক্ষণগুলো পরীক্ষা করব?</li>
+            <li>সবজি ক্ষেতে সেচ দেওয়ার আগে মাটির আর্দ্রতা কীভাবে বুঝব?</li>
+            <li>মাটি পরীক্ষার রিপোর্টে পুষ্টির ঘাটতি থাকলে কীভাবে সুপারিশ যাচাই করব?</li>
+          </ul>
+          <h3 className="mt-5 font-bold">উত্তর ব্যবহারে সতর্কতা</h3>
+          <p className="mt-2 leading-7 text-[#526557]">AI-এর উত্তর প্রাথমিক তথ্য ও শেখার সহায়তা; এটি মাঠ পর্যায়ের রোগ নির্ণয়, মাটি পরীক্ষা বা কৃষি কর্মকর্তার পরামর্শের বিকল্প নয়। কীটনাশক বা সার প্রয়োগের আগে পণ্যের লেবেল, অনুমোদিত নির্দেশনা এবং স্থানীয় বিশেষজ্ঞের পরামর্শ অনুসরণ করুন।</p>
+        </section>
       </div>
     </main>
   );
