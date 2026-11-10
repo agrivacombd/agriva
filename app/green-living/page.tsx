@@ -5,7 +5,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 const pageUrl = `${siteUrl}/green-living`;
 
 export const metadata: Metadata = {
-  title: "Green Living: ইনডোর প্ল্যান্ট ও ছাদবাগানের বাংলা গাইড",
+  title: "Green Living: ইনডোর প্ল্যান্ট ও ছাদবাগান",
   description:
     "বাংলাদেশের ইনডোর প্ল্যান্ট, ছাদবাগান, বারান্দার গাছ ও শখের বাগানপ্রেমীদের জন্য সহজ বাংলা গাইড, গাছের যত্নের পরিকল্পনা এবং ব্যবহারিক টিপস।",
   alternates: { canonical: "/green-living" },
