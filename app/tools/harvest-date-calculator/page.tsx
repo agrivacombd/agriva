@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import HarvestDateCalculator from "@/components/tools/HarvestDateCalculator";
 
 export const metadata: Metadata = {
-  title: "Harvest Date Calculator Bangladesh | ফসল কাটার সময় হিসাব | AGRIVA",
+  title: "Harvest Date Calculator | ফসল কাটার সময়",
   description: "Estimate crop harvest dates from planting date and crop growth duration. সহজ harvest planning tool for Bangladesh farmers.",
   alternates: { canonical: "/tools/harvest-date-calculator" },
   keywords: ["harvest date calculator Bangladesh", "crop harvest calculator", "ফসল কাটার সময়", "ফসল সংগ্রহের সময়", "harvest planning tool"],
