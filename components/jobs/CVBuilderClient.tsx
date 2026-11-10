@@ -89,11 +89,17 @@ export default function CVBuilderPage() {
   useEffect(() => {
     if (!loaded) return;
     const timeout = window.setTimeout(() => {
-      const document = legacyCVToDocument(cv, template, language);
+      const document = legacyCVToDocument(cv, template, language, workEntries, educationEntries);
       setSaved(saveCV(window.localStorage, document, { language, template }));
     }, 700);
     return () => window.clearTimeout(timeout);
   }, [cv, template, language, loaded, workEntries, educationEntries]);
+  useEffect(() => {
+    setCV((current) => ({ ...current, experience: workEntries.map((item) => [item.jobTitle, item.company, item.location, item.startDate && item.endDate ? `${item.startDate} – ${item.endDate}` : item.startDate || item.endDate, item.description, item.achievements].filter(Boolean).join(" · ")).filter(Boolean).join("\n") }));
+  }, [workEntries]);
+  useEffect(() => {
+    setCV((current) => ({ ...current, education: educationEntries.map((item) => [item.degree, item.institution, item.location, item.startDate && item.endDate ? `${item.startDate} – ${item.endDate}` : item.startDate || item.endDate, item.details].filter(Boolean).join(" · ")).filter(Boolean).join("\n") }));
+  }, [educationEntries]);
   const previewText = useMemo(() => (value: string) => value.trim().split("\n").filter(Boolean), []);
 
   if (!loaded) return <main className="min-h-screen bg-[#f5f8f1] p-8 text-[#17351f]">CV Builder loading…</main>;
