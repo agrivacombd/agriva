@@ -51,10 +51,16 @@ already passed.
 - [x] Products layout: remove duplicate page header; align create/edit forms with shared content width and responsive spacing.
 - [x] Categories layout: remove duplicate page header; align create/edit forms with shared content width and responsive spacing.
 - [x] Orders layout: remove duplicate page header; retain order cards and COD collection audit workflows.
+- [x] Users layout: align page content with shared shell; preserve permitted Farmer/Reseller role changes and self/admin protections.
+- [x] Identity verification layout: align queue and evidence review with shared shell; preserve private signed evidence URLs and review RPC.
+- [x] Finance layout: align read-only commission/payout overview with shared shell; preserve financial permission guard and existing queries.
 - [ ] Verify dashboard order status, commission, and payout actions with authorized roles.
 - [ ] Verify product create/edit, taxonomy, description, and image workflows.
 - [ ] Verify category create/edit and ordering workflows.
 - [ ] Verify order status transitions and COD collection audit workflow.
+- [ ] Verify user role changes with permitted roles and confirm admin/self-role protections.
+- [ ] Verify identity approval/rejection, rejection notes, and private evidence access.
+- [ ] Verify finance read-only views under authorized and unauthorized roles.
 - [ ] Run repository build, lint, and admin regression scripts in a full checkout.
 - [ ] Manually verify authenticated pages at mobile, tablet, and desktop breakpoints.
 
