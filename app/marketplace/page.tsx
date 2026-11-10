@@ -7,7 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "AGRIVA Marketplace | কৃষি পণ্য, বীজ, সার ও কৃষি উপকরণ",
+  title: "কৃষি পণ্য, বীজ ও সার",
   description: "বাংলাদেশের কৃষি পণ্য এক জায়গায় খুঁজুন। বীজ, সার, ফসল সুরক্ষা, কৃষিযন্ত্র, ফসল ও প্রিমিয়াম খাদ্যশস্যের পণ্যের দাম, মজুত ও বিবরণ দেখুন।",
   alternates: { canonical: "/marketplace" },
   keywords: ["কৃষি পণ্য", "কৃষি মার্কেটপ্লেস", "কৃষি বীজ", "কৃষি সার", "কৃষি যন্ত্রপাতি", "বাংলাদেশ কৃষি পণ্য", "ফসল", "চারা", "Premium Food & Grains"],
