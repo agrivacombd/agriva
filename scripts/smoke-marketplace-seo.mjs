@@ -115,7 +115,7 @@ for (const [label, source, marker] of [
 ]) {
   assert.ok(source.includes(marker), `${label} must include useful server-rendered explanatory content`);
 }
-assert.equal((cvBuilder.match(/<h1\\b/g) || []).length, 1, "CV Builder must have one page-level H1; preview name is a subordinate heading");
+assert.equal((cvBuilder.match(/<h1\b/g) || []).length, 1, "CV Builder must have one page-level H1; preview name is a subordinate heading");
 assert.doesNotMatch(marketplace, /title: "AGRIVA Marketplace \\| কৃষি পণ্য/, "Marketplace title must not repeat the brand suffix from the root template");
 assert.doesNotMatch(cmsBlogArticle, /সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত/, "Integrated pest management article title must stay concise");
 
