@@ -59,12 +59,12 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function Navigation({ onNavigate, pathname }: { onNavigate?: () => void; pathname: string }) {
+function Navigation({ onNavigate, pathname, compact = false }: { onNavigate?: () => void; pathname: string; compact?: boolean }) {
   return (
     <nav aria-label="Admin navigation" className="space-y-6">
       {groups.map((group) => (
         <section key={group.label}>
-          <h2 className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100/55 xl:text-[11px]">{group.label}</h2>
+          <h2 className={`mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100/55 xl:text-[11px] ${compact ? "hidden xl:block" : ""}`}>{group.label}</h2>
           <ul className="space-y-1">
             {group.items.map((item) => {
               const active = isActive(pathname, item.href);
@@ -74,7 +74,7 @@ function Navigation({ onNavigate, pathname }: { onNavigate?: () => void; pathnam
                   <Link href={item.href} onClick={onNavigate} aria-current={active ? "page" : undefined} title={item.label}
                     className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 ${active ? "bg-lime-300 text-[#173b2d] shadow-sm" : "text-emerald-50/85 hover:bg-white/10 hover:text-white"}`}>
                     <Icon aria-hidden="true" size={18} className="shrink-0" />
-                    <span className="hidden min-w-0 flex-1 truncate xl:block">{item.label}</span>
+                    <span className={compact ? "hidden min-w-0 flex-1 truncate xl:block" : "min-w-0 flex-1 truncate"}>{item.label}</span>
                     {active && <ChevronRight aria-hidden="true" size={15} className="hidden xl:block" />}
                   </Link>
                 </li>
@@ -100,7 +100,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
           <span className="text-xl font-black tracking-[0.14em] text-white">AG<span className="text-lime-300">R</span>IVA</span>
           <span className="ml-2 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/65 xl:block">Admin</span>
         </Link>
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-5 xl:px-3"><Navigation pathname={pathname} /></div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-5 xl:px-3"><Navigation pathname={pathname} compact /></div>
         <div className="border-t border-white/10 p-3">
           <Link href="/dashboard" className="flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold text-emerald-50/80 hover:bg-white/10 hover:text-white xl:justify-start xl:text-sm">
             <ArrowUpRight size={17} /><span className="hidden xl:inline">User dashboard</span>
