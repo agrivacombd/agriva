@@ -50,22 +50,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient(url, key);
     const [productRows, plantProductRows, jobRows, exchangeRows, landingRows, articleRows] = await Promise.all([
       fetchAllSitemapRows<SitemapProduct>(async (from, to) =>
-        supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").not("slug", "is", null).range(from, to),
+        supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapPlantProduct>(async (from, to) =>
-        supabase.from("plant_market_products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).range(from, to),
+        supabase.from("plant_market_products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapJob>(async (from, to) =>
-        supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).range(from, to),
+        supabase.from("job_posts").select("slug,updated_at").eq("status", "published").or("application_deadline.is.null,application_deadline.gt." + now.toISOString()).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapExchangeListing>(async (from, to) =>
-        supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").range(from, to),
+        supabase.from("green_exchange_listings").select("slug,updated_at").eq("status", "active").eq("moderation_status", "approved").order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapLandingPage>(async (from, to) =>
-        supabase.from("seo_landing_pages").select("slug,updated_at").eq("status", "published").eq("noindex", false).range(from, to),
+        supabase.from("seo_landing_pages").select("slug,updated_at").eq("status", "published").eq("noindex", false).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapArticle>(async (from, to) =>
-        supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").range(from, to),
+        supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").order("slug", { ascending: true }).range(from, to),
       ),
     ]);
     plantProducts = plantProductRows.filter((product) => isValidSlug(product.slug));
