@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CropProfitCalculator from "@/components/tools/CropProfitCalculator";
 
 export const metadata: Metadata = {
-  title: "Crop Profit Calculator Bangladesh | কৃষি লাভ হিসাব | AGRIVA",
+  title: "Crop Profit Calculator | কৃষি লাভ হিসাব",
   description: "Calculate crop farming cost, expected revenue and estimated profit in Bangladesh. সহজে জমির পরিমাণ, খরচ, ফলন ও বাজারদর দিয়ে কৃষি লাভ হিসাব করুন।",
   alternates: { canonical: "/tools/crop-profit-calculator" },
   keywords: ["crop profit calculator Bangladesh", "farming profit calculator", "কৃষি লাভ হিসাব", "ফসলের লাভ হিসাব", "farmer calculator Bangladesh"],
