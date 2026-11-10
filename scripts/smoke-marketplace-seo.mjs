@@ -43,5 +43,6 @@ assert.doesNotMatch(robots, /"\/search"/, "Robots must allow crawlers to read th
 assert.match(rootLayout, /<Script id="agriva-locale-html-lang" strategy="beforeInteractive">/, "Document language must be corrected before hydration");
 assert.match(rootLayout, /pathname === "\/en" \|\| pathname\.startsWith\("\/en\/"\)/, "English routes must receive the English document language");
 assert.match(siteChrome, /document\.documentElement\.lang = english \? "en" : "bn"/, "Client-side route transitions must keep document language in sync");
+assert.match(englishLayout, /twitter:\s*\{[\s\S]*title: "AGRIVA \| Digital Agriculture Platform"/, "English routes must not inherit Bangla Twitter metadata");
 
 console.log("Marketplace SEO and locale language regression checks passed.");
