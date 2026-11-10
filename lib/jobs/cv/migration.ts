@@ -31,7 +31,7 @@ const text = (value: unknown): string =>
 
 const lines = (value: unknown): string[] =>
   text(value)
-    .split(/\\r?\\n/)
+    .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
 
