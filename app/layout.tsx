@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import PwaRegister from "./pwa-register";
 import SiteChrome from "@/components/site/SiteChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
@@ -74,6 +75,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="bn">
       <body>
+        <Script id="agriva-locale-html-lang" strategy="beforeInteractive">
+          {`(function () {
+            var pathname = window.location.pathname;
+            document.documentElement.lang =
+              pathname === "/en" || pathname.startsWith("/en/") ? "en" : "bn";
+          })();`}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
