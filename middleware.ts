@@ -26,6 +26,9 @@ function clearSupabaseAuthCookies(request: NextRequest): NextResponse {
 }
 
 export async function middleware(request: NextRequest) {
+  const locale = request.nextUrl.pathname === "/en" || request.nextUrl.pathname.startsWith("/en/") ? "en" : "bn";
+  request.headers.set("x-agriva-locale", locale);
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!supabaseUrl || !supabaseKey) return NextResponse.next({ request });
