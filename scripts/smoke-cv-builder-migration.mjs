@@ -38,3 +38,8 @@ assert.ok(client.includes("entry.jobTitle") && client.includes("entry.company") 
 assert.ok(client.includes("entry.degree") && client.includes("entry.institution"), "education preview should display structured fields");
 assert.ok(client.includes("break-inside-avoid-page"), "individual CV records should avoid page splits");
 console.log("CV Builder structured preview checks passed.");
+
+assert.ok(client.includes("navigator.share") && client.includes("navigator.clipboard"), "share should use native share API with clipboard fallback");
+assert.ok(client.includes("window.print()"), "PDF export should use the browser print pipeline");
+assert.ok(client.includes("does not attach a PDF file"), "text sharing must clearly disclose that it does not attach the PDF");
+console.log("CV Builder export and share checks passed.");
