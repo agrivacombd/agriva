@@ -1,7 +1,10 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireAdminPage } from "@/lib/admin/authz";
+import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+
+async function requireAdmin(capability: AdminCapability = "settings.read") {
+  return requireAdminPage(capability);
+}
 
 const integrations = [
   { key: "google_search_console", name: "Google Search Console", category: "verification", group: "Search verification", field: "token", label: "HTML verification token", placeholder: "Google site verification token", help: "শুধু token দিন; সম্পূর্ণ meta tag নয়।" },
@@ -41,7 +44,7 @@ async function saveIntegration(formData: FormData) {
   };
   if (value && patterns[key] && !patterns[key].test(value)) redirect("/admin/settings?growth=invalid");
   if (enabled && !value) redirect("/admin/settings?growth=missing");
-  const { supabase, user } = await requireAdminPage("settings.write");
+  const { supabase, user } = await requireAdmin("settings.write");
   const config = { [definition.field]: value };
   const { error } = await supabase.from("site_integrations").upsert({
     provider_key: key,
@@ -65,7 +68,7 @@ async function saveIntegration(formData: FormData) {
 
 export default async function AdminSettingsPage({ searchParams }: { searchParams?: Promise<{ notice?: string; growth?: string }> }) {
   const params = await searchParams;
-  const { supabase } = await requireAdminPage("settings.read");
+  const { supabase } = await requireAdmin();
   const [{ data: settings, error }, { data: integrationsData }] = await Promise.all([
     supabase.from("site_settings").select("key,value,description,updated_at").order("key"),
     supabase.from("site_integrations").select("provider_key,config,enabled,updated_at"),
@@ -73,9 +76,8 @@ export default async function AdminSettingsPage({ searchParams }: { searchParams
   const values = new Map((settings ?? []).map((item) => [item.key, item.value]));
   const configured = new Map((integrationsData ?? []).map((item) => [item.provider_key, item]));
   const groups = ["Search verification", "Analytics & tag manager", "Advertising pixels"];
-  return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6"><div className="mx-auto max-w-6xl">
-    <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Site configuration</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-    <p className="mt-7 text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Platform configuration</p><h1 className="mt-2 text-3xl font-black">সাইট সেটিংস</h1><p className="mt-2 text-sm leading-6 text-[#637266]">সাইটের পরিচিতি, সাপোর্ট যোগাযোগ, হোমপেজ ঘোষণা এবং checkout-এর অনুমোদিত অপশন নিয়ন্ত্রণ করুন।</p>
+  return <main className="mx-auto w-full max-w-6xl p-4 text-[#17351f] sm:p-6"><div>
+    <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Platform configuration</p><h1 className="mt-2 text-3xl font-black">সাইট সেটিংস</h1><p className="mt-2 text-sm leading-6 text-[#637266]">সাইটের পরিচিতি, সাপোর্ট যোগাযোগ, হোমপেজ ঘোষণা এবং checkout-এর অনুমোদিত অপশন নিয়ন্ত্রণ করুন।</p>
     {params?.notice && <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">{params.notice === "saved" ? "সেটিংস সংরক্ষণ হয়েছে।" : "সেটিংস সংরক্ষণ হয়নি।"}</p>}
     {params?.growth && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.growth === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>{params.growth === "saved" ? "Growth & Tracking configuration সংরক্ষিত হয়েছে।" : params.growth === "missing" ? "Enable করার আগে provider ID/token দিতে হবে।" : params.growth === "invalid" ? "ID/token format বা input যাচাই করুন।" : "Configuration সংরক্ষণ করা যায়নি। Migration ও database permission যাচাই করুন।"}</p>}
     {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Settings table পড়া যায়নি। Migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
