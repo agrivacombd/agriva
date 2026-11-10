@@ -74,7 +74,7 @@ for (const [label, source, self, alternate] of [
   ["English calculator directory", englishCalculators, "/en/agriculture-calculators", "/agriculture-calculators"],
 ]) {
   assert.ok(source.includes("canonical: `" + self + "`") || source.includes('canonical: "' + self + '"'), `${label} must declare its self canonical`);
-  assert.match(source, /languages:\\s*\\{/, `${label} must declare language alternates`);
+  assert.match(source, /languages:\s*\{/, `${label} must declare language alternates`);
   assert.ok(source.includes(alternate), `${label} must reference its paired locale route`);
 }
 
