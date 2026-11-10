@@ -84,7 +84,10 @@ export default function CVBuilderPage() {
 
   useEffect(() => {
     if (!loaded) return;
-    const timeout = window.setTimeout(() => persist(), 700);
+    const timeout = window.setTimeout(() => {
+      const document = legacyCVToDocument(cv, template, language);
+      setSaved(saveCV(window.localStorage, document, { language, template }));
+    }, 700);
     return () => window.clearTimeout(timeout);
   }, [cv, template, language, loaded]);
   const previewText = useMemo(() => (value: string) => value.trim().split("\n").filter(Boolean), []);
