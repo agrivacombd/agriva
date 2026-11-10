@@ -37,6 +37,7 @@ assert.doesNotMatch(sitemap, /lastModified:\s*now/, "Static sitemap entries must
 
 assert.match(sitemap, /const SITEMAP_PAGE_SIZE = 1000/, "Sitemap database reads must use bounded pages");
 assert.match(sitemap, /async function fetchAllSitemapRows/, "Sitemap queries must fetch every page instead of silently truncating results");
+assert.match(sitemap, /export const dynamic = "force-dynamic"/, "Sitemap route must run at request time rather than fetching Supabase during static build");
 assert.match(sitemap, /offset \+= SITEMAP_PAGE_SIZE/, "Sitemap pagination must advance until the final partial page");
 assert.match(sitemap, /if \(error\) throw new Error\(`Sitemap query failed:/, "Sitemap query failures must not silently publish incomplete URL sets");
 assert.match(sitemap, /\.order\("slug", \{ ascending: true \}\)\.range\(from, to\)/, "Sitemap pagination must use deterministic ordering");
