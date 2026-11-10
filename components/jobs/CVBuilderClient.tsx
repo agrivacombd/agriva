@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import CVInsights from "@/components/jobs/CVInsights";
+import { loadCV, saveCV } from "@/lib/jobs/cv/storage";
+import type { CVDocument } from "@/lib/jobs/cv/types";
 import { useEffect, useMemo, useState } from "react";
 
 type CV = {
@@ -10,6 +12,39 @@ type CV = {
   certifications: string; photoUrl: string;
 };
 const emptyCV: CV = { fullName:"", headline:"", phone:"", email:"", address:"", summary:"", education:"", experience:"", skills:"", languages:"", certifications:"", photoUrl:"" };
+
+function documentToLegacyCV(document: CVDocument): CV {
+  const join = (items: CVDocument["experience"]) => items.map((item) => item.content).join("\\n");
+  return {
+    fullName: document.profile.fullName,
+    headline: document.profile.headline,
+    phone: document.profile.phone,
+    email: document.profile.email,
+    address: document.profile.address,
+    photoUrl: document.profile.photoUrl,
+    summary: document.summary,
+    experience: join(document.experience),
+    education: join(document.education),
+    skills: join(document.skills),
+    languages: join(document.languages),
+    certifications: join(document.certifications),
+  };
+}
+
+function legacyCVToDocument(cv: CV, template: string, language: "en" | "bn"): CVDocument {
+  const entries = (value: string, prefix: string) => value.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean).map((content, index) => ({ id: `${prefix}-${index + 1}`, content }));
+  return {
+    schemaVersion: 2,
+    profile: { fullName: cv.fullName, headline: cv.headline, phone: cv.phone, email: cv.email, address: cv.address, photoUrl: cv.photoUrl },
+    summary: cv.summary,
+    experience: entries(cv.experience, "experience"),
+    education: entries(cv.education, "education"),
+    skills: entries(cv.skills, "skill"),
+    languages: entries(cv.languages, "language"),
+    certifications: entries(cv.certifications, "certification"),
+    settings: { language, templateId: template },
+  };
+}
 const templates = [
   { id:"classic", name:"Classic Professional", note:"পরিচ্ছন্ন, আনুষ্ঠানিক", accent:"#166534" },
   { id:"modern", name:"Modern Green", note:"আধুনিক, দুই কলামের অনুভূতি", accent:"#0f766e" },
@@ -25,15 +60,13 @@ export default function CVBuilderPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("agriva-cv-v1");
-      if (raw) {
-        const data = JSON.parse(raw) as { cv?: CV; template?: string; language?: "en"|"bn" };
-        if (data.cv) setCV({ ...emptyCV, ...data.cv });
-        if (data.template && templates.some(t => t.id === data.template)) setTemplate(data.template);
-        if (data.language === "bn" || data.language === "en") setLanguage(data.language);
-      }
-    } catch { /* Ignore invalid local browser data. */ }
+    const result = loadCV(window.localStorage);
+    if (result.document) {
+      setCV({ ...emptyCV, ...documentToLegacyCV(result.document) });
+      const storedTemplate = result.document.settings.templateId;
+      if (templates.some((item) => item.id === storedTemplate)) setTemplate(storedTemplate);
+      setLanguage(result.document.settings.language);
+    }
     setLoaded(true);
   }, []);
 
@@ -45,9 +78,15 @@ export default function CVBuilderPage() {
 
   const update = (key: keyof CV, value: string) => { setCV(prev => ({ ...prev, [key]: value })); setSaved(false); };
   const persist = () => {
-    try { localStorage.setItem("agriva-cv-v1", JSON.stringify({ cv, template, language })); setSaved(true); }
-    catch { setSaved(false); }
+    const document = legacyCVToDocument(cv, template, language);
+    setSaved(saveCV(window.localStorage, document, { language, template }));
   };
+
+  useEffect(() => {
+    if (!loaded) return;
+    const timeout = window.setTimeout(() => persist(), 700);
+    return () => window.clearTimeout(timeout);
+  }, [cv, template, language, loaded]);
   const previewText = useMemo(() => (value: string) => value.trim().split("\n").filter(Boolean), []);
 
   if (!loaded) return <main className="min-h-screen bg-[#f5f8f1] p-8 text-[#17351f]">CV Builder loading…</main>;
