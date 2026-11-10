@@ -1,9 +1,11 @@
 # AGRIVA Admin redesign — feature parity baseline
 
-This document is the migration checklist for the responsive admin shell rollout.
-The first delivery is intentionally limited to shared navigation and shell
-infrastructure. Existing page implementations, routes, server actions, RPCs,
-queries, and authorization checks remain in place.
+This document is the migration checklist for the responsive admin redesign.
+The shared shell is in place and the first page migrations cover the dashboard,
+catalogue, and order operations. This is a UI/layout migration: routes, data
+queries, Server Actions, RPC contracts, and authorization boundaries must remain
+unchanged. A checked layout item does not mean authenticated functional QA has
+already passed.
 
 ## Existing route inventory
 
@@ -37,15 +39,22 @@ queries, and authorization checks remain in place.
 | /admin/users | User administration | Preserve user listing and permitted role changes |
 | /super-admin | Admin module directory | Keep existing route and module search available |
 
-## Shared shell delivery
+## Shared shell and page migration status
 
 - [x] Preserve the /admin server-side dashboard.read guard.
-- [x] Keep all existing page routes and page-level code unchanged.
 - [x] Add one shared responsive sidebar and mobile navigation drawer.
 - [x] Keep desktop navigation persistent; use a compact icon rail at large-screen widths.
 - [x] Provide active-route indication and keyboard-visible focus states.
 - [x] Keep user dashboard navigation available.
-- [x] Do not add new database tables, RPCs, API routes, or permissions.
+- [x] Keep all existing page routes.
+- [x] Dashboard layout: responsive metric cards, quick actions, mobile order cards, desktop order table.
+- [x] Products layout: remove duplicate page header; align create/edit forms with shared content width and responsive spacing.
+- [x] Categories layout: remove duplicate page header; align create/edit forms with shared content width and responsive spacing.
+- [x] Orders layout: remove duplicate page header; retain order cards and COD collection audit workflows.
+- [ ] Verify dashboard order status, commission, and payout actions with authorized roles.
+- [ ] Verify product create/edit, taxonomy, description, and image workflows.
+- [ ] Verify category create/edit and ordering workflows.
+- [ ] Verify order status transitions and COD collection audit workflow.
 - [ ] Run repository build, lint, and admin regression scripts in a full checkout.
 - [ ] Manually verify authenticated pages at mobile, tablet, and desktop breakpoints.
 
