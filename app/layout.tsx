@@ -59,8 +59,11 @@ export const viewport: Viewport = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
+  "@id": `${siteUrl}/#organization`,
   name: "AGRIVA",
   url: siteUrl,
+  logo: { "@type": "ImageObject", url: `${siteUrl}/agriva-logo.svg` },
+  telephone: "+8801717504028",
   description:
     "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য কৃষি পণ্য, কৃষি তথ্য এবং ডিজিটাল কৃষি সেবা।",
   areaServed: {

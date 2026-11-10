@@ -99,6 +99,8 @@ jobs:
         run: npm run test:plant-market-public-read-rls
       - name: Green Living schema, privacy, and SEO regression test
         run: npm run test:green-living-platform
+      - name: Phase 1 SEO architecture regression test
+        run: npm run test:seo-phase1
       - name: Production build
         run: npm run build
         env:

@@ -41,6 +41,7 @@ export default function BuyerDemandBoard() {
   const [responses, setResponses] = useState<Response[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -80,13 +81,14 @@ export default function BuyerDemandBoard() {
 
   const loadBoard = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     const { data: { user } } = await supabase.auth.getUser();
     setUserId(user?.id ?? null);
     const { data, error } = await supabase.from("buyer_demands")
       .select("id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at")
       .order("created_at", { ascending: false }).limit(100);
     if (error) {
-      setNotice("চাহিদা লোড করা যায়নি। ডেটাবেস মাইগ্রেশন চালু হয়েছে কি না যাচাই করে আবার চেষ্টা করুন।");
+      setLoadError(true);
       setDemands([]);
     } else {
       setDemands((data ?? []) as Demand[]);
@@ -254,7 +256,13 @@ export default function BuyerDemandBoard() {
           <p className="mt-3 text-xs text-slate-500">ফোন নম্বর শুধু ক্রেতা প্রকাশের সম্মতি দিলে দেখা যাবে। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
         </div>
 
-        {loading ? <div className="rounded-2xl bg-white p-10 text-center text-sm text-slate-500">চাহিদা লোড হচ্ছে...</div> : visibleDemands.length === 0 ? (
+        {loading ? <div className="rounded-2xl bg-white p-10 text-center text-sm text-slate-500">চাহিদা লোড হচ্ছে...</div> : loadError ? (
+          <div role="alert" className="rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
+            <h2 className="text-lg font-black text-amber-950">চাহিদার তথ্য এখন দেখানো যাচ্ছে না</h2>
+            <p className="mt-2 text-sm leading-6 text-amber-900">সাময়িক সংযোগ বা ডেটা অ্যাক্সেস সমস্যার কারণে তালিকা লোড হয়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।</p>
+            <button type="button" onClick={() => { void loadBoard(); }} className="mt-5 rounded-xl bg-emerald-800 px-5 py-3 text-sm font-bold text-white">আবার চেষ্টা করুন</button>
+          </div>
+        ) : visibleDemands.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><Wheat className="mx-auto text-emerald-700" size={34} /><h2 className="mt-3 text-lg font-black">{mineOnly ? "আপনার কোনো পোস্ট নেই" : "এখনো কোনো চাহিদা পাওয়া যায়নি"}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{mineOnly ? "প্রথম চাহিদাটি পোস্ট করে কৃষকের কাছ থেকে আগ্রহ পান।" : "ফিল্টার পরিবর্তন করুন অথবা নতুন চাহিদা পোস্ট করতে ক্রেতাকে জানান।"}</p><button type="button" onClick={() => { setMineOnly(userId ? true : false); setShowForm(true); }} className="mt-5 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white">চাহিদা পোস্ট করুন</button></div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">

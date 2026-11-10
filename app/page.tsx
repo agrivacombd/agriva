@@ -75,19 +75,6 @@ export default async function Home() {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Organization",
-        "@id": `${siteUrl}/#organization`,
-        name: "AGRIVA",
-        url: siteUrl,
-        logo: {
-          "@type": "ImageObject",
-          url: `${siteUrl}/agriva-logo.svg`,
-        },
-        description:
-          "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য কৃষি সেবা, পণ্য, তথ্য ও ডিজিটাল টুলসের প্ল্যাটফর্ম।",
-        telephone: "+8801717504028",
-      },
-      {
         "@type": "WebSite",
         "@id": `${siteUrl}/#website`,
         url: siteUrl,
