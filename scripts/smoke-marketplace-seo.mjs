@@ -10,6 +10,8 @@ const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
 const searchLayout = readFileSync("app/search/layout.tsx", "utf8");
+const rootLayout = readFileSync("app/layout.tsx", "utf8");
+const siteChrome = readFileSync("components/site/SiteChrome.tsx", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
 assert.match(product, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/, "Product page needs a slug-based canonical");
@@ -37,4 +39,8 @@ assert.match(searchLayout, /index:\s*false/, "Internal search results must be no
 assert.match(searchLayout, /follow:\s*true/, "Internal search links should remain crawlable");
 assert.doesNotMatch(robots, /"\/search"/, "Robots must allow crawlers to read the search page noindex directive");
 
-console.log("Marketplace SEO and indexability regression checks passed.");
+assert.match(rootLayout, /<Script id="agriva-locale-html-lang" strategy="beforeInteractive">/, "Document language must be corrected before hydration");
+assert.match(rootLayout, /pathname === "\/en" \|\| pathname\.startsWith\("\/en\/"\)/, "English routes must receive the English document language");
+assert.match(siteChrome, /document\.documentElement\.lang = english \? "en" : "bn"/, "Client-side route transitions must keep document language in sync");
+
+console.log("Marketplace SEO and locale language regression checks passed.");
