@@ -34,6 +34,15 @@ assert.match(indexability, /\.eq\("status", "active"\)/, "Category indexability 
 assert.doesNotMatch(indexability, /moderation_status/, "Category indexability must use the deployed products schema");
 
 assert.doesNotMatch(sitemap, /lastModified:\s*now/, "Static sitemap entries must not pretend to have changed on every request");
+
+assert.match(sitemap, /const SITEMAP_PAGE_SIZE = 1000/, "Sitemap database reads must use bounded pages");
+assert.match(sitemap, /async function fetchAllSitemapRows/, "Sitemap queries must fetch every page instead of silently truncating results");
+assert.match(sitemap, /export const dynamic = "force-dynamic"/, "Sitemap route must run at request time rather than fetching Supabase during static build");
+assert.match(sitemap, /offset \+= SITEMAP_PAGE_SIZE/, "Sitemap pagination must advance until the final partial page");
+assert.match(sitemap, /if \(error\) throw new Error\(`Sitemap query failed:/, "Sitemap query failures must not silently publish incomplete URL sets");
+assert.match(sitemap, /\.order\("slug", \{ ascending: true \}\)\.range\(from, to\)/, "Sitemap pagination must use deterministic ordering");
+assert.doesNotMatch(sitemap, /\.limit\((?:5000|2000)\)/, "Sitemap queries must not retain the previous hard result caps");
+
 assert.match(sitemap, /\.\.\.\(product\.updated_at \? \{ lastModified: new Date\(product\.updated_at\) \} : \{\}\)/, "Product sitemap lastModified must reflect the real updated_at value only");
 assert.match(sitemap, /\.\.\.\(job\.updated_at \? \{ lastModified: new Date\(job\.updated_at\) \} : \{\}\)/, "Job sitemap lastModified must reflect the real updated_at value only");
 
