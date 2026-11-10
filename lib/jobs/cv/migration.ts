@@ -40,8 +40,8 @@ export function migrateLegacyCV(
     photoUrl: asText(legacy.photoUrl),
   };
   document.summary = asText(legacy.summary);
-  document.experience = toEntries(legacy.experience, "experience");
-  document.education = toEntries(legacy.education, "education");
+  document.experience = toEntries(legacy.experience, "experience").map((entry) => ({ id: entry.id, jobTitle: "", company: "", location: "", startDate: "", endDate: "", description: entry.content, achievements: "" }));
+  document.education = toEntries(legacy.education, "education").map((entry) => ({ id: entry.id, degree: entry.content, institution: "", location: "", startDate: "", endDate: "", details: "" }));
   document.skills = toEntries(legacy.skills, "skill");
   document.languages = toEntries(legacy.languages, "language");
   document.certifications = toEntries(legacy.certifications, "certification");
@@ -59,12 +59,30 @@ export function migrateStoredEnvelope(value: unknown): CVDocument | null {
     document?: unknown;
   };
 
-  if (envelope.schemaVersion === 2 && envelope.document && typeof envelope.document === "object") {
-    const document = envelope.document as CVDocument;
-    if (document.schemaVersion === 2 && document.profile && Array.isArray(document.experience)) {
-      return document;
-    }
-    return null;
+  if ((envelope.schemaVersion === 3 || envelope.schemaVersion === 2) && envelope.document && typeof envelope.document === "object") {
+    const stored = envelope.document as Record<string, unknown>;
+    if (!stored.profile || !Array.isArray(stored.experience) || !Array.isArray(stored.education)) return null;
+    if (envelope.schemaVersion === 3 && stored.schemaVersion === 3) return stored as unknown as CVDocument;
+    const profile = stored.profile as Record<string, unknown>;
+    const migrated = migrateLegacyCV({
+      fullName: profile.fullName, headline: profile.headline, phone: profile.phone,
+      email: profile.email, address: profile.address, photoUrl: profile.photoUrl,
+      summary: stored.summary,
+      experience: (stored.experience as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+      education: (stored.education as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+      skills: (stored.skills as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+      languages: (stored.languages as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+      certifications: (stored.certifications as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+    }, { language: (stored.settings as Record<string, unknown> | undefined)?.language, template: (stored.settings as Record<string, unknown> | undefined)?.templateId });
+    // Preserve richer records if this is a previously stored structured version.
+    migrated.experience = (stored.experience as Array<Record<string, unknown>>).map((item, index) => ({
+      id: asText(item.id) || `legacy-experience-${index + 1}`, jobTitle: "", company: "", location: "", startDate: "", endDate: "",
+      description: asText(item.content), achievements: "",
+    }));
+    migrated.education = (stored.education as Array<Record<string, unknown>>).map((item, index) => ({
+      id: asText(item.id) || `legacy-education-${index + 1}`, degree: asText(item.content), institution: "", location: "", startDate: "", endDate: "", details: "",
+    }));
+    return migrated;
   }
 
   if (envelope.cv && typeof envelope.cv === "object") {
