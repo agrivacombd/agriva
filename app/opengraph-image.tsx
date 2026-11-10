@@ -13,7 +13,7 @@ export default function OpenGraphImage() {
           <div style={{ fontSize: "54px", fontWeight: 800, letterSpacing: "2px" }}>AGRIVA</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "18px", maxWidth: "980px" }}>
-          <div style={{ fontSize: "54px", fontWeight: 800, lineHeight: 1.2 }}>কৃষির প্রতিটি ধাপে আপনার পাশে</div>
+          <div style={{ fontSize: "54px", fontWeight: 800, lineHeight: 1.2 }}>Digital tools for Bangladesh agriculture</div>
           <div style={{ fontSize: "28px", color: "#e4f1d1" }}>Agriculture · Knowledge · Marketplace · Digital tools</div>
         </div>
         <div style={{ display: "flex", fontSize: "24px", color: "#e4f1d1" }}>agriva.com.bd</div>
