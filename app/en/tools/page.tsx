@@ -6,7 +6,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 
 export const metadata: Metadata = {
   title: "Agriculture Tools and Online Calculators",
-  description: "Explore AGRIVA tools for fertilizer and seed estimates, irrigation water, harvest timing, farm costs and profit, weather, AI agriculture assistance and farm management.",
+  description: "Explore AGRIVA tools for seed and fertilizer estimates, irrigation, harvest planning, farm costs, weather and crop management.",
   alternates: { canonical: "/en/tools", languages: { en: "/en/tools", "bn-BD": "/tools", "x-default": "/tools" } },
   openGraph: {
     title: "Agriculture Tools and Online Calculators | AGRIVA",
