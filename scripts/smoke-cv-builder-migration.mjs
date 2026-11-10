@@ -50,3 +50,10 @@ assert.ok(client.includes("#cv-preview article { break-inside: avoid-page"), "in
 assert.ok(client.includes("#cv-preview > div { display: block !important"), "multi-column templates should become a single-column print layout");
 assert.ok(client.includes("orphans: 3") && client.includes("widows: 3"), "print paragraphs should avoid isolated lines");
 console.log("CV Builder pagination and print typography checks passed.");
+
+const insights = readFileSync(new URL("../components/jobs/CVInsights.tsx", import.meta.url), "utf8");
+assert.ok(insights.includes("workEntries.some") && insights.includes("educationEntries.some"), "quality checks should inspect structured CV records");
+assert.ok(insights.includes("invalidDateEntries") && insights.includes("end < start"), "quality checks should flag reversed work dates");
+assert.ok(insights.includes("achievement") && insights.includes("education-detail"), "quality checks should assess achievements and education details");
+assert.ok(client.includes("workEntries={workEntries}") && client.includes("educationEntries={educationEntries}"), "structured records should feed the quality checker");
+console.log("CV Builder quality checker checks passed.");
