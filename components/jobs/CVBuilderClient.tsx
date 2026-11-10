@@ -116,16 +116,16 @@ export default function CVBuilderPage() {
             <label key={key} className="mt-4 block text-sm font-bold">{labels[key]}<textarea value={cv.summary} onChange={e=>update("summary",e.target.value)} maxLength={2000} rows={4} placeholder={labels.placeholder} className="mt-2 w-full rounded-lg border border-slate-200 p-3 font-normal leading-6 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/></label>
           ) : (
             <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
-              <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-extrabold">{labels[key]}</h3><span className="text-xs text-slate-500">{cv[key].split(/\\r?\\n/).filter(line=>line.trim()).length} {isBn?"টি":"entries"}</span></div>
+              <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-extrabold">{labels[key]}</h3><span className="text-xs text-slate-500">{cv[key].split(/\r?\n/).filter(line=>line.trim()).length} {isBn?"টি":"entries"}</span></div>
               <div className="mt-3 space-y-2">
-                {cv[key].split(/\\r?\\n/).map((entry,index)=>({entry,index})).map(({entry,index})=>(
+                {cv[key].split(/\r?\n/).map((entry,index)=>({entry,index})).map(({entry,index})=>(
                   <div key={index} className="flex items-start gap-2">
-                    <input value={entry} onChange={e=>{const rows=cv[key].split(/\\r?\\n/);rows[index]=e.target.value;update(key,rows.join("\\n"));}} maxLength={500} aria-label={`${labels[key]} ${index+1}`} placeholder={labels.placeholder} className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/>
-                    <button type="button" onClick={()=>{const rows=cv[key].split(/\\r?\\n/);rows.splice(index,1);update(key,rows.join("\\n"));}} aria-label={isBn?"এন্ট্রি মুছুন":"Remove entry"} className="min-h-11 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 hover:bg-red-50">×</button>
+                    <input value={entry} onChange={e=>{const rows=cv[key].split(/\r?\n/);rows[index]=e.target.value;update(key,rows.join("\n"));}} maxLength={500} aria-label={`${labels[key]} ${index+1}`} placeholder={labels.placeholder} className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/>
+                    <button type="button" onClick={()=>{const rows=cv[key].split(/\r?\n/);rows.splice(index,1);update(key,rows.join("\n"));}} aria-label={isBn?"এন্ট্রি মুছুন":"Remove entry"} className="min-h-11 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 hover:bg-red-50">×</button>
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={()=>update(key,[cv[key].trim(),""].filter(Boolean).join("\\n") + (cv[key].trim()?"\\n":""))} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800 hover:bg-emerald-50">+ {isBn?"নতুন যোগ করুন":"Add entry"}</button>
+              <button type="button" onClick={()=>update(key,[cv[key].trim(),""].filter(Boolean).join("\n") + (cv[key].trim()?"\n":""))} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800 hover:bg-emerald-50">+ {isBn?"নতুন যোগ করুন":"Add entry"}</button>
               <p className="mt-2 text-xs text-slate-500">{isBn?"প্রতিটি তথ্য আলাদা এন্ট্রি হিসেবে যোগ করুন।":"Add each item as a separate entry."}</p>
             </div>
           ))}
