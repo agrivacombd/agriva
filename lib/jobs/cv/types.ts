@@ -14,12 +14,15 @@ export type CVTextEntry = {
   content: string;
 };
 
+export type CVExperienceEntry = { id: string; jobTitle: string; company: string; location: string; startDate: string; endDate: string; description: string; achievements: string };
+export type CVEducationEntry = { id: string; degree: string; institution: string; location: string; startDate: string; endDate: string; details: string };
+
 export type CVDocument = {
-  schemaVersion: 2;
+  schemaVersion: 3;
   profile: CVProfile;
   summary: string;
-  experience: CVTextEntry[];
-  education: CVTextEntry[];
+  experience: CVExperienceEntry[];
+  education: CVEducationEntry[];
   skills: CVTextEntry[];
   languages: CVTextEntry[];
   certifications: CVTextEntry[];
@@ -58,7 +61,7 @@ export type CVStoredEnvelopeV2 = {
 };
 
 export const CV_STORAGE_KEY = "agriva-cv-v1";
-export const CV_SCHEMA_VERSION = 2;
+export const CV_SCHEMA_VERSION = 3;
 export const DEFAULT_CV_TEMPLATE = "classic";
 
 export function createEmptyCVDocument(language: CVLanguage = "en"): CVDocument {
