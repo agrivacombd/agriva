@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import WeatherPanel from "@/components/weather/WeatherPanel";
 
 export const metadata: Metadata = {
-  title: "কৃষি আবহাওয়া | AGRIVA",
+  title: "কৃষি আবহাওয়া",
   description: "বাংলাদেশের এলাকার বর্তমান আবহাওয়া, বৃষ্টি, তাপমাত্রা ও ৫ দিনের পূর্বাভাস দেখে কৃষিকাজের পরিকল্পনা করুন.",
   alternates: { canonical: "/weather" },
 };
@@ -13,7 +13,7 @@ export default function WeatherPage() {
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <header className="mb-7">
           <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Farmer Tools</p>
-          <h1 className="mt-3 text-3xl font-black sm:text-4xl">কৃষি আবহাওয়া ও ৫ দিনের পূর্বাভাস</h1>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">কৃষি আবহাওয়া ও ৫ দিনের পূর্বাভাস</h2>
           <p className="mt-3 max-w-3xl leading-7 text-[#647468]">নিজের এলাকার আবহাওয়া দেখে সেচ, জমির কাজ ও ফসল সংগ্রহের পরিকল্পনা সাজান। পূর্বাভাস পরিবর্তিত হতে পারে, তাই মাঠের অবস্থা ও স্থানীয় সতর্কতা মিলিয়ে সিদ্ধান্ত নিন।</p>
         </header>
         <WeatherPanel />
