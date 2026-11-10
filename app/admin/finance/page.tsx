@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkAdminPermission } from "@/lib/admin/permission-service";
@@ -58,12 +57,9 @@ export default async function AdminFinancePage() {
   const paidPayoutTotal = payouts.filter((item) => item.status === "paid").reduce((sum, item) => sum + Number(item.amount), 0);
   const hasError = Boolean(payoutResult.error || commissionResult.error);
 
-  return <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
-    <div className="mx-auto max-w-7xl">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
-        <div><p className="text-xs font-bold uppercase tracking-[.18em] text-emerald-200">Finance operations</p><h1 className="mt-2 text-2xl font-black">কমিশন ও পেআউট</h1><p className="mt-1 text-sm text-emerald-100">আর্থিক কার্যক্রমের queue, settlement status ও reconciliation overview</p></div>
-        <Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold hover:bg-white/20">← Admin dashboard</Link>
-      </header>
+  return <main className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
+    <div>
+      <div className="mb-6"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#a47b20]">Finance operations</p><h2 className="mt-2 text-2xl font-black">কমিশন ও পেআউট</h2><p className="mt-1 text-sm text-[#718072]">আর্থিক কার্যক্রমের queue, settlement status ও reconciliation overview</p></div>
 
       {hasError ? <div role="alert" className="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">Finance data সম্পূর্ণভাবে লোড হয়নি। কোনো financial action করবেন না; database access ও query error যাচাই করুন।</div> : null}
 

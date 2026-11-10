@@ -6,6 +6,7 @@ const createImageField = readFileSync("components/admin/AdminProductImageField.t
 const descriptionEditor = readFileSync("components/admin/AdminProductDescriptionEditor.tsx", "utf8");
 const descriptionSanitizer = readFileSync("lib/marketplace/product-description.ts", "utf8");
 const productPage = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+const productDescription = readFileSync("components/marketplace/ProductDescription.tsx", "utf8");
 const editImageField = readFileSync("components/admin/AdminProductImages.tsx", "utf8");
 const adminPage = readFileSync("app/admin/products/page.tsx", "utf8");
 const adminApi = readFileSync("app/api/admin/products/route.ts", "utf8");
@@ -21,7 +22,8 @@ assert.match(descriptionEditor, /SEO outline/);
 assert.match(descriptionEditor, /Focus keyword/);
 assert.match(descriptionSanitizer, /ALLOWED_TAGS/);
 assert.match(adminApi, /sanitizeProductDescription/);
-assert.match(productPage, /dangerouslySetInnerHTML=\{\{ __html: description \}\}/);
+assert.match(productPage, /<ProductDescription html=\{description\} \/>/);
+assert.match(productDescription, /dangerouslySetInnerHTML=\{\{ __html: normalized \}\}/);
 assert.match(productPage, /productDescriptionToText/);
 assert.match(createImageField, /const MAX_IMAGES = 4/);
 assert.match(createImageField, /multiple accept="image\/jpeg,image\/png,image\/webp"/);

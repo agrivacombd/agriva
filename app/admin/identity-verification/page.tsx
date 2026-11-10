@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage } from "@/lib/admin/authz";
 
@@ -28,9 +27,8 @@ export default async function IdentityVerificationAdminPage(){
   }));
   return {app,data,evidence:signed.filter((url):url is string=>Boolean(url))};
  }));
- return <main className="min-h-screen bg-[#f5f8f2] px-4 py-8 text-[#173b2d] sm:px-6"><div className="mx-auto max-w-6xl">
-  <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123f30] p-5 text-white"><div><p className="text-xs font-bold uppercase tracking-widest text-[#c9dfca]">AGRIVA • ADMIN</p><h1 className="mt-1 text-2xl font-black">Identity verification queue</h1></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
-  <p className="mt-5 text-sm leading-6 text-[#637568]">প্রতিটি আবেদন ও private evidence যাচাই করে অনুমোদন বা প্রত্যাখ্যান করুন। Approve করলে সংশ্লিষ্ট module grant কার্যকর হয়। Plant Market ও Marketplace-এর পরিচয়/প্রতিষ্ঠান যাচাইও সম্পন্ন হয়।</p>
+ return <main className="mx-auto w-full max-w-6xl p-4 text-[#173b2d] sm:p-6"><div>
+  <h2 className="text-xl font-black">Identity verification queue</h2><p className="mt-2 text-sm leading-6 text-[#637568]">প্রতিটি আবেদন ও private evidence যাচাই করে অনুমোদন বা প্রত্যাখ্যান করুন। Approve করলে সংশ্লিষ্ট module grant কার্যকর হয়। Plant Market ও Marketplace-এর পরিচয়/প্রতিষ্ঠান যাচাইও সম্পন্ন হয়।</p>
   {error&&<p className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">আবেদন তালিকা লোড করা যায়নি। Identity workflow migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
   <div className="mt-6 space-y-4">{items.map(({app,data,evidence})=><article key={app.id} className="rounded-2xl border border-[#e1e9df] bg-white p-5 shadow-sm">
    <div className="flex flex-wrap items-start justify-between gap-3"><div><span className="rounded-full bg-[#eaf4eb] px-3 py-1 text-xs font-bold">{app.module==="employer"?"নিয়োগদাতা":app.module==="transport"?"পরিবহন সেবাদাতা":app.module}</span><h2 className="mt-3 text-lg font-black">{String(data.organization_name||app.applicant_type)}</h2><p className="mt-1 text-xs text-[#788579]">Applicant: {app.user_id} · {new Date(app.created_at).toLocaleString("en-GB")}</p></div><span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800">{app.status}</span></div>
