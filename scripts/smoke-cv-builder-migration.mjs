@@ -32,3 +32,9 @@ assert.ok(client.includes("Add experience") && client.includes("Add education"),
 assert.ok(client.includes("Responsibilities / description") && client.includes("Achievements"), "work entries should capture responsibilities and achievements");
 assert.ok(client.includes("Degree / qualification") && client.includes("Institution"), "education entries should capture qualification and institution");
 console.log("CV Builder structured records checks passed.");
+
+assert.ok(client.includes("CVExperiencePreview") && client.includes("CVEducationPreview"), "CV preview should render structured records");
+assert.ok(client.includes("entry.jobTitle") && client.includes("entry.company") && client.includes("entry.achievements"), "experience preview should display structured fields");
+assert.ok(client.includes("entry.degree") && client.includes("entry.institution"), "education preview should display structured fields");
+assert.ok(client.includes("break-inside-avoid-page"), "individual CV records should avoid page splits");
+console.log("CV Builder structured preview checks passed.");
