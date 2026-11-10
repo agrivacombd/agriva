@@ -27,4 +27,8 @@ assert.match(sitemap, /from\("green_exchange_listings"\)\.select\("slug,updated_
 assert.match(indexability, /\.eq\("status", "active"\)/, "Category indexability must use public active inventory");
 assert.doesNotMatch(indexability, /moderation_status/, "Category indexability must use the deployed products schema");
 
+assert.doesNotMatch(sitemap, /lastModified:\s*now/, "Static sitemap entries must not pretend to have changed on every request");
+assert.match(sitemap, /\.\.\.\(product\.updated_at \? \{ lastModified: new Date\(product\.updated_at\) \} : \{\}\)/, "Product sitemap lastModified must reflect the real updated_at value only");
+assert.match(sitemap, /\.\.\.\(job\.updated_at \? \{ lastModified: new Date\(job\.updated_at\) \} : \{\}\)/, "Job sitemap lastModified must reflect the real updated_at value only");
+
 console.log("Marketplace SEO and indexability regression checks passed.");
