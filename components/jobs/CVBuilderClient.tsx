@@ -14,7 +14,7 @@ type CV = {
 const emptyCV: CV = { fullName:"", headline:"", phone:"", email:"", address:"", summary:"", education:"", experience:"", skills:"", languages:"", certifications:"", photoUrl:"" };
 
 function documentToLegacyCV(document: CVDocument): CV {
-  const join = (items: CVDocument["experience"]) => items.map((item) => item.content).join("\\n");
+  const join = (items: CVDocument["experience"]) => items.map((item) => item.content).join("\n");
   return {
     fullName: document.profile.fullName,
     headline: document.profile.headline,
@@ -32,7 +32,7 @@ function documentToLegacyCV(document: CVDocument): CV {
 }
 
 function legacyCVToDocument(cv: CV, template: string, language: "en" | "bn"): CVDocument {
-  const entries = (value: string, prefix: string) => value.split(/\\r?\\n/).map((line) => line.trim()).filter(Boolean).map((content, index) => ({ id: `${prefix}-${index + 1}`, content }));
+  const entries = (value: string, prefix: string) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((content, index) => ({ id: `${prefix}-${index + 1}`, content }));
   return {
     schemaVersion: 2,
     profile: { fullName: cv.fullName, headline: cv.headline, phone: cv.phone, email: cv.email, address: cv.address, photoUrl: cv.photoUrl },
