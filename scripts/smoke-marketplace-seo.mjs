@@ -94,4 +94,29 @@ assert.match(jobSeo, /"@type": "JobPosting"/, "Job detail schema helper must ret
 assert.match(product, /"@type": "Product"/, "Product detail must retain Product structured data");
 assert.match(product, /offers:\s*\{/, "Product offers must remain conditionally generated from real listing data");
 
+
+const aiPage = readFileSync("app/ai/page.tsx", "utf8");
+const weatherPage = readFileSync("app/weather/page.tsx", "utf8");
+const cvBuilder = readFileSync("app/jobs/cv-builder/page.tsx", "utf8");
+const englishCropCalendar = readFileSync("app/en/crop-calendar/page.tsx", "utf8");
+const englishFertilizer = readFileSync("app/en/fertilizer-calculator/page.tsx", "utf8");
+const englishSeedRate = readFileSync("app/en/seed-rate-calculator/page.tsx", "utf8");
+const banglaFertilizer = readFileSync("app/fertilizer-calculator/page.tsx", "utf8");
+const banglaSeedRate = readFileSync("app/seed-rate-calculator/page.tsx", "utf8");
+
+for (const [label, source, marker] of [
+  ["AI guide", aiPage, "উত্তর ব্যবহারে সতর্কতা"],
+  ["Weather guide", weatherPage, "তথ্যের সীমাবদ্ধতা"],
+  ["English crop calendar guide", englishCropCalendar, "How to plan farm work with a crop calendar"],
+  ["English fertilizer guide", englishFertilizer, "How to estimate fertilizer quantity"],
+  ["English seed rate guide", englishSeedRate, "How to estimate seed requirements"],
+  ["Bangla fertilizer guide", banglaFertilizer, "সারের পরিমাণ কীভাবে হিসাব করবেন?"],
+  ["Bangla seed rate guide", banglaSeedRate, "বীজের প্রয়োজনীয় পরিমাণ কীভাবে হিসাব করবেন?"],
+]) {
+  assert.ok(source.includes(marker), `${label} must include useful server-rendered explanatory content`);
+}
+assert.equal((cvBuilder.match(/<h1\b/g) || []).length, 1, "CV Builder must have one page-level H1; preview name is a subordinate heading");
+assert.match(marketplace, /title: "কৃষি পণ্য, বীজ ও সার"/, "Marketplace page metadata title must not repeat the brand suffix from the root template");
+assert.doesNotMatch(cmsBlogArticle, /সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত/, "Integrated pest management article title must stay concise");
+
 console.log("Marketplace SEO and locale language regression checks passed.");

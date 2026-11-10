@@ -6,7 +6,7 @@ const siteUrl = "https://agriva.com.bd";
 const pageUrl = `${siteUrl}/sell-on-plant-market`;
 
 export const metadata: Metadata = {
-  title: "Plant Market Seller হন | AGRIVA-তে গাছ ও চারা বিক্রি করুন",
+  title: "Plant Market-এ গাছ ও চারা বিক্রি করুন",
   description:
     "নার্সারি, গাছের চারা, ইনডোর প্ল্যান্ট, ক্যাকটাস, সাকুলেন্ট ও বাগান সামগ্রীর ব্যবসা AGRIVA Plant Market-এ তুলে ধরুন। Seller হওয়ার ধাপ ও আবেদন জানুন।",
   alternates: { canonical: "/sell-on-plant-market" },

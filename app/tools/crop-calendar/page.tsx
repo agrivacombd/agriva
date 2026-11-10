@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import CropCalendar from "@/components/tools/CropCalendar";
 
 export const metadata: Metadata = {
-  title: "Crop Calendar Bangladesh | ফসল চাষ ক্যালেন্ডার | AGRIVA",
+  title: "Crop Calendar Bangladesh | ফসল চাষ ক্যালেন্ডার",
   description: "Plan crop planting, growing stages and harvest timing with AGRIVA's Bangladesh crop calendar. Farmer-friendly seasonal agriculture planning tool.",
   alternates: { canonical: "/tools/crop-calendar" },
   keywords: ["crop calendar Bangladesh", "crop planting calendar", "ফসল চাষ ক্যালেন্ডার", "কৃষি ক্যালেন্ডার", "farmer crop calendar"],

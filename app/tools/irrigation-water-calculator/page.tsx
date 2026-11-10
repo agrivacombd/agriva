@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import IrrigationWaterCalculator from "@/components/tools/IrrigationWaterCalculator";
 
 export const metadata: Metadata = {
-  title: "Irrigation Water Calculator Bangladesh | সেচের পানির হিসাব | AGRIVA",
+  title: "Irrigation Water Calculator | সেচের পানি",
   description: "Estimate irrigation water volume from crop area, crop water requirement and irrigation efficiency. কৃষকের জন্য সহজ সেচের পানি হিসাব tool.",
   alternates: { canonical: "/tools/irrigation-water-calculator" },
   keywords: ["irrigation water calculator Bangladesh", "irrigation calculator", "water requirement calculator", "সেচের পানির হিসাব", "কৃষি সেচ ক্যালকুলেটর"],

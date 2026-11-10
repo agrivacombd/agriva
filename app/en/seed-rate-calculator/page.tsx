@@ -10,5 +10,17 @@ export const metadata: Metadata = {
 };
 
 export default function EnglishSeedRateCalculatorPage() {
-  return <StandaloneCalculator kind="seed" locale="en" />;
+  return (
+    <>
+      <StandaloneCalculator kind="seed" locale="en" />
+      <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
+        <h2>How to estimate seed requirements</h2>
+        <p>Choose the crop, enter the field area and use a seed rate recommended for the variety and planting method. Confirm that the land-area unit and seed-rate unit are compatible before interpreting the result.</p>
+        <h3>Factors that change seed rate</h3>
+        <p>Variety, direct seeding or transplanting, row spacing, germination percentage, seed quality and season can all affect the quantity needed. Do not apply one crop's seed rate to another crop.</p>
+        <h3>Plan seed purchases carefully</h3>
+        <p>Use certified or trusted seed and check the package label for variety, lot and validity details. Treat the calculated amount as an estimate and confirm the final rate with local agricultural guidance.</p>
+      </article>
+    </>
+  );
 }

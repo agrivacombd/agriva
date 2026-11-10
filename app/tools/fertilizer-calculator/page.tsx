@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import FertilizerCalculator from "@/components/tools/FertilizerCalculator";
 
 export const metadata: Metadata = {
-  title: "Fertilizer Calculator Bangladesh | সার হিসাব | AGRIVA",
+  title: "Fertilizer Calculator | সার হিসাব",
   description: "Calculate fertilizer quantities by crop, land area and fertilizer type. কৃষকের জন্য সহজ fertilizer planning tool from AGRIVA.",
   alternates: { canonical: "/tools/fertilizer-calculator" },
   keywords: ["fertilizer calculator Bangladesh", "fertilizer calculator for farmers", "সার হিসাব", "সার ক্যালকুলেটর", "কৃষি সার হিসাব"],

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import FarmWeather from "@/components/tools/FarmWeather";
 
 export const metadata: Metadata = {
-  title: "Farm Weather Bangladesh | কৃষি আবহাওয়া ও বৃষ্টির পূর্বাভাস | AGRIVA",
+  title: "Farm Weather Bangladesh | কৃষি আবহাওয়া",
   description: "Check farm weather, rainfall, temperature, humidity and wind forecasts for agriculture planning with AGRIVA.",
   alternates: { canonical: "/tools/farm-weather" },
   keywords: ["farm weather Bangladesh", "agriculture weather forecast", "farmer weather", "কৃষি আবহাওয়া", "বৃষ্টির পূর্বাভাস কৃষি"],

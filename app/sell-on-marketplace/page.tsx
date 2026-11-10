@@ -8,7 +8,7 @@ const pageUrl = `${siteUrl}/sell-on-marketplace`;
 export const metadata: Metadata = {
   title: "কৃষিপণ্য অনলাইনে বিক্রি করুন | AGRIVA Marketplace",
   description:
-    "বাংলাদেশে বীজ, সার, কৃষি উপকরণ, ফসল সুরক্ষা পণ্য ও কৃষিযন্ত্র বিক্রির জন্য AGRIVA Marketplace Seller হিসেবে আবেদন করুন। ব্যবসার তথ্য যাচাই করে পণ্য তালিকাভুক্তির সুযোগ নিন।",
+    "বাংলাদেশে বীজ, সার, কৃষি উপকরণ ও কৃষিযন্ত্র বিক্রির জন্য AGRIVA Marketplace Seller হিসেবে আবেদন করুন। যাচাইয়ের পর পণ্য তালিকাভুক্তির সুযোগ পাবেন।",
   alternates: { canonical: "/sell-on-marketplace" },
   openGraph: {
     type: "website",
