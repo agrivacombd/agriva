@@ -3,7 +3,7 @@ import Link from "next/link";
 import LandCalculatorClient from "@/components/tools/LandCalculatorClient";
 
 export const metadata: Metadata = {
-  title: "জমির হিসাব ক্যালকুলেটর: শতাংশ, কাঠা, বিঘা ও একর রূপান্তর",
+  title: "জমির হিসাব: শতাংশ, কাঠা, বিঘা ও একর",
   description: "বাংলাদেশে জমির পরিমাপ সহজে হিসাব করুন। শতাংশ, কাঠা, বিঘা, একর, বর্গফুট ও হেক্টর রূপান্তর, দৈর্ঘ্য-প্রস্থ দিয়ে ক্ষেত্রফল এবং জমির আনুমানিক দাম বের করুন।",
   alternates: { canonical: "/land-calculator" },
   keywords: ["জমির হিসাব", "জমির হিসাব ক্যালকুলেটর", "জমির পরিমাপ", "শতাংশ থেকে কাঠা", "কাঠা থেকে শতাংশ", "বিঘা থেকে শতাংশ", "একর থেকে শতাংশ", "জমির দাম হিসাব"],
