@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SeedRateCalculator from "@/components/tools/SeedRateCalculator";
 
 export const metadata: Metadata = {
-  title: "Seed Rate Calculator Bangladesh | বীজের পরিমাণ হিসাব | AGRIVA",
+  title: "Seed Rate Calculator | বীজের পরিমাণ",
   description: "Calculate estimated seed quantity and seed cost from crop, land area and reference seed rate. কৃষকের জন্য সহজ বীজ হিসাব ক্যালকুলেটর।",
   alternates: { canonical: "/tools/seed-rate-calculator" },
   keywords: ["seed rate calculator Bangladesh", "seed quantity calculator", "বীজের পরিমাণ হিসাব", "বীজ ক্যালকুলেটর", "farmer seed calculator"],
