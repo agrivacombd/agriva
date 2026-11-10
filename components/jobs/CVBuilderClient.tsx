@@ -190,8 +190,8 @@ export default function CVBuilderPage() {
             {template==="modern"&&<aside className="space-y-6"><CVSection title={labels.skills} values={previewText(cv.skills)} accent={selected.accent}/><CVSection title={labels.languages} values={previewText(cv.languages)} accent={selected.accent}/><CVSection title={labels.certifications} values={previewText(cv.certifications)} accent={selected.accent}/></aside>}
             <div className="space-y-6">
               <CVSection title={labels.summary} values={previewText(cv.summary)} accent={selected.accent}/>
-              <CVSection title={labels.experience} values={previewText(cv.experience)} accent={selected.accent}/>
-              <CVSection title={labels.education} values={previewText(cv.education)} accent={selected.accent}/>
+              <CVExperiencePreview title={labels.experience} entries={workEntries} accent={selected.accent} language={language}/>
+              <CVEducationPreview title={labels.education} entries={educationEntries} accent={selected.accent} language={language}/>
               {template!=="modern"&&<><CVSection title={labels.skills} values={previewText(cv.skills)} accent={selected.accent}/><CVSection title={labels.languages} values={previewText(cv.languages)} accent={selected.accent}/><CVSection title={labels.certifications} values={previewText(cv.certifications)} accent={selected.accent}/></>}
             </div>
           </div>
@@ -214,6 +214,43 @@ export default function CVBuilderPage() {
       }
     `}</style>
   </main>;
+}
+
+function CVExperiencePreview({ title, entries, accent, language }: { title: string; entries: CVExperienceEntry[]; accent: string; language: "en" | "bn" }) {
+  return <section className="break-inside-auto">
+    <h2 className="mb-3 border-b pb-2 text-sm font-black uppercase tracking-wide" style={{borderColor:accent,color:accent}}>{title}</h2>
+    {entries.filter((entry) => [entry.jobTitle, entry.company, entry.location, entry.startDate, entry.endDate, entry.description, entry.achievements].some((value) => value.trim())).length ? (
+      <div className="space-y-4">{entries.filter((entry) => [entry.jobTitle, entry.company, entry.location, entry.startDate, entry.endDate, entry.description, entry.achievements].some((value) => value.trim())).map((entry) => (
+        <article key={entry.id} className="break-inside-avoid-page">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 className="text-sm font-bold text-slate-900">{entry.jobTitle || (language === "bn" ? "পদবি" : "Job title")}</h3>
+            {(entry.startDate || entry.endDate) && <span className="text-xs font-semibold text-slate-500">{entry.startDate}{entry.startDate && entry.endDate ? " – " : ""}{entry.endDate}</span>}
+          </div>
+          {(entry.company || entry.location) && <p className="mt-0.5 text-sm font-semibold text-slate-700">{[entry.company, entry.location].filter(Boolean).join(" · ")}</p>}
+          {entry.description && <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.description}</p>}
+          {entry.achievements && <div className="mt-1"><p className="text-xs font-bold text-slate-600">{language === "bn" ? "অর্জন" : "Achievements"}</p><p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.achievements}</p></div>}
+        </article>
+      ))}</div>
+    ) : <p className="text-sm italic text-slate-300">{language === "bn" ? "এখানে তথ্য যোগ করুন" : "Add information here"}</p>}
+  </section>;
+}
+
+function CVEducationPreview({ title, entries, accent, language }: { title: string; entries: CVEducationEntry[]; accent: string; language: "en" | "bn" }) {
+  return <section className="break-inside-auto">
+    <h2 className="mb-3 border-b pb-2 text-sm font-black uppercase tracking-wide" style={{borderColor:accent,color:accent}}>{title}</h2>
+    {entries.filter((entry) => [entry.degree, entry.institution, entry.location, entry.startDate, entry.endDate, entry.details].some((value) => value.trim())).length ? (
+      <div className="space-y-4">{entries.filter((entry) => [entry.degree, entry.institution, entry.location, entry.startDate, entry.endDate, entry.details].some((value) => value.trim())).map((entry) => (
+        <article key={entry.id} className="break-inside-avoid-page">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 className="text-sm font-bold text-slate-900">{entry.degree || (language === "bn" ? "ডিগ্রি / যোগ্যতা" : "Degree / qualification")}</h3>
+            {(entry.startDate || entry.endDate) && <span className="text-xs font-semibold text-slate-500">{entry.startDate}{entry.startDate && entry.endDate ? " – " : ""}{entry.endDate}</span>}
+          </div>
+          {(entry.institution || entry.location) && <p className="mt-0.5 text-sm font-semibold text-slate-700">{[entry.institution, entry.location].filter(Boolean).join(" · ")}</p>}
+          {entry.details && <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.details}</p>}
+        </article>
+      ))}</div>
+    ) : <p className="text-sm italic text-slate-300">{language === "bn" ? "এখানে তথ্য যোগ করুন" : "Add information here"}</p>}
+  </section>;
 }
 
 function CVSection({ title, values, accent }: { title:string; values:string[]; accent:string }) {
