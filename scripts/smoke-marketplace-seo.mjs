@@ -8,6 +8,8 @@ const category = readFileSync("app/marketplace/category/[categorySlug]/page.tsx"
 const subcategory = readFileSync("app/marketplace/category/[categorySlug]/[subcategorySlug]/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
 const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
+const robots = readFileSync("app/robots.ts", "utf8");
+const searchLayout = readFileSync("app/search/layout.tsx", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
 assert.match(product, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/, "Product page needs a slug-based canonical");
@@ -30,5 +32,9 @@ assert.doesNotMatch(indexability, /moderation_status/, "Category indexability mu
 assert.doesNotMatch(sitemap, /lastModified:\s*now/, "Static sitemap entries must not pretend to have changed on every request");
 assert.match(sitemap, /\.\.\.\(product\.updated_at \? \{ lastModified: new Date\(product\.updated_at\) \} : \{\}\)/, "Product sitemap lastModified must reflect the real updated_at value only");
 assert.match(sitemap, /\.\.\.\(job\.updated_at \? \{ lastModified: new Date\(job\.updated_at\) \} : \{\}\)/, "Job sitemap lastModified must reflect the real updated_at value only");
+
+assert.match(searchLayout, /index:\s*false/, "Internal search results must be noindex");
+assert.match(searchLayout, /follow:\s*true/, "Internal search links should remain crawlable");
+assert.doesNotMatch(robots, /"\/search"/, "Robots must allow crawlers to read the search page noindex directive");
 
 console.log("Marketplace SEO and indexability regression checks passed.");
