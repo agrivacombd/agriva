@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
@@ -91,13 +90,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     return acc;
   }, {});
 
-  return <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6">
-    <div className="mx-auto max-w-7xl">
-      <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
-        <div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">COD order operations · বাংলাদেশ</p></div>
-        <Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link>
-      </header>
-      <h1 className="mt-7 text-3xl font-black">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
+  return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
+    <div className="min-w-0">
+      <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">COD order operations · বাংলাদেশ</p>
+      <h1 className="mt-2 text-2xl font-black sm:text-3xl">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">অর্ডারের ঠিকানা, COD-তে আদায়যোগ্য টাকা এবং ডেলিভারির অবস্থা এক জায়গা থেকে দেখুন। Delivered মানেই টাকা আদায় হয়েছে—এমন ধরে নেওয়া হয় না।</p>
 
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
@@ -105,7 +101,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       </p>}
       {ordersError && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
 
-      <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <section className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
         {[
           ["all", "সব অর্ডার", (orders ?? []).length],
           ["processing", "নতুন / প্রসেসিং", (counts.processing ?? 0) + (counts.pending ?? 0)],
@@ -129,7 +125,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
           const status = o.status;
           const checkout = o.checkout_id ? checkoutMap.get(o.checkout_id) : null;
           const firstCheckoutOrder = !o.checkout_id || (orders ?? []).find((candidate) => candidate.checkout_id === o.checkout_id)?.id === o.id;
-          return <article key={o.id} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
+          return <article key={o.id} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div><p className="text-xs font-extrabold uppercase tracking-wider text-[#9a7625]">Order #{o.id.slice(0, 8)}</p><h2 className="mt-1 text-lg font-black">{buyerName}</h2><p className="mt-1 text-xs text-[#748074]">{new Date(o.created_at).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p></div>
               <span className="rounded-full bg-[#edf4e9] px-3 py-1.5 text-xs font-extrabold">{statusLabel[status] ?? status}</span>
