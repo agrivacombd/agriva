@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "AGRIVA — কৃষির প্রতিটি ধাপে আপনার পাশে";
+export const alt = "AGRIVA — Digital tools for Bangladesh agriculture";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -14,7 +14,7 @@ export default function OpenGraphImage() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "18px", maxWidth: "980px" }}>
           <div style={{ fontSize: "54px", fontWeight: 800, lineHeight: 1.2 }}>কৃষির প্রতিটি ধাপে আপনার পাশে</div>
-          <div style={{ fontSize: "28px", color: "#e4f1d1" }}>কৃষি সেবা · তথ্য · বাজার · ডিজিটাল টুলস</div>
+          <div style={{ fontSize: "28px", color: "#e4f1d1" }}>Agriculture · Knowledge · Marketplace · Digital tools</div>
         </div>
         <div style={{ display: "flex", fontSize: "24px", color: "#e4f1d1" }}>agriva.com.bd</div>
       </div>
