@@ -59,6 +59,7 @@ export default function CVBuilderPage() {
   const [workEntries, setWorkEntries] = useState<CVExperienceEntry[]>([]);
   const [educationEntries, setEducationEntries] = useState<CVEducationEntry[]>([]);
   const [saved, setSaved] = useState(false);
+  const [shareMessage, setShareMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -77,13 +78,40 @@ export default function CVBuilderPage() {
   const selected = templates.find(t => t.id === template) ?? templates[0];
   const isBn = language === "bn";
   const labels = isBn
-    ? { title:"আমার CV তৈরি করুন", subtitle:"একবার তথ্য দিন, পছন্দের ডিজাইন বেছে নিন, তারপর PDF ডাউনলোড করুন বা চাকরিতে আবেদন করুন।", personal:"ব্যক্তিগত তথ্য", fullName:"পূর্ণ নাম", headline:"পেশাগত পরিচিতি", phone:"ফোন নম্বর", email:"ইমেইল", address:"ঠিকানা", summary:"নিজের সম্পর্কে", education:"শিক্ষাগত যোগ্যতা", experience:"কাজের অভিজ্ঞতা", skills:"দক্ষতা", languages:"ভাষা", certifications:"প্রশিক্ষণ ও সার্টিফিকেট", photo:"ছবির URL (ঐচ্ছিক)", design:"CV ডিজাইন বেছে নিন", preview:"লাইভ প্রিভিউ", save:"CV সেভ করুন", download:"PDF ডাউনলোড / প্রিন্ট", apply:"চাকরি খুঁজুন ও আবেদন করুন", saved:"এই ডিভাইসে CV সেভ হয়েছে", tip:"আপনার তথ্য এই ব্রাউজারেই সেভ হয়। শেয়ার করা ডিভাইসে ব্যক্তিগত তথ্য রেখে যাবেন না।", placeholder:"এখানে লিখুন...", edit:"তথ্য পরিবর্তন করুন" }
-    : { title:"Build your CV", subtitle:"Enter your information once, choose your favourite design, then download a PDF or continue to jobs.", personal:"Personal information", fullName:"Full name", headline:"Professional headline", phone:"Phone number", email:"Email", address:"Address", summary:"Professional summary", education:"Education", experience:"Work experience", skills:"Skills", languages:"Languages", certifications:"Training & certifications", photo:"Photo URL (optional)", design:"Choose a CV design", preview:"Live preview", save:"Save CV", download:"Download PDF / Print", apply:"Browse jobs & apply", saved:"CV saved on this device", tip:"Your CV is stored in this browser only. Avoid saving personal details on a shared device.", placeholder:"Write here...", edit:"Edit information" };
+    ? { title:"আমার CV তৈরি করুন", subtitle:"একবার তথ্য দিন, পছন্দের ডিজাইন বেছে নিন, তারপর PDF ডাউনলোড করুন বা চাকরিতে আবেদন করুন।", personal:"ব্যক্তিগত তথ্য", fullName:"পূর্ণ নাম", headline:"পেশাগত পরিচিতি", phone:"ফোন নম্বর", email:"ইমেইল", address:"ঠিকানা", summary:"নিজের সম্পর্কে", education:"শিক্ষাগত যোগ্যতা", experience:"কাজের অভিজ্ঞতা", skills:"দক্ষতা", languages:"ভাষা", certifications:"প্রশিক্ষণ ও সার্টিফিকেট", photo:"ছবির URL (ঐচ্ছিক)", design:"CV ডিজাইন বেছে নিন", preview:"লাইভ প্রিভিউ", save:"CV সেভ করুন", download:"প্রিন্ট / PDF সেভ", apply:"চাকরি খুঁজুন ও আবেদন করুন", saved:"এই ডিভাইসে CV সেভ হয়েছে", tip:"আপনার তথ্য এই ব্রাউজারেই সেভ হয়। শেয়ার করা ডিভাইসে ব্যক্তিগত তথ্য রেখে যাবেন না।", placeholder:"এখানে লিখুন...", edit:"তথ্য পরিবর্তন করুন" }
+    : { title:"Build your CV", subtitle:"Enter your information once, choose your favourite design, then download a PDF or continue to jobs.", personal:"Personal information", fullName:"Full name", headline:"Professional headline", phone:"Phone number", email:"Email", address:"Address", summary:"Professional summary", education:"Education", experience:"Work experience", skills:"Skills", languages:"Languages", certifications:"Training & certifications", photo:"Photo URL (optional)", design:"Choose a CV design", preview:"Live preview", save:"Save CV", download:"Print / Save as PDF", apply:"Browse jobs & apply", saved:"CV saved on this device", tip:"Your CV is stored in this browser only. Avoid saving personal details on a shared device.", placeholder:"Write here...", edit:"Edit information" };
 
   const update = (key: keyof CV, value: string) => { setCV(prev => ({ ...prev, [key]: value })); setSaved(false); };
   const persist = () => {
     const document = legacyCVToDocument(cv, template, language, workEntries, educationEntries);
     setSaved(saveCV(window.localStorage, document, { language, template }));
+  };
+  const getShareText = () => [
+    cv.fullName, cv.headline, [cv.phone, cv.email, cv.address].filter(Boolean).join(" · "), cv.summary,
+    language === "bn" ? "কাজের অভিজ্ঞতা" : "Work experience",
+    ...workEntries.map((item) => [item.jobTitle, item.company, item.location, item.startDate, item.endDate, item.description, item.achievements].filter(Boolean).join(" | ")),
+    language === "bn" ? "শিক্ষাগত যোগ্যতা" : "Education",
+    ...educationEntries.map((item) => [item.degree, item.institution, item.location, item.startDate, item.endDate, item.details].filter(Boolean).join(" | ")),
+    language === "bn" ? "দক্ষতা" : "Skills", cv.skills,
+    language === "bn" ? "ভাষা" : "Languages", cv.languages,
+    language === "bn" ? "প্রশিক্ষণ ও সার্টিফিকেট" : "Training & certifications", cv.certifications,
+  ].filter(Boolean).join("\n");
+  const shareCV = async () => {
+    const text = getShareText();
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: cv.fullName ? `${cv.fullName} — CV` : "CV", text });
+        setShareMessage(language === "bn" ? "শেয়ার মেনু খোলা হয়েছে।" : "Share sheet opened.");
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setShareMessage(language === "bn" ? "CV-এর লেখা কপি হয়েছে।" : "CV text copied. You can paste it into a message.");
+      } else {
+        setShareMessage(language === "bn" ? "এই ব্রাউজারে সরাসরি শেয়ার সমর্থিত নয়। PDF সেভ করে শেয়ার করুন।" : "Sharing is not supported here. Save the PDF and share it manually.");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setShareMessage(language === "bn" ? "শেয়ার করা যায়নি। PDF সেভ করে পাঠাতে পারেন।" : "Could not share. Save the PDF and attach it manually.");
+    }
   };
 
   useEffect(() => {
@@ -172,8 +200,9 @@ export default function CVBuilderPage() {
           <h2 className="text-xl font-black">{labels.design}</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">
             {templates.map(t=><button key={t.id} onClick={()=>{setTemplate(t.id);setSaved(false);}} className={"rounded-xl border p-4 text-left transition "+(template===t.id?"border-emerald-700 bg-emerald-50 ring-2 ring-emerald-100":"border-slate-200 hover:border-emerald-300")}><span className="mb-3 block h-2 rounded-full" style={{background:t.accent}}/><span className="block font-extrabold">{t.name}</span><span className="mt-1 block text-xs text-slate-500">{t.note}</span><span className="mt-3 block text-xs font-bold text-emerald-800">{template===t.id?"✓ Selected":"Choose design"}</span></button>)}
           </div>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row"><button onClick={()=>window.print()} className="min-h-12 flex-1 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white">{labels.download}</button><Link href="/jobs" className="min-h-12 flex-1 rounded-xl border border-emerald-800 px-4 py-3 text-center text-sm font-extrabold text-emerald-900">{labels.apply} →</Link></div>
-          <p className="mt-3 text-xs leading-5 text-slate-500">PDF বানাতে Print dialog-এ “Save as PDF” নির্বাচন করুন।</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2"><button onClick={()=>window.print()} className="min-h-12 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white">{labels.download}</button><button onClick={shareCV} className="min-h-12 rounded-xl border border-emerald-800 px-4 py-3 text-sm font-extrabold text-emerald-900">{isBn?"CV শেয়ার / লেখা কপি":"Share CV details"}</button><Link href="/jobs" className="min-h-12 rounded-xl border border-emerald-800 px-4 py-3 text-center text-sm font-extrabold text-emerald-900 sm:col-span-2">{labels.apply} →</Link></div>
+          {shareMessage && <p role="status" className="mt-3 text-xs font-semibold text-emerald-800">{shareMessage}</p>}
+          <p className="mt-3 text-xs leading-5 text-slate-500">{isBn?"PDF সেভ করতে Print dialog-এ “Save as PDF” বেছে নিন। Share CV details বাটনটি CV-এর লেখা শেয়ার বা কপি করে; PDF ফাইল সংযুক্ত করে না।":"Choose “Save as PDF” in the print dialog. Share CV details shares or copies your CV text; it does not attach a PDF file."}</p>
         </div>
       </section>
 
