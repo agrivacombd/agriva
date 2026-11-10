@@ -68,11 +68,11 @@ export function migrateStoredEnvelope(value: unknown): CVDocument | null {
       fullName: profile.fullName, headline: profile.headline, phone: profile.phone,
       email: profile.email, address: profile.address, photoUrl: profile.photoUrl,
       summary: stored.summary,
-      experience: (stored.experience as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
-      education: (stored.education as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
-      skills: (stored.skills as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
-      languages: (stored.languages as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
-      certifications: (stored.certifications as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\\n"),
+      experience: (stored.experience as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\n"),
+      education: (stored.education as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\n"),
+      skills: (stored.skills as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\n"),
+      languages: (stored.languages as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\n"),
+      certifications: (stored.certifications as Array<Record<string, unknown>>).map((item) => asText(item.content)).join("\n"),
     }, { language: (stored.settings as Record<string, unknown> | undefined)?.language, template: (stored.settings as Record<string, unknown> | undefined)?.templateId });
     // Preserve richer records if this is a previously stored structured version.
     migrated.experience = (stored.experience as Array<Record<string, unknown>>).map((item, index) => ({
