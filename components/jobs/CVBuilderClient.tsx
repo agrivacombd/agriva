@@ -3,7 +3,7 @@
 import Link from "next/link";
 import CVInsights from "@/components/jobs/CVInsights";
 import { loadCV, saveCV } from "@/lib/jobs/cv/storage";
-import type { CVDocument } from "@/lib/jobs/cv/types";
+import type { CVDocument, CVEducationEntry, CVExperienceEntry } from "@/lib/jobs/cv/types";
 import { useEffect, useMemo, useState } from "react";
 
 type CV = {
@@ -14,7 +14,7 @@ type CV = {
 const emptyCV: CV = { fullName:"", headline:"", phone:"", email:"", address:"", summary:"", education:"", experience:"", skills:"", languages:"", certifications:"", photoUrl:"" };
 
 function documentToLegacyCV(document: CVDocument): CV {
-  const join = (items: CVDocument["experience"]) => items.map((item) => item.content).join("\n");
+  const join = (items: Array<{ content?: string; jobTitle?: string; company?: string; description?: string; achievements?: string; degree?: string; institution?: string; details?: string }>) => items.map((item) => [item.content, item.jobTitle, item.company, item.description, item.achievements, item.degree, item.institution, item.details].filter(Boolean).join(" · ")).join("\n");
   return {
     fullName: document.profile.fullName,
     headline: document.profile.headline,
@@ -31,14 +31,14 @@ function documentToLegacyCV(document: CVDocument): CV {
   };
 }
 
-function legacyCVToDocument(cv: CV, template: string, language: "en" | "bn"): CVDocument {
+function legacyCVToDocument(cv: CV, template: string, language: "en" | "bn", work: CVExperienceEntry[], education: CVEducationEntry[]): CVDocument {
   const entries = (value: string, prefix: string) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((content, index) => ({ id: `${prefix}-${index + 1}`, content }));
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     profile: { fullName: cv.fullName, headline: cv.headline, phone: cv.phone, email: cv.email, address: cv.address, photoUrl: cv.photoUrl },
     summary: cv.summary,
-    experience: entries(cv.experience, "experience"),
-    education: entries(cv.education, "education"),
+    experience: work,
+    education,
     skills: entries(cv.skills, "skill"),
     languages: entries(cv.languages, "language"),
     certifications: entries(cv.certifications, "certification"),
@@ -56,6 +56,8 @@ export default function CVBuilderPage() {
   const [cv, setCV] = useState<CV>(emptyCV);
   const [template, setTemplate] = useState("classic");
   const [language, setLanguage] = useState<"en"|"bn">("en");
+  const [workEntries, setWorkEntries] = useState<CVExperienceEntry[]>([]);
+  const [educationEntries, setEducationEntries] = useState<CVEducationEntry[]>([]);
   const [saved, setSaved] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
@@ -63,6 +65,8 @@ export default function CVBuilderPage() {
     const result = loadCV(window.localStorage);
     if (result.document) {
       setCV({ ...emptyCV, ...documentToLegacyCV(result.document) });
+      setWorkEntries(result.document.experience);
+      setEducationEntries(result.document.education);
       const storedTemplate = result.document.settings.templateId;
       if (templates.some((item) => item.id === storedTemplate)) setTemplate(storedTemplate);
       setLanguage(result.document.settings.language);
@@ -78,7 +82,7 @@ export default function CVBuilderPage() {
 
   const update = (key: keyof CV, value: string) => { setCV(prev => ({ ...prev, [key]: value })); setSaved(false); };
   const persist = () => {
-    const document = legacyCVToDocument(cv, template, language);
+    const document = legacyCVToDocument(cv, template, language, workEntries, educationEntries);
     setSaved(saveCV(window.localStorage, document, { language, template }));
   };
 
@@ -89,7 +93,7 @@ export default function CVBuilderPage() {
       setSaved(saveCV(window.localStorage, document, { language, template }));
     }, 700);
     return () => window.clearTimeout(timeout);
-  }, [cv, template, language, loaded]);
+  }, [cv, template, language, loaded, workEntries, educationEntries]);
   const previewText = useMemo(() => (value: string) => value.trim().split("\n").filter(Boolean), []);
 
   if (!loaded) return <main className="min-h-screen bg-[#f5f8f1] p-8 text-[#17351f]">CV Builder loading…</main>;
@@ -114,6 +118,31 @@ export default function CVBuilderPage() {
           </div>
           {(["summary","education","experience","skills","languages","certifications"] as const).map(key => key === "summary" ? (
             <label key={key} className="mt-4 block text-sm font-bold">{labels[key]}<textarea value={cv.summary} onChange={e=>update("summary",e.target.value)} maxLength={2000} rows={4} placeholder={labels.placeholder} className="mt-2 w-full rounded-lg border border-slate-200 p-3 font-normal leading-6 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/></label>
+          ) : key === "experience" ? (
+            <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
+              <h3 className="text-sm font-extrabold">{labels.experience}</h3>
+              <div className="mt-3 space-y-4">{workEntries.map((item,index)=><fieldset key={item.id} className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold">Experience {index+1}</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["jobTitle","company","location","startDate","endDate"] as const).map(field=><label key={field} className="text-xs font-bold">{({jobTitle:"Job title",company:"Company",location:"Location",startDate:"Start date",endDate:"End date"})[field]}<input value={item[field]} onChange={e=>{const next=[...workEntries];next[index]={...item,[field]:e.target.value};setWorkEntries(next);setSaved(false);}} className="mt-1 min-h-10 w-full rounded-lg border border-slate-200 px-2 text-sm font-normal"/></label>)}
+                </div>
+                <label className="mt-3 block text-xs font-bold">Responsibilities / description<textarea value={item.description} onChange={e=>{const next=[...workEntries];next[index]={...item,description:e.target.value};setWorkEntries(next);setSaved(false);}} rows={3} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <label className="mt-3 block text-xs font-bold">Achievements<textarea value={item.achievements} onChange={e=>{const next=[...workEntries];next[index]={...item,achievements:e.target.value};setWorkEntries(next);setSaved(false);}} rows={2} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <button type="button" onClick={()=>setWorkEntries(items=>items.filter(entry=>entry.id!==item.id))} className="mt-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Remove</button>
+              </fieldset>)}</div>
+              <button type="button" onClick={()=>setWorkEntries(items=>[...items,{id:crypto.randomUUID(),jobTitle:"",company:"",location:"",startDate:"",endDate:"",description:"",achievements:""}])} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800">+ Add experience</button>
+            </div>
+          ) : key === "education" ? (
+            <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
+              <h3 className="text-sm font-extrabold">{labels.education}</h3>
+              <div className="mt-3 space-y-4">{educationEntries.map((item,index)=><fieldset key={item.id} className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold">Education {index+1}</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["degree","institution","location","startDate","endDate"] as const).map(field=><label key={field} className="text-xs font-bold">{({degree:"Degree / qualification",institution:"Institution",location:"Location",startDate:"Start date",endDate:"End date"})[field]}<input value={item[field]} onChange={e=>{const next=[...educationEntries];next[index]={...item,[field]:e.target.value};setEducationEntries(next);setSaved(false);}} className="mt-1 min-h-10 w-full rounded-lg border border-slate-200 px-2 text-sm font-normal"/></label>)}
+                </div>
+                <label className="mt-3 block text-xs font-bold">Results / details<textarea value={item.details} onChange={e=>{const next=[...educationEntries];next[index]={...item,details:e.target.value};setEducationEntries(next);setSaved(false);}} rows={2} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <button type="button" onClick={()=>setEducationEntries(items=>items.filter(entry=>entry.id!==item.id))} className="mt-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Remove</button>
+              </fieldset>)}</div>
+              <button type="button" onClick={()=>setEducationEntries(items=>[...items,{id:crypto.randomUUID(),degree:"",institution:"",location:"",startDate:"",endDate:"",details:""}])} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800">+ Add education</button>
+            </div>
           ) : (
             <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
               <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-extrabold">{labels[key]}</h3><span className="text-xs text-slate-500">{cv[key].split(/\r?\n/).filter(line=>line.trim()).length} {isBn?"টি":"entries"}</span></div>
