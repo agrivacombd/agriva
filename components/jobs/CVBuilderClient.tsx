@@ -144,7 +144,7 @@ export default function CVBuilderPage() {
 
       <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-black">{labels.preview}</h2><span className="text-xs font-bold text-slate-500">{selected.name}</span></div>
-        <article id="cv-preview" className="cv-paper min-h-[900px] overflow-hidden bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: isBn ? "Arial, sans-serif" : "Arial, sans-serif"}}>
+        <article id="cv-preview" className="cv-paper mx-auto min-h-[1123px] w-full max-w-[794px] overflow-visible bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: isBn ? "Arial, sans-serif" : "Arial, sans-serif"}}>
           <header className="p-7 text-white sm:p-9" style={{background:selected.accent}}>
             <div className="flex items-start gap-4">
               {/^https?:\/\//i.test(cv.photoUrl.trim())&&<img src={cv.photoUrl.trim()} alt="" className="h-20 w-20 rounded-xl border-2 border-white/60 object-cover" />}
@@ -170,7 +170,11 @@ export default function CVBuilderPage() {
         body { background: white !important; }
         body * { visibility: hidden !important; }
         #cv-preview, #cv-preview * { visibility: visible !important; }
-        #cv-preview { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; min-height: 0 !important; box-shadow: none !important; ring: 0 !important; }
+        #cv-preview { position: static !important; display: block !important; width: 190mm !important; max-width: none !important; min-height: 0 !important; height: auto !important; margin: 0 auto !important; overflow: visible !important; box-shadow: none !important; }
+        #cv-preview > header, #cv-preview > div, #cv-preview > footer { break-inside: auto; }
+        #cv-preview section { break-inside: avoid-page; page-break-inside: avoid; }
+        #cv-preview h2 { break-after: avoid-page; page-break-after: avoid; }
+        #cv-preview p, #cv-preview span { overflow-wrap: anywhere; }
         .cv-paper { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       }
     `}</style>
