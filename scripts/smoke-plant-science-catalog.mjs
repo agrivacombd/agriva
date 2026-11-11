@@ -21,3 +21,10 @@ assert.ok(data.includes('taxonomicReviewStatus: "pending"'), "unreviewed taxonom
 assert.ok(client.includes('from "./plants"'), "interactive page must consume the shared catalogue module");
 
 console.log(`Plant-science catalogue checks passed: ${records.length} records, ${new Set(scientificNames).size} unique exact names, no slug collisions.`);
+
+const sourceRegistry = read("../app/learn/plant-science/sources.ts");
+assert.ok(sourceRegistry.includes('id: "cvpb-2026"'), "CVPB reference must be registered");
+assert.ok(sourceRegistry.includes('id: "powo-wcvp"'), "Kew taxonomy backbone must be registered");
+assert.ok(sourceRegistry.includes('id: "bnh-specimens"'), "BNH specimen evidence source must be registered");
+assert.ok(sourceRegistry.includes("Global taxonomy or distribution alone does not establish occurrence in Bangladesh."), "global taxonomy must not be conflated with Bangladesh occurrence");
+assert.ok(sourceRegistry.includes("Treat as a preliminary conference abstract"), "preliminary checklist totals must be qualified");
