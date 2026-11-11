@@ -1216,8 +1216,8 @@ const curriculumCategory = (p: Plant) => {
   if (/weed|field weed|wild crop relative/.test(g)) return "Weed Science";
   if (/wetland|aquatic|marsh|swamp|water plant/.test(g)) return "Aquatic & Wetland Plants";
   if (/forest|timber|agroforestry|shade tree|bamboo|rattan|green manure/.test(g)) return "Forestry & Agroforestry";
-  if (/fern|bryophyte|moss|algae|gymnosperm|pteridophyte/.test(g)) return "Plant Taxonomy & Biodiversity";
-  if (/economic|dye|industrial|palm|tree|shrub|herb/.test(g)) return "Forestry, Botany & Economic Plants";
+  if (/fern|bryophyte|moss|algae|gymnosperm|pteridophyte|taxonomy/.test(g)) return "Plant Taxonomy & Biodiversity";
+  if (/economic|dye|industrial|palm|tree|shrub|herb|green manure/.test(g)) return "Forestry, Botany & Economic Plants";
   return "Other Curriculum Plants";
 };
 const curriculumCategories = ["All","Agronomy & Field Crops","Horticulture","Spices & Plantation Crops","Floriculture & Ornamentals","Medicinal & Aromatic Plants","Weed Science","Aquatic & Wetland Plants","Forestry & Agroforestry","Plant Taxonomy & Biodiversity","Forestry, Botany & Economic Plants","Other Curriculum Plants"];
