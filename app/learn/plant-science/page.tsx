@@ -1202,6 +1202,9 @@ const plants: Plant[] = [
   {bn:"বীজ রাঙা",en:"Annatto",scientific:"Bixa orellana",family:"Bixaceae",group:"Dye and economic plant",clue:"বীজের লাল আবরণ থেকে প্রাকৃতিক রঞ্জক পাওয়া যায়।"},
   {bn:"পিপুল লতা",en:"Chavica",scientific:"Piper chaba",family:"Piperaceae",group:"Spice vine",clue:"বাংলাদেশে মসলা ও ঔষধি ব্যবহারে পরিচিত আরোহী উদ্ভিদ।"},
   {bn:"বন তুলসী",en:"Indian coleus",scientific:"Plectranthus barbatus",family:"Lamiaceae",group:"Medicinal herb",clue:"সুগন্ধি ভেষজ; পাতা ও শিকড় লোকজ ব্যবহারে পরিচিত।"},
+  {bn:"ফণীমনসা",en:"Prickly pear",scientific:"Opuntia stricta",family:"Cactaceae",group:"Invasive succulent",clue:"চ্যাপ্টা কাণ্ডখণ্ডে কাঁটা; রসালো ফল।"},
+  {bn:"শেওলা",en:"Spirogyra",scientific:"Spirogyra porticalis",family:"Zygnemataceae",group:"Freshwater green alga",clue:"সুতার মতো উপনিবেশ; কোষে সর্পিল ক্লোরোপ্লাস্ট।"},
+  {bn:"বুনো কাঁঠাল",en:"Monkey jack",scientific:"Artocarpus lakoocha",family:"Moraceae",group:"Forest fruit tree",clue:"বড় সরল পাতা; ফলের শাঁস টক-মিষ্টি।"},
 ];
 
 const catalogTarget = 5000;
