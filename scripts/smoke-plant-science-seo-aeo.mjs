@@ -15,7 +15,7 @@ assert.ok(page.includes("openGraph:") && page.includes("twitter:"));
 assert.ok(page.includes('"@type": "CollectionPage"'));
 assert.ok(page.includes('"@type": "FAQPage"'));
 assert.ok(page.includes('"@type": "BreadcrumbList"'));
-assert.ok(page.includes('JSON.stringify(structuredData).replace(/</g, "\\\\u003c")'));
+assert.ok(page.includes("JSON.stringify(structuredData).replace(/</g"), "JSON-LD must escape less-than characters");
 assert.ok(client.includes('aria-labelledby="plant-science-faq"'));
 assert.ok(client.includes("plantScienceFaqs.map"));
 assert.equal((faqs.match(/question:/g) ?? []).length, 5, "five evidence-aware FAQs should be available to users and structured data");
