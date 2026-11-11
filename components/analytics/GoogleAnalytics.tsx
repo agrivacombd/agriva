@@ -29,12 +29,20 @@ export default function GoogleAnalytics() {
   const [marketingChoice, setMarketingChoice] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [ready, setReady] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   useEffect(() => {
-    const saved = readConsent();
-    setConsent(saved);
-    setAnalyticsChoice(Boolean(saved?.analytics));
-    setMarketingChoice(Boolean(saved?.marketing));
+    const syncConsent = () => {
+      const saved = readConsent();
+      setConsent(saved);
+      setAnalyticsChoice(Boolean(saved?.analytics));
+      setMarketingChoice(Boolean(saved?.marketing));
+      setConsentChecked(true);
+    };
+
+    syncConsent();
+    window.addEventListener("storage", syncConsent);
+    return () => window.removeEventListener("storage", syncConsent);
   }, []);
 
   useEffect(() => {
@@ -70,7 +78,9 @@ export default function GoogleAnalytics() {
     setShowPreferences(false);
   }
 
-  const showBanner = consent === null;
+  // Do not render the banner until the saved choice has been read. This prevents
+  // a consent prompt flash on every reload for returning visitors.
+  const showBanner = consentChecked && consent === null;
 
   return (
     <>
@@ -132,7 +142,7 @@ export default function GoogleAnalytics() {
         </div>
       )}
 
-      {!showBanner && !showPreferences && (
+      {consentChecked && !showBanner && !showPreferences && (
         <button type="button" onClick={() => setShowPreferences(true)} className="fixed bottom-3 left-3 z-[90] rounded-full border border-[#d7e2d5] bg-white/95 px-3 py-2 text-[11px] font-bold text-[#365541] shadow-lg backdrop-blur sm:bottom-4 sm:left-4">Cookie settings</button>
       )}
     </>
