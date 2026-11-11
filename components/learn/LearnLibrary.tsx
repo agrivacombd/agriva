@@ -19,8 +19,10 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
         lesson.crop,
         lesson.summary,
         lesson.intro,
-        ...lesson.steps.map((step) => step.title),
+        ...lesson.steps.flatMap((step) => [step.title, step.body]),
         ...lesson.tips,
+        lesson.quiz.question,
+        ...lesson.quiz.options,
       ].join(" ").toLocaleLowerCase("bn");
       return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
     });
@@ -34,7 +36,7 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
           <h2 id="learn-library-heading" className="mt-2 text-2xl font-black text-emerald-950">বিষয় অনুযায়ী শিখুন</h2>
           <p className="mt-2 text-sm leading-6 text-slate-600">ফসল, মাটি ও কৃষি ব্যবস্থাপনা নিয়ে প্রয়োজনীয় গাইড খুঁজে নিন।</p>
         </div>
-        <p className="text-sm font-semibold text-slate-500" aria-live="polite">{filteredLessons.length}টি গাইড</p>
+        <p className="text-sm font-semibold text-slate-500" role="status" aria-live="polite" aria-atomic="true">{filteredLessons.length}টি গাইড</p>
       </div>
 
       <label htmlFor="learn-guide-search" className="sr-only">কৃষি গাইড খুঁজুন</label>
@@ -48,10 +50,10 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
           placeholder="গাইড, ফসল বা বিষয় লিখে খুঁজুন..."
           className="w-full border-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-0"
         />
-        {query && <button type="button" onClick={() => setQuery("")} className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-50">মুছুন</button>}
+        {query && <button type="button" onClick={() => setQuery("")} aria-label="অনুসন্ধানের লেখা মুছুন" className="shrink-0 rounded-lg px-2 py-1 text-xs font-bold text-emerald-800 hover:bg-emerald-50">মুছুন</button>}
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2" aria-label="বিষয় অনুযায়ী ফিল্টার">
+      <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="বিষয় অনুযায়ী ফিল্টার">
         {categories.map((item) => {
           const active = category === item;
           return (
