@@ -1420,6 +1420,14 @@ const plants: Plant[] = [
   {bn:"স্থানীয় নাম: Lamba-ol",en:"Lamba-ol",scientific:"Amorphophallus longituberosus",family:"Araceae",group:"CVPB — Herb",clue:"CVPB family-wise checklist-এ Araceae পরিবারের herb হিসেবে নথিভুক্ত।"},
   {bn:"স্থানীয় নাম: Plesmon",en:"Plesmon",scientific:"Amorphophallus margaritifer",family:"Araceae",group:"CVPB — Herb",clue:"CVPB family-wise checklist-এ Araceae পরিবারের herb হিসেবে নথিভুক্ত।"},
 
+  {bn:"স্থানীয় নাম: Tarena",en:"Tarena",scientific:"Tarenna asiatica",family:"Rubiaceae",group:"CVPB — Shrub, Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Kakra",en:"Kakra",scientific:"Tarenna campaniflora",family:"Rubiaceae",group:"CVPB — Shrub",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Tarama",en:"Tarama",scientific:"Tarenna disperma",family:"Rubiaceae",group:"CVPB — Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Patugrooja",en:"Patugrooja",scientific:"Tarenna odorata",family:"Rubiaceae",group:"CVPB — Shrub, Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Heyen-kapashi",en:"Heyen-kapashi",scientific:"Wendlandia heynei",family:"Rubiaceae",group:"CVPB — Shrub, Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Pani-kapashi",en:"Pani-kapashi",scientific:"Wendlandia paniculata",family:"Rubiaceae",group:"CVPB — Shrub, Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+  {bn:"স্থানীয় নাম: Sera-kapashi",en:"Sera-kapashi",scientific:"Wendlandia scabra",family:"Rubiaceae",group:"CVPB — Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
+
 ];
 
 const catalogTarget = 5000;
