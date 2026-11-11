@@ -30,6 +30,8 @@ assert.ok(library.includes("lesson.topics") && library.includes("lesson.outcomes
 const reader = readFileSync("components/learn/LessonReader.tsx", "utf8");
 assert.ok(reader.includes("এই পাঠ শেষে যা শিখবেন") && reader.includes("lesson.outcomes.map"), "Lesson detail should present its learning outcomes");
 assert.ok(reader.includes("lesson.audience.join") && reader.includes("lesson.topics.join"), "Lesson detail should explain intended audience and covered topics");
+assert.ok(reader.includes("আরও শিখুন") && reader.includes('rel="prev"') && reader.includes('rel="next"'), "Lesson detail should provide accessible previous/next guide navigation");
+assert.ok(reader.includes("LESSONS.findIndex") && reader.includes("previousLesson") && reader.includes("nextLesson"), "Guide navigation should derive from the canonical lesson catalog");
 assert.ok(audit.includes("No production database writes or migrations"), "Audit should document that production schema was not changed");
 
 console.log("Learn 2.0 Phase 1 smoke tests passed.");
