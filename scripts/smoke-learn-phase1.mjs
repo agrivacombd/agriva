@@ -32,6 +32,15 @@ assert.ok(reader.includes("এই পাঠ শেষে যা শিখবে�
 assert.ok(reader.includes("lesson.audience.join") && reader.includes("lesson.topics.join"), "Lesson detail should explain intended audience and covered topics");
 assert.ok(reader.includes("আরও শিখুন") && reader.includes('rel="prev"') && reader.includes('rel="next"'), "Lesson detail should provide accessible previous/next guide navigation");
 assert.ok(reader.includes("LESSONS.findIndex") && reader.includes("previousLesson") && reader.includes("nextLesson"), "Guide navigation should derive from the canonical lesson catalog");
+assert.ok(reader.includes('"agriva-learn-progress-v1"'), "Learner progress should use a versioned, namespaced local storage key");
+assert.ok(reader.includes("window.localStorage.getItem") && reader.includes("window.localStorage.setItem"), "Learner progress should persist locally in the browser");
+assert.ok(reader.includes("progressLoaded") && reader.includes("JSON.parse"), "Local progress hydration should complete before persistence to avoid overwriting saved data");
+assert.ok(reader.includes("completedAt") && reader.includes("পাঠ সম্পন্ন হিসেবে চিহ্নিত করুন"), "Learners should be able to mark a guide complete");
+assert.ok(reader.includes("lastQuiz") && reader.includes("attemptedAt"), "The latest quiz result and attempt date should be saved");
+assert.ok(reader.includes("এই গাইডের অগ্রগতি মুছুন") && reader.includes("delete next[lesson.slug]"), "Learners should be able to clear the current guide's local progress");
+assert.ok(reader.includes("AGRIVA সার্ভারে পাঠানো হয় না"), "The interface should disclose that progress stays in browser storage");
+assert.ok(reader.includes("catch") && reader.includes("Local progress is optional"), "Storage failures should not break lesson reading");
+
 assert.ok(audit.includes("No production database writes or migrations"), "Audit should document that production schema was not changed");
 
 console.log("Learn 2.0 Phase 1 smoke tests passed.");
