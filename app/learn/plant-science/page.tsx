@@ -108,6 +108,33 @@ const plants: Plant[] = [
   {bn:"দারুচিনি",en:"Cinnamon",scientific:"Cinnamomum verum",family:"Lauraceae",group:"Spice tree",clue:"কাণ্ডের ভেতরের বাকল শুকিয়ে মসলা হিসেবে ব্যবহৃত।"},
   {bn:"লবঙ্গ",en:"Clove",scientific:"Syzygium aromaticum",family:"Myrtaceae",group:"Spice tree",clue:"শুকনো ফুলের কুঁড়ি মসলা হিসেবে ব্যবহৃত হয়।"}
 
+  {bn:"বরই",en:"Indian jujube",scientific:"Ziziphus mauritiana",family:"Rhamnaceae",group:"Fruit tree",clue:"শুষ্ক মৌসুমেও ফল ধরে; ফল কাঁচা সবুজ, পাকলে হলুদাভ বা বাদামি।"},
+  {bn:"বনবরই",en:"Wild jujube",scientific:"Ziziphus oenoplia",family:"Rhamnaceae",group:"Wild fruit shrub",clue:"কাঁটাযুক্ত আরোহী বা গুল্মজাতীয় উদ্ভিদ; ছোট ফল ধরে।"},
+  {bn:"আমড়া",en:"Hog plum",scientific:"Spondias pinnata",family:"Anacardiaceae",group:"Fruit tree",clue:"টক-মিষ্টি আঁশযুক্ত ফল; কচি ফল আচার ও ভর্তায় ব্যবহৃত।"},
+  {bn:"পানিয়াল",en:"Indian coffee plum",scientific:"Flacourtia jangomas",family:"Salicaceae",group:"Fruit tree",clue:"ছোট গোল ফল পাকলে লালচে-বেগুনি হয়; টক-মিষ্টি স্বাদ।"},
+  {bn:"কাঁটাবহরি",en:"Governor's plum",scientific:"Flacourtia indica",family:"Salicaceae",group:"Wild fruit shrub",clue:"কাঁটাযুক্ত গুল্ম; ছোট গোল ফল ধরে।"},
+  {bn:"কামরাঙা",en:"Star fruit",scientific:"Averrhoa carambola",family:"Oxalidaceae",group:"Fruit tree",clue:"আড়াআড়ি কাটলে তারার মতো আকৃতি দেখা যায়।"},
+  {bn:"বিলিম্বি",en:"Bilimbi",scientific:"Averrhoa bilimbi",family:"Oxalidaceae",group:"Fruit tree",clue:"লম্বাটে টক ফল সরাসরি কাণ্ড ও ডালে ধরে।"},
+  {bn:"ডেউয়া",en:"Monkey jack",scientific:"Artocarpus lacucha",family:"Moraceae",group:"Fruit tree",clue:"গোলাকার ফল পাকলে হলুদ-কমলা হয়; দক্ষিণ এশিয়ার স্থানীয় ফল।"},
+  {bn:"জামরুল",en:"Wax apple",scientific:"Syzygium samarangense",family:"Myrtaceae",group:"Fruit tree",clue:"ঘণ্টা বা নাশপাতির মতো আকৃতির রসালো ফল।"},
+  {bn:"গোলাপজাম",en:"Rose apple",scientific:"Syzygium jambos",family:"Myrtaceae",group:"Fruit tree",clue:"হালকা সুগন্ধি সাদা ফুল; ঘণ্টার মতো ফল।"},
+  {bn:"খেজুর",en:"Wild date palm",scientific:"Phoenix sylvestris",family:"Arecaceae",group:"Palm",clue:"বাংলাদেশে রস সংগ্রহের জন্য পরিচিত; পত্রপল্লব পালকের মতো।"},
+  {bn:"গোলপাতা",en:"Nipa palm",scientific:"Nypa fruticans",family:"Arecaceae",group:"Mangrove palm",clue:"জোয়ারভাটার কাদামাটিতে জন্মে; ফলের গুচ্ছ বড় গোলাকার।"},
+  {bn:"সুন্দরী",en:"Sundari mangrove",scientific:"Heritiera fomes",family:"Malvaceae",group:"Mangrove tree",clue:"সুন্দরবনের গুরুত্বপূর্ণ প্রধান বৃক্ষ; শ্বাসমূল দেখা যায় না, কাণ্ডের গোড়া খাঁজযুক্ত হতে পারে।"},
+  {bn:"গেওয়া",en:"Blind-your-eye mangrove",scientific:"Excoecaria agallocha",family:"Euphorbiaceae",group:"Mangrove tree",clue:"কাণ্ড বা পাতায় সাদা দুধের মতো কষ; কষ চোখে লাগলে ক্ষতি করতে পারে।"},
+  {bn:"গরান",en:"Yellow mangrove",scientific:"Ceriops decandra",family:"Rhizophoraceae",group:"Mangrove tree",clue:"সুন্দরবনের কাদামাটিতে জন্মানো লবণসহিষ্ণু ছোট-মাঝারি বৃক্ষ।"},
+  {bn:"কেওড়া",en:"Mangrove apple",scientific:"Sonneratia apetala",family:"Lythraceae",group:"Mangrove tree",clue:"সুন্দরবনের নদীখালের ধারে জন্মে; শ্বাসমূল মাটির ওপর উঠে থাকে।"},
+  {bn:"বাইন",en:"Grey mangrove",scientific:"Avicennia officinalis",family:"Acanthaceae",group:"Mangrove tree",clue:"অসংখ্য পেন্সিলের মতো শ্বাসমূল কাদার ওপর দেখা যায়।"},
+  {bn:"খলসি",en:"River mangrove",scientific:"Aegiceras corniculatum",family:"Primulaceae",group:"Mangrove shrub",clue:"লবণাক্ত জোয়ারভাটার বনে জন্মে; বাঁকানো শুঁটির মতো ফল।"},
+  {bn:"কাঁকড়া",en:"Large-leafed orange mangrove",scientific:"Bruguiera gymnorhiza",family:"Rhizophoraceae",group:"Mangrove tree",clue:"লম্বা অঙ্কুরিত চারাসহ ফল; কাদামাটির ম্যানগ্রোভে জন্মে।"},
+  {bn:"পশুর",en:"Cannonball mangrove",scientific:"Xylocarpus granatum",family:"Meliaceae",group:"Mangrove tree",clue:"বড় গোল কাঠের মতো ফল; সুন্দরবনের ম্যানগ্রোভ বৃক্ষ।"},
+  {bn:"শাপলা",en:"Water lily",scientific:"Nymphaea nouchali",family:"Nymphaeaceae",group:"Aquatic plant",clue:"পুকুর-বিলে ভাসমান পাতা ও পানির ওপরে ফুটে থাকা ফুল।"},
+  {bn:"পদ্ম",en:"Sacred lotus",scientific:"Nelumbo nucifera",family:"Nelumbonaceae",group:"Aquatic plant",clue:"পাতা সাধারণত পানির ওপরে উঠে থাকে; বীজের শুঁটি চাকতির মতো।"},
+  {bn:"কচুরিপানা",en:"Water hyacinth",scientific:"Pontederia crassipes",family:"Pontederiaceae",group:"Aquatic weed",clue:"ফুলে বেগুনি আভা; ফুলে ওঠা পত্রবৃন্তের কারণে পানিতে ভাসে।"},
+  {bn:"টাপাপানা",en:"Water lettuce",scientific:"Pistia stratiotes",family:"Araceae",group:"Aquatic plant",clue:"পানির ওপর ভাসমান পাতার রোজেট; পাতায় সমান্তরাল শিরা।"},
+  {bn:"পানিফল",en:"Water caltrop",scientific:"Trapa natans",family:"Lythraceae",group:"Aquatic crop",clue:"পানিতে ভাসমান রোজেট পাতা; শিংযুক্ত ফল খাদ্য হিসেবে ব্যবহৃত।"},
+  {bn:"ঢেঁকিশাক",en:"Oriental vegetable fern",scientific:"Diplazium esculentum",family:"Athyriaceae",group:"Edible fern",clue:"কচি কুণ্ডলিত পাতা শাক হিসেবে খাওয়া হয়; স্যাঁতসেঁতে স্থানে জন্মে।"},
+  {bn:"মনকচু",en:"Elephant ear",scientific:"Xanthosoma sagittifolium",family:"Araceae",group:"Tuber crop",clue:"বড় তীরাকৃতি পাতা ও খাদ্যোপযোগী কন্দ; চাষের আগে সঠিক প্রক্রিয়াজাতকরণ জরুরি।"},
 ];
 
 const catalogTarget = 500;
