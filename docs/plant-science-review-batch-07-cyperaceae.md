@@ -57,6 +57,12 @@ The paper gives a specimen citation for each of the 12 names. These are publishe
 
 **Taxonomic transcription note:** the Results list shortens *Carex nubigena* to “D.Don”, while the taxonomic enumeration cites *Carex nubigena* D.Don ex Tilloch & Taylor. Preserve the full author citation in the evidence record and reconcile the accepted-name authority against the chosen WCVP/POWO release before ingestion.
 
+## CAL sheet-image verification route
+
+- Botanical Survey of India states that digital herbarium images are supplied by the Central National Herbarium through **calbsi@bsi.gov.in**; its Virtual Herbarium description supports searches by barcode, family, genus, species, author, collector, collection number, state and country.
+- The BSI image terms state that supplied images are for non-commercial scientific/academic use, must carry the acknowledgement “© The Director, Botanical Survey of India, Kolkata”, require a PDF copy of resulting publication to be sent to BSI, and must **not be shared on a website**. Therefore, do not copy CAL sheet images into AGRIVA's public website without separate written permission covering web publication.
+- Practical verification request should cite all 12 CAL accession numbers in the voucher table and ask CAL to confirm (a) accession-to-sheet match, (b) label transcription, (c) current determination/annotation, and (d) whether a scan can be consulted under permitted research terms. The published article already supplies a useful accession index, but not the independently inspected sheet evidence.
+
 ## Important interpretation limits
 
 1. The BNH article's 12 taxa are published as new Bangladesh flora additions based on CAL sheets. Its printed voucher citations are now transcribed above; the historical collection metadata and exact sheet images should still be checked before a stronger specimen-level claim is made.
