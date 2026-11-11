@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const queue = JSON.parse(read("../docs/plant-science-review-batch-01.json"));
 const catalogue = read("../app/learn/plant-science/plants.ts");
-const pattern = /\\{bn:"([^"]*)",en:"([^"]*)",scientific:"([^"]*)",family:"([^"]*)",group:"([^"]*)",clue:"([^"]*)"\\}/g;
+const pattern = /\{bn:"([^"]*)",en:"([^"]*)",scientific:"([^"]*)",family:"([^"]*)",group:"([^"]*)",clue:"([^"]*)"\}/g;
 const catalogueByName = new Map([...catalogue.matchAll(pattern)].map((m) => [m[3], {
   bn: m[1], en: m[2], family: m[4], group: m[5], clue: m[6],
 }]));
