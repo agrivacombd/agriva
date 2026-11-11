@@ -106,7 +106,7 @@ const plants: Plant[] = [
   {bn:"মেথি",en:"Fenugreek",scientific:"Trigonella foenum-graecum",family:"Fabaceae",group:"Spice and pulse",clue:"তিন পত্রকবিশিষ্ট পাতা; বীজ ও পাতা রান্নায় ব্যবহৃত।"},
   {bn:"তেজপাতা",en:"Indian bay leaf",scientific:"Cinnamomum tamala",family:"Lauraceae",group:"Spice tree",clue:"সুগন্ধি পাতায় গোড়া থেকে তিনটি প্রধান শিরা বের হয়।"},
   {bn:"দারুচিনি",en:"Cinnamon",scientific:"Cinnamomum verum",family:"Lauraceae",group:"Spice tree",clue:"কাণ্ডের ভেতরের বাকল শুকিয়ে মসলা হিসেবে ব্যবহৃত।"},
-  {bn:"লবঙ্গ",en:"Clove",scientific:"Syzygium aromaticum",family:"Myrtaceae",group:"Spice tree",clue:"শুকনো ফুলের কুঁড়ি মসলা হিসেবে ব্যবহৃত হয়।"}
+  {bn:"লবঙ্গ",en:"Clove",scientific:"Syzygium aromaticum",family:"Myrtaceae",group:"Spice tree",clue:"শুকনো ফুলের কুঁড়ি মসলা হিসেবে ব্যবহৃত হয়।"},
 
   {bn:"বরই",en:"Indian jujube",scientific:"Ziziphus mauritiana",family:"Rhamnaceae",group:"Fruit tree",clue:"শুষ্ক মৌসুমেও ফল ধরে; ফল কাঁচা সবুজ, পাকলে হলুদাভ বা বাদামি।"},
   {bn:"বনবরই",en:"Wild jujube",scientific:"Ziziphus oenoplia",family:"Rhamnaceae",group:"Wild fruit shrub",clue:"কাঁটাযুক্ত আরোহী বা গুল্মজাতীয় উদ্ভিদ; ছোট ফল ধরে।"},
