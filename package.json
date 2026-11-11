@@ -47,7 +47,9 @@
     "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
     "test:marketplace-product-image-gallery": "node scripts/smoke-marketplace-product-image-gallery.mjs",
     "test:admin-product-image-gallery": "node scripts/smoke-admin-product-image-gallery.mjs",
-    "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs"
+    "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs",
+    "test:learn-phase1": "node scripts/smoke-learn-phase1.mjs",
+    "test:plant-science-catalog": "node scripts/smoke-plant-science-catalog.mjs"
   },
   "dependencies": {
     "next": "16.4.5",

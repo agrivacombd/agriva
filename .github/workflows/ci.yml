@@ -103,6 +103,10 @@ jobs:
         run: npm run test:seo-phase1
       - name: CV Builder versioned storage migration regression test
         run: npm run test:cv-builder-migration
+      - name: Learn 2.0 Phase 1 regression test
+        run: npm run test:learn-phase1
+      - name: Plant Science Academy 500-record catalog regression test
+        run: npm run test:plant-science-catalog
       - name: Production build
         run: npm run build
         env:
