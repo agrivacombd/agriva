@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 
 type Plant = { bn: string; en: string; scientific: string; family: string; group: string; clue: string };
 const plants: Plant[] = [
+  {bn:"নীল ফ্লস ফুল",en:"Flossflower",scientific:"Ageratum houstonianum",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
+  {bn:"সুইট সুলতান",en:"Sweet Sultan",scientific:"Amberboa moschata",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"}
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis aspera",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-র Acilepis accepted-species তালিকায় নামটি আছে।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis divergens",family:"Asteraceae",group:"CVPB verified — Subshrub",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis saligna",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
