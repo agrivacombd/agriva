@@ -16,6 +16,7 @@ assert.equal(new Set(scientificNames).size, records.length, "scientific-name exa
 assert.equal(duplicateNames.length, 0);
 assert.equal(duplicateSlugs.length, 0, "scientific-name URL slug collisions detected");
 assert.ok(records.every((record) => record.slice(1).every((value) => value.trim().length > 0)), "every record must have names, family, group and source note");
+assert.ok(records.every((record) => record[1] !== "বন"), "forest-category label must never be published as a Bengali common name");
 assert.ok(records.every((record) => /^(?:[A-Z]|×\s*[A-Z])/.test(record[3])), "scientific name must begin with a capitalized taxon name");
 assert.ok(data.includes('taxonomicReviewStatus: "pending"'), "unreviewed taxonomic status must remain explicit");
 assert.ok(client.includes('from "./plants"'), "interactive page must consume the shared catalogue module");
