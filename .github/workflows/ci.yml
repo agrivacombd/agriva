@@ -109,6 +109,8 @@ jobs:
         run: npm run audit:plant-science-catalog
       - name: Plant science review queue validation
         run: npm run test:plant-science-review-queue
+      - name: Plant Science SEO and AEO regression test
+        run: npm run test:plant-science-seo-aeo
       - name: Production build
         run: npm run build
         env:
