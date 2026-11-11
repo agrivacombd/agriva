@@ -52,7 +52,7 @@ const plants: Plant[] = [
   {bn:"চীনা আলু",en:"Chinese yam",scientific:"Dioscorea oppositifolia",family:"Dioscoreaceae",group:"Tuber crop",clue:"আরোহী লতা; খাদ্যোপযোগী কন্দের জন্য পরিচিত।"},
   {bn:"জুম আলু",en:"Five-leaved yam",scientific:"Dioscorea pentaphylla",family:"Dioscoreaceae",group:"Wild tuber",clue:"সাধারণত পাঁচটি পত্রকবিশিষ্ট পাতা; লতানো কন্দজ উদ্ভিদ।"},
   {bn:"তেলি গর্জন",en:"Garjan",scientific:"Dipterocarpus turbinatus",family:"Dipterocarpaceae",group:"Forest tree",clue:"চট্টগ্রাম ও সিলেটের চিরসবুজ বনে পাওয়া যায়; বড় বৃক্ষ।"},
-  {bn:"জলপাই",en:"Indian olive",scientific:"Elaeocarpus floribundus",family:"Elaeocarpaceae",group:"Fruit tree",clue:"টক ফল; স্থানীয়ভাবে আচার ও রান্নায় ব্যবহৃত।"},
+  {bn:"বন জলপাই",en:"Indian olive",scientific:"Elaeocarpus floribundus",family:"Elaeocarpaceae",group:"Fruit tree",clue:"টক ফল; স্থানীয়ভাবে আচার ও রান্নায় ব্যবহৃত।"},
   {bn:"মুক্তাঝুরি",en:"Indian copperleaf",scientific:"Acalypha indica",family:"Euphorbiaceae",group:"Field herb",clue:"ছোট আগাছাসদৃশ ভেষজ; সরু ফুলের শীষ দেখা যায়।"},
   {bn:"বনশিয়াল",en:"Bignay",scientific:"Antidesma bunius",family:"Phyllanthaceae",group:"Fruit tree",clue:"ঝুলন্ত থোকায় ছোট লাল থেকে কালচে ফল ধরে।"},
   {bn:"লটকন",en:"Burmese grape",scientific:"Baccaurea ramiflora",family:"Phyllanthaceae",group:"Fruit tree",clue:"কাণ্ড ও মোটা ডাল থেকে থোকায় ফল ধরে; টক-মিষ্টি ফল।"},
@@ -64,7 +64,7 @@ const plants: Plant[] = [
   {bn:"আনারস",en:"Pineapple",scientific:"Ananas comosus",family:"Bromeliaceae",group:"Fruit crop",clue:"মাটির কাছাকাছি পাতার রোজেট; যৌগিক ফলের মাথায় পাতার মুকুট।"},
   {bn:"অশোক",en:"Ashoka tree",scientific:"Saraca asoca",family:"Fabaceae",group:"Flowering tree",clue:"কমলা-লাল গুচ্ছফুল; দক্ষিণ এশিয়ার পরিচিত চিরসবুজ বৃক্ষ।"},
   {bn:"কানাইডিঙ্গি",en:"Indian trumpet flower",scientific:"Oroxylum indicum",family:"Bignoniaceae",group:"Medicinal tree",clue:"বড় যৌগিক পাতা ও লম্বা ঝুলন্ত ফলের শুঁটি।"},
-  {bn:"বোhera",en:"Belleric myrobalan",scientific:"Terminalia bellirica",family:"Combretaceae",group:"Forest tree",clue:"বড় বৃক্ষ; ফল ত্রিফলার একটি উপাদান হিসেবে পরিচিত।"},
+  {bn:"বহেড়া",en:"Belleric myrobalan",scientific:"Terminalia bellirica",family:"Combretaceae",group:"Forest tree",clue:"বড় বৃক্ষ; ফল ত্রিফলার একটি উপাদান হিসেবে পরিচিত।"},
   {bn:"নাগেশ্বর",en:"Ceylon ironwood",scientific:"Mesua ferrea",family:"Calophyllaceae",group:"Forest tree",clue:"সুগন্ধি সাদা ফুল ও শক্ত কাঠের জন্য পরিচিত।"}
 
 ];
