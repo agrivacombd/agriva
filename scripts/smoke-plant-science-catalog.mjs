@@ -7,7 +7,7 @@ const client = read("../app/learn/plant-science/PlantScienceClient.tsx");
 
 const records = [...data.matchAll(/\{bn:"([^"]*)",en:"([^"]*)",scientific:"([^"]*)",family:"([^"]*)",group:"([^"]*)",clue:"([^"]*)"\}/g)];
 const scientificNames = records.map((record) => record[3].trim().toLowerCase());
-const slugs = scientificNames.map((name) => name.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+const slugs = scientificNames.map((name) => name.replace(/×/g, " x ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
 const duplicateNames = scientificNames.filter((name, index) => scientificNames.indexOf(name) !== index);
 const duplicateSlugs = slugs.filter((slug, index) => slugs.indexOf(slug) !== index);
 
