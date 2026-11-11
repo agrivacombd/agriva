@@ -14,7 +14,7 @@ assert.match(analytics, /anonymize_ip:\s*true/, "GA4 configuration must request 
 assert.match(analytics, /send_page_view:\s*false/, "GA4 must disable automatic page views so App Router navigation can be measured once");
 assert.match(analytics, /usePathname/, "GA4 must observe App Router path changes");
 assert.match(analytics, /page_view/, "GA4 must emit page views for client-side navigation");
-assert.match(analytics, /!\/^G-\[A-Z0-9\]\+\$\//, "Invalid measurement IDs must not load analytics");
+assert.match(analytics, /validMeasurementId = Boolean\(measurementId && \/\^G-\[A-Z0-9\]\+\$\//, "Invalid measurement IDs must not load analytics");
 assert.match(helper, /seller_product_submitted/, "Analytics helper must define the seller submission event");
 assert.match(helper, /marketplace_order_placed/, "Analytics helper must define the order placement event");
 assert.match(helper, /Never pass names, phone numbers, addresses, email addresses/, "Analytics helper must document PII exclusion");
