@@ -5,257 +5,257 @@
   "reviewPolicy": "Heuristic flags only. Do not treat these records as incorrect, accepted, synonyms, or Bangladesh occurrences without checking a taxonomic backbone and Bangladesh evidence separately.",
   "sourceRegistry": "app/learn/plant-science/sources.ts",
   "records": [
-  {
-    "sourceRow": 452,
-    "bn": "মিষ্টি ভুট্টা",
-    "en": "Sweet corn",
-    "scientific": "Zea mays convar. saccharata",
-    "family": "Poaceae",
-    "group": "Cereal vegetable crop",
-    "clue": "কচি মিষ্টি দানা মোচায় সারিবদ্ধ থাকে।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 464,
-    "bn": "ট্রিটিকেল",
-    "en": "Triticale",
-    "scientific": "× Triticosecale",
-    "family": "Poaceae",
-    "group": "Cereal hybrid",
-    "clue": "গম ও রাইয়ের সংকর শস্য; দানা ও পশুখাদ্যে ব্যবহৃত।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 528,
-    "bn": "ক্যাপসিকাম",
-    "en": "Bell pepper",
-    "scientific": "Capsicum annuum Group Grossum",
-    "family": "Solanaceae",
-    "group": "Vegetable crop",
-    "clue": "বড় ঘণ্টার মতো ফল; পাকা অবস্থায় সবুজ, লাল বা হলুদ।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 626,
-    "bn": "সুইট সরঘাম",
-    "en": "Sweet sorghum",
-    "scientific": "Sorghum bicolor (sweet-stem group)",
-    "family": "Poaceae",
-    "group": "Sugar and fodder crop",
-    "clue": "রসালো কাণ্ড; শর্করা ও পশুখাদ্য উৎপাদনে ব্যবহৃত।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 775,
-    "bn": "সুগার বিট",
-    "en": "Sugar beet",
-    "scientific": "Beta vulgaris subsp. vulgaris Altissima Group",
-    "family": "Amaranthaceae",
-    "group": "Sugar crop",
-    "clue": "স্ফীত মূল থেকে sucrose আহরণ করা হয়।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 776,
-    "bn": "ফডার বিট",
-    "en": "Fodder beet",
-    "scientific": "Beta vulgaris subsp. vulgaris Crassa Group",
-    "family": "Amaranthaceae",
-    "group": "Fodder crop",
-    "clue": "বড় স্ফীত মূল ও পাতা পশুখাদ্য।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 971,
-    "bn": "ফল",
-    "en": "Kinnow",
-    "scientific": "Citrus nobilis × Citrus deliciosa",
-    "family": "Rutaceae",
-    "group": "Citrus cultivar group",
-    "clue": "Citrus cultivar group বিভাগের উদ্ভিদ; Kinnow নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1218,
-    "bn": "বন",
-    "en": "Chilli",
-    "scientific": "Capsicum chinense Jacq.",
-    "family": "Solanaceae",
-    "group": "Spice crop",
-    "clue": "Spice crop বিভাগের উদ্ভিদ; Chilli নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1220,
-    "bn": "বন",
-    "en": "Tree tomato",
-    "scientific": "Solanum betaceum Cav.",
-    "family": "Solanaceae",
-    "group": "Fruit crop",
-    "clue": "Fruit crop বিভাগের উদ্ভিদ; Tree tomato নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1221,
-    "bn": "বন",
-    "en": "Pepper",
-    "scientific": "Capsicum pubescens Ruiz & Pav.",
-    "family": "Solanaceae",
-    "group": "Spice crop",
-    "clue": "Spice crop বিভাগের উদ্ভিদ; Pepper নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1223,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum pimpinellifolium L.",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1229,
-    "bn": "বন",
-    "en": "Potato wild",
-    "scientific": "Solanum acaule Bitter",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Potato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1231,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum cheesmaniae Riley",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1234,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum arcanum Peralta",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1235,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum habrochaites S.Knapp & D.M.Spooner",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1237,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum peruvianum L.",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1238,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum chilense Dunal",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  },
-  {
-    "sourceRow": 1239,
-    "bn": "বন",
-    "en": "Tomato wild",
-    "scientific": "Solanum corneliomulleri J.F.Macbr.",
-    "family": "Solanaceae",
-    "group": "Wild crop relative",
-    "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
-    "reviewStatus": "needs_manual_review",
-    "flags": [
-      "scientific_name_not_simple_binomial_or_infraspecific_form"
-    ],
-    "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
-  }
-]
+    {
+      "sourceRow": 452,
+      "bn": "মিষ্টি ভুট্টা",
+      "en": "Sweet corn",
+      "scientific": "Zea mays convar. saccharata",
+      "family": "Poaceae",
+      "group": "Cereal vegetable crop",
+      "clue": "কচি মিষ্টি দানা মোচায় সারিবদ্ধ থাকে।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 464,
+      "bn": "ট্রিটিকেল",
+      "en": "Triticale",
+      "scientific": "× Triticosecale",
+      "family": "Poaceae",
+      "group": "Cereal hybrid",
+      "clue": "গম ও রাইয়ের সংকর শস্য; দানা ও পশুখাদ্যে ব্যবহৃত।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 528,
+      "bn": "ক্যাপসিকাম",
+      "en": "Bell pepper",
+      "scientific": "Capsicum annuum Group Grossum",
+      "family": "Solanaceae",
+      "group": "Vegetable crop",
+      "clue": "বড় ঘণ্টার মতো ফল; পাকা অবস্থায় সবুজ, লাল বা হলুদ।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 626,
+      "bn": "সুইট সরঘাম",
+      "en": "Sweet sorghum",
+      "scientific": "Sorghum bicolor (sweet-stem group)",
+      "family": "Poaceae",
+      "group": "Sugar and fodder crop",
+      "clue": "রসালো কাণ্ড; শর্করা ও পশুখাদ্য উৎপাদনে ব্যবহৃত।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 775,
+      "bn": "সুগার বিট",
+      "en": "Sugar beet",
+      "scientific": "Beta vulgaris subsp. vulgaris Altissima Group",
+      "family": "Amaranthaceae",
+      "group": "Sugar crop",
+      "clue": "স্ফীত মূল থেকে sucrose আহরণ করা হয়।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 776,
+      "bn": "ফডার বিট",
+      "en": "Fodder beet",
+      "scientific": "Beta vulgaris subsp. vulgaris Crassa Group",
+      "family": "Amaranthaceae",
+      "group": "Fodder crop",
+      "clue": "বড় স্ফীত মূল ও পাতা পশুখাদ্য।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 971,
+      "bn": "ফল",
+      "en": "Kinnow",
+      "scientific": "Citrus nobilis × Citrus deliciosa",
+      "family": "Rutaceae",
+      "group": "Citrus cultivar group",
+      "clue": "Citrus cultivar group বিভাগের উদ্ভিদ; Kinnow নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1218,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Chilli",
+      "scientific": "Capsicum chinense Jacq.",
+      "family": "Solanaceae",
+      "group": "Spice crop",
+      "clue": "Spice crop বিভাগের উদ্ভিদ; Chilli নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1220,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tree tomato",
+      "scientific": "Solanum betaceum Cav.",
+      "family": "Solanaceae",
+      "group": "Fruit crop",
+      "clue": "Fruit crop বিভাগের উদ্ভিদ; Tree tomato নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1221,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Pepper",
+      "scientific": "Capsicum pubescens Ruiz & Pav.",
+      "family": "Solanaceae",
+      "group": "Spice crop",
+      "clue": "Spice crop বিভাগের উদ্ভিদ; Pepper নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1223,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum pimpinellifolium L.",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1229,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Potato wild",
+      "scientific": "Solanum acaule Bitter",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Potato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1231,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum cheesmaniae Riley",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1234,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum arcanum Peralta",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1235,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum habrochaites S.Knapp & D.M.Spooner",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1237,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum peruvianum L.",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1238,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum chilense Dunal",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    },
+    {
+      "sourceRow": 1239,
+      "bn": "প্রচলিত বাংলা নাম উল্লেখ নেই",
+      "en": "Tomato wild",
+      "scientific": "Solanum corneliomulleri J.F.Macbr.",
+      "family": "Solanaceae",
+      "group": "Wild crop relative",
+      "clue": "Wild crop relative বিভাগের উদ্ভিদ; Tomato wild নামে পরিচিত। এর শ্রেণিবিন্যাস ও ব্যবহার ব্যবহারিক ক্লাসে পর্যবেক্ষণ করুন।",
+      "reviewStatus": "needs_manual_review",
+      "flags": [
+        "scientific_name_not_simple_binomial_or_infraspecific_form"
+      ],
+      "reviewNote": "Heuristic flag only; may be a valid hybrid, cultivar group, botanical authorship, or horticultural grouping. Do not rename without checking the cited taxonomic authority."
+    }
+  ]
 }
