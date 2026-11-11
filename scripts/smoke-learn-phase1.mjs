@@ -13,9 +13,13 @@ assert.ok(page.includes("/learn/plant-science"), "Plant Science Academy route mu
 assert.ok(page.includes("/learn/plant-disease"), "Disease Learning Lab route must remain linked");
 assert.ok(page.includes("কৃষি-নিরাপত্তা নোট"), "Agricultural safety notice should remain visible");
 assert.ok(library.includes('type="search"'), "Learning library should expose an accessible search input");
+assert.ok(library.includes('role="group" aria-label="বিষয় অনুযায়ী ফিল্টার"'), "Category filters should be announced as a control group");
 assert.ok(library.includes("aria-pressed={active}"), "Category filters should expose their active state");
+assert.ok(library.includes('role="status" aria-live="polite"'), "Filtered result count should be announced to assistive technology");
+assert.ok(library.includes("step.body") && library.includes("lesson.quiz.question") && library.includes("lesson.quiz.options"), "Search should cover guide instructions and quiz content, not only headings");
 assert.ok(library.includes("filteredLessons.map"), "Learning library should render filtered guide results");
 assert.ok(library.includes("কোনো গাইড পাওয়া যায়নি"), "Learning library should provide an empty state");
+assert.ok(library.includes('aria-label="অনুসন্ধানের লেখা মুছুন"'), "Search clear button should have an explicit accessible name");
 assert.ok(lessons.includes('slug: "rice-cultivation"'), "Existing rice guide data must remain");
 assert.ok(lessons.includes('slug: "vegetable-cultivation"'), "Existing vegetable guide data must remain");
 assert.ok(lessons.includes('slug: "soil-health"'), "Existing soil guide data must remain");
