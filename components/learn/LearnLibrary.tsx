@@ -116,7 +116,9 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
 
       {filteredLessons.length > 0 ? (
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
-          {filteredLessons.map((lesson) => (
+          {filteredLessons.map((lesson) => {
+            const lessonProgress = progress[lesson.slug];
+            return (
             <article key={lesson.slug} className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
               <div className="flex items-center justify-between gap-3">
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-xl" aria-hidden="true">
@@ -129,13 +131,14 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
               <p className="mt-3 text-sm leading-7 text-slate-600">{lesson.summary}</p>
               <p className="mt-3 flex-1 text-xs leading-6 text-slate-500"><span className="font-bold text-slate-700">শিখবেন:</span> {lesson.outcomes[0]}</p>
               <p className="mt-2 text-xs leading-5 text-emerald-800">{lesson.topics.slice(0, 3).join(" · ")}</p>
-              {(progress[lesson.slug]?.completedAt || progress[lesson.slug]?.lastQuiz) && <p className="mt-3 text-xs font-bold text-emerald-900">{progress[lesson.slug]?.completedAt ? "✓ পাঠ সম্পন্ন" : "কুইজ দেওয়া হয়েছে"}{progress[lesson.slug]?.lastQuiz ? ` · ${progress[lesson.slug].lastQuiz.correct ? "সঠিক উত্তর" : "আরও অনুশীলন প্রয়োজন"}` : ""}</p>}
+              {(lessonProgress?.completedAt || lessonProgress?.lastQuiz) && <p className="mt-3 text-xs font-bold text-emerald-900">{lessonProgress.completedAt ? "✓ পাঠ সম্পন্ন" : "কুইজ দেওয়া হয়েছে"}{lessonProgress.lastQuiz ? ` · ${lessonProgress.lastQuiz.correct ? "সঠিক উত্তর" : "আরও অনুশীলন প্রয়োজন"}` : ""}</p>}
               <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                 <span className="text-xs text-slate-500">{lesson.steps.length}টি ধাপ · কুইজ</span>
                 <Link href={`/learn/${lesson.slug}`} className="text-sm font-extrabold text-emerald-800 hover:underline">গাইড পড়ুন →</Link>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
