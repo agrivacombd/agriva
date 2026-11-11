@@ -24,6 +24,12 @@ assert.ok(lessons.includes('slug: "rice-cultivation"'), "Existing rice guide dat
 assert.ok(lessons.includes('slug: "vegetable-cultivation"'), "Existing vegetable guide data must remain");
 assert.ok(lessons.includes('slug: "soil-health"'), "Existing soil guide data must remain");
 assert.ok(lessons.includes('slug: "integrated-pest-management"'), "Existing IPM guide data must remain");
+assert.ok(lessons.includes('level: "প্রাথমিক"') && lessons.includes("audience:") && lessons.includes("topics:") && lessons.includes("outcomes:"), "Every guide should expose structured learning metadata");
+assert.ok(lessons.includes("মৌসুম ও জমির উপযোগিতা") && lessons.includes("প্রতিনিধিত্বশীল মাটির নমুনা"), "Learning outcomes should be specific to the guide topic");
+assert.ok(library.includes("lesson.topics") && library.includes("lesson.outcomes") && library.includes("lesson.audience"), "Guide search should include structured learning metadata");
+const reader = readFileSync("components/learn/LessonReader.tsx", "utf8");
+assert.ok(reader.includes("এই পাঠ শেষে যা শিখবেন") && reader.includes("lesson.outcomes.map"), "Lesson detail should present its learning outcomes");
+assert.ok(reader.includes("lesson.audience.join") && reader.includes("lesson.topics.join"), "Lesson detail should explain intended audience and covered topics");
 assert.ok(audit.includes("No production database writes or migrations"), "Audit should document that production schema was not changed");
 
 console.log("Learn 2.0 Phase 1 smoke tests passed.");
