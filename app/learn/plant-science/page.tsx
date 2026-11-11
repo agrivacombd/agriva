@@ -148,7 +148,7 @@ const plants: Plant[] = [
   {bn:"শিরীষ",en:"Siris tree",scientific:"Albizia lebbeck",family:"Fabaceae",group:"Shade tree",clue:"পাতা দ্বিপক্ষল যৌগিক; চ্যাপ্টা শুঁটি বাতাসে শব্দ করতে পারে।"},
   {bn:"কড়ই",en:"Pink siris",scientific:"Albizia saman",family:"Fabaceae",group:"Shade tree",clue:"বিস্তৃত ছায়াদানকারী মুকুট; গোলাপি-সাদা পুষ্পমঞ্জরি।"},
   {bn:"শিম",en:"Hyacinth bean",scientific:"Lablab purpureus",family:"Fabaceae",group:"Vegetable",clue:"লতানো ডাল; বেগুনি বা সাদা ফুল এবং চ্যাপ্টা শুঁটি।"},
-  {bn:"বরবটির বুনো আত্মীয়",en:"Cowpea",scientific:"Vigna unguiculata subsp. unguiculata",family:"Fabaceae",group:"Pulse crop",clue:"ডালজাতীয় উদ্ভিদ; শুঁটি লম্বা এবং বীজ বিভিন্ন রঙের।"},
+  {bn:"আজুকি বিন",en:"Adzuki bean",scientific:"Vigna angularis",family:"Fabaceae",group:"Pulse crop",clue:"ছোট লাল বা গাঢ় বীজের ডাল; গাছ ঝোপালো বা আরোহী হতে পারে।"},
   {bn:"কুলেখাড়া",en:"Hygrophila",scientific:"Hygrophila auriculata",family:"Acanthaceae",group:"Wetland herb",clue:"জলাভূমির কাঁটাযুক্ত ভেষজ; পাতার গোড়ায় কাঁটা থাকতে পারে।"},
   {bn:"হেলেঞ্চা",en:"Marsh barbel",scientific:"Enhydra fluctuans",family:"Asteraceae",group:"Leafy vegetable",clue:"জলাভূমিতে জন্মানো ভেষজ; কচি ডগা শাক হিসেবে খাওয়া হয়।"},
   {bn:"কলমি",en:"Water spinach",scientific:"Ipomoea aquatica",family:"Convolvulaceae",group:"Leafy vegetable",clue:"জলজ বা স্যাঁতসেঁতে স্থানে লতিয়ে বাড়ে; ফাঁপা কাণ্ড থাকে।"},
