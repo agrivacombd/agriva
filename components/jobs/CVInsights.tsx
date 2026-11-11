@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import type { CVExperienceEntry, CVEducationEntry } from "@/lib/jobs/cv/types";
 
 type CVData = {
   fullName: string;
@@ -17,7 +18,7 @@ type CVData = {
   photoUrl: string;
 };
 
-type Props = { cv: CVData; language: "en" | "bn" };
+type Props = { cv: CVData; language: "en" | "bn"; workEntries?: CVExperienceEntry[]; educationEntries?: CVEducationEntry[] };
 
 const STOP_WORDS = new Set([
   "about", "after", "also", "and", "are", "for", "from", "has", "have", "into",
@@ -36,7 +37,7 @@ function terms(value: string) {
   ));
 }
 
-export default function CVInsights({ cv, language }: Props) {
+export default function CVInsights({ cv, language, workEntries = [], educationEntries = [] }: Props) {
   const [jobDescription, setJobDescription] = useState("");
   const isBn = language === "bn";
 
@@ -50,10 +51,18 @@ export default function CVInsights({ cv, language }: Props) {
       { key: "education", ok: cv.education.trim().length >= 10, bn: "শিক্ষাগত যোগ্যতা আছে", en: "Education is included", fixBn: "প্রতিষ্ঠান, ডিগ্রি ও সাল যোগ করুন", fixEn: "Add institution, qualification, and year" },
       { key: "skills", ok: terms(cv.skills).length >= 3, bn: "কমপক্ষে ৩টি দক্ষতা আছে", en: "At least three skills are listed", fixBn: "প্রাসঙ্গিক দক্ষতা নির্দিষ্টভাবে লিখুন", fixEn: "List specific, relevant skills" },
       { key: "readable", ok: [cv.summary, cv.education, cv.experience, cv.skills].some((v) => v.includes("\n")), bn: "তথ্য পড়তে সুবিধাজনকভাবে সাজানো", en: "Some sections use readable line breaks", fixBn: "দীর্ঘ অনুচ্ছেদের বদলে আলাদা লাইনে তথ্য সাজান", fixEn: "Use separate lines instead of one long paragraph" },
+      { key: "achievements", ok: workEntries.some((entry) => entry.achievements.trim().length >= 12), bn: "কাজের অন্তত একটি অর্জন উল্লেখ আছে", en: "At least one work achievement is described", fixBn: "সত্য হলে ফলাফল, পরিমাণ বা উন্নতির উদাহরণ যোগ করুন", fixEn: "Where accurate, add an outcome, quantity, or improvement example" },
+      { key: "education-detail", ok: educationEntries.some((entry) => entry.degree.trim() && entry.institution.trim()), bn: "ডিগ্রি ও প্রতিষ্ঠানের তথ্য মিলেছে", en: "Education includes both qualification and institution", fixBn: "প্রতিটি শিক্ষার এন্ট্রিতে ডিগ্রি ও প্রতিষ্ঠানের নাম দিন", fixEn: "Include both qualification and institution for each education entry" },
     ];
     const completed = items.filter((item) => item.ok).length;
-    return { items, completed, score: Math.round((completed / items.length) * 100) };
-  }, [cv]);
+    const invalidDateEntries = workEntries.filter((entry) => {
+      if (!entry.startDate || !entry.endDate) return false;
+      const start = Date.parse(entry.startDate);
+      const end = Date.parse(entry.endDate);
+      return Number.isFinite(start) && Number.isFinite(end) && end < start;
+    });
+    return { items, completed, score: Math.round((completed / items.length) * 100), invalidDateEntries };
+  }, [cv, workEntries, educationEntries]);
 
   const match = useMemo(() => {
     const required = terms(jobDescription).filter((word) => word.length >= 3);
@@ -83,6 +92,7 @@ export default function CVInsights({ cv, language }: Props) {
       </div>
       <p className="mt-2 text-xs text-slate-500">{isBn ? `${checks.completed} / ${checks.items.length}টি চেক সম্পন্ন` : `${checks.completed} of ${checks.items.length} checks completed`}</p>
 
+      {checks.invalidDateEntries.length > 0 && <p role="alert" className="mt-3 rounded-lg bg-amber-50 p-3 text-sm font-semibold text-amber-900">{isBn ? checks.invalidDateEntries.length + "টি কাজের এন্ট্রিতে শেষের তারিখ শুরুর তারিখের আগে। তারিখ যাচাই করুন।" : checks.invalidDateEntries.length + " work entry has an end date earlier than its start date. Please review the dates."}</p>}
       <ul className="mt-4 space-y-2">
         {checks.items.map((item) => (
           <li key={item.key} className="flex items-start gap-2 text-sm leading-5">

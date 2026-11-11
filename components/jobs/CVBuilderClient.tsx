@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import CVInsights from "@/components/jobs/CVInsights";
+import { loadCV, saveCV } from "@/lib/jobs/cv/storage";
+import type { CVDocument, CVEducationEntry, CVExperienceEntry } from "@/lib/jobs/cv/types";
 import { useEffect, useMemo, useState } from "react";
 
 type CV = {
@@ -10,6 +12,39 @@ type CV = {
   certifications: string; photoUrl: string;
 };
 const emptyCV: CV = { fullName:"", headline:"", phone:"", email:"", address:"", summary:"", education:"", experience:"", skills:"", languages:"", certifications:"", photoUrl:"" };
+
+function documentToLegacyCV(document: CVDocument): CV {
+  const join = (items: Array<{ content?: string; jobTitle?: string; company?: string; description?: string; achievements?: string; degree?: string; institution?: string; details?: string }>) => items.map((item) => [item.content, item.jobTitle, item.company, item.description, item.achievements, item.degree, item.institution, item.details].filter(Boolean).join(" · ")).join("\n");
+  return {
+    fullName: document.profile.fullName,
+    headline: document.profile.headline,
+    phone: document.profile.phone,
+    email: document.profile.email,
+    address: document.profile.address,
+    photoUrl: document.profile.photoUrl,
+    summary: document.summary,
+    experience: join(document.experience),
+    education: join(document.education),
+    skills: join(document.skills),
+    languages: join(document.languages),
+    certifications: join(document.certifications),
+  };
+}
+
+function legacyCVToDocument(cv: CV, template: string, language: "en" | "bn", work: CVExperienceEntry[], education: CVEducationEntry[]): CVDocument {
+  const entries = (value: string, prefix: string) => value.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).map((content, index) => ({ id: `${prefix}-${index + 1}`, content }));
+  return {
+    schemaVersion: 3,
+    profile: { fullName: cv.fullName, headline: cv.headline, phone: cv.phone, email: cv.email, address: cv.address, photoUrl: cv.photoUrl },
+    summary: cv.summary,
+    experience: work,
+    education,
+    skills: entries(cv.skills, "skill"),
+    languages: entries(cv.languages, "language"),
+    certifications: entries(cv.certifications, "certification"),
+    settings: { language, templateId: template },
+  };
+}
 const templates = [
   { id:"classic", name:"Classic Professional", note:"পরিচ্ছন্ন, আনুষ্ঠানিক", accent:"#166534" },
   { id:"modern", name:"Modern Green", note:"আধুনিক, দুই কলামের অনুভূতি", accent:"#0f766e" },
@@ -21,33 +56,78 @@ export default function CVBuilderPage() {
   const [cv, setCV] = useState<CV>(emptyCV);
   const [template, setTemplate] = useState("classic");
   const [language, setLanguage] = useState<"en"|"bn">("en");
+  const [workEntries, setWorkEntries] = useState<CVExperienceEntry[]>([]);
+  const [educationEntries, setEducationEntries] = useState<CVEducationEntry[]>([]);
   const [saved, setSaved] = useState(false);
+  const [shareMessage, setShareMessage] = useState("");
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("agriva-cv-v1");
-      if (raw) {
-        const data = JSON.parse(raw) as { cv?: CV; template?: string; language?: "en"|"bn" };
-        if (data.cv) setCV({ ...emptyCV, ...data.cv });
-        if (data.template && templates.some(t => t.id === data.template)) setTemplate(data.template);
-        if (data.language === "bn" || data.language === "en") setLanguage(data.language);
-      }
-    } catch { /* Ignore invalid local browser data. */ }
+    const result = loadCV(window.localStorage);
+    if (result.document) {
+      setCV({ ...emptyCV, ...documentToLegacyCV(result.document) });
+      setWorkEntries(result.document.experience);
+      setEducationEntries(result.document.education);
+      const storedTemplate = result.document.settings.templateId;
+      if (templates.some((item) => item.id === storedTemplate)) setTemplate(storedTemplate);
+      setLanguage(result.document.settings.language);
+    }
     setLoaded(true);
   }, []);
 
   const selected = templates.find(t => t.id === template) ?? templates[0];
   const isBn = language === "bn";
   const labels = isBn
-    ? { title:"আমার CV তৈরি করুন", subtitle:"একবার তথ্য দিন, পছন্দের ডিজাইন বেছে নিন, তারপর PDF ডাউনলোড করুন বা চাকরিতে আবেদন করুন।", personal:"ব্যক্তিগত তথ্য", fullName:"পূর্ণ নাম", headline:"পেশাগত পরিচিতি", phone:"ফোন নম্বর", email:"ইমেইল", address:"ঠিকানা", summary:"নিজের সম্পর্কে", education:"শিক্ষাগত যোগ্যতা", experience:"কাজের অভিজ্ঞতা", skills:"দক্ষতা", languages:"ভাষা", certifications:"প্রশিক্ষণ ও সার্টিফিকেট", photo:"ছবির URL (ঐচ্ছিক)", design:"CV ডিজাইন বেছে নিন", preview:"লাইভ প্রিভিউ", save:"CV সেভ করুন", download:"PDF ডাউনলোড / প্রিন্ট", apply:"চাকরি খুঁজুন ও আবেদন করুন", saved:"এই ডিভাইসে CV সেভ হয়েছে", tip:"আপনার তথ্য এই ব্রাউজারেই সেভ হয়। শেয়ার করা ডিভাইসে ব্যক্তিগত তথ্য রেখে যাবেন না।", placeholder:"এখানে লিখুন...", edit:"তথ্য পরিবর্তন করুন" }
-    : { title:"Build your CV", subtitle:"Enter your information once, choose your favourite design, then download a PDF or continue to jobs.", personal:"Personal information", fullName:"Full name", headline:"Professional headline", phone:"Phone number", email:"Email", address:"Address", summary:"Professional summary", education:"Education", experience:"Work experience", skills:"Skills", languages:"Languages", certifications:"Training & certifications", photo:"Photo URL (optional)", design:"Choose a CV design", preview:"Live preview", save:"Save CV", download:"Download PDF / Print", apply:"Browse jobs & apply", saved:"CV saved on this device", tip:"Your CV is stored in this browser only. Avoid saving personal details on a shared device.", placeholder:"Write here...", edit:"Edit information" };
+    ? { title:"আমার CV তৈরি করুন", subtitle:"একবার তথ্য দিন, পছন্দের ডিজাইন বেছে নিন, তারপর PDF ডাউনলোড করুন বা চাকরিতে আবেদন করুন।", personal:"ব্যক্তিগত তথ্য", fullName:"পূর্ণ নাম", headline:"পেশাগত পরিচিতি", phone:"ফোন নম্বর", email:"ইমেইল", address:"ঠিকানা", summary:"নিজের সম্পর্কে", education:"শিক্ষাগত যোগ্যতা", experience:"কাজের অভিজ্ঞতা", skills:"দক্ষতা", languages:"ভাষা", certifications:"প্রশিক্ষণ ও সার্টিফিকেট", photo:"ছবির URL (ঐচ্ছিক)", design:"CV ডিজাইন বেছে নিন", preview:"লাইভ প্রিভিউ", save:"CV সেভ করুন", download:"প্রিন্ট / PDF সেভ", apply:"চাকরি খুঁজুন ও আবেদন করুন", saved:"এই ডিভাইসে CV সেভ হয়েছে", tip:"আপনার তথ্য এই ব্রাউজারেই সেভ হয়। শেয়ার করা ডিভাইসে ব্যক্তিগত তথ্য রেখে যাবেন না।", placeholder:"এখানে লিখুন...", edit:"তথ্য পরিবর্তন করুন" }
+    : { title:"Build your CV", subtitle:"Enter your information once, choose your favourite design, then download a PDF or continue to jobs.", personal:"Personal information", fullName:"Full name", headline:"Professional headline", phone:"Phone number", email:"Email", address:"Address", summary:"Professional summary", education:"Education", experience:"Work experience", skills:"Skills", languages:"Languages", certifications:"Training & certifications", photo:"Photo URL (optional)", design:"Choose a CV design", preview:"Live preview", save:"Save CV", download:"Print / Save as PDF", apply:"Browse jobs & apply", saved:"CV saved on this device", tip:"Your CV is stored in this browser only. Avoid saving personal details on a shared device.", placeholder:"Write here...", edit:"Edit information" };
 
   const update = (key: keyof CV, value: string) => { setCV(prev => ({ ...prev, [key]: value })); setSaved(false); };
   const persist = () => {
-    try { localStorage.setItem("agriva-cv-v1", JSON.stringify({ cv, template, language })); setSaved(true); }
-    catch { setSaved(false); }
+    const document = legacyCVToDocument(cv, template, language, workEntries, educationEntries);
+    setSaved(saveCV(window.localStorage, document, { language, template }));
   };
+  const getShareText = () => [
+    cv.fullName, cv.headline, [cv.phone, cv.email, cv.address].filter(Boolean).join(" · "), cv.summary,
+    language === "bn" ? "কাজের অভিজ্ঞতা" : "Work experience",
+    ...workEntries.map((item) => [item.jobTitle, item.company, item.location, item.startDate, item.endDate, item.description, item.achievements].filter(Boolean).join(" | ")),
+    language === "bn" ? "শিক্ষাগত যোগ্যতা" : "Education",
+    ...educationEntries.map((item) => [item.degree, item.institution, item.location, item.startDate, item.endDate, item.details].filter(Boolean).join(" | ")),
+    language === "bn" ? "দক্ষতা" : "Skills", cv.skills,
+    language === "bn" ? "ভাষা" : "Languages", cv.languages,
+    language === "bn" ? "প্রশিক্ষণ ও সার্টিফিকেট" : "Training & certifications", cv.certifications,
+  ].filter(Boolean).join("\n");
+  const shareCV = async () => {
+    const text = getShareText();
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: cv.fullName ? `${cv.fullName} — CV` : "CV", text });
+        setShareMessage(language === "bn" ? "শেয়ার মেনু খোলা হয়েছে।" : "Share sheet opened.");
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        setShareMessage(language === "bn" ? "CV-এর লেখা কপি হয়েছে।" : "CV text copied. You can paste it into a message.");
+      } else {
+        setShareMessage(language === "bn" ? "এই ব্রাউজারে সরাসরি শেয়ার সমর্থিত নয়। PDF সেভ করে শেয়ার করুন।" : "Sharing is not supported here. Save the PDF and share it manually.");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setShareMessage(language === "bn" ? "শেয়ার করা যায়নি। PDF সেভ করে পাঠাতে পারেন।" : "Could not share. Save the PDF and attach it manually.");
+    }
+  };
+
+  useEffect(() => {
+    if (!loaded) return;
+    const timeout = window.setTimeout(() => {
+      const document = legacyCVToDocument(cv, template, language, workEntries, educationEntries);
+      setSaved(saveCV(window.localStorage, document, { language, template }));
+    }, 700);
+    return () => window.clearTimeout(timeout);
+  }, [cv, template, language, loaded, workEntries, educationEntries]);
+  useEffect(() => {
+    setCV((current) => ({ ...current, experience: workEntries.map((item) => [item.jobTitle, item.company, item.location, item.startDate && item.endDate ? `${item.startDate} – ${item.endDate}` : item.startDate || item.endDate, item.description, item.achievements].filter(Boolean).join(" · ")).filter(Boolean).join("\n") }));
+  }, [workEntries]);
+  useEffect(() => {
+    setCV((current) => ({ ...current, education: educationEntries.map((item) => [item.degree, item.institution, item.location, item.startDate && item.endDate ? `${item.startDate} – ${item.endDate}` : item.startDate || item.endDate, item.details].filter(Boolean).join(" · ")).filter(Boolean).join("\n") }));
+  }, [educationEntries]);
   const previewText = useMemo(() => (value: string) => value.trim().split("\n").filter(Boolean), []);
 
   if (!loaded) return <main className="min-h-screen bg-[#f5f8f1] p-8 text-[#17351f]">CV Builder loading…</main>;
@@ -70,23 +150,65 @@ export default function CVBuilderPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {(["fullName","headline","phone","email","address","photoUrl"] as const).map(key => <label key={key} className="text-sm font-bold">{labels[key === "photoUrl" ? "photo" : key]}<input value={cv[key]} onChange={e=>update(key,e.target.value)} maxLength={200} placeholder={labels.placeholder} type={key==="email"?"email":"text"} className="mt-2 min-h-11 w-full rounded-lg border border-slate-200 px-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/></label>)}
           </div>
-          {(["summary","education","experience","skills","languages","certifications"] as const).map(key => <label key={key} className="mt-4 block text-sm font-bold">{labels[key]}<textarea value={cv[key]} onChange={e=>update(key,e.target.value)} maxLength={key==="summary"?2000:4000} rows={key==="summary"?3:4} placeholder={labels.placeholder} className="mt-2 w-full rounded-lg border border-slate-200 p-3 font-normal leading-6 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/></label>)}
+          {(["summary","education","experience","skills","languages","certifications"] as const).map(key => key === "summary" ? (
+            <label key={key} className="mt-4 block text-sm font-bold">{labels[key]}<textarea value={cv.summary} onChange={e=>update("summary",e.target.value)} maxLength={2000} rows={4} placeholder={labels.placeholder} className="mt-2 w-full rounded-lg border border-slate-200 p-3 font-normal leading-6 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/></label>
+          ) : key === "experience" ? (
+            <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
+              <h3 className="text-sm font-extrabold">{labels.experience}</h3>
+              <div className="mt-3 space-y-4">{workEntries.map((item,index)=><fieldset key={item.id} className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold">Experience {index+1}</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["jobTitle","company","location","startDate","endDate"] as const).map(field=><label key={field} className="text-xs font-bold">{({jobTitle:"Job title",company:"Company",location:"Location",startDate:"Start date",endDate:"End date"})[field]}<input value={item[field]} onChange={e=>{const next=[...workEntries];next[index]={...item,[field]:e.target.value};setWorkEntries(next);setSaved(false);}} className="mt-1 min-h-10 w-full rounded-lg border border-slate-200 px-2 text-sm font-normal"/></label>)}
+                </div>
+                <label className="mt-3 block text-xs font-bold">Responsibilities / description<textarea value={item.description} onChange={e=>{const next=[...workEntries];next[index]={...item,description:e.target.value};setWorkEntries(next);setSaved(false);}} rows={3} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <label className="mt-3 block text-xs font-bold">Achievements<textarea value={item.achievements} onChange={e=>{const next=[...workEntries];next[index]={...item,achievements:e.target.value};setWorkEntries(next);setSaved(false);}} rows={2} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <button type="button" onClick={()=>setWorkEntries(items=>items.filter(entry=>entry.id!==item.id))} className="mt-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Remove</button>
+              </fieldset>)}</div>
+              <button type="button" onClick={()=>setWorkEntries(items=>[...items,{id:crypto.randomUUID(),jobTitle:"",company:"",location:"",startDate:"",endDate:"",description:"",achievements:""}])} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800">+ Add experience</button>
+            </div>
+          ) : key === "education" ? (
+            <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
+              <h3 className="text-sm font-extrabold">{labels.education}</h3>
+              <div className="mt-3 space-y-4">{educationEntries.map((item,index)=><fieldset key={item.id} className="rounded-lg border border-slate-200 p-3"><legend className="px-1 text-xs font-bold">Education {index+1}</legend>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["degree","institution","location","startDate","endDate"] as const).map(field=><label key={field} className="text-xs font-bold">{({degree:"Degree / qualification",institution:"Institution",location:"Location",startDate:"Start date",endDate:"End date"})[field]}<input value={item[field]} onChange={e=>{const next=[...educationEntries];next[index]={...item,[field]:e.target.value};setEducationEntries(next);setSaved(false);}} className="mt-1 min-h-10 w-full rounded-lg border border-slate-200 px-2 text-sm font-normal"/></label>)}
+                </div>
+                <label className="mt-3 block text-xs font-bold">Results / details<textarea value={item.details} onChange={e=>{const next=[...educationEntries];next[index]={...item,details:e.target.value};setEducationEntries(next);setSaved(false);}} rows={2} className="mt-1 w-full rounded-lg border border-slate-200 p-2 text-sm font-normal"/></label>
+                <button type="button" onClick={()=>setEducationEntries(items=>items.filter(entry=>entry.id!==item.id))} className="mt-2 rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Remove</button>
+              </fieldset>)}</div>
+              <button type="button" onClick={()=>setEducationEntries(items=>[...items,{id:crypto.randomUUID(),degree:"",institution:"",location:"",startDate:"",endDate:"",details:""}])} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800">+ Add education</button>
+            </div>
+          ) : (
+            <div key={key} className="mt-5 rounded-xl border border-slate-200 p-4">
+              <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-extrabold">{labels[key]}</h3><span className="text-xs text-slate-500">{cv[key].split(/\r?\n/).filter(line=>line.trim()).length} {isBn?"টি":"entries"}</span></div>
+              <div className="mt-3 space-y-2">
+                {cv[key].split(/\r?\n/).map((entry,index)=>({entry,index})).map(({entry,index})=>(
+                  <div key={index} className="flex items-start gap-2">
+                    <input value={entry} onChange={e=>{const rows=cv[key].split(/\r?\n/);rows[index]=e.target.value;update(key,rows.join("\n"));}} maxLength={500} aria-label={`${labels[key]} ${index+1}`} placeholder={labels.placeholder} className="min-h-11 min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"/>
+                    <button type="button" onClick={()=>{const rows=cv[key].split(/\r?\n/);rows.splice(index,1);update(key,rows.join("\n"));}} aria-label={isBn?"এন্ট্রি মুছুন":"Remove entry"} className="min-h-11 rounded-lg border border-red-200 px-3 text-sm font-bold text-red-700 hover:bg-red-50">×</button>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={()=>update(key,[cv[key].trim(),""].filter(Boolean).join("\n") + (cv[key].trim()?"\n":""))} className="mt-3 rounded-lg border border-emerald-700 px-3 py-2 text-xs font-extrabold text-emerald-800 hover:bg-emerald-50">+ {isBn?"নতুন যোগ করুন":"Add entry"}</button>
+              <p className="mt-2 text-xs text-slate-500">{isBn?"প্রতিটি তথ্য আলাদা এন্ট্রি হিসেবে যোগ করুন।":"Add each item as a separate entry."}</p>
+            </div>
+          ))}
           <p className="mt-3 text-xs leading-5 text-slate-500">{labels.tip}</p>
           <div className="mt-4 flex flex-wrap gap-3"><button onClick={persist} className="rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white">{labels.save}</button>{saved&&<span role="status" className="self-center text-sm font-bold text-emerald-800">{labels.saved}</span>}</div>
         </div>
-        <CVInsights cv={cv} language={language} />
+        <CVInsights cv={cv} language={language} workEntries={workEntries} educationEntries={educationEntries} />
         <div className="rounded-2xl border border-emerald-950/5 bg-white p-5 shadow-sm sm:p-6">
           <h2 className="text-xl font-black">{labels.design}</h2><div className="mt-4 grid gap-3 sm:grid-cols-2">
             {templates.map(t=><button key={t.id} onClick={()=>{setTemplate(t.id);setSaved(false);}} className={"rounded-xl border p-4 text-left transition "+(template===t.id?"border-emerald-700 bg-emerald-50 ring-2 ring-emerald-100":"border-slate-200 hover:border-emerald-300")}><span className="mb-3 block h-2 rounded-full" style={{background:t.accent}}/><span className="block font-extrabold">{t.name}</span><span className="mt-1 block text-xs text-slate-500">{t.note}</span><span className="mt-3 block text-xs font-bold text-emerald-800">{template===t.id?"✓ Selected":"Choose design"}</span></button>)}
           </div>
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row"><button onClick={()=>window.print()} className="min-h-12 flex-1 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white">{labels.download}</button><Link href="/jobs" className="min-h-12 flex-1 rounded-xl border border-emerald-800 px-4 py-3 text-center text-sm font-extrabold text-emerald-900">{labels.apply} →</Link></div>
-          <p className="mt-3 text-xs leading-5 text-slate-500">PDF বানাতে Print dialog-এ “Save as PDF” নির্বাচন করুন।</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2"><button onClick={()=>window.print()} className="min-h-12 rounded-xl bg-emerald-800 px-4 py-3 text-sm font-extrabold text-white">{labels.download}</button><button onClick={shareCV} className="min-h-12 rounded-xl border border-emerald-800 px-4 py-3 text-sm font-extrabold text-emerald-900">{isBn?"CV শেয়ার / লেখা কপি":"Share CV details"}</button><Link href="/jobs" className="min-h-12 rounded-xl border border-emerald-800 px-4 py-3 text-center text-sm font-extrabold text-emerald-900 sm:col-span-2">{labels.apply} →</Link></div>
+          {shareMessage && <p role="status" className="mt-3 text-xs font-semibold text-emerald-800">{shareMessage}</p>}
+          <p className="mt-3 text-xs leading-5 text-slate-500">{isBn?"PDF সেভ করতে Print dialog-এ “Save as PDF” বেছে নিন। Share CV details বাটনটি CV-এর লেখা শেয়ার বা কপি করে; PDF ফাইল সংযুক্ত করে না।":"Choose “Save as PDF” in the print dialog. Share CV details shares or copies your CV text; it does not attach a PDF file."}</p>
         </div>
       </section>
 
       <section className="min-w-0">
         <div className="mb-3 flex items-center justify-between"><h2 className="text-lg font-black">{labels.preview}</h2><span className="text-xs font-bold text-slate-500">{selected.name}</span></div>
-        <article id="cv-preview" className="cv-paper min-h-[900px] overflow-hidden bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: isBn ? "Arial, sans-serif" : "Arial, sans-serif"}}>
+        <article id="cv-preview" className="cv-paper mx-auto min-h-[1123px] w-full max-w-[794px] overflow-visible bg-white shadow-lg ring-1 ring-black/5" style={{fontFamily: '"Noto Sans Bengali", "Hind Siliguri", "SolaimanLipi", Arial, sans-serif'}}>
           <header className="p-7 text-white sm:p-9" style={{background:selected.accent}}>
             <div className="flex items-start gap-4">
               {/^https?:\/\//i.test(cv.photoUrl.trim())&&<img src={cv.photoUrl.trim()} alt="" className="h-20 w-20 rounded-xl border-2 border-white/60 object-cover" />}
@@ -97,8 +219,8 @@ export default function CVBuilderPage() {
             {template==="modern"&&<aside className="space-y-6"><CVSection title={labels.skills} values={previewText(cv.skills)} accent={selected.accent}/><CVSection title={labels.languages} values={previewText(cv.languages)} accent={selected.accent}/><CVSection title={labels.certifications} values={previewText(cv.certifications)} accent={selected.accent}/></aside>}
             <div className="space-y-6">
               <CVSection title={labels.summary} values={previewText(cv.summary)} accent={selected.accent}/>
-              <CVSection title={labels.experience} values={previewText(cv.experience)} accent={selected.accent}/>
-              <CVSection title={labels.education} values={previewText(cv.education)} accent={selected.accent}/>
+              <CVExperiencePreview title={labels.experience} entries={workEntries} accent={selected.accent} language={language}/>
+              <CVEducationPreview title={labels.education} entries={educationEntries} accent={selected.accent} language={language}/>
               {template!=="modern"&&<><CVSection title={labels.skills} values={previewText(cv.skills)} accent={selected.accent}/><CVSection title={labels.languages} values={previewText(cv.languages)} accent={selected.accent}/><CVSection title={labels.certifications} values={previewText(cv.certifications)} accent={selected.accent}/></>}
             </div>
           </div>
@@ -108,15 +230,73 @@ export default function CVBuilderPage() {
     </div>
     <style jsx global>{`
       @media print {
-        @page { size: A4; margin: 10mm; }
-        body { background: white !important; }
+        @page {
+          size: A4;
+          margin: 12mm 10mm 16mm;
+          @bottom-center { content: "Page " counter(page) " of " counter(pages); font: 9pt Arial, sans-serif; color: #64748b; }
+        }
+        html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
         body * { visibility: hidden !important; }
         #cv-preview, #cv-preview * { visibility: visible !important; }
-        #cv-preview { position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; min-height: 0 !important; box-shadow: none !important; ring: 0 !important; }
-        .cv-paper { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #cv-preview {
+          position: static !important; display: block !important; box-sizing: border-box !important;
+          width: 190mm !important; max-width: none !important; min-height: 0 !important;
+          height: auto !important; margin: 0 auto !important; overflow: visible !important;
+          box-shadow: none !important; ring: 0 !important; background: #fff !important;
+          color: #0f172a !important; font-size: 10pt !important; line-height: 1.35 !important;
+        }
+        #cv-preview > header { break-inside: avoid-page; page-break-inside: avoid; }
+        #cv-preview > div { display: block !important; padding: 8mm !important; }
+        #cv-preview > div > aside { display: block !important; margin: 0 0 6mm !important; }
+        #cv-preview > div > div { display: block !important; }
+        #cv-preview > div > div > section { margin-bottom: 6mm !important; }
+        #cv-preview > footer { break-inside: avoid-page; }
+        #cv-preview section { break-inside: auto; page-break-inside: auto; }
+        #cv-preview article { break-inside: avoid-page; page-break-inside: avoid; }
+        #cv-preview h2, #cv-preview h3 { break-after: avoid-page; page-break-after: avoid; }
+        #cv-preview p { orphans: 3; widows: 3; }
+        #cv-preview p, #cv-preview span { overflow-wrap: anywhere; }
+        #cv-preview * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       }
     `}</style>
   </main>;
+}
+
+function CVExperiencePreview({ title, entries, accent, language }: { title: string; entries: CVExperienceEntry[]; accent: string; language: "en" | "bn" }) {
+  return <section className="break-inside-auto">
+    <h2 className="mb-3 border-b pb-2 text-sm font-black uppercase tracking-wide" style={{borderColor:accent,color:accent}}>{title}</h2>
+    {entries.filter((entry) => [entry.jobTitle, entry.company, entry.location, entry.startDate, entry.endDate, entry.description, entry.achievements].some((value) => value.trim())).length ? (
+      <div className="space-y-4">{entries.filter((entry) => [entry.jobTitle, entry.company, entry.location, entry.startDate, entry.endDate, entry.description, entry.achievements].some((value) => value.trim())).map((entry) => (
+        <article key={entry.id} className="break-inside-avoid-page">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 className="text-sm font-bold text-slate-900">{entry.jobTitle || (language === "bn" ? "পদবি" : "Job title")}</h3>
+            {(entry.startDate || entry.endDate) && <span className="text-xs font-semibold text-slate-500">{entry.startDate}{entry.startDate && entry.endDate ? " – " : ""}{entry.endDate}</span>}
+          </div>
+          {(entry.company || entry.location) && <p className="mt-0.5 text-sm font-semibold text-slate-700">{[entry.company, entry.location].filter(Boolean).join(" · ")}</p>}
+          {entry.description && <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.description}</p>}
+          {entry.achievements && <div className="mt-1"><p className="text-xs font-bold text-slate-600">{language === "bn" ? "অর্জন" : "Achievements"}</p><p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.achievements}</p></div>}
+        </article>
+      ))}</div>
+    ) : <p className="text-sm italic text-slate-300">{language === "bn" ? "এখানে তথ্য যোগ করুন" : "Add information here"}</p>}
+  </section>;
+}
+
+function CVEducationPreview({ title, entries, accent, language }: { title: string; entries: CVEducationEntry[]; accent: string; language: "en" | "bn" }) {
+  return <section className="break-inside-auto">
+    <h2 className="mb-3 border-b pb-2 text-sm font-black uppercase tracking-wide" style={{borderColor:accent,color:accent}}>{title}</h2>
+    {entries.filter((entry) => [entry.degree, entry.institution, entry.location, entry.startDate, entry.endDate, entry.details].some((value) => value.trim())).length ? (
+      <div className="space-y-4">{entries.filter((entry) => [entry.degree, entry.institution, entry.location, entry.startDate, entry.endDate, entry.details].some((value) => value.trim())).map((entry) => (
+        <article key={entry.id} className="break-inside-avoid-page">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 className="text-sm font-bold text-slate-900">{entry.degree || (language === "bn" ? "ডিগ্রি / যোগ্যতা" : "Degree / qualification")}</h3>
+            {(entry.startDate || entry.endDate) && <span className="text-xs font-semibold text-slate-500">{entry.startDate}{entry.startDate && entry.endDate ? " – " : ""}{entry.endDate}</span>}
+          </div>
+          {(entry.institution || entry.location) && <p className="mt-0.5 text-sm font-semibold text-slate-700">{[entry.institution, entry.location].filter(Boolean).join(" · ")}</p>}
+          {entry.details && <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{entry.details}</p>}
+        </article>
+      ))}</div>
+    ) : <p className="text-sm italic text-slate-300">{language === "bn" ? "এখানে তথ্য যোগ করুন" : "Add information here"}</p>}
+  </section>;
 }
 
 function CVSection({ title, values, accent }: { title:string; values:string[]; accent:string }) {

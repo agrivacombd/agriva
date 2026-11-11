@@ -101,6 +101,8 @@ jobs:
         run: npm run test:green-living-platform
       - name: Phase 1 SEO architecture regression test
         run: npm run test:seo-phase1
+      - name: CV Builder versioned storage migration regression test
+        run: npm run test:cv-builder-migration
       - name: Production build
         run: npm run build
         env:

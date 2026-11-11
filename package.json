@@ -16,6 +16,7 @@
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
     "test:marketplace-seo": "node scripts/smoke-marketplace-seo.mjs",
     "test:seo-phase1": "node scripts/smoke-seo-phase1.mjs",
+    "test:cv-builder-migration": "node scripts/smoke-cv-builder-migration.mjs",
     "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
     "test:admin-authorization": "node scripts/smoke-admin-authorization.mjs",
