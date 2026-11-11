@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 
 type Plant = { bn: string; en: string; scientific: string; family: string; group: string; clue: string };
 const plants: Plant[] = [
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Selaginella tenuissima",family:"Selaginellaceae",group:"BNH specimen-documented — Fern ally",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ রাঙামাটির Kaindya Egojyachari ও Ram Pahar Reserve Forest থেকে collection record রয়েছে।"},
+  {bn:"ঘোড়ার লেজ ঘাস",en:"Horsetail",scientific:"Equisetum diffusum",family:"Equisetaceae",group:"Bangladesh checklist and herbarium-documented — Fern ally",clue:"বাংলাদেশের Pharua Reserve Forest-এর annotated checklist-এ DACB voucher specimen N3113-সহ নথিভুক্ত; BNH-এর Equisetum specimen তালিকাতেও record রয়েছে।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Whisk fern",scientific:"Psilotum nudum",family:"Psilotaceae",group:"BNH specimen-documented — Fern ally",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ বাগেরহাট এবং বরগুনার Tengragiri Wildlife Sanctuary থেকে collection record রয়েছে।"},
+
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Lygodium altum",family:"Lygodiaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ রাঙামাটির কাপ্তাইয়ের Bangchari Reserve Forest থেকে accession record রয়েছে।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Lygodium japonicum",family:"Lygodiaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের Lygodiaceae specimen তালিকায় বাংলাদেশি collection record-সহ নথিভুক্ত।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Selaginella delicatula",family:"Selaginellaceae",group:"BNH specimen-documented — Fern ally",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের Selaginellaceae specimen database-এ species record রয়েছে; স্থানীয় নাম উৎসে উল্লেখ নেই।"},
