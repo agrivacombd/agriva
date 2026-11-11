@@ -13,6 +13,14 @@ The catalogue is a Bangladesh-focused learning and reference resource. A listed 
 - Every imported record currently has `taxonomicReviewStatus: "pending"`. Do not change this to reviewed without recorded name-backbone and Bangladesh-occurrence evidence.
 - `scripts/smoke-plant-science-catalog.mjs` checks the reviewed baseline count, required fields, exact scientific-name duplicates, slug collisions, and shared-module usage.
 
+## Initial data-quality findings
+
+- The extracted catalogue currently contains 1,905 records, 1,905 unique exact scientific-name strings, 215 distinct family labels, and no deterministic URL-slug collisions after hybrid notation is normalized.
+- A first field-alignment issue was found: an entry had `Achira` in the scientific-name field and `Canna edulis` in the family field. It was corrected to retain `Canna edulis` as the source scientific name, `Cannaceae` as family, and a clear review note. Kew POWO treats `Canna edulis` as a synonym of accepted `Canna indica`; the Bangladesh occurrence evidence for this record remains pending.
+- The catalogue includes a mixture of vascular plants, fern allies, bryophytes, algae/cyanobacteria labels, crop entries and ornamental/horticultural records. These should not all be presented as a single count of accepted vascular plant species. A future `organism_group` and `record_scope` field should make this explicit.
+- The current `group` field is a learning/use category, not a taxonomic rank. Do not use it as a family or taxonomic classification.
+- Family count from the current file is a count of distinct supplied labels, not a vetted national family total.
+
 ## Recommended normalized domain model
 
 Keep nomenclatural names, accepted taxa, Bangladesh occurrence evidence, and source citations as separate entities. This avoids treating an old checklist name as a current accepted taxon or treating a global distribution as a Bangladesh record.
