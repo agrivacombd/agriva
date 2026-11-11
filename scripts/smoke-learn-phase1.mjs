@@ -5,7 +5,9 @@ const page = readFileSync("app/learn/page.tsx", "utf8");
 const library = readFileSync("components/learn/LearnLibrary.tsx", "utf8");
 const lessons = readFileSync("lib/learn/lessons.ts", "utf8");
 const audit = readFileSync("docs/learn/learn-2.0-repository-audit.md", "utf8");
+const guideRoute = readFileSync("app/learn/[slug]/page.tsx", "utf8");
 
+assert.ok(guideRoute.includes("params: Promise<{ slug: string }>") && guideRoute.includes("await params"), "dynamic guide route should await Next.js route params");
 assert.ok(page.includes("LearnLibrary"), "Learn homepage should render the learning library");
 assert.ok(page.includes("/learn/plant-science"), "Plant Science Academy route must remain linked");
 assert.ok(page.includes("/learn/plant-disease"), "Disease Learning Lab route must remain linked");
