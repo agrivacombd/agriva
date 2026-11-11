@@ -49,7 +49,8 @@
     "test:marketplace-product-image-gallery": "node scripts/smoke-marketplace-product-image-gallery.mjs",
     "test:admin-product-image-gallery": "node scripts/smoke-admin-product-image-gallery.mjs",
     "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs",
-    "audit:plant-science-catalog": "node scripts/audit-plant-science-catalog.mjs"
+    "audit:plant-science-catalog": "node scripts/audit-plant-science-catalog.mjs",
+    "test:plant-science-review-queue": "node scripts/smoke-plant-science-review-queue.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
