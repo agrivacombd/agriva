@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 
 type Plant = { bn: string; en: string; scientific: string; family: string; group: string; clue: string };
 const plants: Plant[] = [
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Selaginella ciliaris",family:"Selaginellaceae",group:"BNH specimen-documented — Fern ally",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ কুয়াকাটা, পটুয়াখালীর accession record রয়েছে; উৎসে স্থানীয় নাম দেওয়া নেই।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Lygodium flexuosum",family:"Lygodiaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ বরগুনা ও সিলেটের accession record রয়েছে; এটি আরোহী ফার্ন।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Pronephrium triphyllum",family:"Thelypteridaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের specimen database-এ বাংলাদেশি accession record রয়েছে; উৎসে স্থানীয় নাম দেওয়া নেই।"},
+
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Cheilanthes arida",family:"Pteridaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের অনলাইন specimen database-এ বাংলাদেশি accession record-সহ নথিভুক্ত; common name উৎসে নেই।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Trigonospora ciliata",family:"Thelypteridaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের অনলাইন specimen database-এ বাংলাদেশি accession record-সহ নথিভুক্ত; common name উৎসে নেই।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Microlepia haucei",family:"Dennstaedtiaceae",group:"BNH specimen-documented — Fern",clue:"বাংলাদেশ ন্যাশনাল হারবেরিয়ামের অনলাইন specimen database-এ বাংলাদেশি accession record-সহ নথিভুক্ত; common name উৎসে নেই।"},
