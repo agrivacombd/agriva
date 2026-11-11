@@ -6,6 +6,10 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        userAgent: "OAI-SearchBot",
+        allow: ["/"],
+      },
+      {
         userAgent: "*",
         allow: [
           "/",
@@ -30,6 +34,7 @@ export default function robots(): MetadataRoute.Robots {
           "/jobs",
           "/jobs/cv-builder",
           "/learn",
+          "/learn/plant-science",
           "/articles",
           "/green-living",
           "/green-exchange",
