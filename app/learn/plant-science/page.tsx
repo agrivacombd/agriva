@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import PlantScienceClient from "./PlantScienceClient";
+import { plantScienceFaqs } from "./faqs";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const pageUrl = `${siteUrl}/learn/plant-science`;
@@ -24,16 +25,42 @@ export const metadata: Metadata = {
   },
 };
 
-const collectionJsonLd = {
+const structuredData = {
   "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "@id": `${pageUrl}#webpage`,
-  url: pageUrl,
-  name: "বাংলাদেশের উদ্ভিদ তালিকা ও বৈজ্ঞানিক নাম",
-  description: "বাংলাদেশের উদ্ভিদ সম্পর্কে বাংলা-ইংরেজি নাম, বৈজ্ঞানিক নাম, পরিবার ও উৎসভিত্তিক শেখার সংগ্রহ।",
-  inLanguage: "bn-BD",
-  isPartOf: { "@type": "WebSite", "@id": `${siteUrl}/#website`, name: "AGRIVA", url: siteUrl },
-  publisher: { "@type": "Organization", "@id": `${siteUrl}/#organization`, name: "AGRIVA", url: siteUrl },
+  "@graph": [
+    {
+      "@type": "CollectionPage",
+      "@id": `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: "বাংলাদেশের উদ্ভিদ তালিকা ও বৈজ্ঞানিক নাম",
+      description: "বাংলাদেশের উদ্ভিদ সম্পর্কে বাংলা-ইংরেজি নাম, বৈজ্ঞানিক নাম, পরিবার ও উৎসভিত্তিক শেখার সংগ্রহ।",
+      inLanguage: "bn-BD",
+      isPartOf: { "@id": `${siteUrl}/#website` },
+      publisher: { "@id": `${siteUrl}/#organization` },
+      breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+      mainEntity: { "@id": `${pageUrl}#faq` },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      url: pageUrl,
+      inLanguage: "bn-BD",
+      mainEntity: plantScienceFaqs.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: { "@type": "Answer", text: item.answer },
+      })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "হোম", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "কৃষি শেখার কেন্দ্র", item: `${siteUrl}/learn` },
+        { "@type": "ListItem", position: 3, name: "উদ্ভিদ পরিচিতি", item: pageUrl },
+      ],
+    },
+  ],
 };
 
 export default function PlantSciencePage() {
@@ -41,7 +68,7 @@ export default function PlantSciencePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd).replace(/</g, "\\u003c") }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
       />
       <PlantScienceClient />
     </>
