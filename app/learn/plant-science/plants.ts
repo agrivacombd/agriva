@@ -1939,7 +1939,7 @@ const rawPlants: Plant[] = [
 ];
 
 const slugifyScientificName = (scientific: string) =>
-  scientific.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  scientific.trim().toLowerCase().replace(/×/g, " x ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 export const plants: Plant[] = rawPlants.map((plant) => ({
   ...plant,
