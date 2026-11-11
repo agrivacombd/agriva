@@ -339,7 +339,6 @@ const plants: Plant[] = [
   {bn:"কাঁশবন ঘাস",en:"Cogon grass",scientific:"Imperata cylindrica",family:"Poaceae",group:"Grass and weed",clue:"রাইজোম দিয়ে ছড়ায়; সাদা তুলোর মতো পুষ্পমঞ্জরি।"},
   {bn:"লেমন বেসিল",en:"Lemon basil",scientific:"Ocimum × africanum",family:"Lamiaceae",group:"Aromatic herb",clue:"পাতায় লেবুর মতো সুগন্ধ; রান্নায় ও সুগন্ধি ভেষজ হিসেবে ব্যবহৃত।"},
   {bn:"মরিচা তুলসী",en:"Hoary basil",scientific:"Ocimum americanum",family:"Lamiaceae",group:"Aromatic herb",clue:"ছোট সুগন্ধি পাতা ও সাদা ফুল; মৌসুমি ভেষজ।"},
-  {bn:"ঘৃতকুমারী",en:"Aloe vera",scientific:"Aloe vera",family:"Asphodelaceae",group:"Medicinal succulent",clue:"রসালো কাঁটাযুক্ত পাতা; পাতার ভেতরের জেল প্রসাধনীতে ব্যবহৃত।"},
   {bn:"রক্তচন্দন",en:"Red sandalwood",scientific:"Pterocarpus santalinus",family:"Fabaceae",group:"Timber and dye tree",clue:"কাঠ লাল রঙের; দক্ষিণ এশিয়ার বাইরে থেকে আমদানিকৃত/চাষকৃত প্রজাতি।"},
   {bn:"চন্দন",en:"Sandalwood",scientific:"Santalum album",family:"Santalaceae",group:"Aromatic tree",clue:"কাঠ সুগন্ধি; শিকড় ও কাষ্ঠে সুগন্ধি তেল থাকে।"},
   {bn:"ওট",en:"Oat",scientific:"Avena sativa",family:"Poaceae",group:"Cereal crop",clue:"ঢিলা panicle-এ দানা ধরে; পশুখাদ্য ও খাদ্যশস্য।"},
