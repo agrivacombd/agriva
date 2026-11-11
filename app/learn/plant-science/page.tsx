@@ -5,6 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 
 type Plant = { bn: string; en: string; scientific: string; family: string; group: string; clue: string };
 const plants: Plant[] = [
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis aspera",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-র Acilepis accepted-species তালিকায় নামটি আছে।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis divergens",family:"Asteraceae",group:"CVPB verified — Subshrub",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis saligna",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acilepis silhetensis",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি এবং বাংলাদেশে বিস্তৃতি নথিভুক্ত।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acmella calva",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি এবং বাংলাদেশে বিস্তৃতি নথিভুক্ত।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acmella caulirhiza",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acmella oleracea",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acmella radicans",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি; বাংলাদেশে introduced distribution নথিভুক্ত।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Adenostemma lavenia",family:"Asteraceae",group:"CVPB verified — Herb",clue:"CVPB-এর Asteraceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি এবং বাংলাদেশে বিস্তৃতি নথিভুক্ত।"}
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acranthera tomentosa",family:"Rubiaceae",group:"CVPB verified — Epiphyte",clue:"CVPB-এর Rubiaceae তালিকায় আছে; POWO-তে স্বীকৃত প্রজাতি এবং বাংলাদেশে স্থানীয় বিস্তৃতি নথিভুক্ত।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Adina cordifolia",family:"Rubiaceae",group:"CVPB verified — Tree",clue:"CVPB-এর Rubiaceae তালিকায় আছে; POWO-তে Adina cordifolia স্বীকৃত নাম, Haldina cordifolia এর synonym।"},
   {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acroceras munroanum",family:"Poaceae",group:"CVPB verified — Grass",clue:"CVPB-এর Poaceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি হিসেবে তালিকাভুক্ত।"},
