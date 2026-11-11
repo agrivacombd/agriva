@@ -107,6 +107,8 @@ jobs:
         run: npm run test:plant-science-catalog
       - name: Plant science nomenclature audit
         run: npm run audit:plant-science-catalog
+      - name: Plant science review queue validation
+        run: npm run test:plant-science-review-queue
       - name: Production build
         run: npm run build
         env:
