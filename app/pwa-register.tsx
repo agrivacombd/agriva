@@ -8,6 +8,7 @@ type InstallPromptEvent = Event & {
 };
 
 const DISMISSED_KEY = "agriva-pwa-install-dismissed-until";
+const INSTALLED_KEY = "agriva-pwa-installed";
 const DELAY_MS = 45_000;
 const BANNER_MS = 6_000;
 const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000;
@@ -39,12 +40,27 @@ export default function PwaRegister() {
       window.matchMedia("(display-mode: standalone)").matches ||
       (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
+    const hasInstalledApp = () => {
+      if (isStandalone()) return true;
+      try {
+        return localStorage.getItem(INSTALLED_KEY) === "true";
+      } catch {
+        return false;
+      }
+    };
+
+    // If the app is already installed, remember that state and never advertise
+    // another download on this browser profile.
+    if (hasInstalledApp()) {
+      try { localStorage.setItem(INSTALLED_KEY, "true"); } catch {}
+    }
+
     const onBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       deferredPrompt = event as InstallPromptEvent;
       setInstallEvent(deferredPrompt);
 
-      if (isStandalone()) return;
+      if (hasInstalledApp()) return;
       try {
         const dismissedUntil = Number(localStorage.getItem(DISMISSED_KEY) || "0");
         if (dismissedUntil > Date.now()) return;
@@ -60,6 +76,10 @@ export default function PwaRegister() {
     };
 
     const onInstalled = () => {
+      try {
+        localStorage.setItem(INSTALLED_KEY, "true");
+        localStorage.removeItem(DISMISSED_KEY);
+      } catch {}
       setShowInstall(false);
       setInstallEvent(null);
       deferredPrompt = null;
