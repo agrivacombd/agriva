@@ -39,6 +39,12 @@ assert.ok(reader.includes("completedAt") && reader.includes("পাঠ সম্
 assert.ok(reader.includes("lastQuiz") && reader.includes("attemptedAt"), "The latest quiz result and attempt date should be saved");
 assert.ok(reader.includes("এই গাইডের অগ্রগতি মুছুন") && reader.includes("delete next[lesson.slug]"), "Learners should be able to clear the current guide's local progress");
 assert.ok(reader.includes("AGRIVA সার্ভারে পাঠানো হয় না"), "The interface should disclose that progress stays in browser storage");
+assert.ok(library.includes('"agriva-learn-progress-v1"'), "Learn library should read the same versioned progress store as lesson pages");
+assert.ok(library.includes("সামগ্রিক শেখার অগ্রগতি") && library.includes("completedCount"), "Learn homepage should summarize completed lessons");
+assert.ok(library.includes('role="progressbar"') && library.includes("aria-valuenow={completedCount}"), "Progress overview should expose an accessible completion meter");
+assert.ok(library.includes("attemptedCount") && library.includes("কুইজ দেওয়া হয়েছে"), "Guide cards should distinguish quiz attempts and completed lessons");
+assert.ok(library.includes("সার্ভারে পাঠানো হয় না"), "Progress summary should disclose browser-only storage");
+
 assert.ok(reader.includes("catch") && reader.includes("Local progress is optional"), "Storage failures should not break lesson reading");
 
 assert.ok(audit.includes("No production database writes or migrations"), "Audit should document that production schema was not changed");
