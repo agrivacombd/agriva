@@ -1,14 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Lesson } from "@/lib/learn/lessons";
 
 const categories = ["সব বিষয়", "ধান", "সবজি", "মাটি", "রোগবালাই"] as const;
+const LEARN_PROGRESS_KEY = "agriva-learn-progress-v1";
+type LearnProgress = {
+  completedAt?: string;
+  lastQuiz?: { selected: number; correct: boolean; attemptedAt: string };
+};
+type LearnProgressStore = Record<string, LearnProgress>;
 
 export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("সব বিষয়");
+  const [progress, setProgress] = useState<LearnProgressStore>({});
+  const [progressLoaded, setProgressLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(LEARN_PROGRESS_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          setProgress(parsed as LearnProgressStore);
+        }
+      }
+    } catch {
+      // Progress summary is optional and must not affect guide discovery.
+    } finally {
+      setProgressLoaded(true);
+    }
+  }, []);
+
+  const completedCount = lessons.filter((lesson) => Boolean(progress[lesson.slug]?.completedAt)).length;
+  const attemptedCount = lessons.filter((lesson) => Boolean(progress[lesson.slug]?.lastQuiz)).length;
+  const progressPercent = lessons.length ? Math.round((completedCount / lessons.length) * 100) : 0;
 
   const filteredLessons = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("bn");
@@ -33,6 +61,17 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
 
   return (
     <section aria-labelledby="learn-library-heading" className="mt-8">
+      <section aria-label="সামগ্রিক শেখার অগ্রগতি" className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div><h3 className="font-black text-emerald-950">আপনার শেখার অগ্রগতি</h3><p className="mt-1 text-xs text-emerald-900">এই ব্রাউজারে সংরক্ষিত ব্যক্তিগত অগ্রগতি</p></div>
+          <span className="text-sm font-black text-emerald-950" role="status" aria-live="polite">{progressLoaded ? `${completedCount}/${lessons.length}টি পাঠ সম্পন্ন` : "অগ্রগতি লোড হচ্ছে..."}</span>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white" role="progressbar" aria-label="সম্পন্ন পাঠের অগ্রগতি" aria-valuemin={0} aria-valuemax={lessons.length} aria-valuenow={completedCount}>
+          <div className="h-full rounded-full bg-emerald-700 transition-all" style={{ width: progressLoaded ? `${progressPercent}%` : "0%" }} />
+        </div>
+        <p className="mt-2 text-xs text-emerald-900">{attemptedCount}টি গাইডে কুইজের উত্তর যাচাই করেছেন · তথ্য শুধু এই ব্রাউজারে থাকে, সার্ভারে পাঠানো হয় না।</p>
+      </section>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-emerald-700">Learning library</p>
@@ -90,6 +129,7 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
               <p className="mt-3 text-sm leading-7 text-slate-600">{lesson.summary}</p>
               <p className="mt-3 flex-1 text-xs leading-6 text-slate-500"><span className="font-bold text-slate-700">শিখবেন:</span> {lesson.outcomes[0]}</p>
               <p className="mt-2 text-xs leading-5 text-emerald-800">{lesson.topics.slice(0, 3).join(" · ")}</p>
+              {(progress[lesson.slug]?.completedAt || progress[lesson.slug]?.lastQuiz) && <p className="mt-3 text-xs font-bold text-emerald-900">{progress[lesson.slug]?.completedAt ? "✓ পাঠ সম্পন্ন" : "কুইজ দেওয়া হয়েছে"}{progress[lesson.slug]?.lastQuiz ? ` · ${progress[lesson.slug].lastQuiz.correct ? "সঠিক উত্তর" : "আরও অনুশীলন প্রয়োজন"}` : ""}</p>}
               <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                 <span className="text-xs text-slate-500">{lesson.steps.length}টি ধাপ · কুইজ</span>
                 <Link href={`/learn/${lesson.slug}`} className="text-sm font-extrabold text-emerald-800 hover:underline">গাইড পড়ুন →</Link>
