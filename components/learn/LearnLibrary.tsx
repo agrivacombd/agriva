@@ -21,6 +21,9 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
         lesson.intro,
         ...lesson.steps.flatMap((step) => [step.title, step.body]),
         ...lesson.tips,
+        ...lesson.audience,
+        ...lesson.topics,
+        ...lesson.outcomes,
         lesson.quiz.question,
         ...lesson.quiz.options,
       ].join(" ").toLocaleLowerCase("bn");
@@ -80,11 +83,13 @@ export default function LearnLibrary({ lessons }: { lessons: Lesson[] }) {
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-xl" aria-hidden="true">
                   {lesson.crop === "ধান" ? "🌾" : lesson.crop === "সবজি" ? "🥬" : lesson.crop === "মাটি" ? "🌱" : "🐛"}
                 </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{lesson.duration}</span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">{lesson.duration} · {lesson.level}</span>
               </div>
               <p className="mt-5 text-xs font-bold text-emerald-800">{lesson.crop}</p>
               <h3 className="mt-1 text-xl font-black text-slate-950">{lesson.title}</h3>
-              <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{lesson.summary}</p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{lesson.summary}</p>
+              <p className="mt-3 flex-1 text-xs leading-6 text-slate-500"><span className="font-bold text-slate-700">শিখবেন:</span> {lesson.outcomes[0]}</p>
+              <p className="mt-2 text-xs leading-5 text-emerald-800">{lesson.topics.slice(0, 3).join(" · ")}</p>
               <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                 <span className="text-xs text-slate-500">{lesson.steps.length}টি ধাপ · কুইজ</span>
                 <Link href={`/learn/${lesson.slug}`} className="text-sm font-extrabold text-emerald-800 hover:underline">গাইড পড়ুন →</Link>
