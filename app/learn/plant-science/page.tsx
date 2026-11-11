@@ -5,6 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 
 type Plant = { bn: string; en: string; scientific: string; family: string; group: string; clue: string };
 const plants: Plant[] = [
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acroceras munroanum",family:"Poaceae",group:"CVPB verified — Grass",clue:"CVPB-এর Poaceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি হিসেবে তালিকাভুক্ত।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acroceras tonkinense",family:"Poaceae",group:"CVPB verified — Grass",clue:"CVPB-এর Poaceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি হিসেবে তালিকাভুক্ত।"},
+  {bn:"সাধারণ নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Acroceras zizanioides",family:"Poaceae",group:"CVPB verified — Grass",clue:"CVPB-এর Poaceae তালিকায় আছে; Kew POWO-তে স্বীকৃত প্রজাতি হিসেবে তালিকাভুক্ত।"},
+
   {bn:"আম",en:"Mango",scientific:"Mangifera indica",family:"Anacardiaceae",group:"Fruit tree",clue:"চিরসবুজ ফলের গাছ; পাকা ফল সুগন্ধি।"},
   {bn:"কাঁঠাল",en:"Jackfruit",scientific:"Artocarpus heterophyllus",family:"Moraceae",group:"Fruit tree",clue:"বাংলাদেশের জাতীয় ফল; বড় যৌগিক ফল।"},
   {bn:"নিম",en:"Neem",scientific:"Azadirachta indica",family:"Meliaceae",group:"Medicinal tree",clue:"পাতা সাধারণত করাতের দাঁতের মতো খাঁজযুক্ত।"},
