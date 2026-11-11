@@ -124,6 +124,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/en/soil-fertilizer`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/en/crop-choice`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/learn`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/learn/plant-science`, changeFrequency: "weekly", priority: 0.85 },
     ...["boro-rice-season-preparation", "soil-health-basics", "integrated-pest-management", "vegetable-garden-water-management"].map((slug) => ({ url: `${base}/blog/${slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
     { url: `${base}/green-living`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/green-exchange`, changeFrequency: "weekly", priority: 0.75 },

@@ -73,6 +73,16 @@ const organizationJsonLd = {
   knowsLanguage: ["bn", "en"],
 };
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${siteUrl}/#website`,
+  name: "AGRIVA",
+  url: siteUrl,
+  inLanguage: ["bn-BD", "en"],
+  publisher: { "@id": `${siteUrl}/#organization` },
+};
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const requestHeaders = await headers();
   const locale = requestHeaders.get("x-agriva-locale") === "en" ? "en" : "bn";
@@ -84,6 +94,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteJsonLd).replace(/</g, "\\u003c"),
           }}
         />
         <GrowthVerification />

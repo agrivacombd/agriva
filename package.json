@@ -16,6 +16,7 @@
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
     "test:marketplace-seo": "node scripts/smoke-marketplace-seo.mjs",
     "test:seo-phase1": "node scripts/smoke-seo-phase1.mjs",
+    "test:plant-science-catalog": "node scripts/smoke-plant-science-catalog.mjs",
     "test:cv-builder-migration": "node scripts/smoke-cv-builder-migration.mjs",
     "test:checkout-error-safety": "node scripts/smoke-checkout-error-safety.mjs",
     "test:api-role-hardening": "node scripts/smoke-api-role-hardening.mjs",
@@ -47,7 +48,10 @@
     "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
     "test:marketplace-product-image-gallery": "node scripts/smoke-marketplace-product-image-gallery.mjs",
     "test:admin-product-image-gallery": "node scripts/smoke-admin-product-image-gallery.mjs",
-    "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs"
+    "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs",
+    "audit:plant-science-catalog": "node scripts/audit-plant-science-catalog.mjs",
+    "test:plant-science-review-queue": "node scripts/smoke-plant-science-review-queue.mjs",
+    "test:plant-science-seo-aeo": "node scripts/smoke-plant-science-seo-aeo.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
