@@ -65,7 +65,7 @@ const plants: Plant[] = [
   {bn:"অশোক",en:"Ashoka tree",scientific:"Saraca asoca",family:"Fabaceae",group:"Flowering tree",clue:"কমলা-লাল গুচ্ছফুল; দক্ষিণ এশিয়ার পরিচিত চিরসবুজ বৃক্ষ।"},
   {bn:"কানাইডিঙ্গি",en:"Indian trumpet flower",scientific:"Oroxylum indicum",family:"Bignoniaceae",group:"Medicinal tree",clue:"বড় যৌগিক পাতা ও লম্বা ঝুলন্ত ফলের শুঁটি।"},
   {bn:"বহেড়া",en:"Belleric myrobalan",scientific:"Terminalia bellirica",family:"Combretaceae",group:"Forest tree",clue:"বড় বৃক্ষ; ফল ত্রিফলার একটি উপাদান হিসেবে পরিচিত।"},
-  {bn:"নাগেশ্বর",en:"Ceylon ironwood",scientific:"Mesua ferrea",family:"Calophyllaceae",group:"Forest tree",clue:"সুগন্ধি সাদা ফুল ও শক্ত কাঠের জন্য পরিচিত।"}
+  {bn:"নাগেশ্বর",en:"Ceylon ironwood",scientific:"Mesua ferrea",family:"Calophyllaceae",group:"Forest tree",clue:"সুগন্ধি সাদা ফুল ও শক্ত কাঠের জন্য পরিচিত।"},
   {bn:"ধান",en:"Rice",scientific:"Oryza sativa",family:"Poaceae",group:"Cereal crop",clue:"বাংলাদেশের প্রধান খাদ্যশস্য; শীষে ধান ধরে।"},
   {bn:"গম",en:"Wheat",scientific:"Triticum aestivum",family:"Poaceae",group:"Cereal crop",clue:"শীতকালীন দানাশস্য; আটা তৈরির প্রধান উৎস।"},
   {bn:"ভুট্টা",en:"Maize",scientific:"Zea mays",family:"Poaceae",group:"Cereal crop",clue:"মোচায় সারিবদ্ধ দানা ধরে; খাদ্য ও পশুখাদ্যে ব্যবহৃত।"},
