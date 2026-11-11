@@ -1428,6 +1428,19 @@ const plants: Plant[] = [
   {bn:"স্থানীয় নাম: Pani-kapashi",en:"Pani-kapashi",scientific:"Wendlandia paniculata",family:"Rubiaceae",group:"CVPB — Shrub, Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
   {bn:"স্থানীয় নাম: Sera-kapashi",en:"Sera-kapashi",scientific:"Wendlandia scabra",family:"Rubiaceae",group:"CVPB — Tree",clue:"CVPB-র Rubiaceae family checklist এবং Bangladesh Plant Red List 2024—দুই উৎসেই নথিভুক্ত।"},
 
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Magnolia griffithii",family:"Magnoliaceae",group:"Red List 2024 — CR",clue:"Bangladesh Plant Red List 2024-এ CR শ্রেণিতে মূল্যায়িত; family: Magnoliaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Memecylon ovatum",family:"Melastomataceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Melastomataceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Archidendron jiringa",family:"Fabaceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Fabaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Myrica nagi",family:"Myricaceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Myricaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Syzygium thumri",family:"Myrtaceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Myrtaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Syzygium venustum",family:"Myrtaceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Myrtaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Drypetes venusta",family:"Putranjivaceae",group:"Red List 2024 — RE",clue:"Bangladesh Plant Red List 2024-এ RE শ্রেণিতে মূল্যায়িত; family: Putranjivaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Corypha taliera",family:"Arecaceae",group:"Red List 2024 — EW",clue:"Bangladesh Plant Red List 2024-এ EW শ্রেণিতে মূল্যায়িত; family: Arecaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Bulbophyllum oblongum",family:"Orchidaceae",group:"Red List 2024 — CR",clue:"Bangladesh Plant Red List 2024-এ CR শ্রেণিতে মূল্যায়িত; family: Orchidaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Hydnocarpus kurzii",family:"Achariaceae",group:"Red List 2024 — CR",clue:"Bangladesh Plant Red List 2024-এ CR শ্রেণিতে মূল্যায়িত; family: Achariaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Phoenix acaulis",family:"Arecaceae",group:"Red List 2024 — CR",clue:"Bangladesh Plant Red List 2024-এ CR শ্রেণিতে মূল্যায়িত; family: Arecaceae।"},
+  {bn:"স্থানীয় নাম উল্লেখ নেই",en:"Common name not listed",scientific:"Podocarpus neriifolius",family:"Podocarpaceae",group:"Red List 2024 — CR",clue:"Bangladesh Plant Red List 2024-এ CR শ্রেণিতে মূল্যায়িত; family: Podocarpaceae।"},
+
 ];
 
 const catalogTarget = 5000;
