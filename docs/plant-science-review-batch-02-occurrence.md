@@ -29,7 +29,7 @@ Decision: specimen-backed Bangladesh occurrence is supported. Accession 87173 an
 
 BNH's Equisetaceae family page lists accession **86599** as *Equisetum diffusum*, but its displayed collection date is the database placeholder `30-11--0001`, collector and locality are blank, and the location field only says Bangladesh.
 
-Decision: this is a taxon-level database entry but weak locality/collection metadata. Do not use it as a georeferenced specimen claim. Cross-check against the cited Bangladesh National Herbarium Bulletin checklist voucher N3113 before upgrading the evidence status.
+Independent corroboration is available in Islam, Uddin, Khan & Mirza (2016), *An Annotated Checklist of the Vascular Plants of Pharua Reserve Forest under Bilaichari Upazila, Rangamati District of Bangladesh*, Bulletin of the Bangladesh National Herbarium 5: 59–95. The paper lists *Equisetum diffusum* as common and gives representative voucher **Faruachara, 16 October 2008, S.N. Uddin N3113 (DACB)**.\n\nDecision: Bangladesh occurrence is supported by the published checklist and its cited DACB voucher. The separate BNH online accession 86599 still has incomplete locality/date metadata; do not mistake that database row for the N3113 voucher.
 
 ## POWO taxonomy and distribution findings
 
@@ -49,7 +49,7 @@ Decision: accepted-name status is supported; Bangladesh occurrence is not establ
 
 - BNH, *Selaginella* specimen list: https://plantsp-eflora.bnh.gov.bd/specimen?family=Selaginellaceae&genus=Selaginella
 - BNH, *Psilotum* specimen list: https://plantsp-eflora.bnh.gov.bd/specimen?family=Psilotaceae&genus=Psilotum
-- BNH, Equisetaceae family specimen list: https://plantsp-eflora.bnh.gov.bd/family-list?family=Equisetaceae&id=162
+- BNH, Equisetaceae family specimen list: https://plantsp-eflora.bnh.gov.bd/family-list?family=Equisetaceae&id=162\n- Islam et al. (2016), *An Annotated Checklist of the Vascular Plants of Pharua Reserve Forest*, Bulletin of the Bangladesh National Herbarium 5: 59–95: https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bnh/2024/12/92b88621fa594cb9be5fbe0579f2665a.pdf
 - BNH, specimen database methodology: https://plantsp-eflora.bnh.gov.bd/about-us
 - Kew POWO, *Solanum betaceum*: https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:306169-2
 - Kew POWO, *Capsicum pubescens*: https://powo.science.kew.org/taxon/814839-1
@@ -59,7 +59,7 @@ Decision: accepted-name status is supported; Bangladesh occurrence is not establ
 
 - *Selaginella tenuissima*: Bangladesh specimen evidence supported; taxonomic status still requires separate accepted-name capture.
 - *Psilotum nudum*: Bangladesh specimen evidence supported; taxonomic status still requires separate accepted-name capture.
-- *Equisetum diffusum*: Bangladesh database entry found, but displayed locality/collection metadata is incomplete; corroborating checklist voucher required.
+- *Equisetum diffusum*: Bangladesh occurrence supported by the 2016 BNH Bulletin checklist and voucher N3113 (DACB); online accession 86599 remains a separate record with incomplete locality/date metadata.
 - *Solanum betaceum*: accepted name and introduced distribution supported by POWO; not a native occurrence claim.
 - *Capsicum pubescens*: accepted name supported by POWO; Bangladesh occurrence not supported by the species page.
 
