@@ -23,4 +23,8 @@ assert.match(checkout, /trackAnalyticsEvent\("marketplace_order_placed"/, "Succe
 assert.doesNotMatch(sellerForm, /trackAnalyticsEvent\([^\n]*(?:phone|email|address|fullName)/i, "Seller events must not send personal data");
 assert.doesNotMatch(checkout, /trackAnalyticsEvent\([^\n]*(?:phone|email|address|fullName)/i, "Order events must not send personal data");
 
-console.log("Analytics instrumentation regression checks passed.");
+
+assert.match(analytics, /consentChecked/, "Consent UI must wait until the saved preference has been read");
+assert.match(analytics, /const showBanner = consentChecked && consent === null/, "Returning visitors must not see the consent banner while preferences hydrate");
+assert.match(analytics, /addEventListener\("storage", syncConsent\)/, "Consent choices must stay in sync across browser tabs");
+\nconsole.log("Analytics instrumentation regression checks passed.");
