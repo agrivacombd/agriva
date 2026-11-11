@@ -103,6 +103,10 @@ jobs:
         run: npm run test:seo-phase1
       - name: CV Builder versioned storage migration regression test
         run: npm run test:cv-builder-migration
+      - name: Plant science catalogue integrity regression test
+        run: npm run test:plant-science-catalog
+      - name: Plant science nomenclature audit
+        run: npm run audit:plant-science-catalog
       - name: Production build
         run: npm run build
         env:
