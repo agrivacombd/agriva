@@ -94,3 +94,13 @@ A species page should be indexable only after:
 - page content contains useful species-specific information beyond the name and family.
 
 Until then, the record remains searchable in the hub with a clear "taxonomy review pending" label. No fabricated descriptions, uses, distribution, conservation status or common names.
+
+
+## Curated reference-source registry
+
+- `app/learn/plant-science/sources.ts` records candidate sources, their intended claim scope, and limitations. It is a source registry, **not** a claim that every catalogue row has already been verified against every listed source.
+- Use CVPB for Bangladesh vascular-checklist inclusion and Kew POWO/WCVP for global accepted-name and synonym decisions. Keep those claims separate.
+- Use BNH specimen records for specimen-backed Bangladesh occurrence; cite the exact accession/catalogue record and preserve its verbatim locality/name.
+- BFD/BNH's Plant Species Identification Module is a national identification reference, not a complete national flora census.
+- The 2026 conference abstract reports approximately 5,131 vascular plant species, 1,730 genera and 235 families. Treat this as a preliminary abstract figure, not a reconciled dataset or a directly comparable replacement for CVPB's 4,754 taxa.
+- For each reviewed taxon, store source ID, exact record URL/locator, access date, source version where available, verbatim source name, claim type, and reviewer note. Never attach a source ID to a row merely because it appears in this registry.
