@@ -1,7 +1,7 @@
 const ALLOWED_TAGS = new Set(["p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "blockquote", "a"]);
 
 export function sanitizeProductDescription(input: string): string {
-  let html = String(input || "").slice(0, 50000)
+  let html = String(input || "")
     .replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<(script|style|iframe|object|svg|math)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
 
