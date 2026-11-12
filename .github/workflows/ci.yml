@@ -117,6 +117,8 @@ jobs:
         run: node scripts/audit-seo-content-migrations.mjs
       - name: SEO keyword engine and provider regression tests
         run: node scripts/smoke-seo-keyword-engine.mjs
+      - name: AGRIVA contextual internal linking regression test
+        run: node scripts/smoke-seo-internal-links.mjs
       - name: Production build
         run: npm run build
         env:
