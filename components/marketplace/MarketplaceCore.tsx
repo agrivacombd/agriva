@@ -68,7 +68,7 @@ function ProductCard({
       </div>
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <p className="text-[11px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
-        <h3 className="mt-2 line-clamp-2 min-h-11 break-words text-[15px] font-extrabold leading-6 text-slate-900">
+        <h3 className="mt-2 break-words whitespace-normal text-[15px] font-extrabold leading-6 text-slate-900">
           <Link href={`${productHrefPrefix}/${product.slug}`} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
         <div className="mt-auto pt-3">
