@@ -53,11 +53,40 @@ async function saveProduct(formData: FormData) {
   redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string } }) {
+async function manageProduct(formData: FormData) {
+  "use server";
+  const productId = String(formData.get("productId") ?? "");
+  const intent = String(formData.get("intent") ?? "");
+  if (!productId || !["trash", "restore", "permanent"].includes(intent)) redirect("/admin/products?notice=invalid");
+  const supabase = await requireAdmin("catalog.delete");
+  const rpc = intent === "trash" ? "admin_trash_marketplace_product" : intent === "restore" ? "admin_restore_marketplace_product" : "admin_permanently_delete_marketplace_product";
+  const { error } = await supabase.rpc(rpc, { p_product_id: productId });
+  revalidatePath("/admin");
+  revalidatePath("/admin/products");
+  revalidatePath("/marketplace");
+  revalidatePath("/sitemap.xml");
+  redirect(error ? "/admin/products?notice=delete-error" : intent === "trash" ? "/admin/products?notice=trashed" : intent === "restore" ? "/admin/products?notice=restored" : "/admin/products?status=trash&notice=permanently-deleted");
+}
+
+export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string } }) {
   const supabase = await requireAdmin();
   const { data: products, error } = await supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at")
-    .order("updated_at", { ascending: false }).limit(100);
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
+    .order("updated_at", { ascending: false });
+  const activeStatus = ["draft", "active", "paused", "sold_out", "trash"].includes(searchParams?.status ?? "") ? searchParams?.status : "all";
+  const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
+  if (activeStatus === "trash") (Object.assign({}, {}));
+  const productQuery = supabase.from("products")
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
+    .order("updated_at", { ascending: false });
+  let filteredQuery = productQuery;
+  if (activeStatus === "trash") filteredQuery = filteredQuery.not("deleted_at", "is", null);
+  else {
+    filteredQuery = filteredQuery.is("deleted_at", null);
+    if (activeStatus !== "all") filteredQuery = filteredQuery.eq("status", activeStatus);
+  }
+  if (searchTerm) filteredQuery = filteredQuery.ilike("name", `%${searchTerm}%`);
+  const { data: products, error } = await filteredQuery.limit(500);
 
   return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <div className="min-w-0">
@@ -67,7 +96,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       <AdminCreateProductForm />
       <div className="mt-5 grid min-w-0 gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id.slice(0, 8)}</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.status}</span></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id.slice(0, 8)}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate onClick={(event) => { if (!confirm("স্থায়ীভাবে মুছবেন? Order/commission history থাকলে মুছবে না।")) event.preventDefault(); }} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
         <div className="grid min-w-0 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">Product URL Slug<input name="slug" required maxLength={100} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" defaultValue={p.slug ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
@@ -80,7 +109,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <AdminProductDescriptionEditor value={sanitizeProductDescription(p.description ?? "")} productName={p.name} />
           <AdminProductImages productId={p.id} initialUrls={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)}/>
         </div>
-        <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")}</p>
+        <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")} {p.sku ? `· SKU ${p.sku}` : ""}</p>
       </form>)}
       {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
     </div>
