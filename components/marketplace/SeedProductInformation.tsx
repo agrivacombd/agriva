@@ -5,7 +5,7 @@ type SeedContentSection = {
   id: string;
   title: string;
   summary: string;
-  content_html: string;
+  content_html?: string;
 };
 
 type SeedCropGuide = {
