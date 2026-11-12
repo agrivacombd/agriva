@@ -121,6 +121,8 @@ jobs:
         run: node scripts/smoke-seo-internal-links.mjs
       - name: Article SEO quality audit regression test
         run: node scripts/smoke-seo-article-audit.mjs
+      - name: Article evidence and structured data regression test
+        run: node scripts/smoke-seo-evidence-schema.mjs
       - name: Production build
         run: npm run build
         env:
