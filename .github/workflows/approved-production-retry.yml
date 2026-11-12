@@ -34,6 +34,7 @@ jobs:
           ref: main
           persist-credentials: false
       - name: Verify exact approved revision and release prerequisites
+        id: gate
         shell: bash
         run: |
           set -euo pipefail
@@ -41,8 +42,19 @@ jobs:
           test -n "$VERCEL_TOKEN" && test -n "$VERCEL_ORG_ID" && test -n "$VERCEL_PROJECT_ID" || { echo "Vercel credentials are missing"; exit 1; }
           HEAD_SHA="$(git rev-parse HEAD)"
           test "$HEAD_SHA" = "$APPROVED_SHA" || { echo "Main is not the approved SHA; refusing deployment"; exit 1; }
+          set +e
           node scripts/check-approved-production-retry.mjs
+          result=$?
+          set -e
+          if [ "$result" -eq 3 ]; then
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+          elif [ "$result" -eq 0 ]; then
+            echo "deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            exit "$result"
+          fi
       - name: Deploy exact approved revision to production
+        if: steps.gate.outputs.deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
