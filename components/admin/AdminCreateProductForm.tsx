@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH } from "@/lib/marketplace/product-description";
 import AdminProductImageField from "@/components/admin/AdminProductImageField";
