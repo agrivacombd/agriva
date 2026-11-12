@@ -10,6 +10,7 @@ import CategoryProductDetails from "@/components/marketplace/CategoryProductDeta
 const initial = { name: "", slug: "", category_slug: "premium-food-grains", subcategory_slug: "edible-seeds", price: "", stock: "", commission: "", description: "", status: "draft" };
 
 export default function AdminCreateProductForm() {
+  const router = useRouter();
   const [form, setForm] = useState(initial);
   const [message, setMessage] = useState("");
   const [detailsHtml, setDetailsHtml] = useState("");
