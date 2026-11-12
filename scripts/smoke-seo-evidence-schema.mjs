@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const evidence = readFileSync("lib/seo/evidence-audit.ts", "utf8");
+const audit = readFileSync("lib/seo/article-audit.ts", "utf8");
+const schema = readFileSync("lib/seo/article-schema.ts", "utf8");
+const blog = readFileSync("app/blog/[slug]/page.tsx", "utf8");
+for (const rule of ["evidence-external-sources","evidence-authoritative","evidence-high-risk-review"]) assert.ok(evidence.includes(rule));
+assert.match(audit, /checks\.push\(\.\.\.auditArticleEvidence\(content\)\)/);
+for (const field of ["BreadcrumbList","mainEntityOfPage","inLanguage","datePublished","dateModified","isAccessibleForFree"]) assert.ok(schema.includes(field));
+assert.match(blog, /articleStructuredData\(/);
+assert.match(blog, /safeJsonLd\(jsonLd\)/);
+assert.doesNotMatch(blog.slice(blog.indexOf("articleStructuredData({"),blog.indexOf("articleStructuredData({")+240), /publishedAt: cmsArticle\.created_at/);
+console.log("Evidence review and Article JSON-LD regression checks passed");
