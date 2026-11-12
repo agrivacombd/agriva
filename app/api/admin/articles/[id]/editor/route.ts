@@ -32,6 +32,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const license = clean(data.heroImageLicense, 150);
   const rights = clean(data.heroImageRightsNote, 1500);
   const url = clean(data.heroImageUrl, 1500);
+  const expectedStorageBase = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "") + "/storage/v1/object/public/article-hero-images/";
   const width = Number(data.heroImageWidth);
   const height = Number(data.heroImageHeight);
   const claims = data.claimEvidence;
@@ -44,7 +45,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const claimReview = reviewClaimEvidence(claims as ClaimEvidence[]);
   const publishing = next === "published" && status !== "published";
   if (publishing && (!author || !reviewer || !alt || !license || !rights || !validUrl(url)
-    || !url.includes("/storage/v1/object/public/article-hero-images/")
+    || !process.env.NEXT_PUBLIC_SUPABASE_URL || !url.startsWith(expectedStorageBase)
     || !Number.isInteger(width) || width < 1200 || !Number.isInteger(height) || height < 630
     || !data.imageRightsConfirmed || !data.authorIdentityConfirmed || !data.sourceReviewConfirmed
     || !claimReview.readyForEditorialReview)) {
