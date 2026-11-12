@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 import { suggestSeoInternalLinks } from "@/lib/seo/internal-links";
+import { auditSeoArticle } from "@/lib/seo/article-audit";
 
 export async function POST(request: NextRequest) {
   const access = await requireAdminApi("content.edit");
@@ -42,6 +43,10 @@ export async function POST(request: NextRequest) {
 
 কৃষকের সাধারণ প্রশ্নের সংক্ষিপ্ত উত্তর এখানে যোগ করা হবে.`;
 
+  const metaTitle = `${keyword} | কৃষকের জন্য AGRIVA গাইড`;
+  const metaDescription = `${keyword} সম্পর্কে কারণ, লক্ষণ, করণীয় ও প্রতিরোধের ব্যবহারিক AGRIVA গাইড।`;
+  const seoAudit = auditSeoArticle({ title, metaTitle, metaDescription, primaryKeyword: keyword, content });
+
   const { data, error } = await supabase.from("article_drafts").insert({
     opportunity_id: opportunityId,
     keyword,
@@ -49,8 +54,8 @@ export async function POST(request: NextRequest) {
     title,
     slug,
     content,
-    meta_title: `${keyword} | কৃষকের জন্য AGRIVA গাইড`,
-    meta_description: `${keyword} সম্পর্কে কারণ, লক্ষণ, করণীয় ও প্রতিরোধের ব্যবহারিক AGRIVA গাইড।`,
+    meta_title: metaTitle,
+    meta_description: metaDescription,
     primary_keyword: keyword,
     secondary_keywords: ["agriculture", "farmer guide", "কৃষি", "কৃষকের পরামর্শ"],
     faq: [],
@@ -61,5 +66,5 @@ export async function POST(request: NextRequest) {
   }).select("id,title,slug,status").single();
 
   if (error) return NextResponse.json({ error: "Unable to create article draft" }, { status: 500 });
-  return NextResponse.json({ article: data, internalLinkSuggestions: internalLinks, requiresHumanReview: true });
+  return NextResponse.json({ article: data, internalLinkSuggestions: internalLinks, seoAudit, requiresHumanReview: true });
 }
