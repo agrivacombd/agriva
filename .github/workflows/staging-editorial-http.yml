@@ -1,5 +1,9 @@
 name: Staging editorial HTTP security
 on:
+  pull_request:
+    paths:
+      - 'scripts/test-staging-editorial-http.mjs'
+      - '.github/workflows/staging-editorial-http.yml'
   workflow_dispatch:
     inputs:
       full_http_test:
@@ -22,7 +26,7 @@ jobs:
       - name: Check staging API response
         env:
           STAGING_BASE_URL: https://agriva-p8g6-4dupjyari-agriva1.vercel.app
-          STAGING_FULL_HTTP_TEST: ${{ inputs.full_http_test }}
+          STAGING_FULL_HTTP_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.full_http_test || false }}
           STAGING_ADMIN_COOKIE: ${{ secrets.STAGING_ADMIN_COOKIE }}
           STAGING_NONADMIN_COOKIE: ${{ secrets.STAGING_NONADMIN_COOKIE }}
           STAGING_TEST_ARTICLE_ID: ${{ vars.STAGING_TEST_ARTICLE_ID }}
