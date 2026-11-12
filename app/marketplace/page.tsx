@@ -25,6 +25,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
       .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,unit,image_url")
       .eq("status", "active")
       .eq("marketplace_channel", "marketplace")
+      .is("deleted_at", null)
       .order("created_at", { ascending: false }).limit(120);
     if (error) {
       catalogueUnavailable = true;

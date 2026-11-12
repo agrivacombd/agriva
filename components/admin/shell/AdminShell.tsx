@@ -22,6 +22,7 @@ const groups: NavGroup[] = [
   { label: "Marketplace", items: [
     { label: "Products", href: "/admin/products", icon: Package },
     { label: "Categories", href: "/admin/categories", icon: FolderKanban },
+    { label: "Seed information", href: "/admin/seed-information", icon: Sprout },
     { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { label: "Harvest", href: "/admin/harvest", icon: Sprout },
     { label: "Plant Market", href: "/admin/plant-market-products", icon: Leaf },

@@ -8,11 +8,15 @@ type Props = { value: string; onChange?: (value: string) => void; productName?: 
 const tools = [
   { label: "B", command: "bold", title: "Bold" },
   { label: "I", command: "italic", title: "Italic" },
+  { label: "U", command: "underline", title: "Underline" },
+  { label: "S", command: "strikeThrough", title: "Strikethrough" },
   { label: "H2", command: "formatBlock", value: "h2", title: "Heading 2" },
   { label: "H3", command: "formatBlock", value: "h3", title: "Heading 3" },
   { label: "• List", command: "insertUnorderedList", title: "Bullet list" },
   { label: "1. List", command: "insertOrderedList", title: "Numbered list" },
   { label: "Quote", command: "formatBlock", value: "blockquote", title: "Quote" },
+  { label: "↶ Undo", command: "undo", title: "Undo" },
+  { label: "↷ Redo", command: "redo", title: "Redo" },
 ];
 
 function toText(html: string) {
@@ -72,12 +76,20 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
 
   return <section className="md:col-span-2 xl:col-span-3">
     <div className="flex flex-wrap items-end justify-between gap-2">
-      <div><label className="text-sm font-bold">Product description</label><p className="mt-1 text-xs font-normal text-[#637266]">Formatting, SEO guidance এবং live preview — একই editor-এ</p></div>
+      <div><label className="text-sm font-bold">Product description</label><p className="mt-1 text-xs font-normal text-[#637266]">Text alignment, formatting, SEO guidance এবং live preview — একই editor-এ</p></div>
       <span className="text-xs font-semibold text-[#637266]">{words} words · {html.length.toLocaleString("en-US")}/{MAX_PRODUCT_DESCRIPTION_HTML_LENGTH.toLocaleString("en-US")} HTML characters</span>
     </div>
     <div className="mt-2 overflow-hidden rounded-xl border border-[#cfdccf] bg-white focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-100">
       <div className="flex flex-wrap gap-1 border-b bg-[#f7faf6] p-2">
         {tools.map(tool => <button key={tool.label} type="button" title={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command, tool.value)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+        <span className="mx-1 hidden h-8 w-px bg-[#d9e4d7] sm:block" aria-hidden="true" />
+        {[
+          { label: "বামে", command: "justifyLeft", title: "বামদিকে সাজান" },
+          { label: "মাঝে", command: "justifyCenter", title: "মাঝখানে সাজান" },
+          { label: "ডানে", command: "justifyRight", title: "ডানদিকে সাজান" },
+          { label: "সমান", command: "justifyFull", title: "দুই পাশে সমানভাবে সাজান" },
+        ].map(tool => <button key={tool.command} type="button" title={tool.title} aria-label={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+        <button type="button" title="Formatting মুছুন" onMouseDown={event => event.preventDefault()} onClick={() => run("removeFormat")} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Format মুছুন</button>
         <button type="button" onMouseDown={event => event.preventDefault()} onClick={addLink} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Link</button>
         <button type="button" onClick={insertOutline} className="ml-auto min-h-9 rounded-lg bg-[#e8f2e6] px-3 text-xs font-bold text-[#17452c] hover:bg-[#dcebd9]">SEO outline বসান</button>
       </div>
