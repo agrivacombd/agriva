@@ -118,7 +118,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ? await (async () => {
         const supabase = await createSupabaseServerClient();
         const [sectionResult, detailResult] = await Promise.all([
-          supabase.from("seed_category_content_sections").select("id,title,content_html").eq("category_slug", "seeds").eq("is_enabled", true).order("sort_order").order("title"),
+          supabase.from("seed_category_content_sections").select("id,title,summary,content_html").eq("category_slug", "seeds").eq("is_enabled", true).order("sort_order").order("title"),
           supabase.from("product_seed_details").select("variety_name,germination_rate,purity_rate,seed_treatment,special_warnings,seed_crop_guides(id,crop_name,summary,content_html)").eq("product_id", product.id).maybeSingle(),
         ]);
         return { sections: sectionResult.data ?? [], details: detailResult.data ?? null };
