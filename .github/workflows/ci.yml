@@ -123,6 +123,8 @@ jobs:
         run: node scripts/smoke-seo-article-audit.mjs
       - name: Article evidence and structured data regression test
         run: node scripts/smoke-seo-evidence-schema.mjs
+      - name: Article editorial evidence UI regression test
+        run: node scripts/smoke-article-evidence-editor.mjs
       - name: Production build
         run: npm run build
         env:
