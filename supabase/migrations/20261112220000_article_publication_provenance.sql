@@ -16,6 +16,13 @@ RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
 SET search_path = pg_catalog, public, pg_temp AS $$
 DECLARE evidence jsonb;
 BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.status <> 'draft' OR NEW.published_at IS NOT NULL THEN
+      RAISE EXCEPTION 'New articles must enter the editorial draft workflow'
+        USING ERRCODE='check_violation';
+    END IF;
+    RETURN NEW;
+  END IF;
   IF OLD.status = 'published' AND NEW.status = 'review' THEN
     NEW.published_at := NULL;
   END IF;
@@ -76,7 +83,7 @@ $$;
 REVOKE ALL ON FUNCTION public.enforce_article_publication_evidence() FROM PUBLIC, anon, authenticated;
 DROP TRIGGER IF EXISTS content_drafts_publication_evidence ON public.content_drafts;
 CREATE TRIGGER content_drafts_publication_evidence
-BEFORE UPDATE ON public.content_drafts
+BEFORE INSERT OR UPDATE ON public.content_drafts
 FOR EACH ROW EXECUTE FUNCTION public.enforce_article_publication_evidence();
 
 -- Public view exposes only approved public provenance; private reviewer IDs
