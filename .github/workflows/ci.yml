@@ -119,6 +119,8 @@ jobs:
         run: node scripts/smoke-seo-keyword-engine.mjs
       - name: AGRIVA contextual internal linking regression test
         run: node scripts/smoke-seo-internal-links.mjs
+      - name: Article SEO quality audit regression test
+        run: node scripts/smoke-seo-article-audit.mjs
       - name: Production build
         run: npm run build
         env:
