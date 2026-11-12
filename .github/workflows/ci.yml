@@ -113,6 +113,10 @@ jobs:
         run: npm run test:plant-science-review-queue
       - name: Plant Science SEO and AEO regression test
         run: npm run test:plant-science-seo-aeo
+      - name: SEO historical content migrations and RLS audit
+        run: node scripts/audit-seo-content-migrations.mjs
+      - name: SEO keyword engine and provider regression tests
+        run: node scripts/smoke-seo-keyword-engine.mjs
       - name: Production build
         run: npm run build
         env:
