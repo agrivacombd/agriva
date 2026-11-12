@@ -1,6 +1,6 @@
 export const MAX_PRODUCT_DESCRIPTION_HTML_LENGTH = 250000;
 
-const ALLOWED_TAGS = new Set(["p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "blockquote", "a"]);
+const ALLOWED_TAGS = new Set(["p", "div", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "blockquote", "a"]);
 
 export function sanitizeProductDescription(input: string): string {
   let html = String(input || "")
@@ -16,7 +16,7 @@ export function sanitizeProductDescription(input: string): string {
     if (name !== "a") {
       const alignment = attributes.match(/\\bstyle\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))/i);
       const textAlign = (alignment?.[1] || alignment?.[2] || alignment?.[3] || "").match(/(?:^|;)\\s*text-align\\s*:\\s*(left|center|right|justify)\\s*(?:;|$)/i)?.[1]?.toLowerCase();
-      return textAlign && ["p", "h2", "h3", "blockquote"].includes(name)
+      return textAlign && ["p", "div", "h2", "h3", "li", "blockquote"].includes(name)
         ? `<${name} style="text-align:${textAlign}">`
         : `<${name}>`;
     }
