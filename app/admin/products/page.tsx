@@ -70,12 +70,8 @@ async function manageProduct(formData: FormData) {
 
 export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string } }) {
   const supabase = await requireAdmin();
-  const { data: products, error } = await supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
-    .order("updated_at", { ascending: false });
   const activeStatus = ["draft", "active", "paused", "sold_out", "trash"].includes(searchParams?.status ?? "") ? searchParams?.status : "all";
   const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
-  if (activeStatus === "trash") (Object.assign({}, {}));
   const productQuery = supabase.from("products")
     .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
     .order("updated_at", { ascending: false });
