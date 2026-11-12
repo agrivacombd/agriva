@@ -11,7 +11,9 @@ export async function POST(request: NextRequest) {
   const name = String(body.name || "").trim();
   const slug = String(body.slug || "").trim().toLowerCase();
   const description = sanitizeProductDescription(String(body.description || ""));
-  const descriptionText = productDescriptionToText(description);
+  if (description.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH) {
+    return NextResponse.json({ error: "পণ্যের বিবরণ অনেক বড় হয়েছে। সর্বোচ্চ ২,৫০,০০০ অক্ষরের মধ্যে ভাগ করে লিখুন; কোনো লেখা কেটে সংরক্ষণ করা হবে না।" }, { status: 413 });
+  }
   const price = Number(body.price);
   const stock = Number(body.stock);
   const commission = Number(body.commission);
