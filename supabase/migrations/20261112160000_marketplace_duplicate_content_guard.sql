@@ -13,19 +13,19 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, extensions
 AS $$
   WITH incoming AS (
     SELECT
-      lower(trim(regexp_replace(coalesce(p_name, ''), '[^[:alnum:]]+', ' ', 'g'))) AS normalized_name,
+      lower(trim(regexp_replace(coalesce(p_name, ''), '[[:space:][:punct:]]+', ' ', 'g'))) AS normalized_name,
       lower(trim(regexp_replace(coalesce(p_description, ''), '<[^>]+>', ' ', 'g'))) AS normalized_description,
       lower(trim(coalesce(p_brand, ''))) AS normalized_brand
   ),
   candidates AS (
     SELECT p.id, p.name, p.slug, p.farmer_id = auth.uid() AS same_seller,
-      extensions.similarity(lower(trim(regexp_replace(coalesce(p.name, ''), '[^[:alnum:]]+', ' ', 'g'))), i.normalized_name) AS title_score,
+      extensions.similarity(lower(trim(regexp_replace(coalesce(p.name, ''), '[[:space:][:punct:]]+', ' ', 'g'))), i.normalized_name) AS title_score,
       extensions.similarity(
-        lower(trim(regexp_replace(regexp_replace(coalesce(p.description, ''), '<[^>]+>', ' ', 'g'), '[^[:alnum:]]+', ' ', 'g'))),
-        lower(trim(regexp_replace(i.normalized_description, '[^[:alnum:]]+', ' ', 'g')))
+        lower(trim(regexp_replace(regexp_replace(coalesce(p.description, ''), '<[^>]+>', ' ', 'g'), '[[:space:][:punct:]]+', ' ', 'g'))),
+        lower(trim(regexp_replace(i.normalized_description, '[[:space:][:punct:]]+', ' ', 'g')))
       ) AS description_score,
       lower(trim(coalesce(p.brand, ''))) = i.normalized_brand AND i.normalized_brand <> '' AS same_brand,
-      lower(trim(regexp_replace(coalesce(p.name, ''), '[^[:alnum:]]+', ' ', 'g'))) = i.normalized_name AS exact_title
+      lower(trim(regexp_replace(coalesce(p.name, ''), '[[:space:][:punct:]]+', ' ', 'g'))) = i.normalized_name AS exact_title
     FROM public.products p CROSS JOIN incoming i
     WHERE p.status = 'active' AND p.marketplace_channel = 'marketplace'
       AND p.category_slug = p_category_slug AND p.farmer_id IS NOT NULL
