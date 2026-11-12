@@ -38,7 +38,8 @@ export default function AdminCreateProductForm() {
       });
       const result = await response.json();
       if (!response.ok) { setMessage(result.error || "পণ্য তৈরি করা যায়নি।"); return; }
-      setMessage(result.warning || "পণ্যটি তৈরি হয়েছে। Draft হিসেবে রাখা হয়েছে; প্রকাশ করতে Admin product list থেকে status Active করতে হবে।");
+      if (result.product?.id) { router.push(`/admin/products/${result.product.id}?notice=created`); router.refresh(); return; }
+      setMessage(result.warning || "পণ্যটি তৈরি হয়েছে।");
     } catch { setMessage("নেটওয়ার্ক সমস্যা হয়েছে। আবার চেষ্টা করুন।"); }
     finally { setLoading(false); }
   }
