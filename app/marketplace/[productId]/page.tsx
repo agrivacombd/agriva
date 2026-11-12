@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
 import ProductImageGallery from "@/components/marketplace/ProductImageGallery";
 import ProductDescription from "@/components/marketplace/ProductDescription";
+import SeedProductInformation from "@/components/marketplace/SeedProductInformation";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
@@ -112,6 +113,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const galleryImages = [...new Set([...(Array.isArray(product.image_urls) ? product.image_urls : []), product.image_url].filter((value): value is string => typeof value === "string" && value.trim().length > 0))].slice(0, 4);
   const image = galleryImages[0];
   const description = sanitizeProductDescription(product.description || "");
+  // Hard category boundary: no seed information query or rendering for any other category.
+  const seedInformation = product.category_slug === "seeds" && !isSample
+    ? await (async () => {
+        const supabase = await createSupabaseServerClient();
+        const [sectionResult, detailResult] = await Promise.all([
+          supabase.from("seed_category_content_sections").select("id,title,content_html").eq("category_slug", "seeds").eq("is_enabled", true).order("sort_order").order("title"),
+          supabase.from("product_seed_details").select("variety_name,germination_rate,purity_rate,seed_treatment,special_warnings,seed_crop_guides(id,crop_name,summary,content_html)").eq("product_id", product.id).maybeSingle(),
+        ]);
+        return { sections: sectionResult.data ?? [], details: detailResult.data ?? null };
+      })()
+    : null;
   const descriptionText = productDescriptionToText(description);
   const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
@@ -275,6 +287,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </dl>
               {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
             </section>
+
+            {seedInformation && <SeedProductInformation sections={seedInformation.sections} details={seedInformation.details} />}
 
             <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
               <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Buyer guide</p>
