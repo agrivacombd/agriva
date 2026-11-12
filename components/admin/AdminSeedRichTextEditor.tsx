@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
 const tools = [
   { label: "B", command: "bold", title: "Bold" },
@@ -52,7 +53,7 @@ export default function AdminSeedRichTextEditor({
           <button type="button" onClick={() => setPreview((current) => !current)} className="ml-auto min-h-8 rounded-lg bg-[#e8f2e6] px-3 text-xs font-bold text-[#17452c]">{preview ? "Edit" : "Preview"}</button>
         </div>
         {preview ? (
-          <div className="prose prose-sm max-w-none min-h-40 px-4 py-3 text-sm leading-7" dangerouslySetInnerHTML={{ __html: html }} />
+          <div className="prose prose-sm max-w-none min-h-40 px-4 py-3 text-sm leading-7" dangerouslySetInnerHTML={{ __html: sanitizeProductDescription(html) }} />
         ) : (
           <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label={label} aria-multiline="true"
             onInput={(event) => setHtml(event.currentTarget.innerHTML)}
