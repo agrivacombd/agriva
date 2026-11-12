@@ -73,7 +73,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
   return <section className="md:col-span-2 xl:col-span-3">
     <div className="flex flex-wrap items-end justify-between gap-2">
       <div><label className="text-sm font-bold">Product description</label><p className="mt-1 text-xs font-normal text-[#637266]">Formatting, SEO guidance এবং live preview — একই editor-এ</p></div>
-      <span className="text-xs font-semibold text-[#637266]">{words} words · {text.length}/5,000 characters</span>
+      <span className="text-xs font-semibold text-[#637266]">{words} words · {text.length}/20,000 characters</span>
     </div>
     <div className="mt-2 overflow-hidden rounded-xl border border-[#cfdccf] bg-white focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-100">
       <div className="flex flex-wrap gap-1 border-b bg-[#f7faf6] p-2">
