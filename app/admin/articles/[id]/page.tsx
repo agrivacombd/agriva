@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import ArticleEvidenceEditor from "./article-evidence-editor";
 
 export const metadata = {
   title: "Review article draft | AGRIVA Admin",
@@ -25,9 +26,9 @@ export default async function AdminArticleReviewPage({
   if (profileError || profile?.role !== "admin") redirect("/dashboard");
 
   const { data: article, error } = await supabase
-    .from("article_drafts")
-    .select("id,keyword,title,slug,content,status,search_intent,meta_title,meta_description,created_at")
-    .eq("id", id)
+    .from("content_drafts")
+    .select("id,title,slug,body_markdown,status,search_intent,primary_keyword,meta_title,meta_description,created_at,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,hero_image_license,hero_image_rights_note,hero_image_verified_by,author_verified_by,claim_evidence")
+    .eq("id", id).eq("content_type", "article")
     .maybeSingle();
 
   if (error || !article) notFound();
@@ -39,7 +40,7 @@ export default async function AdminArticleReviewPage({
         <header className="mt-6 rounded-2xl bg-white p-6 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-[.18em] text-[#a47b20]">Editorial review · {article.status}</p>
           <h1 className="mt-3 text-3xl font-black">{article.title}</h1>
-          <p className="mt-3 text-sm text-[#647468]">Keyword: {article.keyword} · Intent: {article.search_intent ?? "—"}</p>
+          <p className="mt-3 text-sm text-[#647468]">Keyword: {article.primary_keyword} · Intent: {article.search_intent ?? "—"}</p>
           <p className="mt-2 break-all text-xs text-[#647468]">Slug: {article.slug}</p>
         </header>
         <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
@@ -49,10 +50,11 @@ export default async function AdminArticleReviewPage({
         </section>
         <section className="mt-5 rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-black">Draft content</h2>
-          <pre className="mt-4 whitespace-pre-wrap break-words font-sans text-sm leading-7">{article.content ?? "No draft content."}</pre>
+          <pre className="mt-4 whitespace-pre-wrap break-words font-sans text-sm leading-7">{article.body_markdown ?? "No draft content."}</pre>
         </section>
+        <ArticleEvidenceEditor id={article.id} status={article.status} initial={article} />
         <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
-          Review-only page: this draft is not published here. Publication must use a separately authorized and audited workflow.
+          Publication requires admin authorization, verified byline, reviewed image rights and per-claim evidence. Save metadata before approval; published articles must return to review before edits.
         </p>
       </div>
     </main>
