@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const source = readFileSync("content/articles/drafts/001-mishti-kumra-chash-poddhoti.md", "utf8");
+const page = readFileSync("app/admin/editorial-preview/[slug]/page.tsx", "utf8");
+const cleaned = source.replace(/^(#[^\n]+\n\n)(?:\*\*[^\n]+\n)+\n/, "$1");
+assert.ok(cleaned.startsWith("# মিষ্টিকুমড়া চাষ পদ্ধতি"));
+assert.ok(cleaned.includes("বাংলাদেশের বিভিন্ন এলাকায় মিষ্টিকুমড়া"), "first paragraph must survive");
+assert.ok(cleaned.includes("## মিষ্টিকুমড়া চাষের উপযুক্ত সময়"));
+assert.ok(!cleaned.includes("**Status:**"), "internal metadata must be stripped");
+assert.ok(page.includes('process.env.VERCEL_ENV !== "preview"'), "production must deny previews");
+assert.ok(page.includes('requireAdminPage("content.read")'), "admin authentication required");
+assert.ok(page.includes("noindex") || page.includes("index: false"), "no indexing");
+console.log("Editorial preview smoke checks passed.");
