@@ -32,7 +32,7 @@ export default function AdminCreateProductForm() {
       const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, description: form.description + detailsHtml, image_urls: imageUrls }),
+        body: JSON.stringify({ ...form, description: fullDescription, image_urls: imageUrls }),
       });
       const result = await response.json();
       if (!response.ok) { setMessage(result.error || "পণ্য তৈরি করা যায়নি।"); return; }
