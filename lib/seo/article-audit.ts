@@ -1,4 +1,5 @@
 import { suggestSeoInternalLinks } from "./internal-links";
+import { auditArticleEvidence } from "./evidence-audit";
 
 export type SeoCheck = { id: string; status: "pass" | "warning" | "fail"; message: string };
 export type SeoAuditInput = {
@@ -45,6 +46,7 @@ export function auditSeoArticle(input: SeoAuditInput) {
     check("link-anchor", links.every(l => l.anchor.length >= 4 && !/^(click here|here|এখানে|লিংক)$/i.test(l.anchor)), "Use descriptive link anchor text."),
     check("link-format", links.every(l => !/^(javascript:|data:)/i.test(l.href)), "Avoid unsafe link schemes.", "fail"),
   ];
+  checks.push(...auditArticleEvidence(content));
   const failures = checks.filter(c => c.status === "fail").length;
   const warnings = checks.filter(c => c.status === "warning").length;
   return {
