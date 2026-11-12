@@ -51,7 +51,8 @@
     "test:seller-product-seo-editor": "node scripts/smoke-seller-product-seo-editor.mjs",
     "audit:plant-science-catalog": "node scripts/audit-plant-science-catalog.mjs",
     "test:plant-science-review-queue": "node scripts/smoke-plant-science-review-queue.mjs",
-    "test:plant-science-seo-aeo": "node scripts/smoke-plant-science-seo-aeo.mjs"
+    "test:plant-science-seo-aeo": "node scripts/smoke-plant-science-seo-aeo.mjs",
+    "test:marketplace-duplicate-content": "node scripts/smoke-marketplace-duplicate-content.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
