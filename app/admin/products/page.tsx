@@ -20,7 +20,9 @@ async function saveProduct(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
   const description = sanitizeProductDescription(String(formData.get("description") ?? ""));
-  const descriptionText = productDescriptionToText(description);
+  if (description.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH) {
+    redirect("/admin/products?notice=description-too-long");
+  }
   const price = Number(formData.get("price"));
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
