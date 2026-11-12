@@ -12,7 +12,7 @@ type SeedCropGuide = {
   id: string;
   crop_name: string;
   summary: string;
-  content_html: string;
+  content_html?: string;
 };
 
 type SeedDetails = {
