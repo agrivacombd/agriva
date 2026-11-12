@@ -1,7 +1,17 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
+
+function nameToSlug(value: string) {
+  return value.normalize("NFKD").toLowerCase().trim()
+    .replace(/[’']/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 80)
+    .replace(/-$/g, "");
+}
 
 export async function POST(request: NextRequest) {
   const access = await requireAdminApi("catalog.create");
@@ -9,7 +19,9 @@ export async function POST(request: NextRequest) {
   const { supabase } = access;
   const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
-  const slug = String(body.slug || "").trim().toLowerCase();
+  const requestedSlug = String(body.slug || "").trim().toLowerCase();
+  const slugBase = requestedSlug || nameToSlug(name);
+  const slug = requestedSlug || `${slugBase || "product"}-${randomUUID().replace(/-/g, "").slice(0, 8)}`;
   const description = sanitizeProductDescription(String(body.description || ""));
   if (description.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH) {
     return NextResponse.json({ error: "পণ্যের বিবরণ অনেক বড় হয়েছে। সর্বোচ্চ ২,৫০,০০০ অক্ষরের মধ্যে ভাগ করে লিখুন; কোনো লেখা কেটে সংরক্ষণ করা হবে না।" }, { status: 413 });
@@ -27,7 +39,7 @@ export async function POST(request: NextRequest) {
   if (imageUrls.length > 4 || imageUrls.length !== submittedImages.length) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL জমা দিন।" }, { status: 400 });
   }
-  if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
+  if (!name || name.length > 160 || (requestedSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(requestedSlug)) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
       !Number.isFinite(commission) || commission < 0 || commission > 100 || !category || !subcategory) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
   }
@@ -63,7 +75,14 @@ export async function POST(request: NextRequest) {
   });
   if (error) {
     console.error("Admin product creation failed", { code: error.code || "unknown" });
-    return NextResponse.json({ error: error.code === "23505" ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। Product slug migration প্রয়োগ হয়েছে কি না যাচাই করুন।" }, { status: 400 });
+    const message = error.code === "23505"
+      ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।"
+      : error.code === "42501"
+        ? "আপনার Admin permission যাচাই করা যায়নি। আবার লগইন করুন।"
+        : error.code === "23503" || error.code === "23514"
+          ? "ক্যাটাগরি, সাব-ক্যাটাগরি বা পণ্যের কোনো তথ্য database validation-এ আটকে গেছে।"
+          : `পণ্য সংরক্ষণ করা যায়নি (কোড: ${error.code || "unknown"}). আবার চেষ্টা করুন।`;
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
   if (imageUrls.length) {
