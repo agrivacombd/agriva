@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "সর্বোচ্চ ৪টি সঠিক product image URL জমা দিন।" }, { status: 400 });
   }
   if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price <= 0 || !Number.isInteger(stock) || stock < 0 ||
-      !Number.isFinite(commission) || commission < 0 || commission > 100 || descriptionText.length > 20000 || !category || !subcategory) {
+      !Number.isFinite(commission) || commission < 0 || commission > 100 || !category || !subcategory) {
     return NextResponse.json({ error: "পণ্যের নাম, ক্যাটাগরি, মূল্য, স্টক ও কমিশনের তথ্য যাচাই করুন।" }, { status: 400 });
   }
 
