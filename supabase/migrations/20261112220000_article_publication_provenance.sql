@@ -95,3 +95,7 @@ SELECT title,slug,meta_title,meta_description,primary_keyword,body_markdown,
        hero_image_url,hero_image_width,hero_image_height,hero_image_alt
 FROM public.content_drafts
 WHERE status = 'published'::public.content_draft_status AND content_type = 'article';
+
+-- Security-invoker view needs underlying column grants for public readers.
+GRANT SELECT (published_at,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt)
+ON public.content_drafts TO anon;
