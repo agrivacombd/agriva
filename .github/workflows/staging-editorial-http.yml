@@ -4,6 +4,9 @@ on:
     paths:
       - 'scripts/test-staging-editorial-http.mjs'
       - '.github/workflows/staging-editorial-http.yml'
+      - 'app/admin/editorial-preview/**'
+      - 'content/articles/drafts/**'
+      - 'scripts/smoke-editorial-draft-preview.mjs'
   workflow_dispatch:
     inputs:
       full_http_test:
@@ -23,6 +26,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Verify editorial draft preview invariants
+        run: node scripts/smoke-editorial-draft-preview.mjs
       - name: Check staging API response
         env:
           STAGING_BASE_URL: https://agriva-p8g6-4dupjyari-agriva1.vercel.app
