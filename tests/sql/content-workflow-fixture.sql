@@ -12,11 +12,13 @@ CREATE TABLE public.content_drafts (
  title text NOT NULL,
  slug text,
  body_markdown text,
+ primary_keyword text,
  meta_title text,
  meta_description text,
  status public.content_draft_status NOT NULL DEFAULT 'draft',
  reviewed_by uuid REFERENCES public.profiles(id),
  reviewed_at timestamptz,
+ created_at timestamptz NOT NULL DEFAULT now(),
  updated_at timestamptz NOT NULL DEFAULT now()
 );
 INSERT INTO public.profiles(id,role) VALUES ('00000000-0000-4000-8000-000000000001','admin');
