@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const data = body as Record<string, unknown>;
   const next = clean(data.nextStatus, 20) as Status;
   const status = current.status as Status;
-  if (!statuses.includes(next) || !transitions[status]?.includes(next)) return NextResponse.json({ error: "Invalid editorial status transition" }, { status: 400 });
+  if (!statuses.includes(next) || (next !== status && !transitions[status]?.includes(next))) return NextResponse.json({ error: "Invalid editorial status transition" }, { status: 400 });
   const author = clean(data.authorName, 160);
   const reviewer = clean(data.reviewerName, 160);
   const alt = clean(data.heroImageAlt, 250);
@@ -42,7 +42,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return NextResponse.json({ error: "Invalid claim evidence" }, { status: 400 });
   }
   const claimReview = reviewClaimEvidence(claims as ClaimEvidence[]);
-  const publishing = next === "published";
+  const publishing = next === "published" && status !== "published";
   if (publishing && (!author || !reviewer || !alt || !license || !rights || !validUrl(url)
     || !url.includes("/storage/v1/object/public/article-hero-images/")
     || !Number.isInteger(width) || width < 1200 || !Number.isInteger(height) || height < 630
