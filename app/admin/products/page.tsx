@@ -6,7 +6,7 @@ import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import AdminProductImages from "@/components/admin/AdminProductImages";
 import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
-import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
+import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin(capability: AdminCapability = "catalog.read") {
