@@ -19,6 +19,11 @@ export default function AdminCreateProductForm() {
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const fullDescription = form.description + detailsHtml;
+    if (fullDescription.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH) {
+      setMessage("পণ্যের বিবরণ ২,৫০,০০০ অক্ষরের বেশি। লেখা ভাগ করে দিন; কোনো অংশ কেটে সেভ হবে না।");
+      return;
+    }
     setLoading(true);
     setMessage("");
     try {
