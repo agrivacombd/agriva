@@ -32,7 +32,7 @@ const { deployments } = await vercel(`/v6/deployments?projectId=${encodeURICompo
 const matching = deployments.filter((d) => d.meta?.githubCommitSha === APPROVED_SHA);
 if (matching.some((d) => d.readyState === "READY" || d.state === "READY")) {
   console.log("Approved commit is already deployed. No retry needed.");
-  process.exit(0);
+  process.exit(3);
 }
 const latest = deployments[0];
 if (!latest || latest.meta?.githubCommitSha !== APPROVED_SHA) {
