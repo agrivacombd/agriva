@@ -1,3 +1,5 @@
+export const MAX_PRODUCT_DESCRIPTION_HTML_LENGTH = 250000;
+
 const ALLOWED_TAGS = new Set(["p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "blockquote", "a"]);
 
 export function sanitizeProductDescription(input: string): string {
