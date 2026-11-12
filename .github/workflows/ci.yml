@@ -169,3 +169,9 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f tests/sql/article-publication-provenance.sql
       - name: Verify provenance migration can be reapplied
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112220000_article_publication_provenance.sql
+      - name: Bootstrap disposable image storage schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/article-storage-fixture.sql
+      - name: Execute image rights and admin storage migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112230000_article_editor_image_rights.sql
+      - name: Verify image rights migration can be reapplied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112230000_article_editor_image_rights.sql
