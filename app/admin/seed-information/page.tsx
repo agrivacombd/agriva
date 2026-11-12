@@ -8,12 +8,13 @@ async function saveCommonSection(formData: FormData) {
   const id = String(formData.get("id") ?? "").trim();
   const sectionKey = String(formData.get("section_key") ?? "").trim().toLowerCase();
   const title = String(formData.get("title") ?? "").trim();
+  const summary = String(formData.get("summary") ?? "").trim();
   const content = sanitizeProductDescription(String(formData.get("content_html") ?? ""));
   const enabled = String(formData.get("is_enabled") ?? "false") === "true";
   const sortOrder = Number(formData.get("sort_order") ?? 0);
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sectionKey) || !title || title.length > 160 || content.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH || !Number.isInteger(sortOrder)) redirect("/admin/seed-information?notice=invalid");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sectionKey) || !title || title.length > 160 || summary.length > 500 || content.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH || !Number.isInteger(sortOrder)) redirect("/admin/seed-information?notice=invalid");
   const { supabase, user } = await requireAdminPage("catalog.edit");
-  const payload = { section_key: sectionKey, category_slug: "seeds", title, content_html: content, is_enabled: enabled, sort_order: sortOrder, updated_by: user.id };
+  const payload = { section_key: sectionKey, category_slug: "seeds", title, summary, content_html: content, is_enabled: enabled, sort_order: sortOrder, updated_by: user.id };
   const result = id
     ? await supabase.from("seed_category_content_sections").update(payload).eq("id", id)
     : await supabase.from("seed_category_content_sections").upsert(payload, { onConflict: "section_key" });
@@ -91,6 +92,7 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
         <input type="hidden" name="id" value=""/>
         <label className="text-sm font-bold">Section key<input name="section_key" required maxLength={80} placeholder="seed-storage" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         <label className="text-sm font-bold">শিরোনাম<input name="title" required maxLength={160} placeholder="বীজ সংরক্ষণের নিয়ম" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
+        <label className="text-sm font-bold md:col-span-2">Product page-এর সংক্ষিপ্ত সারাংশ<input name="summary" maxLength={500} placeholder="সংক্ষিপ্ত ১–২ বাক্যের সারাংশ" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         <label className="text-sm font-bold">ক্রম<input name="sort_order" type="number" defaultValue="10" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
         <label className="text-sm font-bold">অবস্থা<select name="is_enabled" defaultValue="true" className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label>
         <label className="text-sm font-bold md:col-span-2">বিস্তারিত HTML / Text<textarea name="content_html" rows={6} maxLength={250000} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="বীজ সংরক্ষণের নির্দেশনা লিখুন..."/></label>
@@ -98,7 +100,7 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
       </form>
       <div className="mt-6 space-y-3">{(sections ?? []).map((section) => <form key={section.id} action={saveCommonSection} className="rounded-xl border border-[#e5ece2] p-4">
         <input type="hidden" name="id" value={section.id}/>
-        <div className="grid gap-3 md:grid-cols-2"><label className="text-sm font-bold">Key<input name="section_key" defaultValue={section.section_key} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">শিরোনাম<input name="title" defaultValue={section.title} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">ক্রম<input name="sort_order" type="number" defaultValue={section.sort_order} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">অবস্থা<select name="is_enabled" defaultValue={String(section.is_enabled)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label><label className="text-sm font-bold md:col-span-2">বিস্তারিত<textarea name="content_html" rows={5} defaultValue={section.content_html} maxLength={250000} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label></div><div className="mt-3 flex justify-end"><button className="rounded-lg border border-[#17452c] px-4 py-2 text-sm font-bold">Update</button></div>
+        <div className="grid gap-3 md:grid-cols-2"><label className="text-sm font-bold">Key<input name="section_key" defaultValue={section.section_key} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">শিরোনাম<input name="title" defaultValue={section.title} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold md:col-span-2">Product page-এর সংক্ষিপ্ত সারাংশ<input name="summary" defaultValue={section.summary ?? ""} maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">ক্রম<input name="sort_order" type="number" defaultValue={section.sort_order} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">অবস্থা<select name="is_enabled" defaultValue={String(section.is_enabled)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label><label className="text-sm font-bold md:col-span-2">বিস্তারিত<textarea name="content_html" rows={5} defaultValue={section.content_html} maxLength={250000} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label></div><div className="mt-3 flex justify-end"><button className="rounded-lg border border-[#17452c] px-4 py-2 text-sm font-bold">Update</button></div>
       </form>)}</div>
     </section>
 
