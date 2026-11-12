@@ -9,6 +9,6 @@ for (const path of ["/marketplace", "/plant-market", "/tools/seed-rate-calculato
 }
 assert.match(links, /filter\(x => x.score > 0\)/);
 assert.match(keyword, /internalLinkSuggestions: suggestSeoInternalLinks\(topic\)/);
-assert.match(article, /internalLinkSuggestions: internalLinks, requiresHumanReview: true/);
+assert.match(article, /internalLinkSuggestions: internalLinks, seoAudit, requiresHumanReview: true/);
 assert.doesNotMatch(article, /status: "published"/);
 console.log("SEO internal-link catalogue and editorial review contracts passed");
