@@ -58,7 +58,7 @@ export default function ArticleEvidenceEditor({ id, status: initialStatus, initi
     } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to save"); }
     finally { setBusy(false); }
   }
-  const editable = status !== "published";
+  const editable = status !== "published" && status !== "approved";
   const next: Record<string, string[]> = {
     draft: ["review"], review: ["draft","approved","rejected"],
     approved: ["review","published"], published: ["review"], rejected: ["draft"],
@@ -67,7 +67,7 @@ export default function ArticleEvidenceEditor({ id, status: initialStatus, initi
     <div><h2 className="text-xl font-black">Editorial evidence & publication</h2><p className="mt-2 text-sm text-slate-600">Current status: {status}. Verify every factual claim against its source; a checkbox does not establish truth.</p></div>
     <div className="grid gap-4 sm:grid-cols-2">
       <label className="text-sm font-semibold">Verified author byline<input disabled={!editable} className={field} value={authorName} onChange={e => {setAuthorName(e.target.value);setAuthorIdentityConfirmed(false);}} /></label>
-      <label className="text-sm font-semibold">Reviewer display name<input disabled={!editable} className={field} value={reviewerName} onChange={e => setReviewerName(e.target.value)} /></label>
+      <label className="text-sm font-semibold">Reviewer display name (must match your admin profile for approval)<input disabled={!editable} className={field} value={reviewerName} onChange={e => setReviewerName(e.target.value)} /></label>
     </div>
     <label className="flex items-start gap-2 text-sm"><input type="checkbox" disabled={!editable} checked={authorIdentityConfirmed} onChange={e => setAuthorIdentityConfirmed(e.target.checked)} /> I verified the author's identity and have permission to publish this byline.</label>
     <div className="space-y-3 border-t pt-4"><h3 className="font-bold">Discover hero image</h3>
