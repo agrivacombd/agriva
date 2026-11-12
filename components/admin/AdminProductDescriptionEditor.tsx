@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { sanitizeProductDescription } from "@/lib/marketplace/product-description";
+import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
 type Props = { value: string; onChange?: (value: string) => void; productName?: string };
 
