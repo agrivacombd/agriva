@@ -187,7 +187,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </div>
       </section>}
 
-      <div id="marketplace-product-list" className="mt-6 scroll-mt-24 lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-7">
+      <div id="marketplace-product-list" className={`mt-6 scroll-mt-24 ${showCategories ? "lg:grid lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-7" : ""}`}>
         {showCategories && <aside className="hidden lg:block">
           <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-extrabold text-slate-900">ক্যাটাগরি</h2>
