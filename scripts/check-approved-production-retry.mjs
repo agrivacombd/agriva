@@ -38,12 +38,12 @@ const latest = deployments[0];
 if (!latest || latest.meta?.githubCommitSha !== APPROVED_SHA) {
   throw new Error("Latest production deployment is not for the approved commit. Refusing to deploy.");
 }
-if (!["ERROR", "CANCELED"].includes(latest.readyState ?? latest.state)) {
+if ((latest.readyState ?? latest.state) !== "ERROR") {
   throw new Error("Latest production deployment is not failed; no retry needed.");
 }
 const detail = await vercel(`/v13/deployments/${encodeURIComponent(latest.uid ?? latest.id)}?teamId=${encodeURIComponent(VERCEL_ORG_ID)}`);
 const error = [detail.errorCode, detail.errorMessage, detail.error?.code, detail.error?.message].filter(Boolean).join(" ");
-if (!/rate.?limit|quota|deployments?.?limit|builds?.?limit|too.?many.?requests/i.test(error)) {
+if (!/(rate.?limit|quota|deployments?.?limit|builds?.?limit|too.?many.?requests)/i.test(error)) {
   throw new Error("Deployment failure is not clearly quota-related. Manual review required.");
 }
 console.log("Approved revision passed checks; latest failed due to quota. Retry authorized.");
