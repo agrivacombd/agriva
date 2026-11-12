@@ -7,7 +7,7 @@ VALUES ('00000000-0000-4000-8000-000000000003','Reviewed article','reviewed-arti
 '[{"claim":"Claim supported by source","source_url":"https://fao.org/example","verified":true,"verification_note":"Editor inspected source"}]'::jsonb);
 UPDATE public.content_drafts SET status='review' WHERE slug='reviewed-article';
 UPDATE public.content_drafts SET status='approved' WHERE slug='reviewed-article';
-DO $
+DO $publication_test$
 DECLARE published timestamptz;
 BEGIN
  UPDATE public.content_drafts SET status='published' WHERE slug='reviewed-article';
@@ -25,7 +25,7 @@ BEGIN
  IF NOT EXISTS (SELECT 1 FROM public.published_articles WHERE slug='reviewed-article') THEN
    RAISE EXCEPTION 'Published article view missing row';
  END IF;
-END $$;
+END $publication_test$;
 INSERT INTO public.content_drafts(id,title,slug,body_markdown,status)
 VALUES ('00000000-0000-4000-8000-000000000004','Unverified','unverified','Unsafe draft','draft');
 UPDATE public.content_drafts SET status='review' WHERE slug='unverified';
