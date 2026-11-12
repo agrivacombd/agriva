@@ -13,7 +13,13 @@ export function sanitizeProductDescription(input: string): string {
     const closing = /^<\//.test(tag);
     if (closing) return name === "br" ? "" : `</${name}>`;
     if (name === "br") return "<br>";
-    if (name !== "a") return `<${name}>`;
+    if (name !== "a") {
+      const alignment = attributes.match(/\\bstyle\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))/i);
+      const textAlign = (alignment?.[1] || alignment?.[2] || alignment?.[3] || "").match(/(?:^|;)\\s*text-align\\s*:\\s*(left|center|right|justify)\\s*(?:;|$)/i)?.[1]?.toLowerCase();
+      return textAlign && ["p", "h2", "h3", "blockquote"].includes(name)
+        ? `<${name} style="text-align:${textAlign}">`
+        : `<${name}>`;
+    }
     const href = attributes.match(/\bhref\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i);
     const url = (href?.[1] || href?.[2] || href?.[3] || "").trim();
     try {
