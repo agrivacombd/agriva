@@ -44,9 +44,11 @@ const engine = find("20261112200000_seo_engine_foundation.sql");
 assert.match(engine, /enable row level security/gi);
 assert.match(engine, /revoke all on public\.seo_engine_jobs, public\.seo_engine_usage from anon/i);
 assert.doesNotMatch(engine, /create policy[^;]+for insert to anon/is);
-const maxOtherTimestamp = files.filter(f => /^20\d{12}_/.test(f) && !f.includes("seo_engine_foundation") && !f.includes("repair_content_draft_workflow"))
+const maxOtherTimestamp = files.filter(f => /^20\d{12}_/.test(f) && !f.includes("seo_engine_foundation") && !f.includes("repair_content_draft_workflow") && f.slice(0,14) < "20261112210000")
   .map(f => f.slice(0, 14)).sort().at(-1);
-assert.ok("20261112210000" > maxOtherTimestamp, "Repair migration must follow existing timestamped migrations");
+assert.ok("20261112210000" > maxOtherTimestamp, "Repair migration must follow pre-existing timestamped migrations");
+for (const name of ["20261112220000_article_publication_provenance.sql", "20261112230000_article_editor_image_rights.sql"]) find(name);
+assert.ok("20261112210000" < "20261112220000" && "20261112220000" < "20261112230000", "Editorial migrations must follow workflow repair in order");
 console.log(JSON.stringify({
   migrationCount: files.length,
   contentRelatedCount: related.length,
