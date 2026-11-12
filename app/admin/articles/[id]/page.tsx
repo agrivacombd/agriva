@@ -27,7 +27,7 @@ export default async function AdminArticleReviewPage({
 
   const { data: article, error } = await supabase
     .from("content_drafts")
-    .select("id,title,slug,body_markdown,status,search_intent,primary_keyword,meta_title,meta_description,created_at,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,hero_image_license,hero_image_rights_note,hero_image_verified_by,author_verified_by,claim_evidence")
+    .select("id,title,slug,body_markdown,status,editorial_version,search_intent,primary_keyword,meta_title,meta_description,created_at,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,hero_image_license,hero_image_rights_note,hero_image_verified_by,author_verified_by,claim_evidence")
     .eq("id", id).eq("content_type", "article")
     .maybeSingle();
 
