@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
+import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH } from "@/lib/marketplace/product-description";
 import AdminProductImageField from "@/components/admin/AdminProductImageField";
 import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
 import CategoryProductDetails from "@/components/marketplace/CategoryProductDetails";
