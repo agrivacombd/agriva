@@ -64,17 +64,11 @@ export default async function EditorialDraftPreview({ params }: { params: Promis
   } catch {
     notFound();
   }
-  // Keep editorial workflow metadata separate from the visitor-facing article preview.
-  const [titleAndBody, ...remainder] = source.split(/\n## /);
-  const bodyStart = titleAndBody.indexOf("\n\n", titleAndBody.indexOf("\n\n") + 2);
-  const intro = bodyStart < 0 ? titleAndBody : titleAndBody.slice(0, titleAndBody.indexOf("\n\n")) + "\n\n" + titleAndBody.slice(bodyStart + 2);
-  const renderedSource = [intro, ...remainder.map((section) => "## " + section)].join("\n");
-  const metadataStart = source.indexOf("**Status:**");
-  const firstBody = source.indexOf("\n\n", metadataStart);
-  const secondBody = source.indexOf("\n\n", firstBody + 2);
-  const articleOnly = metadataStart >= 0 && firstBody >= 0 && secondBody >= 0
-    ? source.slice(0, metadataStart) + source.slice(secondBody + 2)
-    : renderedSource;
+  // Draft front matter is editorial-only. Preserve the first body paragraph.
+  const articleOnly = source.replace(
+    /^(#[^\n]+\n\n)(?:\*\*[^\n]+\n)+\n/,
+    "$1",
+  );
   return (
     <main className="mx-auto max-w-4xl px-5 py-12">
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
