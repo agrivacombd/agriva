@@ -1,3 +1,4 @@
+SELECT set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',false);
 -- Run after fixture, workflow repair, and workflow execution tests.
 INSERT INTO public.profiles(id,role) VALUES ('00000000-0000-4000-8000-000000000002','admin');
 INSERT INTO public.content_drafts(id,title,slug,body_markdown,status,reviewed_by,reviewer_name,author_name,author_verified_by,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,claim_evidence)
