@@ -26,8 +26,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const next = clean(data.nextStatus, 20) as Status;
   const status = current.status as Status;
   if (!statuses.includes(next) || (next !== status && !transitions[status]?.includes(next))) return NextResponse.json({ error: "Invalid editorial status transition" }, { status: 400 });
+  if (next === "approved" || next === "published") {
+    const publicationAccess = await requireAdminApi("content.publish");
+    if (!publicationAccess.ok) return publicationAccess.response;
+  }
   const author = clean(data.authorName, 160);
   const reviewer = clean(data.reviewerName, 160);
+  const reviewerIdentity = clean(access.profile.full_name, 160);
+  if (next === "approved" && (!reviewerIdentity || reviewer !== reviewerIdentity)) {
+    return NextResponse.json({ error: "Reviewer name must match your verified admin profile before approval" }, { status: 422 });
+  }
   const alt = clean(data.heroImageAlt, 250);
   const license = clean(data.heroImageLicense, 150);
   const rights = clean(data.heroImageRightsNote, 1500);
@@ -57,6 +65,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     return previous && claim.claim === previous.claim && claim.source_url === previous.source_url
       && claim.verified === previous.verified && claim.verification_note === previous.verification_note;
   });
+  const editorialChanged = author !== current.author_name || reviewer !== current.reviewer_name
+    || url !== current.hero_image_url || width !== current.hero_image_width || height !== current.hero_image_height
+    || alt !== current.hero_image_alt || license !== current.hero_image_license
+    || rights !== current.hero_image_rights_note || !evidenceUnchanged;
+  if (status === "approved" && next === "approved" && editorialChanged) {
+    return NextResponse.json({ error: "Approved evidence is locked. Return to review before editing editorial metadata" }, { status: 409 });
+  }
   if (publishing && (author !== current.author_name || reviewer !== current.reviewer_name
     || url !== current.hero_image_url || width !== current.hero_image_width || height !== current.hero_image_height
     || alt !== current.hero_image_alt || license !== current.hero_image_license
@@ -73,6 +88,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (audit.failures) return NextResponse.json({ error: "Resolve critical SEO/evidence checks before publishing", audit }, { status: 422 });
   }
   const update: Record<string, unknown> = { status: next };
+  if (next === "approved") update.reviewer_name = reviewerIdentity;
   if (status !== "published") {
     Object.assign(update, {
       author_name: author, reviewer_name: reviewer,
