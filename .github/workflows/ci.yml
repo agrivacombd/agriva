@@ -113,8 +113,67 @@ jobs:
         run: npm run test:plant-science-review-queue
       - name: Plant Science SEO and AEO regression test
         run: npm run test:plant-science-seo-aeo
+      - name: SEO historical content migrations and RLS audit
+        run: node scripts/audit-seo-content-migrations.mjs
+      - name: SEO keyword engine and provider regression tests
+        run: node scripts/smoke-seo-keyword-engine.mjs
+      - name: AGRIVA contextual internal linking regression test
+        run: node scripts/smoke-seo-internal-links.mjs
+      - name: Article SEO quality audit regression test
+        run: node scripts/smoke-seo-article-audit.mjs
+      - name: Article evidence and structured data regression test
+        run: node scripts/smoke-seo-evidence-schema.mjs
+      - name: Article editorial evidence UI regression test
+        run: node scripts/smoke-article-evidence-editor.mjs
+      - name: Article publication security regression test
+        run: node scripts/smoke-article-publication-security.mjs
       - name: Production build
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  content-migration-execution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agriva_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d agriva_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: agriva_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bootstrap minimal content schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/content-workflow-fixture.sql
+      - name: Execute forward-only repair migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112210000_repair_content_draft_workflow.sql
+      - name: Verify workflow transitions, revision capture and RLS
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/content-workflow-execution.sql
+      - name: Verify migration can be reapplied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112210000_repair_content_draft_workflow.sql
+      - name: Apply article publication provenance migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112220000_article_publication_provenance.sql
+      - name: Verify publication timestamp, evidence gates and public view
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/article-publication-provenance.sql
+      - name: Verify provenance migration can be reapplied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112220000_article_publication_provenance.sql
+      - name: Bootstrap disposable image storage schema
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/article-storage-fixture.sql
+      - name: Execute image rights and admin storage migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112230000_article_editor_image_rights.sql
+      - name: Verify image rights migration can be reapplied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112230000_article_editor_image_rights.sql

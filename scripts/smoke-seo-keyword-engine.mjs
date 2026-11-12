@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+const route = readFileSync("app/api/admin/seo/keywords/route.ts", "utf8");
+const provider = readFileSync("lib/seo/ai-provider.ts", "utf8");
+const page = readFileSync("app/admin/seo/page.tsx", "utf8");
+assert.match(route, /requireAdminApi\("content\.edit"\)/, "keyword generation must require edit capability");
+assert.match(route, /topic\.length < 3 \|\| topic\.length > 120/, "topic input must be bounded");
+assert.match(route, /Array\.isArray\(parsed\)/, "provider JSON must be validated");
+assert.match(route, /parsed\.filter\(isSuggestion\)/, "keyword suggestions must be schema-filtered");
+assert.match(route, /verifiedSearchVolume: false/, "unverified volume must not be presented as measured");
+assert.match(route, /verifiedKeywordDifficulty: false/, "unverified difficulty must not be presented as measured");
+assert.match(route, /requiresHumanReview: true/, "AI suggestions must require editorial review");
+assert.match(route, /status: 503/, "provider failures must fail closed");
+assert.doesNotMatch(route, /\.from\("content_drafts"\)\.insert/, "keyword ideation must not auto-publish");
+assert.match(provider, /import "server-only"/, "provider must be server-only");
+assert.match(provider, /AbortController/, "provider calls must have a timeout");
+assert.match(provider, /process\.env\.OPENAI_API_KEY/, "OpenAI key must be server-side");
+assert.match(provider, /process\.env\.GEMINI_API_KEY/, "Gemini key must be server-side");
+assert.match(provider, /api\.openai\.com\/v1\/responses/, "OpenAI must use Responses API");
+assert.doesNotMatch(provider, /NEXT_PUBLIC_.*KEY/, "provider must never expose secrets as public env vars");
+assert.match(page, /requireAdminPage\("content\.read"\)/, "SEO dashboard must require admin read capability");
+console.log("SEO keyword endpoint and AI provider security contract: PASS");
