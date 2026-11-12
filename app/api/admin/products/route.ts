@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
-import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
+import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
 export async function POST(request: NextRequest) {
   const access = await requireAdminApi("catalog.create");
