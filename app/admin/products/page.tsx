@@ -34,7 +34,7 @@ async function saveProduct(formData: FormData) {
   if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
       !["draft", "active", "paused", "sold_out"].includes(status) ||
-      (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry)) || descriptionText.length > 20000) {
+      (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
     redirect("/admin/products?notice=invalid");
   }
 
