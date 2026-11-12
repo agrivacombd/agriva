@@ -3,7 +3,7 @@ import { useState } from "react";
 
 type Claim = { claim: string; source_url: string; verification_note: string; verified: boolean };
 type Props = {
-  id: string; status: string; initial: {
+  id: string; status: string; initial: { editorial_version: number;
     author_name: string | null; reviewer_name: string | null; hero_image_url: string | null;
     hero_image_width: number | null; hero_image_height: number | null; hero_image_alt: string | null;
     hero_image_license: string | null; hero_image_rights_note: string | null;
@@ -13,6 +13,7 @@ type Props = {
 const field = "mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm";
 export default function ArticleEvidenceEditor({ id, status: initialStatus, initial }: Props) {
   const [status, setStatus] = useState(initialStatus);
+  const [version, setVersion] = useState(initial.editorial_version);
   const [authorName, setAuthorName] = useState(initial.author_name || "");
   const [reviewerName, setReviewerName] = useState(initial.reviewer_name || "");
   const [heroImageUrl, setHeroImageUrl] = useState(initial.hero_image_url || "");
@@ -47,13 +48,14 @@ export default function ArticleEvidenceEditor({ id, status: initialStatus, initi
     try {
       const response = await fetch(`/api/admin/articles/${id}/editor`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nextStatus, authorName, reviewerName, heroImageUrl,
+        body: JSON.stringify({ expectedVersion: version, nextStatus, authorName, reviewerName, heroImageUrl,
           heroImageWidth, heroImageHeight, heroImageAlt, heroImageLicense, heroImageRightsNote,
           claimEvidence: claims, authorIdentityConfirmed, imageRightsConfirmed, sourceReviewConfirmed }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Unable to save");
+      if (!response.ok) throw new Error((result.code === "EDITORIAL_CONFLICT" ? "Another editor saved this article. Reload the page before retrying. " : "") + (result.error || "Unable to save"));
       setStatus(result.article.status);
+      setVersion(result.article.editorial_version);
       setMessage(`Saved: ${result.article.status}${result.article.published_at ? " · Published " + result.article.published_at : ""}`);
     } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to save"); }
     finally { setBusy(false); }
