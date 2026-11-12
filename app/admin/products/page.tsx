@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin(capability: AdminCapability = "catalog.read") {
   const { supabase } = await requireAdminPage(capability);
@@ -73,6 +74,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     <form method="get" className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:flex-row">
       <input name="q" defaultValue={searchTerm} placeholder="Search products by name..." className="min-h-11 min-w-0 flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2"/>
       <select name="status" defaultValue={activeStatus} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="all">All statuses</option><option value="active">Published</option><option value="draft">Draft</option><option value="paused">Paused</option><option value="sold_out">Sold out</option><option value="trash">Trash</option></select>
+      <select name="category" defaultValue={category} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="">All categories</option>{MARKETPLACE_CATEGORIES.map(item => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
       <select name="sort" defaultValue={sort} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="updated_at">Recently updated</option><option value="name">Name A–Z</option></select>
       <button className="min-h-11 rounded-xl bg-[#17452c] px-5 font-bold text-white">Filter</button><Link href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Reset</Link>
     </form>
@@ -84,7 +86,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         return <div key={p.id} className="flex flex-col gap-3 border-b border-[#edf1eb] p-4 last:border-0 sm:flex-row sm:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {image ? <img src={image} alt="" className="h-14 w-14 shrink-0 rounded-xl border border-[#e5ebe2] object-cover"/> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#f0f5ed] text-xl">📦</div>}
-            <div className="min-w-0"><Link href={p.deleted_at ? `/admin/products/${p.id}` : `/admin/products/${p.id}`} className="block truncate font-extrabold text-[#17351f] hover:text-[#267044] hover:underline">{p.name}</Link><p className="mt-1 truncate text-xs text-[#788578]">{p.category || "Uncategorised"} {p.sku ? `· SKU ${p.sku}` : ""} · ৳{Number(p.price).toLocaleString("en-BD")}</p><div className="mt-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${p.deleted_at ? "bg-red-50 text-red-700" : p.status === "active" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{p.deleted_at ? "Trash" : statusLabels[p.status] ?? p.status}</span></div></div>
+            <div className="min-w-0"><Link href={`/admin/products/${p.id}`} className="block truncate font-extrabold text-[#17351f] hover:text-[#267044] hover:underline">{p.name}</Link><p className="mt-1 truncate text-xs text-[#788578]">{p.category || "Uncategorised"} {p.sku ? `· SKU ${p.sku}` : ""} · ৳{Number(p.price).toLocaleString("en-BD")}</p><div className="mt-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${p.deleted_at ? "bg-red-50 text-red-700" : p.status === "active" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{p.deleted_at ? "Trash" : statusLabels[p.status] ?? p.status}</span></div></div>
           </div>
           <div className="flex items-center gap-2 sm:justify-end">
             <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-9 items-center rounded-lg border border-[#d9e3d5] px-3 text-xs font-bold hover:bg-[#f5f8f3]">Edit</Link>
