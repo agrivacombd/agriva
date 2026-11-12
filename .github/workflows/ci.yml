@@ -125,6 +125,8 @@ jobs:
         run: node scripts/smoke-seo-evidence-schema.mjs
       - name: Article editorial evidence UI regression test
         run: node scripts/smoke-article-evidence-editor.mjs
+      - name: Article publication security regression test
+        run: node scripts/smoke-article-publication-security.mjs
       - name: Production build
         run: npm run build
         env:
