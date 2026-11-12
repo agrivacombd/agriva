@@ -16,6 +16,8 @@ export const ADMIN_CAPABILITIES = [
   "catalog.create",
   "catalog.edit",
   "catalog.moderate",
+  "catalog.delete",
+  "catalog.delete",
   "harvest.read",
   "harvest.moderate",
   "jobs.read",
