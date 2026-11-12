@@ -9,7 +9,7 @@ RETURNS TABLE (
   product_id uuid, product_name text, product_slug text, match_type text,
   title_similarity real, description_similarity real, is_same_seller boolean
 )
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, extensions
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = pg_catalog, public, extensions
 AS $$
   WITH incoming AS (
     SELECT
