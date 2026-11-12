@@ -7,7 +7,7 @@
 - Only runs on `main` when repository variable `AUTO_PRODUCTION_RETRY_ENABLED=true`.
 - Requires `APPROVED_PRODUCTION_SHA` to exactly match the checked-out `main` commit.
 - Requires successful named CI checks (`quality`, `content-migration-execution`, `staging-http`, `editorial-seo`).
-- Requires latest production deployment to be for the approved SHA and to have failed with a recognized quota/rate-limit error. Existing READY releases, unknown failures and changed commits block retry.
+- Requires latest production deployment to be for the approved SHA and to have failed with a recognized quota/rate-limit error. Canceled deployments are never retried. Existing READY releases, unknown failures and changed commits block retry.
 - Uses GitHub environment `production` and Vercel CLI to deploy after the gate passes. Set environment reviewers if you want an additional human approval.
 
 ## Required configuration
@@ -25,3 +25,10 @@ This does not increase Vercel quota, predict its exact reset time, guarantee dep
 Vercel documentation:
 - https://vercel.com/docs/limits
 - https://vercel.com/kb/guide/how-can-i-use-github-actions-with-vercel
+
+## Production readiness checkpoint (2026-11-13)
+- GitHub checks on staging commit `c27cdf6` all passed: `quality`, `content-migration-execution`, `staging-http`, `editorial-seo`.
+- `staging-http` defaults to **anonymous-only** 401 verification. Full authenticated 403/428/409 checks require staging-only session cookies and a disposable draft article ID; they are **not yet verified**.
+- A CI success on a feature branch does not satisfy the approved-main-SHA release gate. Required checks must be configured to execute on main as well; otherwise the automation deliberately refuses to deploy.
+- The production workflow has not been merged into main and its required secrets, variables and environment approval settings are not confirmed.
+- Never enable retry until full security tests, verified backup, editorial signoff and production migration plan are completed.
