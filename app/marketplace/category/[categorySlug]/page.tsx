@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, MARKETPLACE_CATEGORIES, matchesProductCategory } from "@/lib/marketplace/taxonomy";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
+import SeedProductInformation from "@/components/marketplace/SeedProductInformation";
 import { MARKETPLACE_SAMPLE_PRODUCTS } from "@/lib/marketplace/sample-products";
 import { hasIndexableCategoryProducts } from "@/lib/marketplace/indexability";
 
@@ -39,6 +40,17 @@ export default async function CategoryPage({ params }: Props) {
       .eq("status", "active").eq("marketplace_channel", "marketplace").order("created_at", { ascending: false }).limit(200);
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
+  // Seed knowledge base is queried only for the canonical Seeds category slug.
+  const seedKnowledge = categorySlug === "seeds"
+    ? await (async () => {
+        const supabase = await createSupabaseServerClient();
+        const [sectionResult, guideResult] = await Promise.all([
+          supabase.from("seed_category_content_sections").select("id,title,summary,content_html").eq("category_slug", "seeds").eq("is_enabled", true).order("sort_order").order("title"),
+          supabase.from("seed_crop_guides").select("id,crop_name,summary,content_html").eq("is_active", true).order("sort_order").order("crop_name"),
+        ]);
+        return { sections: sectionResult.data ?? [], guides: guideResult.data ?? [] };
+      })()
+    : null;
   const isSamplePreview = process.env.NODE_ENV !== "production" && products.length === 0;
   if (isSamplePreview) products = MARKETPLACE_SAMPLE_PRODUCTS.filter((product) => matchesProductCategory(product.category, category));
   const base = process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd";
@@ -63,6 +75,7 @@ export default async function CategoryPage({ params }: Props) {
       {isSamplePreview && <p role="status" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">প্রিভিউ মোড: নমুনা পণ্য — বাস্তব বিক্রির তালিকা নয়।</p>}<section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.15em] text-emerald-700">Category catalogue</p><h2 className="mt-2 text-2xl font-black">{category.name} — পণ্য তালিকা</h2></div><span className="text-sm text-slate-500">{products.length.toLocaleString("bn-BD")}টি</span></div>
         {products.length ? <MarketplaceCore products={products} showCategories={false} /> : <div className="rounded-2xl border border-dashed border-emerald-950/20 bg-white p-8 text-center"><p className="font-extrabold">এই ক্যাটাগরিতে এখনো পণ্য নেই</p><p className="mt-2 text-sm text-slate-500">নতুন পণ্য অনুমোদিত হলে এখানে দেখা যাবে।</p><Link href="/marketplace" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-emerald-900 px-4 py-2 text-sm font-bold text-white">সব পণ্য দেখুন</Link></div>}
       </section>
+      {seedKnowledge && <SeedProductInformation sections={seedKnowledge.sections} guides={seedKnowledge.guides} mode="full" />}
     </div>
   </main>;
 }
