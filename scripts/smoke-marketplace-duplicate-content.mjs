@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const migration = readFileSync("supabase/migrations/20261112160000_marketplace_duplicate_content_guard.sql", "utf8");
+const route = readFileSync("app/api/seller/products/route.ts", "utf8");
+const productPage = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
+const sitemap = readFileSync("app/sitemap.ts", "utf8");
+assert.match(migration, /CREATE EXTENSION IF NOT EXISTS pg_trgm/i);
+assert.match(migration, /SECURITY DEFINER/i);
+assert.match(migration, /auth\.uid\(\)/i);
+assert.match(migration, /REVOKE ALL ON FUNCTION[\s\S]*FROM anon/i);
+assert.match(migration, /GRANT EXECUTE[\s\S]*TO authenticated/i);
+assert.match(migration, /same_seller/i);
+assert.match(migration, /similarity/i);
+assert.match(route, /rpc\("find_marketplace_product_duplicates"/);
+assert.match(route, /match\.is_same_seller[\s\S]*match\.match_type === "exact_title"/);
+assert.match(route, /status: 409/);
+assert.match(route, /duplicateMatches:/);
+assert.match(route, /status: "draft"/);
+assert.match(productPage, /alternates: \{ canonical:/);
+assert.match(sitemap, /from\("products"\)[\s\S]*eq\("status", "active"\)/);
+assert.doesNotMatch(route, /canonical/i, "Do not cross-canonicalize separate seller listings");
+console.log("Marketplace duplicate-content guard regression checks passed.");

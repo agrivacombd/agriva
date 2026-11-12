@@ -4,6 +4,15 @@ import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
 import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
+type DuplicateMatch = {
+  product_id: string;
+  product_name: string;
+  product_slug: string;
+  match_type: string;
+  title_similarity: number;
+  description_similarity: number;
+  is_same_seller: boolean;
+};
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
@@ -57,7 +66,7 @@ export async function POST(request: NextRequest) {
       const base = new URL(supabaseUrl);
       const validImageUrls = imageUrls.every((imageUrl) => {
         const image = new URL(imageUrl);
-        const expectedPrefix = `/storage/v1/object/public/product-images/${user.id}/`;
+        const expectedPrefix = "/storage/v1/object/public/product-images/" + user.id + "/";
         const fileName = image.pathname.startsWith(expectedPrefix) ? image.pathname.slice(expectedPrefix.length) : "";
         const validFileName = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.(?:jpg|png|webp)$/i.test(fileName);
         return image.origin === base.origin && validFileName && !image.search && !image.hash && image.protocol === "https:";
@@ -68,7 +77,30 @@ export async function POST(request: NextRequest) {
     }
   }
 
-   const { data, error } = await supabase.from("products").insert({
+  // Separate seller pages stay independent. Only an exact same-seller re-listing is blocked.
+  const { data: duplicateRows, error: duplicateError } = await supabase.rpc("find_marketplace_product_duplicates", {
+    p_name: name,
+    p_category_slug: category.slug,
+    p_brand: brand || null,
+    p_description: description,
+  });
+  if (duplicateError) {
+    console.error("Marketplace duplicate check unavailable", { code: duplicateError.code || "unknown" });
+    return NextResponse.json({ error: "Duplicate content check সাময়িকভাবে unavailable। কিছুক্ষণ পর আবার চেষ্টা করুন।" }, { status: 503 });
+  }
+  const duplicateMatches = (Array.isArray(duplicateRows) ? duplicateRows : []) as DuplicateMatch[];
+  const sameSellerExactDuplicate = duplicateMatches.some((match) =>
+    match.is_same_seller && match.match_type === "exact_title" &&
+    Number(match.title_similarity) >= 0.99 && Number(match.description_similarity) >= 0.9
+  );
+  if (sameSellerExactDuplicate) {
+    return NextResponse.json({
+      error: "আপনার একই নামে ও প্রায় একই বিবরণে একটি active listing আছে। নতুন listing-এর বৈশিষ্ট্য, প্যাক সাইজ বা বিবরণ আলাদা করুন।",
+      duplicateMatches: duplicateMatches.map(({ product_name, product_slug, match_type }) => ({ product_name, product_slug, match_type })),
+    }, { status: 409 });
+  }
+
+  const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id,
     name,
     slug,
@@ -98,5 +130,12 @@ export async function POST(request: NextRequest) {
     console.error("Seller marketplace product creation failed", { code: error.code || "unknown" });
     return NextResponse.json({ error: error.code === "23505" ? "এই URL slug-টি আগে থেকেই ব্যবহৃত হয়েছে। অন্য slug দিন।" : "পণ্য সংরক্ষণ করা যায়নি। তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 400 });
   }
-  return NextResponse.json({ product: data }, { status: 201 });
+  return NextResponse.json({
+    product: data,
+    duplicateMatches: duplicateMatches.map(({ product_name, product_slug, match_type, title_similarity, description_similarity }) => ({
+      product_name, product_slug, match_type,
+      title_similarity: Number(title_similarity),
+      description_similarity: Number(description_similarity),
+    })),
+  }, { status: 201 });
 }
