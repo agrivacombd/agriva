@@ -48,7 +48,7 @@ async function updateProduct(formData: FormData) {
 export default async function EditAdminProductPage({ params, searchParams }: { params: { id: string }; searchParams?: { notice?: string } }) {
   const { supabase } = await requireAdminPage("catalog.read");
   const { data: product, error } = await supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku,seo_title,seo_description,seo_keywords")
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
     .eq("id", params.id).maybeSingle();
   if (error || !product) notFound();
   const imageUrls = [...(Array.isArray(product.image_urls) ? product.image_urls : []), ...(product.image_url ? [product.image_url] : [])].filter((value: string, index: number, all: string[]) => all.indexOf(value) === index).slice(0,4);
@@ -71,11 +71,7 @@ export default async function EditAdminProductPage({ params, searchParams }: { p
       </div></section>
       <section className="space-y-4 border-t border-[#edf1eb] pt-5"><h2 className="text-lg font-black">Product images</h2><AdminProductImages productId={product.id} initialUrls={imageUrls}/></section>
       <section className="space-y-4 border-t border-[#edf1eb] pt-5"><h2 className="text-lg font-black">Product description</h2><AdminProductDescriptionEditor value={sanitizeProductDescription(product.description ?? "")} productName={product.name}/></section>
-      <section className="space-y-4 border-t border-[#edf1eb] pt-5"><h2 className="text-lg font-black">SEO settings</h2>
-        <label className="block text-sm font-bold">SEO title<input name="seo_title" maxLength={70} defaultValue={product.seo_title ?? ""} className="mt-1.5 min-h-11 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-        <label className="block text-sm font-bold">Meta description<textarea name="seo_description" maxLength={160} defaultValue={product.seo_description ?? ""} rows={3} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-        <label className="block text-sm font-bold">SEO keywords (comma separated)<input name="seo_keywords" defaultValue={(product.seo_keywords ?? []).join(", ")} className="mt-1.5 min-h-11 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-      </section>
+
       <div className="flex flex-col-reverse gap-3 border-t border-[#edf1eb] pt-5 sm:flex-row sm:justify-between"><Link href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border px-5 text-sm font-bold">Cancel</Link><button className="min-h-11 rounded-xl bg-[#17452c] px-7 py-3 text-sm font-extrabold text-white">Update Product</button></div>
     </form>
     <p className="mt-3 text-xs text-[#718072]">Product ID: {product.id} · Seller ID: {product.farmer_id}</p>
