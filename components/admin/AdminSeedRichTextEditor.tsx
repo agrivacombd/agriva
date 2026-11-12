@@ -32,7 +32,7 @@ export default function AdminSeedRichTextEditor({
     if (editorRef.current && editorRef.current.innerHTML !== (value || "")) {
       editorRef.current.innerHTML = value || "";
     }
-  }, [value]);
+  }, [value, preview]);
 
   function run(command: string, commandValue?: string) {
     editorRef.current?.focus();
