@@ -19,10 +19,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   const { data: current, error: readError } = await access.supabase.from("content_drafts")
-    .select("id,status,title,slug,meta_title,meta_description,primary_keyword,body_markdown,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,hero_image_license,hero_image_rights_note,hero_image_verified_by,hero_image_verified_at,claim_evidence")
+    .select("id,status,editorial_version,title,slug,meta_title,meta_description,primary_keyword,body_markdown,author_name,reviewer_name,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,hero_image_license,hero_image_rights_note,hero_image_verified_by,hero_image_verified_at,claim_evidence")
     .eq("id", id).eq("content_type", "article").maybeSingle();
   if (readError || !current) return NextResponse.json({ error: "Article unavailable or migration missing" }, { status: 404 });
   const data = body as Record<string, unknown>;
+  if (!Number.isSafeInteger(data.expectedVersion) || Number(data.expectedVersion) < 0) return NextResponse.json({ error: "Missing or invalid editorial version; reload article" }, { status: 428 });
+  if (data.expectedVersion !== current.editorial_version) return NextResponse.json({ error: "Article was changed by another editor. Reload before saving.", code: "EDITORIAL_CONFLICT" }, { status: 409 });
   const next = clean(data.nextStatus, 20) as Status;
   const status = current.status as Status;
   if (!statuses.includes(next) || (next !== status && !transitions[status]?.includes(next))) return NextResponse.json({ error: "Invalid editorial status transition" }, { status: 400 });
@@ -101,7 +103,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     });
   }
   const { data: saved, error } = await access.supabase.from("content_drafts")
-    .update(update).eq("id", id).eq("status", status).select("id,status,published_at").maybeSingle();
-  if (error || !saved) return NextResponse.json({ error: "Save failed; check workflow permissions and database migration" }, { status: 409 });
+    .update(update).eq("id", id).eq("status", status).eq("editorial_version", data.expectedVersion).select("id,status,published_at,editorial_version").maybeSingle();
+  if (error) return NextResponse.json({ error: "Save failed; check workflow permissions and database migration" }, { status: 409 });
+  if (!saved) return NextResponse.json({ error: "Article changed since you opened it. Reload before saving.", code: "EDITORIAL_CONFLICT" }, { status: 409 });
   return NextResponse.json({ article: saved, claimReview });
 }
