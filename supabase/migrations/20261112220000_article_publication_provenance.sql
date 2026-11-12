@@ -16,6 +16,9 @@ RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
 SET search_path = pg_catalog, public, pg_temp AS $$
 DECLARE evidence jsonb;
 BEGIN
+  IF OLD.status = 'published' AND NEW.status = 'review' THEN
+    NEW.published_at := NULL;
+  END IF;
   IF NEW.status = 'published' AND OLD.status IS DISTINCT FROM 'published' THEN
     IF NEW.published_at IS NOT NULL THEN
       RAISE EXCEPTION 'Publication timestamp must be set by the database'
