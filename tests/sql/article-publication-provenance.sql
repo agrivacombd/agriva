@@ -1,11 +1,13 @@
 -- Run after fixture, workflow repair, and workflow execution tests.
 INSERT INTO public.profiles(id,role) VALUES ('00000000-0000-4000-8000-000000000002','admin');
 INSERT INTO public.content_drafts(id,title,slug,body_markdown,status,reviewed_by,reviewer_name,author_name,author_verified_by,hero_image_url,hero_image_width,hero_image_height,hero_image_alt,claim_evidence)
-VALUES ('00000000-0000-4000-8000-000000000003','Reviewed article','reviewed-article','Source-backed article','approved',
+VALUES ('00000000-0000-4000-8000-000000000003','Reviewed article','reviewed-article','Source-backed article','draft',
 '00000000-0000-4000-8000-000000000001','AGRIVA editorial reviewer','AGRIVA editorial author','00000000-0000-4000-8000-000000000002',
 'https://example.org/reviewed.jpg',1200,630,'Crop field',
 '[{"claim":"Claim supported by source","source_url":"https://fao.org/example","verified":true,"verification_note":"Editor inspected source"}]'::jsonb);
-DO $$
+UPDATE public.content_drafts SET status='review' WHERE slug='reviewed-article';
+UPDATE public.content_drafts SET status='approved' WHERE slug='reviewed-article';
+DO $
 DECLARE published timestamptz;
 BEGIN
  UPDATE public.content_drafts SET status='published' WHERE slug='reviewed-article';
@@ -25,7 +27,9 @@ BEGIN
  END IF;
 END $$;
 INSERT INTO public.content_drafts(id,title,slug,body_markdown,status)
-VALUES ('00000000-0000-4000-8000-000000000004','Unverified','unverified','Unsafe draft','approved');
+VALUES ('00000000-0000-4000-8000-000000000004','Unverified','unverified','Unsafe draft','draft');
+UPDATE public.content_drafts SET status='review' WHERE slug='unverified';
+UPDATE public.content_drafts SET status='approved' WHERE slug='unverified';
 DO $$
 BEGIN
  BEGIN
