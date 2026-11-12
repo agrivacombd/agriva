@@ -2,55 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
-import TaxonomyFields from "@/components/admin/TaxonomyFields";
-import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
-import AdminProductImages from "@/components/admin/AdminProductImages";
-import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
-import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
-import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
+import { MARKETPLACE_CATEGORIES } from "@/lib/marketplace/taxonomy";
 
 async function requireAdmin(capability: AdminCapability = "catalog.read") {
   const { supabase } = await requireAdminPage(capability);
   return supabase;
-}
-
-async function saveProduct(formData: FormData) {
-  "use server";
-  const productId = String(formData.get("productId") ?? "");
-  const name = String(formData.get("name") ?? "").trim();
-  const slug = String(formData.get("slug") ?? "").trim().toLowerCase();
-  const description = sanitizeProductDescription(String(formData.get("description") ?? ""));
-  if (description.length > MAX_PRODUCT_DESCRIPTION_HTML_LENGTH) {
-    redirect("/admin/products?notice=description-too-long");
-  }
-  const price = Number(formData.get("price"));
-  const stock = Number(formData.get("stock"));
-  const commission = Number(formData.get("commission"));
-  const status = String(formData.get("status") ?? "");
-  const categorySlug = String(formData.get("category_slug") ?? "").trim();
-  const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
-  const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
-  const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
-  if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 ||
-      !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
-      !["draft", "active", "paused", "sold_out"].includes(status) ||
-      (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
-    redirect("/admin/products?notice=invalid");
-  }
-
-  const supabase = await requireAdmin("catalog.edit");
-  const { error: productError } = await supabase.rpc("admin_update_product", {
-    p_product_id: productId, p_name: name, p_slug: slug, p_description: description || null,
-    p_price: price, p_stock: stock, p_commission_percent: commission, p_status: status,
-  });
-  const { error: categoryError } = productError ? { error: productError } : await supabase.rpc("admin_set_product_taxonomy", {
-    p_product_id: productId, p_category_slug: categorySlug || null, p_subcategory_slug: subcategorySlug || null,
-  });
-  revalidatePath("/admin");
-  revalidatePath("/admin/products");
-  revalidatePath("/marketplace");
-  revalidatePath("/sitemap.xml");
-  redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 async function manageProduct(formData: FormData) {
@@ -65,59 +21,81 @@ async function manageProduct(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  redirect(error ? "/admin/products?notice=delete-error" : intent === "trash" ? "/admin/products?notice=trashed" : intent === "restore" ? "/admin/products?notice=restored" : "/admin/products?status=trash&notice=permanently-deleted");
+  redirect(error ? "/admin/products?notice=action-error" : intent === "trash" ? "/admin/products?notice=trashed" : intent === "restore" ? "/admin/products?notice=restored" : "/admin/products?status=trash&notice=permanently-deleted");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string } }) {
+const statusLabels: Record<string, string> = { active: "Published", draft: "Draft", paused: "Paused", sold_out: "Sold out" };
+
+export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string; category?: string; page?: string; sort?: string } }) {
   const supabase = await requireAdmin();
   const requestedStatus = searchParams?.status ?? "all";
   const activeStatus = ["all", "draft", "active", "paused", "sold_out", "trash"].includes(requestedStatus) ? requestedStatus : "all";
   const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
-  const productQuery = supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
-    .order("updated_at", { ascending: false });
-  let filteredQuery = productQuery;
-  if (activeStatus === "trash") filteredQuery = filteredQuery.not("deleted_at", "is", null);
+  const category = String(searchParams?.category ?? "").trim().slice(0, 80);
+  const page = Math.max(1, Math.min(10000, Number(searchParams?.page) || 1));
+  const sort = searchParams?.sort === "name" ? "name" : "updated_at";
+  const pageSize = 20;
+  const countQuery = supabase.from("products").select("id", { count: "exact", head: true });
+  let totalsQuery = countQuery.is("deleted_at", null);
+  const [{ count: totalCount }, { count: activeCount }, { count: draftCount }, { count: trashCount }] = await Promise.all([
+    totalsQuery,
+    supabase.from("products").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("status", "active"),
+    supabase.from("products").select("id", { count: "exact", head: true }).is("deleted_at", null).eq("status", "draft"),
+    supabase.from("products").select("id", { count: "exact", head: true }).not("deleted_at", "is", null),
+  ]);
+  let query = supabase.from("products")
+    .select("id,name,slug,price,stock,status,category,category_slug,image_url,image_urls,updated_at,deleted_at,sku", { count: "exact" })
+    .order(sort, { ascending: sort === "name" });
+  if (activeStatus === "trash") query = query.not("deleted_at", "is", null);
   else {
-    filteredQuery = filteredQuery.is("deleted_at", null);
-    if (activeStatus !== "all") filteredQuery = filteredQuery.eq("status", activeStatus);
+    query = query.is("deleted_at", null);
+    if (activeStatus !== "all") query = query.eq("status", activeStatus);
   }
-  if (searchTerm) filteredQuery = filteredQuery.ilike("name", `%${searchTerm}%`);
-  const { data: products, error } = await filteredQuery.limit(500);
+  if (searchTerm) query = query.ilike("name", `%${searchTerm}%`);
+  if (category) query = query.eq("category_slug", category);
+  const { data: products, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / pageSize));
+  const params = new URLSearchParams();
+  if (searchTerm) params.set("q", searchTerm);
+  if (activeStatus !== "all") params.set("status", activeStatus);
+  if (category) params.set("category", category);
+  if (sort !== "updated_at") params.set("sort", sort);
+  const pageHref = (next: number) => { const nextParams = new URLSearchParams(params); nextParams.set("page", String(next)); return `/admin/products?${nextParams.toString()}`; };
 
   return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
-    <div className="min-w-0">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, ছবি ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p></div><Link href="/admin/products" className="hidden text-xs font-semibold text-[#54705b] sm:inline-flex">সব পণ্য দেখুন</Link></div>
-      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে এবং সর্বোচ্চ ৪টি ছবি দিন।" : searchParams.notice === "description-too-long" ? "বিবরণ ২,৫০,০০০ অক্ষরের বেশি। কোনো লেখা কেটে সেভ হয়নি; বিবরণ ভাগ করে আবার চেষ্টা করুন।" : "আপডেট করা যায়নি। Product schema ও storage যাচাই করুন।"}</p>}
-      {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
-      <AdminCreateProductForm />
-      <form method="get" className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:flex-row">
-        <input name="q" defaultValue={searchTerm} placeholder="পণ্যের নাম দিয়ে খুঁজুন..." className="min-h-11 min-w-0 flex-1 rounded-xl border px-3 py-2" />
-        <select name="status" defaultValue={activeStatus} className="min-h-11 rounded-xl border bg-white px-3 py-2">
-          <option value="all">সব Product</option><option value="draft">Draft</option><option value="active">Published / Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option><option value="trash">Trash</option>
-        </select>
-        <button className="min-h-11 rounded-xl bg-[#17452c] px-5 font-bold text-white">খুঁজুন / Filter</button>
-        <Link href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Reset</Link>
-      </form>
-      <p className="mt-3 text-sm text-[#637266]">{products?.length ?? 0}টি পণ্য দেখানো হচ্ছে · {activeStatus}</p>
-      <div className="mt-5 grid min-w-0 gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
-        <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id.slice(0, 8)}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
-        <div className="grid min-w-0 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
-          <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2.5 font-normal"/></label>
-          <label className="text-sm font-bold">Product URL Slug<input name="slug" required maxLength={100} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" defaultValue={p.slug ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category}/>
-          <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
-          <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
-          <AdminProductDescriptionEditor value={sanitizeProductDescription(p.description ?? "")} productName={p.name} />
-          <AdminProductImages productId={p.id} initialUrls={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)}/>
-        </div>
-        <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")} {p.sku ? `· SKU ${p.sku}` : ""}</p>
-      </form>)}
-      {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">Products</h1><p className="mt-2 text-sm leading-6 text-[#637266]">সব পণ্য এক জায়গা থেকে পরিচালনা করুন। Edit করতে পণ্যের নামে ক্লিক করুন।</p></div>
+      <Link href="/admin/products/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#17452c] px-5 py-3 text-sm font-extrabold text-white shadow-sm hover:bg-[#103820]"><span aria-hidden="true">＋</span> Add New Product</Link>
+    </div>
+    {searchParams?.notice && <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">{({saved:"Product updated.",trashed:"Product moved to Trash.",restored:"Product restored.", "permanently-deleted":"Product permanently deleted.", "action-error":"Action failed. Please check permissions and try again."} as Record<string,string>)[searchParams.notice] ?? "Action completed."}</p>}
+    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {[["All products",totalCount ?? 0],["Published",activeCount ?? 0],["Drafts",draftCount ?? 0],["Trash",trashCount ?? 0]].map(([label,value])=><div key={String(label)} className="rounded-2xl border border-[#dfe8dc] bg-white p-4"><p className="text-2xl font-black tabular-nums">{value}</p><p className="mt-1 text-xs font-semibold text-[#637266]">{label}</p></div>)}
+    </div>
+    <form method="get" className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:flex-row">
+      <input name="q" defaultValue={searchTerm} placeholder="Search products by name..." className="min-h-11 min-w-0 flex-1 rounded-xl border border-[#d9e3d5] px-3 py-2"/>
+      <select name="status" defaultValue={activeStatus} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="all">All statuses</option><option value="active">Published</option><option value="draft">Draft</option><option value="paused">Paused</option><option value="sold_out">Sold out</option><option value="trash">Trash</option></select>
+      <select name="category" defaultValue={category} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="">All categories</option>{MARKETPLACE_CATEGORIES.map(item => <option key={item.slug} value={item.slug}>{item.name}</option>)}</select>
+      <select name="sort" defaultValue={sort} className="min-h-11 rounded-xl border border-[#d9e3d5] bg-white px-3 py-2"><option value="updated_at">Recently updated</option><option value="name">Name A–Z</option></select>
+      <button className="min-h-11 rounded-xl bg-[#17452c] px-5 font-bold text-white">Filter</button><Link href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Reset</Link>
+    </form>
+    <div className="mt-5 overflow-hidden rounded-2xl border border-[#dfe8dc] bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e8eee5] px-4 py-3"><p className="text-sm font-bold">{count ?? 0} products</p><p className="text-xs text-[#718072]">Page {page} of {totalPages}</p></div>
+      {error && <p className="p-5 text-sm text-red-700">Product list could not be loaded. Check database permissions.</p>}
+      {(products ?? []).map((p:any) => {
+        const image = (Array.isArray(p.image_urls) ? p.image_urls[0] : null) || p.image_url;
+        return <div key={p.id} className="flex flex-col gap-3 border-b border-[#edf1eb] p-4 last:border-0 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            {image ? <img src={image} alt="" className="h-14 w-14 shrink-0 rounded-xl border border-[#e5ebe2] object-cover"/> : <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#f0f5ed] text-xl">📦</div>}
+            <div className="min-w-0"><Link href={`/admin/products/${p.id}`} className="block truncate font-extrabold text-[#17351f] hover:text-[#267044] hover:underline">{p.name}</Link><p className="mt-1 truncate text-xs text-[#788578]">{p.category || "Uncategorised"} {p.sku ? `· SKU ${p.sku}` : ""} · ৳{Number(p.price).toLocaleString("en-BD")}</p><div className="mt-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${p.deleted_at ? "bg-red-50 text-red-700" : p.status === "active" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{p.deleted_at ? "Trash" : statusLabels[p.status] ?? p.status}</span></div></div>
+          </div>
+          <div className="flex items-center gap-2 sm:justify-end">
+            <Link href={`/admin/products/${p.id}`} className="inline-flex min-h-9 items-center rounded-lg border border-[#d9e3d5] px-3 text-xs font-bold hover:bg-[#f5f8f3]">Edit</Link>
+            {p.deleted_at ? <><form action={manageProduct}><input type="hidden" name="productId" value={p.id}/><button name="intent" value="restore" className="min-h-9 rounded-lg border border-emerald-200 px-3 text-xs font-bold text-emerald-800">Restore</button></form><form action={manageProduct}><input type="hidden" name="productId" value={p.id}/><button name="intent" value="permanent" className="min-h-9 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-700">Delete forever</button></form></> : <form action={manageProduct}><input type="hidden" name="productId" value={p.id}/><button name="intent" value="trash" className="min-h-9 rounded-lg border border-amber-200 px-3 text-xs font-bold text-amber-800">Trash</button></form>}
+          </div>
+        </div>;
+      })}
+      {!products?.length && !error && <div className="p-12 text-center"><p className="font-bold">No products found.</p><p className="mt-2 text-sm text-[#718072]">Try changing the filters or add a new product.</p><Link href="/admin/products/new" className="mt-4 inline-flex rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">Add New Product</Link></div>}
+      {totalPages > 1 && <div className="flex items-center justify-between border-t border-[#e8eee5] p-4"><Link aria-disabled={page<=1} className={`rounded-lg border px-4 py-2 text-sm font-bold ${page<=1?"pointer-events-none opacity-40":""}`} href={pageHref(Math.max(1,page-1))}>← Previous</Link><span className="text-xs text-[#718072]">{page} / {totalPages}</span><Link aria-disabled={page>=totalPages} className={`rounded-lg border px-4 py-2 text-sm font-bold ${page>=totalPages?"pointer-events-none opacity-40":""}`} href={pageHref(Math.min(totalPages,page+1))}>Next →</Link></div>}
     </div>
   </main>;
 }
