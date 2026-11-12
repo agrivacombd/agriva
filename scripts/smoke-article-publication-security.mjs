@@ -1,0 +1,16 @@
+import { strict as assert } from "node:assert";
+import { readFileSync } from "node:fs";
+const api = readFileSync("app/api/admin/articles/[id]/editor/route.ts", "utf8");
+const ui = readFileSync("app/admin/articles/[id]/article-evidence-editor.tsx", "utf8");
+const migration = readFileSync("supabase/migrations/20261112230000_article_editor_image_rights.sql", "utf8");
+assert.match(api, /requireAdminApi\("content.edit"\)/);
+assert.match(api, /requireAdminApi\("content.publish"\)/);
+assert.match(api, /reviewer !== reviewerIdentity/);
+assert.match(api, /status === "approved" && next === "approved" && editorialChanged/);
+assert.match(api, /\.eq\("id", id\)\.eq\("status", status\)/);
+assert.match(api, /!evidenceUnchanged/);
+assert.match(api, /!claimReview.readyForEditorialReview/);
+assert.match(ui, /setImageRightsConfirmed\(false\)/);
+assert.match(ui, /setSourceReviewConfirmed\(false\)/);
+assert.match(migration, /NEW\.hero_image_verified_by IS NULL/);
+console.log("Editorial publication security regression checks passed.");
