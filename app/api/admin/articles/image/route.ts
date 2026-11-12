@@ -12,11 +12,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Choose an image under 10 MB" }, { status: 400 });
   }
   const buffer = Buffer.from(await file.arrayBuffer());
-  let image: sharp.Sharp;
-  let metadata: sharp.Metadata;
+  let metadata: Awaited<ReturnType<ReturnType<typeof sharp>["metadata"]>>;
   try {
-    image = sharp(buffer, { limitInputPixels: 40000000 });
-    metadata = await image.metadata();
+    metadata = await sharp(buffer, { limitInputPixels: 40000000 }).metadata();
   } catch {
     return NextResponse.json({ error: "Invalid image" }, { status: 400 });
   }
