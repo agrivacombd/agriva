@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
 import { generateSeoText } from "@/lib/seo/ai-provider";
+import { suggestSeoInternalLinks } from "@/lib/seo/internal-links";
 
 export const runtime = "nodejs";
 const intents = ["informational", "commercial", "transactional", "navigational", "local", "tool"] as const;
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
     }).slice(0, 8);
     if (!suggestions.length) throw new Error("No valid keyword suggestions");
     return NextResponse.json({
-      topic, suggestions, source: "ai_hypotheses", verifiedSearchVolume: false,
+      topic, suggestions, internalLinkSuggestions: suggestSeoInternalLinks(topic), source: "ai_hypotheses", verifiedSearchVolume: false,
       verifiedKeywordDifficulty: false, provider: generated.provider, model: generated.model,
       requiresHumanReview: true
     });
