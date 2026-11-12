@@ -161,3 +161,9 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f tests/sql/content-workflow-execution.sql
       - name: Verify migration can be reapplied
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112210000_repair_content_draft_workflow.sql
+      - name: Apply article publication provenance migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112220000_article_publication_provenance.sql
+      - name: Verify publication timestamp, evidence gates and public view
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/article-publication-provenance.sql
+      - name: Verify provenance migration can be reapplied
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261112220000_article_publication_provenance.sql
