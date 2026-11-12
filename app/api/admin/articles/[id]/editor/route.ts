@@ -51,10 +51,16 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     || !claimReview.readyForEditorialReview)) {
     return NextResponse.json({ error: "Publication blocked: verified byline, reviewed claims, hosted high-resolution image and rights confirmation required", issues: claimReview.issues }, { status: 422 });
   }
+  const storedClaims = Array.isArray(current.claim_evidence) ? current.claim_evidence as ClaimEvidence[] : [];
+  const evidenceUnchanged = claims.length === storedClaims.length && claims.every((claim, index) => {
+    const previous = storedClaims[index];
+    return previous && claim.claim === previous.claim && claim.source_url === previous.source_url
+      && claim.verified === previous.verified && claim.verification_note === previous.verification_note;
+  });
   if (publishing && (author !== current.author_name || reviewer !== current.reviewer_name
     || url !== current.hero_image_url || width !== current.hero_image_width || height !== current.hero_image_height
     || alt !== current.hero_image_alt || license !== current.hero_image_license
-    || rights !== current.hero_image_rights_note || JSON.stringify(claims) !== JSON.stringify(current.claim_evidence))) {
+    || rights !== current.hero_image_rights_note || !evidenceUnchanged)) {
     return NextResponse.json({ error: "Save verified editorial metadata before publishing; publication cannot alter evidence" }, { status: 422 });
   }
   if (publishing && !current.hero_image_verified_by) {
