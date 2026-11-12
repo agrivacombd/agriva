@@ -1,0 +1,51 @@
+name: Retry approved production release after Vercel quota reset
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  checks: read
+
+concurrency:
+  group: agriva-approved-production-retry
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    if: github.ref == 'refs/heads/main' && vars.AUTO_PRODUCTION_RETRY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      APPROVED_SHA: ${{ vars.APPROVED_PRODUCTION_SHA }}
+      REPOSITORY: ${{ github.repository }}
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Verify exact approved revision and release prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$APPROVED_SHA" || { echo "No approved production SHA configured"; exit 1; }
+          test -n "$VERCEL_TOKEN" && test -n "$VERCEL_ORG_ID" && test -n "$VERCEL_PROJECT_ID" || { echo "Vercel credentials are missing"; exit 1; }
+          HEAD_SHA="$(git rev-parse HEAD)"
+          test "$HEAD_SHA" = "$APPROVED_SHA" || { echo "Main is not the approved SHA; refusing deployment"; exit 1; }
+          node scripts/check-approved-production-retry.mjs
+      - name: Deploy exact approved revision to production
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token="$VERCEL_TOKEN"
