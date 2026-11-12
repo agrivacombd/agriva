@@ -1,0 +1,41 @@
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+
+const dir = "content/articles/drafts";
+const files = readdirSync(dir).filter((name) => name.endsWith(".md")).sort();
+const report = [];
+let failed = false;
+const count = (value) => Array.from(value.trim()).length;
+const normalize = (value) => value.normalize("NFC").toLocaleLowerCase("bn-BD").replace(/\s+/g, " ").trim();
+for (const filename of files) {
+  const markdown = readFileSync(path.join(dir, filename), "utf8");
+  const field = (name) => markdown.match(new RegExp("^\\*\\*" + name + ":\\*\\*\\s*(.+)$", "mi"))?.[1]?.trim() ?? "";
+  const title = markdown.match(/^# (.+)$/m)?.[1]?.trim() ?? "";
+  const keyword = field("Primary keyword");
+  const seoTitle = field("SEO title");
+  const description = field("Meta description");
+  const slug = field("Suggested slug").replaceAll("`", "");
+  const alt = field("Hero alt");
+  const image = field("Hero filename").replaceAll("`", "");
+  const body = markdown.split(/\n\n(?=বাংলাদেশের|## )/).slice(1).join("\n\n") || markdown;
+  const sources = markdown.match(/https:\/\/[^\s)]+/g) ?? [];
+  const checks = [];
+  const check = (id, ok, level, detail) => { checks.push({ id, status: ok ? "pass" : level, detail }); if (!ok && level === "fail") failed = true; };
+  check("title", count(title) >= 20, "fail", "Article needs a descriptive H1.");
+  check("primary-keyword", !!keyword, "fail", "Primary keyword is required.");
+  check("seo-title", count(seoTitle) >= 25 && count(seoTitle) <= 70 && normalize(seoTitle).includes(normalize(keyword)), "fail", "SEO title must be 25–70 characters and naturally contain primary keyword.");
+  check("meta-description", count(description) >= 100 && count(description) <= 175, "warning", "Aim for a clear 100–175 character description.");
+  check("slug", /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug), "fail", "Use a lowercase ASCII hyphenated slug.");
+  check("headings", (markdown.match(/^## /gm) ?? []).length >= 3, "fail", "Use at least three useful H2 sections.");
+  check("faq", /প্রশ্ন|জিজ্ঞাসিত/.test(markdown), "warning", "Add relevant user questions when helpful.");
+  check("evidence", sources.length >= 2 && /তথ্যসূত্র/.test(markdown), "fail", "Provide at least two source URLs and a sources section; manual claim-level verification still required.");
+  check("hero-alt", count(alt) >= 35 && count(alt) <= 180, "fail", "Provide meaningful Bengali hero alt text.");
+  check("hero-file", /\.(webp|avif)$/.test(image), "fail", "Prefer a WebP/AVIF hero filename.");
+  check("image-upload", false, "warning", "Verify actual hero asset, dimensions, bytes and rights before publication; this check does not inspect binaries.");
+  check("reviewer", !/Pending/i.test(field("Author/reviewer")) && !!field("Author/reviewer"), "warning", "Verify real author and reviewer identities before publication.");
+  check("internal-links", /\[[^\]]+\]\(\/(?!\/)/.test(body), "warning", "Add verified, relevant AGRIVA internal links before publication.");
+  check("publication", /Editorial draft/i.test(field("Status")), "fail", "Draft must remain explicitly unpublished.");
+  report.push({ filename, checks });
+}
+console.log(JSON.stringify({ total: files.length, reports: report }, null, 2));
+if (failed) process.exitCode = 1;
