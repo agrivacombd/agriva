@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
+import { suggestSeoInternalLinks } from "@/lib/seo/internal-links";
 
 export async function POST(request: NextRequest) {
   const access = await requireAdminApi("content.edit");
@@ -16,6 +17,7 @@ export async function POST(request: NextRequest) {
   const title = `কৃষকের জন্য ${keyword}: কারণ, করণীয় ও প্রতিরোধের পূর্ণাঙ্গ গাইড`;
   // Use actual whitespace matching and keep the generated slug URL-safe.
   const slug = keyword.toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").slice(0, 70) || `agriva-${Date.now()}`;
+  const internalLinks = suggestSeoInternalLinks(keyword);
   const content = `## ${title}
 
 এই খসড়াটি AGRIVA user search demand থেকে তৈরি করা হয়েছে। প্রকাশের আগে বিষয়ভিত্তিক তথ্য, স্থানীয় কৃষি-পরামর্শ এবং প্রয়োজনীয় সূত্র যাচাই করুন।
@@ -59,5 +61,5 @@ export async function POST(request: NextRequest) {
   }).select("id,title,slug,status").single();
 
   if (error) return NextResponse.json({ error: "Unable to create article draft" }, { status: 500 });
-  return NextResponse.json({ article: data });
+  return NextResponse.json({ article: data, internalLinkSuggestions: internalLinks, requiresHumanReview: true });
 }
