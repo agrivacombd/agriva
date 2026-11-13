@@ -106,6 +106,7 @@ function SmartSearchContent() {
 
   useEffect(() => {
     setQuery(urlQuery);
+    setCatalog(null);
     setAiResult(null);
     setAiError("");
     if (urlQuery.length < 2) {
@@ -301,9 +302,9 @@ function SmartSearchContent() {
                 <div className="flex-1">
                   <h2 className="text-lg font-black">AGRIVA AI দিয়ে আরও জানুন</h2>
                   <p className="mt-1 text-sm leading-6 text-slate-600">ফসলের সমস্যা, চাষপদ্ধতি ও সাধারণ কৃষি প্রশ্নের জন্য AI উত্তর নিতে পারেন। শুধু এই বাটনে চাপলে AI API ব্যবহার হবে।</p>
-                  <button type="button" disabled={aiLoading} onClick={askAI} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-950 disabled:opacity-60">
+                  <button type="button" disabled={aiLoading || Boolean(aiResult)} onClick={askAI} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-950 disabled:opacity-60">
                     {aiLoading ? <Loader2 size={17} className="animate-spin" /> : <Bot size={17} />}
-                    {aiLoading ? "AI উত্তর তৈরি হচ্ছে..." : "AI-কে জিজ্ঞেস করুন"}
+                    {aiLoading ? "AI উত্তর তৈরি হচ্ছে..." : aiResult ? "AI উত্তর তৈরি হয়েছে" : "AI-কে জিজ্ঞেস করুন"}
                   </button>
                 </div>
               </div>
