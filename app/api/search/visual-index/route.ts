@@ -83,6 +83,7 @@ const cachedImageFingerprint = unstable_cache(
           fit: "contain",
           background: { r: 255, g: 255, b: 255, alpha: 1 },
         })
+        .flatten({ background: "#ffffff" })
         .ensureAlpha()
         .raw()
         .toBuffer();
