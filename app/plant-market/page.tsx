@@ -24,11 +24,12 @@ export default async function PlantMarketPage() {
 
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("plant_market_products")
-      .select("id,name,slug,category,description,price,stock,unit,image_url")
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(500);
+    const ranked = await supabase.rpc("get_ranked_plant_market_products", { p_limit: 500 });
+    const { data, error } = ranked.error
+      ? await supabase.from("plant_market_products")
+          .select("id,name,slug,category,description,price,stock,unit,image_url,created_at")
+          .eq("status", "active").order("created_at", { ascending: false }).limit(500)
+      : ranked;
 
     if (error) {
       loadFailed = true;
