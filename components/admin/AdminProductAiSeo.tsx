@@ -2,12 +2,22 @@
 import { useState } from "react";
 
 type Suggestion = { seo_title: string; seo_description: string; focus_keyword: string; seo_keywords: string[]; highlights: string[]; image_alt: string; improved_description: string };
-export default function AdminProductAiSeo({ productId }: { productId: string }) {
+export default function AdminProductAiSeo({ productId, initialSeo }: { productId: string; initialSeo?: Partial<Suggestion> }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const current = suggestion || initialSeo;
+  const checks = current ? [
+    { label: "SEO title (30–60 characters)", ok: (current.seo_title || "").trim().length >= 30 && (current.seo_title || "").trim().length <= 60 },
+    { label: "Meta description (120–160 characters)", ok: (current.seo_description || "").trim().length >= 120 && (current.seo_description || "").trim().length <= 160 },
+    { label: "Focus keyword", ok: (current.focus_keyword || "").trim().length >= 2 },
+    { label: "Related keywords", ok: (current.seo_keywords || []).filter(Boolean).length >= 2 },
+    { label: "Verified product highlights", ok: (current.highlights || []).filter(Boolean).length >= 3 },
+    { label: "Descriptive image alt text", ok: (current.image_alt || "").trim().length >= 5 },
+  ] : [];
+  const completed = checks.filter(item => item.ok).length;
   async function save() {
     if (!suggestion) return;
     setSaving(true); setError(""); setSaved(false);
@@ -31,6 +41,7 @@ export default function AdminProductAiSeo({ productId }: { productId: string }) 
   }
   return <section className="md:col-span-2 xl:col-span-3 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
     <div className="flex flex-wrap items-center justify-between gap-3"><div><h3 className="font-black text-[#17452c]">AI Product SEO Assistant</h3><p className="mt-1 text-xs text-[#637266]">ChatGPT API দিয়ে বর্তমান পণ্যের তথ্য বিশ্লেষণ করুন। AI-এর লেখা যাচাই ছাড়া প্রকাশ করবেন না।</p></div><button type="button" disabled={loading} onClick={generate} className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">{loading ? "Analyzing…" : "✨ Generate SEO suggestions"}</button></div>
+    {checks.length > 0 && <div className="mt-4 rounded-xl border bg-white p-3"><div className="flex items-center justify-between gap-2 text-sm font-bold"><span>SEO completeness {suggestion ? "(AI suggestion)" : "(saved data)"}</span><span>{completed}/{checks.length} · {Math.round(completed/checks.length*100)}%</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full bg-emerald-700" style={{width: (completed/checks.length*100)+"%"}}/></div><ul className="mt-3 grid gap-2 sm:grid-cols-2">{checks.map(item=><li key={item.label} className="text-xs"><span className={item.ok ? "text-emerald-700" : "text-amber-700"}>{item.ok ? "✓" : "○"}</span> {item.label}</li>)}</ul><p className="mt-2 text-xs text-slate-500">Completeness is a content checklist, not a Google ranking prediction.</p></div>}
     {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
     {suggestion && <div className="mt-4 space-y-3 rounded-xl border bg-white p-4">
       <p className="text-sm font-bold">Review suggestions · These are not saved automatically</p>
