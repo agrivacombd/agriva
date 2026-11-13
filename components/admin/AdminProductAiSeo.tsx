@@ -7,6 +7,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reviewConfirmed, setReviewConfirmed] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(() => initialSeo ? { seo_title: initialSeo.seo_title || "", seo_description: initialSeo.seo_description || "", focus_keyword: initialSeo.focus_keyword || "", seo_keywords: initialSeo.seo_keywords || [], highlights: initialSeo.highlights || [], image_alt: initialSeo.image_alt || "", improved_description: "" } : null);
   const current = suggestion || initialSeo;
   const checks = current ? [
@@ -18,6 +19,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
     { label: "Descriptive image alt text", ok: (current.image_alt || "").trim().length >= 5 },
   ] : [];
   const completed = checks.filter(item => item.ok).length;
+  const update = (value: Suggestion) => { setSuggestion(value); setSaved(false); setReviewConfirmed(false); };
   async function save() {
     if (!suggestion || saving) return;
     setSaving(true); setError(""); setSaved(false);
@@ -31,7 +33,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
   }
   async function generate() {
     if (loading) return;
-    setLoading(true); setError(""); setSaved(false);
+    setLoading(true); setError(""); setSaved(false); setReviewConfirmed(false);
     try {
       const response = await fetch("/api/admin/products/ai-seo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId }) });
       const result = await response.json();
@@ -47,16 +49,17 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
     {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
     {suggestion && <div className="mt-4 space-y-3 rounded-xl border bg-white p-4">
       <p className="text-sm font-bold">Review and edit SEO fields · Changes are not saved automatically</p>
-      <label className="block text-xs font-bold">SEO Title<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.seo_title} onChange={e=>setSuggestion({...suggestion,seo_title:e.target.value})}/></label>
-      <label className="block text-xs font-bold">Meta Description<textarea className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" rows={3} value={suggestion.seo_description} onChange={e=>setSuggestion({...suggestion,seo_description:e.target.value})}/></label>
-      <label className="block text-xs font-bold">Focus Keyword<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.focus_keyword} onChange={e=>setSuggestion({...suggestion,focus_keyword:e.target.value})}/></label>
-      <label className="block text-xs font-bold">Related Keywords (comma-separated)<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.seo_keywords.join(", ")} onChange={e=>setSuggestion({...suggestion,seo_keywords:e.target.value.split(",").map(x=>x.trim())})}/></label>
-      <label className="block text-xs font-bold">Product Highlights (one per line)<textarea className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" rows={3} value={suggestion.highlights.join("\n")} onChange={e=>setSuggestion({...suggestion,highlights:e.target.value.split("\n")})}/></label>
-      <label className="block text-xs font-bold">Image Alt Text<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.image_alt} onChange={e=>setSuggestion({...suggestion,image_alt:e.target.value})}/></label>
-      {suggestion.improved_description && <details><summary className="cursor-pointer text-sm font-bold">Suggested product description (HTML preview as text)</summary><textarea className="mt-2 w-full rounded-lg border p-2 font-mono text-xs" rows={9} value={suggestion.improved_description} onChange={e=>setSuggestion({...suggestion,improved_description:e.target.value})}/></details>}
+      <label className="block text-xs font-bold">SEO Title<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.seo_title} onChange={e=>update({...suggestion,seo_title:e.target.value})}/></label>
+      <label className="block text-xs font-bold">Meta Description<textarea className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" rows={3} value={suggestion.seo_description} onChange={e=>update({...suggestion,seo_description:e.target.value})}/></label>
+      <label className="block text-xs font-bold">Focus Keyword<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.focus_keyword} onChange={e=>update({...suggestion,focus_keyword:e.target.value})}/></label>
+      <label className="block text-xs font-bold">Related Keywords (comma-separated)<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.seo_keywords.join(", ")} onChange={e=>update({...suggestion,seo_keywords:e.target.value.split(",").map(x=>x.trim())})}/></label>
+      <label className="block text-xs font-bold">Product Highlights (one per line)<textarea className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" rows={3} value={suggestion.highlights.join("\n")} onChange={e=>update({...suggestion,highlights:e.target.value.split("\n")})}/></label>
+      <label className="block text-xs font-bold">Image Alt Text<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.image_alt} onChange={e=>update({...suggestion,image_alt:e.target.value})}/></label>
+      {suggestion.improved_description && <details><summary className="cursor-pointer text-sm font-bold">Suggested product description (HTML preview as text)</summary><textarea className="mt-2 w-full rounded-lg border p-2 font-mono text-xs" rows={9} value={suggestion.improved_description} onChange={e=>update({...suggestion,improved_description:e.target.value})}/></details>}
       <div className="rounded-lg border p-3"><p className="text-xs font-bold text-slate-500">Google search preview (approximate)</p><p className="mt-1 text-base font-semibold text-blue-700">{suggestion.seo_title}</p><p className="text-sm text-slate-600">{suggestion.seo_description}</p></div>
+      <label className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-xs font-semibold text-amber-900"><input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)} className="mt-0.5" />আমি SEO Title, Keywords, Highlights এবং Alt Text-এর তথ্য যাচাই করেছি।</label>
       <p className="text-xs text-amber-800">শুধু যাচাই করা তথ্য Save করুন। Description preview আলাদা করে মূল Editor-এ প্রয়োগ করতে হবে; এটি SEO Save-এর অংশ নয়।</p>
-      <button type="button" onClick={save} disabled={saving || loading} className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">{saving ? "Saving…" : "Save reviewed SEO fields"}</button>
+      <button type="button" onClick={save} disabled={saving || loading || !reviewConfirmed} className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">{saving ? "Saving…" : "Save reviewed SEO fields"}</button>
       {saved && <p role="status" className="text-sm font-bold text-emerald-800">SEO fields saved. Publication status unchanged.</p> }
     </div>}
   </section>;
