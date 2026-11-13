@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       const available=(Array.isArray(catalog?.models)?catalog.models:[])
         .filter((entry:{name?:string;supportedGenerationMethods?:string[]})=>entry?.supportedGenerationMethods?.includes("generateContent")&&typeof entry.name==="string")
         .map((entry:{name:string})=>entry.name.startsWith("models/") ? entry.name.slice(7) : entry.name);
-      discoveredModels=available.filter(name=>name.startsWith("gemini-"));
+      discoveredModels=available.filter((name:string)=>name.startsWith("gemini-"));
       const fallback=[...discoveredModels].sort((a,b)=>Number(b.includes("flash"))-Number(a.includes("flash"))).find(candidate=>candidate!==model);
       if(fallback){selectedModel=fallback;response=await generate(selectedModel);}
     }
