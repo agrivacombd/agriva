@@ -29,7 +29,7 @@ type SearchGuide = {
 };
 
 const PUBLIC_CACHE = "public, s-maxage=60, stale-while-revalidate=300";
-const MAX_CANDIDATES = 90;
+const MAX_CANDIDATES = 60;
 
 function publicClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -115,7 +115,7 @@ async function searchCatalog(query: string, limit: number, suggestionsOnly: bool
     "name.ilike.%" + word + "%",
     "category.ilike.%" + word + "%",
     "slug.ilike.%" + word + "%",
-    "description.ilike.%" + word + "%",
+    ...(suggestionsOnly ? [] : ["description.ilike.%" + word + "%"]),
   ]).join(",");
 
   const productLookup = supabase.from("products")
@@ -126,7 +126,10 @@ async function searchCatalog(query: string, limit: number, suggestionsOnly: bool
     .or(productFilter)
     .limit(MAX_CANDIDATES);
 
-  const articleLookup = suggestionsOnly ? null : supabase.from("content_drafts")
+  // Product searches need one database read; only information-seeking queries
+  // additionally search published articles (guides above are local/static).
+  const needsArticles = !suggestionsOnly && /চাষ|পদ্ধতি|কেন|কিভাবে|কীভাবে|লক্ষণ|পরামর্শ|রোগ|তথ্য|শিখ|guide|how|why|disease|cultivat|grow|farming|problem/i.test(query);
+  const articleLookup = !needsArticles ? null : supabase.from("content_drafts")
     .select("slug,title,meta_description,primary_keyword")
     .eq("status", "published")
     .eq("content_type", "article")
