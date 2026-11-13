@@ -8,6 +8,11 @@ type Diagnosis = {
   disease: string;
   confidence: "low" | "medium" | "high";
   confidenceNote: string;
+  imageQuality?: "good" | "limited" | "unusable";
+  imageQualityNote?: string;
+  alternativeDiagnoses?: string[];
+  followUpQuestions?: string[];
+  needsMorePhotos?: boolean;
   symptoms: string[];
   possibleCauses: string[];
   immediateActions: string[];
@@ -58,6 +63,19 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
         <span className="rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900">নিশ্চয়তা: {confidenceLabel}</span>
       </div>
       <p className="mt-3 text-sm leading-6 text-slate-600">{diagnosis.confidenceNote}</p>
+      {diagnosis.imageQuality && <div className="mt-4 rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm leading-6 text-slate-700">
+        <h3 className="font-extrabold text-slate-900">ছবির মান ও বিশ্লেষণের সীমাবদ্ধতা</h3>
+        <p className="mt-1">{diagnosis.imageQuality === "good" ? "ছবির দৃশ্যমান তথ্য তুলনামূলক স্পষ্ট।" : diagnosis.imageQuality === "limited" ? "ছবির কিছু গুরুত্বপূর্ণ অংশ স্পষ্ট নয়।" : "এই ছবি থেকে নির্ভরযোগ্যভাবে রোগ শনাক্ত করা যাচ্ছে না।"} {diagnosis.imageQualityNote}</p>
+        {diagnosis.needsMorePhotos && <p className="mt-2 font-semibold text-sky-900">আরও ভালো ফলের জন্য আক্রান্ত অংশের কাছ থেকে এবং পুরো গাছের আলাদা পরিষ্কার ছবি দিয়ে আবার বিশ্লেষণ করুন।</p>}
+      </div>}
+      {!!diagnosis.alternativeDiagnoses?.length && <section className="mt-4 rounded-2xl border border-slate-200 p-4">
+        <h3 className="font-extrabold text-slate-900">অন্যান্য সম্ভাবনা (নিশ্চিত নয়)</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{diagnosis.alternativeDiagnoses.map((item, index) => <li key={index}>{item}</li>)}</ul>
+      </section>}
+      {!!diagnosis.followUpQuestions?.length && <section className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+        <h3 className="font-extrabold text-emerald-950">আরও নির্ভুল বিশ্লেষণের জন্য যা জানা প্রয়োজন</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{diagnosis.followUpQuestions.map((item, index) => <li key={index}>{item}</li>)}</ul>
+      </section>}
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
         {sections.map((section) => (
           <section key={section.title} className="rounded-2xl bg-slate-50 p-4">
