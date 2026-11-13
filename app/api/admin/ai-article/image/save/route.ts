@@ -19,8 +19,19 @@ export async function POST(request:NextRequest){
  if(draft.status==="published")return NextResponse.json({error:"Published articles cannot be edited here."},{status:409});
  const path="drafts/"+id+"/"+crypto.randomUUID()+".webp";
  const socialPath=path.replace(/\.webp$/,"-social.webp");
- let socialBytes:Buffer;try{socialBytes=await sharp(bytes).resize(1200,630,{fit:"cover",position:"attention"}).webp({quality:85,effort:4}).toBuffer();}catch{return NextResponse.json({error:"Could not prepare social sharing image."},{status:400});}
- const {error:uploadError}=await supabase.storage.from("article-hero-images").upload(path,bytes,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
+ // Brand both final assets at their actual display dimensions, keeping text readable
+ // without obscuring the central crop or making social previews look like ads.
+ const watermark=(width:number,height:number)=>{
+  const scale=width/1200,boxWidth=Math.round(270*scale),boxHeight=Math.round(52*scale),margin=Math.round(28*scale);
+  const font=Math.round(25*scale),radius=Math.round(13*scale);
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect x="${width-boxWidth-margin}" y="${height-boxHeight-margin}" width="${boxWidth}" height="${boxHeight}" rx="${radius}" fill="#102d1b" fill-opacity=".76"/><text x="${width-margin-boxWidth/2}" y="${height-margin-boxHeight/2+font*.34}" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="${font}" letter-spacing=".3" fill="#ffffff">Agriva.com.bd</text></svg>`);
+ };
+ let heroBytes:Buffer,socialBytes:Buffer;
+ try{
+  heroBytes=await sharp(bytes).resize(1536,1024,{fit:"cover",position:"attention"}).composite([{input:watermark(1536,1024)}]).webp({quality:86,effort:4}).toBuffer();
+  socialBytes=await sharp(bytes).resize(1200,630,{fit:"cover",position:"attention"}).composite([{input:watermark(1200,630)}]).webp({quality:85,effort:4}).toBuffer();
+ }catch{return NextResponse.json({error:"Could not prepare branded website and social images."},{status:400});}
+ const {error:uploadError}=await supabase.storage.from("article-hero-images").upload(path,heroBytes,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
  if(uploadError){console.error("AGRIVA image storage upload",uploadError.message);return NextResponse.json({error:"Image upload failed. Verify Supabase Storage bucket permissions."},{status:500});}
  const {error:socialError}=await supabase.storage.from("article-hero-images").upload(socialPath,socialBytes,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
  if(socialError){await supabase.storage.from("article-hero-images").remove([path]);return NextResponse.json({error:"Social sharing image upload failed."},{status:500});}
