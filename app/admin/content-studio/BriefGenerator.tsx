@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 type Brief = { title?: string; outline?: string[]; faq?: string[]; seo?: { metaTitle?: string; metaDescription?: string; keywords?: string[] } };
 export default function BriefGenerator() {
@@ -8,7 +8,7 @@ export default function BriefGenerator() {
   const [brief, setBrief] = useState<Brief | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  async function generate(event: React.FormEvent<HTMLFormElement>) {
+  async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!keyword.trim() || loading) return;
     setLoading(true); setError(""); setBrief(null);
