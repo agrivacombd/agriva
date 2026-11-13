@@ -4,12 +4,12 @@ import { notFound } from "next/navigation";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
 import { createClient } from "@supabase/supabase-js";
 
-type CmsArticle = { title:string; slug:string; meta_title:string|null; meta_description:string|null; primary_keyword:string|null; body_markdown:string|null; created_at:string; updated_at:string|null };
+type CmsArticle = { title:string; slug:string; meta_title:string|null; meta_description:string|null; primary_keyword:string|null; body_markdown:string|null; hero_image_url:string|null; hero_image_alt:string|null; created_at:string; updated_at:string|null };
 async function getCmsArticle(slug:string):Promise<CmsArticle|null>{
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if(!url||!key)return null;
   const supabase=createClient(url,key);
-  const {data,error}=await supabase.from("content_drafts").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at").eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
+  const {data,error}=await supabase.from("content_drafts").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,hero_image_url,hero_image_alt,created_at,updated_at").eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
   return error||!data?null:data as CmsArticle;
 }
 function CmsMarkdown({body}:{body:string}){return <div className="space-y-4">{body.split(/\r?\n/).map((line,index)=>{const v=line.trim();if(!v)return <div key={index}/>;if(v.startsWith("## "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(3)}</h2>;if(v.startsWith("### "))return <h3 key={index} className="pt-3 text-xl font-black">{v.slice(4)}</h3>;if(v.startsWith("# "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(2)}</h2>;if(v.startsWith("- "))return <p key={index} className="pl-4">• {v.slice(2)}</p>;return <p key={index} className="leading-8">{v}</p>})}</div>}
@@ -79,7 +79,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const cmsArticle = await getCmsArticle(slug);
-  if (cmsArticle) return { title: cmsArticle.meta_title || cmsArticle.title, description: cmsArticle.meta_description || undefined, alternates: { canonical: `/blog/${cmsArticle.slug}` }, openGraph: { type: "article", siteName: "AGRIVA", title: cmsArticle.meta_title || cmsArticle.title, description: cmsArticle.meta_description || undefined, url: `/blog/${cmsArticle.slug}` } };
+  if (cmsArticle) {const socialImage=cmsArticle.hero_image_url?.replace(/\\.webp$/,"-social.webp");return {title:cmsArticle.meta_title||cmsArticle.title,description:cmsArticle.meta_description||undefined,alternates:{canonical:`/blog/${cmsArticle.slug}`},openGraph:{type:"article",siteName:"AGRIVA",title:cmsArticle.meta_title||cmsArticle.title,description:cmsArticle.meta_description||undefined,url:`/blog/${cmsArticle.slug}`,locale:"bn_BD",...(socialImage?{images:[{url:socialImage,width:1200,height:630,alt:cmsArticle.hero_image_alt||cmsArticle.title}]}:{})},twitter:{card:"summary_large_image",title:cmsArticle.meta_title||cmsArticle.title,description:cmsArticle.meta_description||undefined,...(socialImage?{images:[socialImage]}:{})}};}
   const article = articles.find((item) => item.slug === slug);
   if (!article) return { title: "লেখা পাওয়া যায়নি", robots: { index: false, follow: false } };
   return {
