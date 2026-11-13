@@ -108,12 +108,12 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
     if (response.ok) { const data = await response.json(); setFeed(data.feed || []); }
     else setMessage("পাবলিক ফিড লোড করা যায়নি।");
   }
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { void refresh(); fetch("/api/crop-health-feed/profile", { cache: "no-store" }).then(async response => { if (response.ok) { const data = await response.json(); setDisplayName(data.displayName || ""); } }).catch(() => {}); }, []);
   async function publish() {
-    if (!consent || !selectedId || !displayName.trim() || pending) return;
+    if (!consent || !selectedId || displayName.trim().length < 2 || pending) return;
     setPending(true); setMessage("");
     try {
-      const response = await fetch("/api/crop-health-feed", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ detectionId: selectedId, displayName: displayName.trim(), consent: true }) });
+      const response = await fetch("/api/crop-health-feed", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ detectionId: selectedId, consent: true }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "প্রকাশ করা যায়নি।");
       setMessage("আপনার অনুমোদিত বিশ্লেষণ ফিডে প্রকাশিত হয়েছে।");
@@ -138,12 +138,12 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
     <p className="mt-2 text-sm leading-6 text-slate-600">শুধু ব্যবহারকারীর স্বেচ্ছায় প্রকাশ করা নাম, ছবি ও AI-এর সম্ভাব্য ফলাফল এখানে দেখানো হয়। এগুলো নিশ্চিত রোগ নির্ণয় নয়।</p>
     {!!history.length && <div className="mt-5 rounded-2xl border border-emerald-100 bg-white p-4 sm:p-5">
       <h3 className="font-extrabold">আপনার বিশ্লেষণ স্বেচ্ছায় শেয়ার করুন</h3>
-      <p className="mt-1 text-xs leading-5 text-slate-600">শেয়ার না করলে সবকিছু ব্যক্তিগত থাকবে। শেয়ার করলে আপনার দেওয়া Display Name, প্রথম ছবি, ফসল, জেলা, সম্ভাব্য রোগ ও তারিখ সবাই দেখতে পারবেন। আপনার অ্যাকাউন্ট, ফোন, ইমেইল ও ব্যক্তিগত লক্ষণের বিবরণ প্রকাশ হবে না।</p>
+      <p className="mt-1 text-xs leading-5 text-slate-600">শেয়ার না করলে সবকিছু ব্যক্তিগত থাকবে। শেয়ার করলে আপনার AGRIVA অ্যাকাউন্টের নাম, প্রথম ছবি, ফসল, জেলা, সম্ভাব্য রোগ ও তারিখ সবাই দেখতে পারবেন। আপনার অ্যাকাউন্ট, ফোন, ইমেইল ও ব্যক্তিগত লক্ষণের বিবরণ প্রকাশ হবে না।</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label className="text-sm font-semibold">Display Name<input value={displayName} maxLength={60} onChange={(event) => setDisplayName(event.target.value)} placeholder="যে নামে প্রকাশ করতে চান" className="mt-1 block w-full rounded-xl border border-slate-200 p-3" /></label>
+        <div className="text-sm font-semibold">অ্যাকাউন্টের নাম (স্বয়ংক্রিয়)<p className="mt-1 rounded-xl border border-slate-200 bg-slate-50 p-3 font-normal">{displayName || "প্রোফাইলে নাম পাওয়া যায়নি"}</p></div>
         <label className="text-sm font-semibold">বিশ্লেষণ নির্বাচন করুন<select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white p-3"><option value="">একটি বিশ্লেষণ নির্বাচন করুন</option>{history.map((item) => <option key={item.id} value={item.id}>{item.crop} · {new Date(item.created_at).toLocaleDateString("bn-BD")}</option>)}</select></label>
       </div>
-      <label className="mt-4 flex items-start gap-2 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1" /><span>আমি স্বেচ্ছায় নির্বাচিত বিশ্লেষণের Display Name, প্রথম ছবি ও সংক্ষিপ্ত ফলাফল সবার জন্য প্রকাশের অনুমতি দিচ্ছি। পরে প্রকাশনা সরাতে পারব।</span></label>
+      <label className="mt-4 flex items-start gap-2 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1" /><span>আমি স্বেচ্ছায় নির্বাচিত বিশ্লেষণের অ্যাকাউন্টের নাম, প্রথম ছবি ও সংক্ষিপ্ত ফলাফল সবার জন্য প্রকাশের অনুমতি দিচ্ছি। পরে প্রকাশনা সরাতে পারব।</span></label>
       <button type="button" disabled={!consent || !selectedId || displayName.trim().length < 2 || pending} onClick={publish} className="mt-3 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white disabled:opacity-50">{pending ? "অপেক্ষা করুন..." : "অনুমতি দিয়ে প্রকাশ করুন"}</button>
       {message && <p role="status" className="mt-3 text-sm text-slate-700">{message}</p>}
       <div className="mt-3 space-y-2">{history.filter((item) => feed.some((entry) => entry.id && entry.imageUrl?.includes(item.id))).map((item) => <button type="button" key={item.id} disabled={pending} onClick={() => unpublish(item.id)} className="block text-sm font-semibold text-rose-700 underline">প্রকাশনা সরান: {item.crop} ({new Date(item.created_at).toLocaleDateString("bn-BD")})</button>)}</div>
