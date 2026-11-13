@@ -1,4 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
+import sharp from "sharp";
 import {requireAdminApi} from "@/lib/admin/authz";
 export const runtime="nodejs";
 export async function POST(request:NextRequest){
@@ -17,10 +18,15 @@ export async function POST(request:NextRequest){
  if(readError||!draft)return NextResponse.json({error:"Draft not found."},{status:404});
  if(draft.status==="published")return NextResponse.json({error:"Published articles cannot be edited here."},{status:409});
  const path="drafts/"+id+"/"+crypto.randomUUID()+".webp";
+ const socialPath=path.replace(/\.webp$/,"-social.webp");
+ let socialBytes:Buffer;try{socialBytes=await sharp(bytes).resize(1200,630,{fit:"cover",position:"attention"}).webp({quality:85,effort:4}).toBuffer();}catch{return NextResponse.json({error:"Could not prepare social sharing image."},{status:400});}
  const {error:uploadError}=await supabase.storage.from("article-hero-images").upload(path,bytes,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
  if(uploadError){console.error("AGRIVA image storage upload",uploadError.message);return NextResponse.json({error:"Image upload failed. Verify Supabase Storage bucket permissions."},{status:500});}
+ const {error:socialError}=await supabase.storage.from("article-hero-images").upload(socialPath,socialBytes,{contentType:"image/webp",upsert:false,cacheControl:"3600"});
+ if(socialError){await supabase.storage.from("article-hero-images").remove([path]);return NextResponse.json({error:"Social sharing image upload failed."},{status:500});}
  const {data:publicUrl}=supabase.storage.from("article-hero-images").getPublicUrl(path);
  const {data:updated,error:updateError}=await supabase.from("content_drafts").update({hero_image_url:publicUrl.publicUrl,hero_image_alt:alt,hero_image_width:1536,hero_image_height:1024,hero_image_license:"AI-generated",hero_image_rights_note:"Generated with OpenAI image API; editorial accuracy and rights require admin verification.",hero_image_verified_by:null,hero_image_verified_at:null,...(draft.status==="approved"?{status:"review",reviewed_at:null}:{})}).eq("id",id).eq("status",draft.status).eq("editorial_version",draft.editorial_version).select("id,hero_image_url,status").maybeSingle();
  if(updateError||!updated)return NextResponse.json({error:"Image uploaded but draft update failed or changed concurrently. Please reload and retry; an unused storage object may remain."},{status:409});
- return NextResponse.json({ok:true,url:updated.hero_image_url,status:updated.status,uploadedBy:user.id});
+ const {data:socialPublic}=supabase.storage.from("article-hero-images").getPublicUrl(socialPath);
+ return NextResponse.json({ok:true,url:updated.hero_image_url,socialUrl:socialPublic.publicUrl,status:updated.status,uploadedBy:user.id});
 }
