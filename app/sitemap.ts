@@ -46,14 +46,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let exchangeListings: SitemapExchangeListing[] = [];
   let landingPages: SitemapLandingPage[] = [];
   let cmsArticles: SitemapArticle[] = [];
-  let publishedCropFeed: { id: string; published_at: string }[] = [];
+  let publishedCropFeed: { slug: string; published_at: string }[] = [];
   let categoryUrls: MetadataRoute.Sitemap = [];
   const now = new Date();
   // Only explicitly published feed entries belong in the public sitemap.
   if (url && key) {
     try {
       const publicDb = createClient(url, key);
-      const { data, error } = await publicDb.from("crop_health_feed").select("id,published_at").order("published_at", { ascending: false }).limit(1000);
+      const { data, error } = await publicDb.from("crop_health_feed").select("slug,published_at").order("published_at", { ascending: false }).limit(1000);
       if (!error) publishedCropFeed = data || [];
     } catch (error) {
       console.error("Public crop feed sitemap unavailable:", error);
@@ -160,7 +160,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticUrls,
     ...categoryUrls,
-    ...publishedCropFeed.map((item) => ({ url: `${base}/crop-disease/feed/${item.id}`, lastModified: new Date(item.published_at), changeFrequency: "monthly" as const, priority: 0.65 })),
+    ...publishedCropFeed.map((item) => ({ url: `${base}/crop-disease/feed/${item.slug}`, lastModified: new Date(item.published_at), changeFrequency: "monthly" as const, priority: 0.65 })),
     ...products.map((product) => ({
       url: `${base}/marketplace/${product.slug}`,
       ...(product.updated_at ? { lastModified: new Date(product.updated_at) } : {}),
