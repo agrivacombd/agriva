@@ -21,7 +21,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
   const completed = checks.filter(item => item.ok).length;
   const update = (value: Suggestion) => { setSuggestion(value); setSaved(false); setReviewConfirmed(false); };
   async function save() {
-    if (!suggestion || saving) return;
+    if (!suggestion || saving || !reviewConfirmed) return;
     setSaving(true); setError(""); setSaved(false);
     try {
       const response = await fetch("/api/admin/products/seo", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, ...suggestion }) });
