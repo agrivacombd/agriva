@@ -69,14 +69,15 @@ async function manageProduct(formData: FormData) {
   redirect(error ? "/admin/products?notice=delete-error" : intent === "trash" ? "/admin/products?notice=trashed" : intent === "restore" ? "/admin/products?notice=restored" : "/admin/products?status=trash&notice=permanently-deleted");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string; edit?: string; page?: string } }) {
+export default async function AdminProductsPage({ searchParams }: { searchParams?: Promise<{ notice?: string; status?: string; q?: string; edit?: string; page?: string }> }) {
   const supabase = await requireAdmin();
-  const requestedStatus = searchParams?.status ?? "all";
+  const params = await searchParams;
+  const requestedStatus = params?.status ?? "all";
   const activeStatus = ["all", "draft", "active", "paused", "sold_out", "trash"].includes(requestedStatus) ? requestedStatus : "all";
-  const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
-  const page = Math.max(1, Math.min(10000, Number.parseInt(String(searchParams?.page ?? "1"), 10) || 1));
+  const searchTerm = String(params?.q ?? "").trim().slice(0, 120);
+  const page = Math.max(1, Math.min(10000, Number.parseInt(String(params?.page ?? "1"), 10) || 1));
   const pageSize = 20;
-  const editId = String(searchParams?.edit ?? "");
+  const editId = String(params?.edit ?? "");
   const productQuery = supabase.from("products")
     .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
     .order("updated_at", { ascending: false });
@@ -99,7 +100,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <div className="min-w-0">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, ছবি ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p></div><Link href="/admin/products" className="hidden text-xs font-semibold text-[#54705b] sm:inline-flex">সব পণ্য দেখুন</Link></div>
-      {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে এবং সর্বোচ্চ ৪টি ছবি দিন।" : searchParams.notice === "description-too-long" ? "বিবরণ ২,৫০,০০০ অক্ষরের বেশি। কোনো লেখা কেটে সেভ হয়নি; বিবরণ ভাগ করে আবার চেষ্টা করুন।" : "আপডেট করা যায়নি। Product schema ও storage যাচাই করুন।"}</p>}
+      {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে এবং সর্বোচ্চ ৪টি ছবি দিন।" : searchParams.notice === "description-too-long" ? "বিবরণ ২,৫০,০০০ অক্ষরের বেশি। কোনো লেখা কেটে সেভ হয়নি; বিবরণ ভাগ করে আবার চেষ্টা করুন।" : "আপডেট করা যায়নি। Product schema ও storage যাচাই করুন।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
       <details className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-4"><summary className="cursor-pointer font-extrabold text-[#17452c]">＋ নতুন পণ্য যোগ করুন</summary><AdminCreateProductForm /></details>
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{[{ label: "Total products", value: totalCount ?? "—" }, { label: "Current page", value: page }, { label: "Showing", value: products?.length ?? 0 }, { label: "Page size", value: pageSize }].map(item => <div key={item.label} className="rounded-2xl border border-[#dfe8dc] bg-white p-4"><p className="text-xs font-semibold text-[#637266]">{item.label}</p><p className="mt-2 text-2xl font-black">{item.value}</p></div>)}</div>
