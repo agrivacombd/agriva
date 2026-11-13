@@ -169,7 +169,11 @@ export default function CropDiseasePanel() {
                 {preview ? <img src={preview} alt="আপলোডের জন্য নির্বাচিত ফসলের ছবি" className="mt-3 max-h-72 w-full rounded-2xl border border-slate-200 object-contain" /> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">পরিষ্কার আলোতে আক্রান্ত অংশের কাছ থেকে ছবি তুলুন। সম্ভব হলে পুরো গাছ ও আক্রান্ত অংশের আলাদা ছবি তুলুন—প্রতিবার একটি ছবি বিশ্লেষণ করা যাবে।</div>}
               </div>
             </div>
-            <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">বিশ্লেষণের জন্য নির্বাচিত ছবি Google Gemini API-তে পাঠানো হয়। সফল হলে ছবিটি private Supabase Storage-এ এবং ফলাফল আপনার অ্যাকাউন্টের ইতিহাসে সংরক্ষিত হয়। ছবি বিশ্লেষণের আগে লগইন প্রয়োজন; Gemini API key ও Supabase migration কনফিগার না থাকলে সেবা চলবে না।</div>
+            <aside aria-label="আপনার ছবি ও তথ্যের নিরাপত্তা" className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-slate-700">
+              <h2 className="font-extrabold text-emerald-950">🔒 আপনার ছবি ও তথ্যের নিরাপত্তা</h2>
+              <p className="mt-2">আপনার দেওয়া ছবি OpenAI-এর AI দিয়ে বিশ্লেষণ করা হবে। বিশ্লেষণ সফল হলে ছবি ব্যক্তিগতভাবে সংরক্ষিত থাকবে এবং ফলাফল আপনার অ্যাকাউন্টে পরে আবার দেখতে পারবেন।</p>
+              <p className="mt-2 text-xs text-slate-600">ছবি বিশ্লেষণ করতে AGRIVA অ্যাকাউন্টে লগইন থাকতে হবে। AI-এর পরামর্শ প্রাথমিক ধারণা—নিশ্চিত রোগ নির্ণয় নয়।</p>
+            </aside>
             {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm leading-6 text-rose-800">{error} {error.includes("লগইন") || error.includes("লগ ইন") ? <Link href="/login" className="font-bold underline">লগইন করুন</Link> : null}</p>}
             <button type="submit" disabled={!photo || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
           </form>
