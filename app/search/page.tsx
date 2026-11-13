@@ -58,6 +58,7 @@ type VisualIndex = {
   products: IndexedVisualProduct[];
   indexedCount: number;
   limited: boolean;
+  storageOrigin: string;
 };
 
 const emptyCatalog: CatalogResult = { query: "", resultCount: 0, products: [], guides: [], articles: [] };
@@ -127,6 +128,7 @@ function SmartSearchContent() {
   const [indexedCount, setIndexedCount] = useState(0);
   const [visualLimited, setVisualLimited] = useState(false);
   const [visualProducts, setVisualProducts] = useState<IndexedVisualProduct[]>([]);
+  const [visualStorageOrigin, setVisualStorageOrigin] = useState("");
   const [semanticMatches, setSemanticMatches] = useState<RankedVisualProduct[]>([]);
   const [semanticState, setSemanticState] = useState<"idle" | "running" | "complete" | "error">("idle");
   const [semanticMessage, setSemanticMessage] = useState("");
@@ -244,7 +246,7 @@ function SmartSearchContent() {
   }
 
   function startSemanticSearch() {
-    if (!visualQuery || visualProducts.length === 0 || semanticState === "running") return;
+    if (!visualQuery || visualProducts.length === 0 || !visualStorageOrigin || semanticState === "running") return;
     if (typeof Worker === "undefined") {
       setSemanticState("error");
       setSemanticMessage("এই ব্রাউজারে লোকাল ছবি-মডেল চালানো যায় না।");
@@ -314,6 +316,7 @@ function SmartSearchContent() {
         type: "search",
         photo: visualQuery.semanticPreview || visualQuery.preview,
         products,
+        storageOrigin: visualStorageOrigin,
       });
     } catch {
       stopSemanticSearch();
@@ -328,6 +331,7 @@ function SmartSearchContent() {
       setSemanticState("idle");
       setSemanticMatches([]);
       setVisualProducts([]);
+      setVisualStorageOrigin("");
       setVisualQuery(null);
       setVisualMatches([]);
       setVisualLoading(false);
@@ -340,6 +344,7 @@ function SmartSearchContent() {
       setSemanticMessage("");
       setSemanticMatches([]);
       setVisualProducts([]);
+      setVisualStorageOrigin("");
       controller?.abort();
       controller = new AbortController();
       const current = controller;
@@ -375,6 +380,7 @@ function SmartSearchContent() {
         if (!current.signal.aborted) {
           setVisualMatches(ranked);
           setVisualProducts(result.products);
+          setVisualStorageOrigin(typeof result.storageOrigin === "string" ? result.storageOrigin : "");
           setIndexedCount(result.indexedCount || 0);
           setVisualLimited(Boolean(result.limited));
         }

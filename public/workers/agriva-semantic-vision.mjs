@@ -83,14 +83,14 @@ async function storeEmbedding(key, vector) {
   });
 }
 
-function safeProduct(value) {
+function safeProduct(value, storageOrigin) {
   if (!value || typeof value !== "object") return null;
   const { id, image_url, visualScore } = value;
   if (typeof id !== "string" || !/^[a-f0-9-]{20,40}$/i.test(id)) return null;
   if (typeof image_url !== "string" || image_url.length > 1200) return null;
   try {
     const url = new URL(image_url);
-    if (url.protocol !== "https:" || url.username || url.password ||
+    if (url.protocol !== "https:" || url.origin !== storageOrigin || url.username || url.password ||
       !url.pathname.startsWith("/storage/v1/object/public/product-images/") ||
       url.search || url.hash) return null;
   } catch {
@@ -109,8 +109,18 @@ self.addEventListener("message", async (event) => {
     if (typeof photo !== "string" || !photo.startsWith("data:image/jpeg;base64,") || photo.length > 400_000) {
       throw new Error("এই ছবিটি বিশ্লেষণ করা যাচ্ছে না।");
     }
+    const storageOrigin = typeof event.data.storageOrigin === "string" ? event.data.storageOrigin : "";
+    let parsedOrigin;
+    try {
+      parsedOrigin = new URL(storageOrigin);
+    } catch {
+      throw new Error("পণ্যের ছবি যাচাইয়ের জন্য storage host পাওয়া যায়নি।");
+    }
+    if (parsedOrigin.protocol !== "https:" || parsedOrigin.origin !== storageOrigin) {
+      throw new Error("অনিরাপদ storage host গ্রহণ করা হয়নি।");
+    }
     const products = (Array.isArray(event.data.products) ? event.data.products : [])
-      .slice(0, MAX_SEMANTIC_CANDIDATES).map(safeProduct).filter(Boolean);
+      .slice(0, MAX_SEMANTIC_CANDIDATES).map((item) => safeProduct(item, storageOrigin)).filter(Boolean);
     if (products.length === 0) throw new Error("তুলনা করার মতো পণ্যের ছবি নেই।");
 
     notify({ type: "progress", stage: "model", done: 0, total: products.length });

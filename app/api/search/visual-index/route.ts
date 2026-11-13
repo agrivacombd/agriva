@@ -157,6 +157,7 @@ export async function GET() {
       // Explicitly disclose the bounded catalogue rather than presenting it as exhaustive.
       limited: listings.length === MAX_PRODUCTS,
       method: "visual-layout-v1",
+      storageOrigin: new URL(storageUrl).origin,
     }, {
       headers: {
         "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600",

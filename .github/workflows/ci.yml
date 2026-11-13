@@ -40,6 +40,8 @@ jobs:
         run: npm run test:public-catalog-config
       - name: Local semantic visual-search regression
         run: npm run test:semantic-visual-search
+      - name: Validate production visual-index smoke script
+        run: node --check scripts/smoke-visual-search-production.mjs
       - name: Validate browser worker module syntax
         run: node --check public/workers/agriva-semantic-vision.mjs
       - name: Category taxonomy SEO smoke test
