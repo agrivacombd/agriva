@@ -6,6 +6,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
 import { ArrowRight, BookOpen, Bot, Leaf, Loader2, PackageSearch, Search, ShoppingBag, Sparkles } from "lucide-react";
 import MobileDashboardNav from "@/components/MobileDashboardNav";
+import VisualSearchButton from "@/components/search/VisualSearchButton";
+import {
+  isSavedVisualQuery,
+  visualSimilarity,
+  VISUAL_QUERY_EVENT,
+  VISUAL_QUERY_STORAGE_KEY,
+  type SavedVisualQuery,
+  type VisualFingerprint,
+} from "@/lib/search/visual-fingerprint";
 
 type Product = {
   id: string;
@@ -41,6 +50,14 @@ type AIResult = {
   answerSource?: "gemini" | "openai" | "built-in";
   fallbackReason?: "missing_api_key" | "provider_error" | "empty_response";
   error?: string;
+};
+
+type IndexedVisualProduct = Product & { fingerprint: VisualFingerprint };
+type RankedVisualProduct = { product: Product; score: number };
+type VisualIndex = {
+  products: IndexedVisualProduct[];
+  indexedCount: number;
+  limited: boolean;
 };
 
 const emptyCatalog: CatalogResult = { query: "", resultCount: 0, products: [], guides: [], articles: [] };
@@ -92,6 +109,7 @@ function SmartSearchContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlQuery = (searchParams.get("q") || "").trim().slice(0, 160);
+  const visualMode = searchParams.get("visual") === "1";
   const [query, setQuery] = useState(urlQuery);
   const [catalog, setCatalog] = useState<CatalogResult | null>(null);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -102,6 +120,12 @@ function SmartSearchContent() {
   const [aiResult, setAiResult] = useState<AIResult | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
+  const [visualQuery, setVisualQuery] = useState<SavedVisualQuery | null>(null);
+  const [visualMatches, setVisualMatches] = useState<RankedVisualProduct[]>([]);
+  const [visualLoading, setVisualLoading] = useState(false);
+  const [visualError, setVisualError] = useState("");
+  const [indexedCount, setIndexedCount] = useState(0);
+  const [visualLimited, setVisualLimited] = useState(false);
   const suggestionRequest = useRef<AbortController | null>(null);
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
@@ -204,6 +228,67 @@ function SmartSearchContent() {
     }
   }
 
+  useEffect(() => {
+    if (!visualMode) {
+      setVisualQuery(null);
+      setVisualMatches([]);
+      setVisualLoading(false);
+      return;
+    }
+    let controller: AbortController | null = null;
+    const loadVisualResults = async () => {
+      controller?.abort();
+      controller = new AbortController();
+      const current = controller;
+      setVisualError("");
+      setVisualMatches([]);
+      setIndexedCount(0);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(sessionStorage.getItem(VISUAL_QUERY_STORAGE_KEY) || "null");
+      } catch {
+        parsed = null;
+      }
+      if (!isSavedVisualQuery(parsed)) {
+        setVisualQuery(null);
+        setVisualLoading(false);
+        setVisualError("ছবির সার্চের তথ্য পাওয়া যায়নি। আবার ক্যামেরা আইকনে চাপ দিয়ে ছবি নির্বাচন করুন।");
+        return;
+      }
+      setVisualQuery(parsed);
+      setVisualLoading(true);
+      try {
+        const response = await fetch("/api/search/visual-index", { signal: current.signal });
+        const result: VisualIndex & { error?: string } = await response.json();
+        if (!response.ok || !Array.isArray(result.products)) throw new Error(result.error || "ছবির সার্চ এখন পাওয়া যাচ্ছে না।");
+        const ranked = result.products
+          .map((product) => ({
+            product,
+            score: visualSimilarity(parsed.fingerprint, product.fingerprint),
+          }))
+          .filter((candidate) => candidate.score >= 0.76)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 12);
+        if (!current.signal.aborted) {
+          setVisualMatches(ranked);
+          setIndexedCount(result.indexedCount || 0);
+          setVisualLimited(Boolean(result.limited));
+        }
+      } catch (error) {
+        if (!current.signal.aborted) setVisualError(error instanceof Error ? error.message : "ছবির সার্চ ব্যর্থ হয়েছে।");
+      } finally {
+        if (!current.signal.aborted) setVisualLoading(false);
+      }
+    };
+    const onNewPhoto = () => { void loadVisualResults(); };
+    window.addEventListener(VISUAL_QUERY_EVENT, onNewPhoto);
+    void loadVisualResults();
+    return () => {
+      controller?.abort();
+      window.removeEventListener(VISUAL_QUERY_EVENT, onNewPhoto);
+    };
+  }, [visualMode]);
+
   const contentResults = [...(catalog?.guides || []), ...(catalog?.articles || [])];
   const searched = urlQuery.length >= 2;
 
@@ -238,6 +323,7 @@ function SmartSearchContent() {
                 placeholder="যেমন: black rice, কালো ধানের বীজ, ধানের রোগ..."
                 className="h-14 min-w-0 flex-1 bg-transparent px-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 sm:text-base"
               />
+              <VisualSearchButton />
             </div>
             <button type="submit" disabled={query.trim().length < 2 || catalogLoading} className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#0b6b4f] px-7 font-extrabold text-white transition hover:bg-[#07533d] disabled:cursor-not-allowed disabled:opacity-50">
               <Search size={19} /> খুঁজুন
@@ -255,14 +341,58 @@ function SmartSearchContent() {
           )}
         </div>
 
-        {!searched && (
+        {!searched && !visualMode && (
           <section className="mt-9 grid gap-4 sm:grid-cols-2">
             <Link href="/marketplace" className="rounded-2xl border border-emerald-100 bg-white p-6 hover:border-emerald-400"><ShoppingBag className="text-emerald-700" /><h2 className="mt-3 font-extrabold">মার্কেটপ্লেস</h2><p className="mt-1 text-sm text-slate-600">বীজ, সার ও কৃষি উপকরণ দেখুন</p></Link>
             <Link href="/learn" className="rounded-2xl border border-emerald-100 bg-white p-6 hover:border-emerald-400"><BookOpen className="text-emerald-700" /><h2 className="mt-3 font-extrabold">কৃষি গাইড</h2><p className="mt-1 text-sm text-slate-600">চাষের ধাপ ও প্রয়োজনীয় তথ্য পড়ুন</p></Link>
           </section>
         )}
 
-        {searched && (
+
+        {visualMode && (
+          <section className="mt-8 space-y-5" aria-live="polite">
+            <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm sm:p-5">
+              {visualQuery ? (
+                <Image src={visualQuery.preview} alt="আপনার নির্বাচিত পণ্যের ছবি" width={104} height={104} unoptimized className="h-24 w-24 rounded-xl border border-slate-100 bg-white object-contain" />
+              ) : (
+                <div className="grid h-24 w-24 place-items-center rounded-xl bg-emerald-50 text-emerald-700"><PackageSearch size={32} /></div>
+              )}
+              <div className="flex-1">
+                <h2 className="text-xl font-black">ছবি দিয়ে পণ্য খোঁজা</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">আপনার ছবি ডিভাইসেই বিশ্লেষণ করা হয়েছে। একই বা দেখতে কাছাকাছি পণ্য খোঁজা হচ্ছে।</p>
+                <div className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-emerald-800">
+                  <VisualSearchButton /> অন্য ছবি নির্বাচন করুন
+                </div>
+              </div>
+            </div>
+            {visualLoading && <p className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"><Loader2 size={18} className="animate-spin" /> পণ্যের ছবির সঙ্গে তুলনা হচ্ছে...</p>}
+            {visualError && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm text-rose-800">{visualError}</p>}
+            {!visualLoading && !visualError && (
+              <>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-emerald-950">ছবির সঙ্গে মিলে যাওয়া পণ্য</h2>
+                    <p className="mt-1 text-sm text-slate-600">{indexedCount}টি পণ্যের ছবি বিশ্লেষণ করে {visualMatches.length}টি সম্ভাব্য মিল পাওয়া গেছে।</p>
+                  </div>
+                  <Link href="/marketplace" className="text-sm font-bold text-emerald-800 hover:underline">সব পণ্য দেখুন →</Link>
+                </div>
+                {visualMatches.length ? (
+                  <div className="grid gap-3 sm:grid-cols-2">{visualMatches.map(({ product }) => <ProductCard key={product.id} product={product} />)}</div>
+                ) : (
+                  <div className="rounded-2xl border border-amber-100 bg-white p-5">
+                    <p className="font-extrabold text-slate-900">যথেষ্ট কাছাকাছি পণ্যের ছবি পাওয়া যায়নি।</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">পণ্যটি সামনে থেকে পরিষ্কার আলোয় তুলুন, শুধু প্যাকেট বা পণ্যটি ফ্রেমে রাখুন। অথবা নাম লিখে সার্চ করুন।</p>
+                  </div>
+                )}
+                <p className="rounded-xl bg-amber-50 p-3 text-xs leading-6 text-amber-900">
+                  ছবি মেলানো হচ্ছে রং, নকশা ও ছবির গঠনের ভিত্তিতে। এটি পণ্যের পরিচয় নিশ্চিত করে না; ভিন্ন কোণ বা প্যাকেজিং হলে সঠিক পণ্যটি নাও আসতে পারে।{visualLimited ? " বড় ক্যাটালগের ক্ষেত্রে কিছু পণ্য এখনো অন্তর্ভুক্ত নাও থাকতে পারে।" : ""}
+                </p>
+              </>
+            )}
+          </section>
+        )}
+
+        {searched && !visualMode && (
           <div className="mt-9 space-y-7" aria-live="polite">
             {catalogLoading && <p className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800"><Loader2 size={18} className="animate-spin" /> সার্চ ফলাফল খোঁজা হচ্ছে...</p>}
             {catalogError && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm text-rose-800">{catalogError}</p>}

@@ -34,6 +34,8 @@ jobs:
         run: node --check scripts/smoke-smart-search.mjs
       - name: Marketplace and Plant Market behavioural ranking regression test
         run: npm run test:product-rankings
+      - name: Photo search privacy and matching regressions
+        run: npm run test:visual-search
       - name: Category taxonomy SEO smoke test
         run: node scripts/smoke-taxonomy.mjs
       - name: Jobs application server-binding regression test
