@@ -125,6 +125,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
         return { sections: sectionResult.data ?? [], details: detailResult.data ?? null };
       })()
     : null;
+  const relatedProducts = !isSample
+    ? await (async () => {
+        const supabase = await createSupabaseServerClient();
+        let query = supabase
+          .from("products")
+          .select("id,slug,name,price,stock,unit,image_url")
+          .eq("status", "active")
+          .eq("marketplace_channel", "marketplace")
+          .neq("id", product.id);
+        if (product.category_slug) query = query.eq("category_slug", product.category_slug);
+        else if (product.category) query = query.eq("category", product.category);
+        else return [];
+        const { data, error } = await query.limit(4);
+        return error ? [] : (data ?? []).filter((item) => Number(item.stock ?? 0) > 0);
+      })()
+    : [];
   const descriptionText = productDescriptionToText(description);
   const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
@@ -330,6 +346,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </section>
           </aside>
         </div>
+
+        {relatedProducts.length > 0 && (
+          <section aria-labelledby="related-products-title" className="mt-8 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+            <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">You may also like</p>
+            <h2 id="related-products-title" className="mt-2 text-2xl font-black">একই ক্যাটাগরির আরও পণ্য</h2>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.map((item) => (
+                <Link key={item.id} href={"/marketplace/" + item.slug} className="group overflow-hidden rounded-2xl border border-slate-200 transition hover:-translate-y-0.5 hover:border-emerald-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-700">
+                  <div className="flex aspect-[4/3] items-center justify-center bg-emerald-50">
+                    {item.image_url ? <img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-cover" /> : <span aria-hidden="true" className="text-4xl">🌾</span>}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="line-clamp-2 min-h-12 font-extrabold text-slate-900 group-hover:text-emerald-800">{item.name}</h3>
+                    <p className="mt-2 font-black text-emerald-900">{item.price !== null && item.price !== undefined ? "৳" + Number(item.price).toLocaleString("en-BD") : "মূল্য জানতে যোগাযোগ করুন"}{item.unit ? " / " + (unitLabels[item.unit] || item.unit) : ""}</p>
+                    <p className="mt-1 text-xs font-semibold text-emerald-700">স্টকে আছে · বিস্তারিত দেখুন →</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <footer className="mt-8 rounded-2xl border border-emerald-950/10 bg-white px-5 py-4 text-xs leading-6 text-slate-500">
           পণ্যের তথ্য বিক্রেতার দেওয়া listing-এর ভিত্তিতে দেখানো হয়। কেনার আগে specification, প্রাপ্যতা, মূল্য ও সরবরাহের শর্ত নিশ্চিত করুন।
