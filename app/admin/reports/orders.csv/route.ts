@@ -3,7 +3,11 @@ import { requireAdminApi } from "@/lib/admin/authz";
 
 function csvCell(value: unknown) {
   const text = value == null ? "" : String(value);
-  return '"' + text.replace(/"/g, '""') + '"';
+  // Spreadsheet applications may execute formulas even when CSV cells are quoted.
+  // Prefix formula-like values (including those preceded by whitespace/control characters)
+  // with an apostrophe so exported untrusted order fields remain literal text.
+  const safeText = /^[\\s\\u0000-\\u001f]*[=+@-]/u.test(text) ? "'" + text : text;
+  return '"' + safeText.replace(/"/g, '""') + '"';
 }
 
 export async function GET(request: Request) {
