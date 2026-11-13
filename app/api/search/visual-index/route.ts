@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import sharp from "sharp";
 import { fingerprintFromRgba, type VisualFingerprint, VISUAL_SIDE } from "@/lib/search/visual-fingerprint";
+import { resolvePublicCatalogConfig } from "@/lib/search/public-catalog-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -115,11 +116,15 @@ async function mapLimited<T, U>(items: T[], concurrency: number, callback: (item
  * No OpenAI/Gemini/paid visual API is called.
  */
 export async function GET() {
-  const storageUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!storageUrl || !anonKey) {
-    return NextResponse.json({ error: "Visual search is not configured." }, { status: 503 });
+  const config = resolvePublicCatalogConfig();
+  if (!config) {
+    return NextResponse.json({
+      code: "VISUAL_SEARCH_MISSING_CONFIG",
+      error: "ছবি দিয়ে সার্চের ডেটাবেস সংযোগ এখনও চালু হয়নি। সাইট অ্যাডমিনকে Supabase public URL ও publishable/anon key সেট করতে হবে।",
+    }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
+  const storageUrl = config.url;
+  const anonKey = config.key;
 
   try {
     const supabase = createClient(storageUrl, anonKey, {
