@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "ছবি বিশ্লেষণ করতে আগে লগইন করুন।" }, { status: 401 });
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json({
-        error: "ছবি বিশ্লেষণ এখনো চালু হয়নি: সার্ভারে GEMINI_API_KEY সেট করতে হবে। কোনো ছবি সংরক্ষণ করা হয়নি।",
+        error: "ছবি বিশ্লেষণ এখনো চালু হয়নি: সার্ভারে OPENAI_API_KEY সেট করতে হবে। কোনো ছবি সংরক্ষণ করা হয়নি।",
         code: "AI_NOT_CONFIGURED",
       }, { status: 503 });
     }
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "ছবির ফাইলটি সঠিক নয়। নতুন ছবি নির্বাচন করুন।" }, { status: 400 });
     }
 
-    const model = (process.env.GEMINI_MODEL || "gemini-2.0-flash").trim();
+    const model = (process.env.OPENAI_CROP_DISEASE_MODEL || "gpt-4.1-mini").trim();
     const prompt = [
       "You are a cautious agricultural triage assistant for farmers in Bangladesh. Analyze this crop photo and respond in Bengali.",
       "Do not claim certainty from a photo. If the image is unclear, disease is not visible, or the image is not a crop, say so.",
@@ -132,26 +132,31 @@ export async function POST(request: NextRequest) {
       "Keep each list to at most 5 practical, cautious points. If uncertain, set confidence to low.",
     ].join("\n");
 
-    const modelResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent?key=" + encodeURIComponent(process.env.GEMINI_API_KEY),
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-        signal: AbortSignal.timeout(45000),
-        body: JSON.stringify({
-          contents: [{ parts: [
-            { text: prompt },
-            { inline_data: { mime_type: file.type, data: Buffer.from(bytes).toString("base64") } },
-          ] }],
-          generationConfig: { temperature: 0.2, responseMimeType: "application/json" },
-        }),
+    const modelResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + process.env.OPENAI_API_KEY,
       },
-    );
+      cache: "no-store",
+      signal: AbortSignal.timeout(45000),
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        response_format: { type: "json_object" },
+        messages: [{
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + Buffer.from(bytes).toString("base64"), detail: "high" } },
+          ],
+        }],
+      }),
+    });
 
     if (!modelResponse.ok) {
       const errorBody = await modelResponse.text().catch(() => "");
-      console.error("Gemini crop image analysis failed:", modelResponse.status, errorBody.slice(0, 500));
+      console.error("OpenAI crop image analysis failed:", modelResponse.status, errorBody.slice(0, 500));
       return NextResponse.json({
         error: "AI ছবি বিশ্লেষণ সেবা উত্তর দেয়নি। API key, model access ও provider quota পরীক্ষা করে আবার চেষ্টা করুন।",
         code: "AI_PROVIDER_ERROR",
@@ -159,8 +164,7 @@ export async function POST(request: NextRequest) {
     }
 
     const modelData = await modelResponse.json();
-    const rawText = modelData?.candidates?.[0]?.content?.parts
-      ?.map((part: { text?: string }) => part.text || "").join("").trim();
+    const rawText = modelData?.choices?.[0]?.message?.content?.trim();
     if (!rawText) {
       return NextResponse.json({ error: "AI থেকে ব্যবহারযোগ্য বিশ্লেষণ পাওয়া যায়নি। অন্য পরিষ্কার ছবি দিয়ে চেষ্টা করুন।" }, { status: 502 });
     }
@@ -169,7 +173,7 @@ export async function POST(request: NextRequest) {
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      console.error("Gemini returned invalid diagnosis JSON");
+      console.error("OpenAI returned invalid diagnosis JSON");
       return NextResponse.json({ error: "AI উত্তরটি পড়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।" }, { status: 502 });
     }
     const diagnosis = cleanDiagnosis(parsed, crop);
