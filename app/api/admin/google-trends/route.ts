@@ -17,7 +17,7 @@ function providerError(payload: any): string {
   const raw = payload?.error;
   const detail = typeof raw === "string" ? raw : typeof raw?.message === "string" ? raw.message : typeof payload?.message === "string" ? payload.message : "";
   // Provider responses are untrusted. Never forward keys, request URLs or credentials.
-  const safe = detail.replace(/https?:\\/\\/\\S+/g,"[URL]").replace(/(?:api[_ -]?key|token|authorization)\\s*[:=]\\s*\\S+/gi,"[redacted]").slice(0,160);
+  const safe = detail.slice(0,160).replaceAll("api_key=","credential=[redacted]").replaceAll("Authorization:","[redacted]:");
   return safe || "No additional details from provider";
 }
 function parseRelated(payload: any, field: "top" | "rising"): Item[] {
