@@ -84,6 +84,7 @@ export default function CropDiseasePanel() {
   const [result, setResult] = useState<HistoryItem | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyMessage, setHistoryMessage] = useState("আপনার আগের বিশ্লেষণ দেখতে লগইন করুন।");
+  const [authStatus, setAuthStatus] = useState<"checking" | "authenticated" | "guest">("checking");
 
   useEffect(() => {
     let active = true;
@@ -92,13 +93,16 @@ export default function CropDiseasePanel() {
         const data = await response.json();
         if (!active) return;
         if (response.ok) {
+          setAuthStatus("authenticated");
           setHistory(data.history || []);
           setHistoryMessage(data.history?.length ? "" : "এখনো কোনো সংরক্ষিত বিশ্লেষণ নেই।");
         } else {
+          if (response.status === 401) setAuthStatus("guest");
+          else setAuthStatus("authenticated");
           setHistoryMessage(data.error || "ইতিহাস লোড করা যায়নি।");
         }
       })
-      .catch(() => { if (active) setHistoryMessage("ইতিহাস লোড করতে ইন্টারনেট সংযোগ পরীক্ষা করুন।"); });
+      .catch(() => { if (active) { setAuthStatus("checking"); setHistoryMessage("লগইন যাচাই করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে পেজ রিফ্রেশ করুন।"); } });
     return () => { active = false; };
   }, []);
 
@@ -118,7 +122,7 @@ export default function CropDiseasePanel() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!photo || busy) return;
+    if (!photo || busy || authStatus !== "authenticated") return;
     setBusy(true);
     setError("");
     setResult(null);
@@ -150,7 +154,12 @@ export default function CropDiseasePanel() {
           <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50 sm:text-base">পাতা, কাণ্ড বা ফলের পরিষ্কার ছবি দিন। AI সম্ভাব্য লক্ষণ ও সতর্ক করণীয় সাজিয়ে দেবে। ফলাফল প্রাথমিক ধারণা—নিশ্চিত রোগ নির্ণয় নয়।</p>
         </header>
 
-        <section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-8">
+        {authStatus !== "authenticated" ? <section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-6 text-center shadow-sm sm:p-10" aria-live="polite">
+          <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-2xl" aria-hidden="true">🔒</div>
+          <h2 className="text-xl font-black text-slate-900">{authStatus === "checking" ? "লগইন যাচাই করা হচ্ছে" : "ফসলের ছবি বিশ্লেষণ করতে লগইন করুন"}</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">{authStatus === "checking" ? "আপনার অ্যাকাউন্ট যাচাই না হওয়া পর্যন্ত ছবি আপলোড বন্ধ থাকবে। কিছুক্ষণ অপেক্ষা করুন অথবা পেজ রিফ্রেশ করুন।" : "আপনার ছবি ও বিশ্লেষণের ইতিহাস ব্যক্তিগতভাবে সংরক্ষণ করতে AGRIVA অ্যাকাউন্ট প্রয়োজন। লগইন করার পর ছবি আপলোড ও বিশ্লেষণ করতে পারবেন।"}</p>
+          {authStatus === "guest" && <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/login?next=%2Fcrop-disease" className="rounded-xl bg-emerald-800 px-6 py-3 font-bold text-white hover:bg-emerald-900">লগইন করুন</Link><Link href="/signup" className="rounded-xl border border-emerald-200 px-6 py-3 font-bold text-emerald-900 hover:bg-emerald-50">নতুন অ্যাকাউন্ট খুলুন</Link></div>}
+        </section> : <section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-8">
           <form onSubmit={submit} className="space-y-5">
             <div className="grid gap-5 md:grid-cols-2">
               <div>
@@ -177,14 +186,14 @@ export default function CropDiseasePanel() {
             {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm leading-6 text-rose-800">{error} {error.includes("লগইন") || error.includes("লগ ইন") ? <Link href="/login" className="font-bold underline">লগইন করুন</Link> : null}</p>}
             <button type="submit" disabled={!photo || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
           </form>
-        </section>
+        </section>}
 
         {result && <section className="mt-6"><div className="mb-3 flex items-center gap-2"><span aria-hidden="true">🔎</span><h2 className="text-xl font-black">বিশ্লেষণের ফলাফল</h2></div><DiagnosisCard diagnosis={result.diagnosis} /></section>}
 
         <section className="mt-10">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div><p className="text-sm font-bold text-emerald-700">ব্যক্তিগত ইতিহাস</p><h2 className="mt-1 text-2xl font-black">সাম্প্রতিক বিশ্লেষণ</h2></div>
-            <Link href="/login" className="text-sm font-bold text-emerald-800 underline underline-offset-4">অ্যাকাউন্টে লগইন</Link>
+            {authStatus === "guest" && <Link href="/login?next=%2Fcrop-disease" className="text-sm font-bold text-emerald-800 underline underline-offset-4">অ্যাকাউন্টে লগইন</Link>}
           </div>
           {historyMessage && <p className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-600">{historyMessage}</p>}
           <div className="mt-4 space-y-3">
