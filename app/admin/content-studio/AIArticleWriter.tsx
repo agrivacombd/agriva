@@ -11,7 +11,7 @@ export default function AIArticleWriter(){
   }catch(err){setError(err instanceof Error?err.message:"Generation failed");}finally{setLoading(false);}
  }
  return <section className="mt-9 rounded-3xl border border-[#dce8d8] bg-white p-6 shadow-sm sm:p-8">
-  <p className="text-xs font-bold uppercase tracking-widest text-[#a47a20]">Gemini · Admin only</p>
+  <p className="text-xs font-bold uppercase tracking-widest text-[#a47a20]">OpenAI · Admin only</p>
   <h2 className="mt-2 text-2xl font-black">AI Agriculture Article Writer</h2>
   <p className="mt-2 text-sm text-[#647468]">Generate an editable Bengali or English Markdown draft. Verify crop recommendations before publishing. No automatic publishing or database saving.</p>
   <form onSubmit={generate} className="mt-5 flex flex-wrap items-end gap-3">
