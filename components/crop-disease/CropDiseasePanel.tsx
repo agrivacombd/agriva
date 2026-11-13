@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CropShareCardMaker from "./CropShareCardMaker";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 type Diagnosis = {
@@ -297,6 +298,8 @@ export default function CropDiseasePanel() {
         </section>}
 
         {result && <section className="mt-6"><div className="mb-3 flex items-center gap-2"><span aria-hidden="true">🔎</span><h2 className="text-xl font-black">বিশ্লেষণের ফলাফল</h2></div><DiagnosisCard diagnosis={result.diagnosis} /></section>}
+
+        <CropShareCardMaker initialCrop={result?.crop || ""} initialDisease={result?.diagnosis?.disease || ""} initialDistrict={result?.location || ""} />
 
         <CropHealthFeed history={history} />
 
