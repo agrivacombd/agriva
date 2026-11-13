@@ -19,6 +19,7 @@ export async function POST(request:NextRequest){
  if(draft.status==="published")return NextResponse.json({error:"Published articles cannot be edited here."},{status:409});
  const path="drafts/"+id+"/"+crypto.randomUUID()+".webp";
  const socialPath=path.replace(/\.webp$/,"-social.webp");
+ // Apply the AGRIVA watermark at export time to both final assets, never to the AI prompt.
  // Brand both final assets at their actual display dimensions, keeping text readable
  // without obscuring the central crop or making social previews look like ads.
  const watermark=(width:number,height:number)=>{
