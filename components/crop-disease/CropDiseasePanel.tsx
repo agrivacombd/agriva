@@ -38,6 +38,8 @@ const crops = [
   { value: "অন্যান্য", label: "অন্যান্য" },
 ];
 
+const districts = ["ঢাকা","ফরিদপুর","গাজীপুর","গোপালগঞ্জ","কিশোরগঞ্জ","মাদারীপুর","মানিকগঞ্জ","মুন্সীগঞ্জ","নারায়ণগঞ্জ","নরসিংদী","রাজবাড়ী","শরীয়তপুর","টাঙ্গাইল","চট্টগ্রাম","কক্সবাজার","কুমিল্লা","ব্রাহ্মণবাড়িয়া","চাঁদপুর","ফেনী","নোয়াখালী","লক্ষ্মীপুর","খাগড়াছড়ি","রাঙ্গামাটি","বান্দরবান","রাজশাহী","নওগাঁ","নাটোর","চাঁপাইনবাবগঞ্জ","পাবনা","সিরাজগঞ্জ","বগুড়া","জয়পুরহাট","খুলনা","বাগেরহাট","সাতক্ষীরা","যশোর","ঝিনাইদহ","মাগুরা","নড়াইল","কুষ্টিয়া","চুয়াডাঙ্গা","মেহেরপুর","বরিশাল","ভোলা","পটুয়াখালী","পিরোজপুর","ঝালকাঠি","বরগুনা","সিলেট","সুনামগঞ্জ","হবিগঞ্জ","মৌলভীবাজার","রংপুর","দিনাজপুর","ঠাকুরগাঁও","পঞ্চগড়","নীলফামারী","লালমনিরহাট","কুড়িগ্রাম","গাইবান্ধা","ময়মনসিংহ","জামালপুর","শেরপুর","নেত্রকোণা"];
+
 function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
   const confidenceLabel = diagnosis.confidence === "high" ? "তুলনামূলক বেশি" : diagnosis.confidence === "medium" ? "মাঝারি" : "কম / অনিশ্চিত";
   const sections = [
@@ -167,8 +169,8 @@ export default function CropDiseasePanel() {
                 <select id="crop" value={crop} onChange={(event) => setCrop(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3" required>
                   {crops.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
-                <label htmlFor="location" className="mb-2 mt-4 block text-sm font-bold text-slate-800">জেলা / এলাকা (ঐচ্ছিক)</label>
-                <input id="location" value={location} onChange={(event) => setLocation(event.target.value)} maxLength={120} placeholder="যেমন: নওগাঁ" className="w-full rounded-xl border border-slate-200 px-4 py-3" />
+                <label htmlFor="location" className="mb-2 mt-4 block text-sm font-bold text-slate-800">জেলা নির্বাচন করুন (ঐচ্ছিক)</label>
+                <select id="location" value={location} onChange={(event) => setLocation(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3"><option value="">জেলা নির্বাচন করুন (ঐচ্ছিক)</option>{districts.map((district) => <option key={district} value={district}>{district}</option>)}</select>
                 <label htmlFor="symptoms" className="mb-2 mt-4 block text-sm font-bold text-slate-800">আপনি কী লক্ষণ দেখছেন? (ঐচ্ছিক)</label>
                 <textarea id="symptoms" value={symptoms} onChange={(event) => setSymptoms(event.target.value)} maxLength={1000} rows={4} placeholder="যেমন: পাতায় বাদামি দাগ, পাতা হলুদ হয়ে যাচ্ছে..." className="w-full rounded-xl border border-slate-200 px-4 py-3" />
               </div>
