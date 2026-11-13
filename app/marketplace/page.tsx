@@ -21,12 +21,14 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
   let catalogueUnavailable = false;
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products")
-      .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,unit,image_url")
-      .eq("status", "active")
-      .eq("marketplace_channel", "marketplace")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false }).limit(120);
+    const ranked = await supabase.rpc("get_ranked_marketplace_products", { p_limit: 500 });
+    // Keep the catalogue available while the additive migration is rolled out.
+    const { data, error } = ranked.error
+      ? await supabase.from("products")
+          .select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,unit,image_url,created_at")
+          .eq("status", "active").eq("marketplace_channel", "marketplace")
+          .is("deleted_at", null).order("created_at", { ascending: false }).limit(500)
+      : ranked;
     if (error) {
       catalogueUnavailable = true;
       console.error("Marketplace catalogue query failed:", error.message);
