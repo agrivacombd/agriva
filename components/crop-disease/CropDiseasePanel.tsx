@@ -149,7 +149,7 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
     </div>}
     <div className="mt-5 grid gap-4 sm:grid-cols-2">{feed.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       {item.imageUrl && <img src={item.imageUrl} alt={item.crop + " ফসলের প্রকাশিত ছবি"} loading="lazy" className="h-44 w-full bg-slate-50 object-contain" />}
-      <div className="p-4"><p className="text-sm font-bold text-emerald-800">{item.displayName}</p><p className="mt-1 text-xs text-slate-500">{item.crop}{item.district ? " · " + item.district : ""} · {new Date(item.publishedAt).toLocaleDateString("bn-BD")}</p><h3 className="mt-2 font-extrabold">{item.disease}</h3><p className="mt-1 text-xs text-slate-500">AGRIVA AI-এর প্রাথমিক বিশ্লেষণ · নিশ্চিত রোগ নির্ণয় নয়</p></div>
+      <div className="p-4"><p className="text-sm font-bold text-emerald-800">{item.displayName}</p><p className="mt-1 text-xs text-slate-500">{item.crop}{item.district ? " · " + item.district : ""} · {new Date(item.publishedAt).toLocaleDateString("bn-BD")}</p><h3 className="mt-2 font-extrabold">{item.disease}</h3><p className="mt-1 text-xs text-slate-500">AGRIVA AI-এর প্রাথমিক বিশ্লেষণ · নিশ্চিত রোগ নির্ণয় নয়</p><Link href={`/crop-disease/feed/${item.id}`} className="mt-3 inline-block text-sm font-bold text-emerald-800 underline underline-offset-4">প্রকাশিত বিশ্লেষণ বিস্তারিত দেখুন</Link></div>
     </article>)}</div>
     {!feed.length && <p className="mt-4 rounded-xl bg-white p-5 text-sm text-slate-600">এখনও কেউ প্রকাশের অনুমতি দেননি। প্রথম বিশ্লেষণটি স্বেচ্ছায় শেয়ার করতে পারেন।</p>}
   </section>;
