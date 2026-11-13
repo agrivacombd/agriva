@@ -94,7 +94,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   let supabase: Awaited<ReturnType<typeof createSupabaseServerClient>> | null = null;
-  let uploadedPath: string | null = null;
+  const uploadedPaths: string[] = [];
 
   try {
     supabase = await createSupabaseServerClient();
@@ -111,28 +111,37 @@ export async function POST(request: NextRequest) {
     }
 
     const form = await request.formData();
-    const file = form.get("photo");
+    const photos = form.getAll("photo");
     const crop = typeof form.get("crop") === "string" ? String(form.get("crop")).trim().slice(0, 80) : "";
     const location = typeof form.get("location") === "string" ? String(form.get("location")).trim().slice(0, 120) : "";
     const symptoms = typeof form.get("symptoms") === "string" ? String(form.get("symptoms")).trim().slice(0, 1000) : "";
 
-    if (!(file instanceof File)) return NextResponse.json({ error: "একটি ফসলের ছবি আপলোড করুন।" }, { status: 400 });
-    if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
-      return NextResponse.json({ error: "শুধু JPG, PNG বা WebP ছবি গ্রহণ করা হয়।" }, { status: 415 });
-    }
-    if (file.size < 1 || file.size > MAX_IMAGE_BYTES) {
-      return NextResponse.json({ error: "ছবির আকার ৫ MB-এর মধ্যে রাখুন।" }, { status: 413 });
+    if (photos.length < 1 || photos.length > 4 || photos.some((item) => !(item instanceof File))) {
+      return NextResponse.json({ error: "একসঙ্গে ১ থেকে ৪টি ফসলের ছবি নির্বাচন করুন।" }, { status: 400 });
     }
     if (!crop) return NextResponse.json({ error: "ফসলের নাম নির্বাচন করুন।" }, { status: 400 });
-
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    if (!isValidImageSignature(bytes, file.type)) {
-      return NextResponse.json({ error: "ছবির ফাইলটি সঠিক নয়। নতুন ছবি নির্বাচন করুন।" }, { status: 400 });
+    const files = photos as File[];
+    const imageInputs: { type: "image_url"; image_url: { url: string; detail: "high" } }[] = [];
+    const imageBuffers: { bytes: Buffer; mime: string }[] = [];
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
+        return NextResponse.json({ error: "শুধু JPG, PNG বা WebP ছবি গ্রহণ করা হয়।" }, { status: 415 });
+      }
+      if (file.size < 1 || file.size > MAX_IMAGE_BYTES) {
+        return NextResponse.json({ error: "প্রতিটি ছবির আকার ৫ MB-এর মধ্যে রাখুন।" }, { status: 413 });
+      }
+      const bytes = Buffer.from(await file.arrayBuffer());
+      if (!isValidImageSignature(bytes, file.type)) {
+        return NextResponse.json({ error: "একটি ছবির ফাইল সঠিক নয়। নতুন ছবি নির্বাচন করুন।" }, { status: 400 });
+      }
+      imageBuffers.push({ bytes, mime: file.type });
+      imageInputs.push({ type: "image_url", image_url: { url: "data:" + file.type + ";base64," + bytes.toString("base64"), detail: "high" } });
     }
 
     const model = (process.env.OPENAI_CROP_DISEASE_MODEL || "gpt-4.1-mini").trim();
     const prompt = [
       "You are AGRIVA's cautious crop-health visual triage assistant for Bangladesh. Answer in clear Bengali.",
+      "Analyze ALL supplied photos together as different views of the SAME crop problem. Cross-check close-ups, whole-plant and leaf/panicle views, identify contradictory clues, and do not treat different photos as separate diagnoses.",
       "Analyze the ACTUAL visual evidence: plant part, lesion shape, margin, color, distribution, wilting, insect signs and context. Report only genuinely visible findings. Never invent signs.",
       "Assess imageQuality as good, limited, or unusable first. For blurry, distant, wrong-subject or unclear images do NOT guess a disease. Ask for close-up and whole-plant images.",
       "Treat selected crop, district and user symptoms as hints, not proof. Explicitly note mismatches between image and selected crop.",
@@ -164,7 +173,7 @@ export async function POST(request: NextRequest) {
           role: "user",
           content: [
             { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: "data:" + file.type + ";base64," + Buffer.from(bytes).toString("base64"), detail: "high" } },
+            ...imageInputs,
           ],
         }],
       }),
@@ -201,35 +210,37 @@ export async function POST(request: NextRequest) {
     if (diagnosis.imageQuality === "limited" && diagnosis.confidence === "high") diagnosis.confidence = "medium";
     if (diagnosis.confidence === "low" && !diagnosis.followUpQuestions.length) diagnosis.followUpQuestions = ["আক্রান্ত অংশের কাছ থেকে পরিষ্কার ছবি দিতে পারবেন?", "সমস্যাটি কতদিন ধরে দেখা যাচ্ছে এবং কতগুলো গাছে ছড়িয়েছে?"];
 
-    const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
-    uploadedPath = user.id + "/" + crypto.randomUUID() + "." + extension;
-    const { error: uploadError } = await supabase.storage
-      .from("crop-disease-photos")
-      .upload(uploadedPath, Buffer.from(bytes), { contentType: file.type, upsert: false });
-
-    if (uploadError) {
-      console.error("Crop photo storage failed:", uploadError.message);
-      return NextResponse.json({ error: "বিশ্লেষণ হয়েছে, কিন্তু ব্যক্তিগত ছবির স্টোরেজে সংরক্ষণ হয়নি। migration ও Storage policy পরীক্ষা করুন।" }, { status: 503 });
+    for (const image of imageBuffers) {
+      const extension = image.mime === "image/jpeg" ? "jpg" : image.mime === "image/png" ? "png" : "webp";
+      const path = user.id + "/" + crypto.randomUUID() + "." + extension;
+      const { error: uploadError } = await supabase.storage
+        .from("crop-disease-photos")
+        .upload(path, image.bytes, { contentType: image.mime, upsert: false });
+      if (uploadError) {
+        if (uploadedPaths.length) await supabase.storage.from("crop-disease-photos").remove(uploadedPaths);
+        console.error("Crop photo storage failed:", uploadError.message);
+        return NextResponse.json({ error: "ছবি ব্যক্তিগত স্টোরেজে সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।" }, { status: 503 });
+      }
+      uploadedPaths.push(path);
     }
 
     const { data: saved, error: saveError } = await supabase
       .from("crop_disease_detections")
       .insert({
         user_id: user.id,
-        image_path: uploadedPath,
-        mime_type: file.type,
+        image_path: uploadedPaths[0],
+        mime_type: imageBuffers[0].mime,
         crop,
         location: location || null,
         symptoms: symptoms || null,
         status: "completed",
-        diagnosis,
+        diagnosis: { ...diagnosis, imagePaths: uploadedPaths },
       })
       .select("id,crop,location,symptoms,diagnosis,created_at")
       .single();
 
     if (saveError || !saved) {
-      await supabase.storage.from("crop-disease-photos").remove([uploadedPath]);
-      uploadedPath = null;
+      await supabase.storage.from("crop-disease-photos").remove(uploadedPaths);
       console.error("Crop diagnosis database save failed:", saveError?.message);
       return NextResponse.json({ error: "বিশ্লেষণ হয়েছে, কিন্তু ইতিহাসে সংরক্ষণ হয়নি। migration প্রয়োগ হয়েছে কি না পরীক্ষা করুন।" }, { status: 503 });
     }
