@@ -36,8 +36,14 @@ export default async function CategoryPage({ params }: Props) {
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url")
-      .eq("status", "active").eq("marketplace_channel", "marketplace").order("created_at", { ascending: false }).limit(200);
+    const ranked = await supabase.rpc("get_ranked_marketplace_products", {
+      p_limit: 1000, p_category_slug: category.slug,
+    });
+    const { data, error } = ranked.error
+      ? await supabase.from("products").select("id,name,slug,category,category_slug,subcategory_slug,description,price,stock,image_url,created_at")
+          .eq("status", "active").eq("marketplace_channel", "marketplace")
+          .is("deleted_at", null).order("created_at", { ascending: false }).limit(1000)
+      : ranked;
     if (!error && data) products = (data as MarketplaceProduct[]).filter((product) => matchesProductCategory(product.category, category, product.category_slug));
   } catch (error) { console.error("Marketplace category load failed:", error); }
   // Seed knowledge base is queried only for the canonical Seeds category slug.
