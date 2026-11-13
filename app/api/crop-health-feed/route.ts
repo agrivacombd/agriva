@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 
@@ -53,8 +54,22 @@ export async function POST(request: NextRequest) {
     await supabase.from("crop_health_feed").delete().eq("id", published.id).eq("user_id", user.id);
     return NextResponse.json({ error: "মূল ছবি পাওয়া যায়নি। কিছু প্রকাশ করা হয়নি।" }, { status: 503 });
   }
+  // Re-encode consented photos to strip EXIF/GPS and embedded metadata.
+  // Do not copy private originals byte-for-byte to public storage.
+  let safePhoto: Buffer;
+  try {
+    const processor = sharp(Buffer.from(await original.arrayBuffer()), { limitInputPixels: 25000000 }).rotate().resize({ width: 1800, height: 1800, fit: "inside", withoutEnlargement: true });
+    safePhoto = detection.mime_type === "image/png"
+      ? await processor.png().toBuffer()
+      : detection.mime_type === "image/webp"
+        ? await processor.webp({ quality: 85 }).toBuffer()
+        : await processor.jpeg({ quality: 85 }).toBuffer();
+  } catch {
+    await supabase.from("crop_health_feed").delete().eq("id", published.id).eq("user_id", user.id);
+    return NextResponse.json({ error: "ছবির ব্যক্তিগত মেটাডেটা নিরাপদে সরানো যায়নি। প্রকাশ বাতিল হয়েছে।" }, { status: 422 });
+  }
   const { error: uploadError } = await supabase.storage.from("crop-health-feed")
-    .upload(published.image_path, original, { contentType: detection.mime_type, upsert: false });
+    .upload(published.image_path, safePhoto, { contentType: detection.mime_type, upsert: false });
   if (uploadError) {
     await supabase.from("crop_health_feed").delete().eq("id", published.id).eq("user_id", user.id);
     return NextResponse.json({ error: "অনুমোদিত ছবি প্রকাশ করা যায়নি। আবার চেষ্টা করুন।" }, { status: 503 });
