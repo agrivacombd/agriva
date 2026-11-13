@@ -11,7 +11,9 @@ export async function GET() {
   if (error) return NextResponse.json({ error: "ফিড লোড করা যায়নি।" }, { status: 503 });
   const { data: { publicUrl } } = supabase.storage.from("crop-health-feed").getPublicUrl("placeholder");
   const prefix = publicUrl.slice(0, publicUrl.lastIndexOf("/") + 1);
-  return NextResponse.json({ feed: (data || []).map((item) => ({
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: ownRows } = user ? await supabase.from("crop_health_feed").select("detection_id").eq("user_id", user.id) : { data: [] };
+  return NextResponse.json({ ownPublishedDetectionIds: (ownRows || []).map(row => row.detection_id), feed: (data || []).map((item) => ({
     id: item.id, slug: item.slug, displayName: item.display_name, crop: item.crop, district: item.district,
     disease: item.disease, confidence: item.confidence, publishedAt: item.published_at,
     imageUrl: item.image_path ? prefix + item.image_path.split("/").map(encodeURIComponent).join("/") : null,
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: "লগইন প্রয়োজন।" }, { status: 401 });
   const body = await request.json().catch(() => null);
   if (body?.consent !== true || typeof body?.detectionId !== "string") {
-    return NextResponse.json({ error: "প্রকাশের জন্য স্পষ্ট সম্মতি, নাম ও বিশ্লেষণ নির্বাচন করুন।" }, { status: 400 });
+    return NextResponse.json({ error: "প্রকাশের জন্য স্পষ্ট সম্মতি ও বিশ্লেষণ নির্বাচন করুন।" }, { status: 400 });
   }
   const { data: profile, error: profileError } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
   if (profileError) return NextResponse.json({ error: "অ্যাকাউন্টের নাম যাচাই করা যায়নি।" }, { status: 503 });
