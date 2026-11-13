@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       const catalog=await discovery.json();
       const available=(Array.isArray(catalog?.models)?catalog.models:[])
         .filter((entry:{name?:string;supportedGenerationMethods?:string[]})=>entry?.supportedGenerationMethods?.includes("generateContent")&&typeof entry.name==="string")
-        .map((entry:{name:string})=>entry.name.replace(/^models\\//,""));
+        .map((entry:{name:string})=>entry.name.startsWith("models/") ? entry.name.slice(7) : entry.name);
       const fallback=["gemini-2.5-flash","gemini-2.0-flash","gemini-2.5-flash-lite","gemini-2.0-flash-lite"]
         .find(candidate=>candidate!==model&&available.includes(candidate));
       if(fallback){selectedModel=fallback;response=await generate(selectedModel);}
