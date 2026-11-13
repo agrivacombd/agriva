@@ -12,7 +12,7 @@ export function trackProductRankEvents(
   productIds: string[],
 ) {
   if (typeof window === "undefined") return;
-  if (navigator.globalPrivacyControl || navigator.doNotTrack === "1") return;
+  if ((("globalPrivacyControl" in navigator) && navigator.globalPrivacyControl === true) || navigator.doNotTrack === "1") return;
   const ids = [...new Set(productIds)].filter((id) => UUID.test(id)).slice(0, 32);
   if (!ids.length) return;
   void fetch("/api/product-rank/events", {
