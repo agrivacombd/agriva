@@ -117,9 +117,9 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
         {addingToCart ? "কার্টে যোগ হচ্ছে..." : disabled ? "স্টকে নেই" : "কার্টে যোগ করুন"}
       </button>
       <p className="text-center text-xs text-slate-500">কার্টে পণ্য যোগ করে পরিমাণ যাচাই করে Checkout সম্পন্ন করুন।</p>
-      <div className="rounded-2xl border border-emerald-950/10 bg-[#fbfcf7] p-4 sm:p-5">
-        <h2 className="text-lg font-black text-[#17351f]">সরাসরি ক্যাশ অন ডেলিভারি</h2>
-        <p className="mt-1 text-sm text-slate-600">কার্ট ব্যবহার না করে চাইলে এই পণ্যটি সরাসরি অর্ডার করতে পারবেন। পেমেন্ট: পণ্য হাতে পেয়ে।</p>
+      <details className="group rounded-2xl border border-emerald-950/10 bg-[#fbfcf7] p-4 sm:p-5">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-black text-[#17351f] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"><span>সরাসরি ক্যাশ অন ডেলিভারি অর্ডার</span><span className="text-sm font-bold text-emerald-800 group-open:hidden">ফর্ম খুলুন +</span><span className="hidden text-sm font-bold text-emerald-800 group-open:inline">বন্ধ করুন −</span></summary>
+        <p className="mt-2 text-sm text-slate-600">কার্ট ব্যবহার না করে চাইলে এই পণ্যটি সরাসরি অর্ডার করতে পারবেন। পেমেন্ট: পণ্য হাতে পেয়ে।</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="text-sm font-bold text-[#17351f]">আপনার নাম
             <input value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" maxLength={100} required placeholder="পূর্ণ নাম" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
@@ -143,10 +143,11 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
             <textarea value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" maxLength={500} required rows={3} placeholder="গ্রাম/এলাকা + উপজেলা + বাড়ি/রোড (এক লাইনে লিখুন)" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
           </label>
         </div>
-      </div>
-      <button type="button" disabled={disabled || loading} onClick={checkout} className="w-full rounded-2xl bg-[#17351f] px-6 py-4 font-black text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
-        {loading ? "অর্ডার তৈরি হচ্ছে..." : disabled ? "স্টকে নেই" : "ক্যাশ অন ডেলিভারিতে অর্ডার করুন"}
-      </button>
+        </div>
+        <button type="button" disabled={disabled || loading} onClick={checkout} className="mt-4 w-full rounded-2xl bg-[#17351f] px-6 py-4 font-black text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+          {loading ? "অর্ডার তৈরি হচ্ছে..." : disabled ? "স্টকে নেই" : "ক্যাশ অন ডেলিভারিতে অর্ডার করুন"}
+        </button>
+      </details>
       {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
       {loginRequired && <Link href="/login?next=%2Fcart" className="inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে কার্টে ফিরুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
