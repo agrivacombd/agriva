@@ -10,6 +10,7 @@
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
     "test:product-rankings": "node scripts/smoke-product-rankings.mjs",
     "test:visual-search": "node scripts/smoke-visual-search.mjs",
+    "test:semantic-visual-search": "node scripts/smoke-semantic-visual-search.mjs",
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
     "test:job-application-security": "node scripts/smoke-job-application-security.mjs",
     "test:jobs-data-unavailable": "node scripts/smoke-jobs-data-unavailable.mjs",

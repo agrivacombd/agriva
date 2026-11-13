@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useEffect, useRef, useState } from "react";
-import { ArrowRight, BookOpen, Bot, Leaf, Loader2, PackageSearch, Search, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, Bot, Leaf, Loader2, PackageSearch, Search, ShoppingBag, Sparkles, Cpu, ShieldCheck } from "lucide-react";
 import MobileDashboardNav from "@/components/MobileDashboardNav";
 import VisualSearchButton from "@/components/search/VisualSearchButton";
 import {
@@ -126,6 +126,14 @@ function SmartSearchContent() {
   const [visualError, setVisualError] = useState("");
   const [indexedCount, setIndexedCount] = useState(0);
   const [visualLimited, setVisualLimited] = useState(false);
+  const [visualProducts, setVisualProducts] = useState<IndexedVisualProduct[]>([]);
+  const [semanticMatches, setSemanticMatches] = useState<RankedVisualProduct[]>([]);
+  const [semanticState, setSemanticState] = useState<"idle" | "running" | "complete" | "error">("idle");
+  const [semanticMessage, setSemanticMessage] = useState("");
+  const [semanticStep, setSemanticStep] = useState("");
+  const [semanticPercent, setSemanticPercent] = useState(0);
+  const semanticWorkerRef = useRef<Worker | null>(null);
+  const semanticTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestionRequest = useRef<AbortController | null>(null);
   const searchBoxRef = useRef<HTMLDivElement>(null);
 
@@ -228,8 +236,98 @@ function SmartSearchContent() {
     }
   }
 
+  function stopSemanticSearch() {
+    semanticWorkerRef.current?.terminate();
+    semanticWorkerRef.current = null;
+    if (semanticTimeoutRef.current !== null) clearTimeout(semanticTimeoutRef.current);
+    semanticTimeoutRef.current = null;
+  }
+
+  function startSemanticSearch() {
+    if (!visualQuery || visualProducts.length === 0 || semanticState === "running") return;
+    if (typeof Worker === "undefined") {
+      setSemanticState("error");
+      setSemanticMessage("এই ব্রাউজারে লোকাল ছবি-মডেল চালানো যায় না।");
+      return;
+    }
+    stopSemanticSearch();
+    setSemanticState("running");
+    setSemanticMatches([]);
+    setSemanticMessage("");
+    setSemanticStep("মডেল প্রস্তুত হচ্ছে");
+    setSemanticPercent(0);
+    try {
+      const worker = new Worker("/workers/agriva-semantic-vision.mjs", { type: "module" });
+      semanticWorkerRef.current = worker;
+      semanticTimeoutRef.current = setTimeout(() => {
+        if (semanticWorkerRef.current !== worker) return;
+        stopSemanticSearch();
+        setSemanticState("error");
+        setSemanticMessage("উন্নত ছবি বিশ্লেষণে বেশি সময় লাগছে। সাধারণ সার্চের ফলাফল দেখানো হচ্ছে।");
+      }, 240_000);
+      worker.onerror = () => {
+        if (semanticWorkerRef.current !== worker) return;
+        stopSemanticSearch();
+        setSemanticState("error");
+        setSemanticMessage("ব্রাউজারে মডেল লোড করা যায়নি। ইন্টারনেট সংযোগ যাচাই করুন।");
+      };
+      worker.onmessage = (message: MessageEvent) => {
+        if (semanticWorkerRef.current !== worker) return;
+        const data = message.data;
+        if (data?.type === "progress") {
+          const total = Math.max(1, Number(data.total) || 1);
+          const done = Math.max(0, Number(data.done) || 0);
+          setSemanticStep(data.stage === "products" ? `পণ্যের ছবি বিশ্লেষণ: ${done}/${total}` : "ওপেন-সোর্স মডেল ডাউনলোড/লোড হচ্ছে");
+          if (data.stage === "products") setSemanticPercent(Math.round(100 * done / total));
+        } else if (data?.type === "model-progress") {
+          setSemanticPercent(Math.max(0, Math.min(100, Number(data.percent) || 0)));
+        } else if (data?.type === "results" && Array.isArray(data.results)) {
+          const productsById = new Map(visualProducts.map((product) => [product.id, product]));
+          const ranked: RankedVisualProduct[] = data.results
+            .filter((entry: { id?: unknown; score?: unknown }) => typeof entry?.id === "string" && typeof entry?.score === "number")
+            .map((entry: { id: string; score: number }) => ({
+              product: productsById.get(entry.id),
+              score: entry.score,
+            }))
+            .filter((entry: { product: IndexedVisualProduct | undefined; score: number }) => Boolean(entry.product) && Number.isFinite(entry.score))
+            .map((entry: { product: IndexedVisualProduct | undefined; score: number }) => ({ product: entry.product!, score: entry.score }));
+          setSemanticMatches(ranked);
+          setSemanticState("complete");
+          setSemanticStep("");
+          stopSemanticSearch();
+        } else if (data?.type === "error") {
+          setSemanticState("error");
+          setSemanticMessage(typeof data.message === "string" ? data.message : "মডেল কাজ করেনি।");
+          stopSemanticSearch();
+        }
+      };
+      const products = [...visualProducts]
+        .sort((a, b) => visualSimilarity(visualQuery.fingerprint, b.fingerprint) - visualSimilarity(visualQuery.fingerprint, a.fingerprint))
+        .slice(0, 48)
+        .filter((product) => Boolean(product.image_url))
+        .map((product) => ({
+          id: product.id,
+          image_url: product.image_url,
+          visualScore: visualSimilarity(visualQuery.fingerprint, product.fingerprint),
+        }));
+      worker.postMessage({
+        type: "search",
+        photo: visualQuery.semanticPreview || visualQuery.preview,
+        products,
+      });
+    } catch {
+      stopSemanticSearch();
+      setSemanticState("error");
+      setSemanticMessage("লোকাল মডেল চালু করা যায়নি। সাধারণ ফলাফল দেখানো হচ্ছে।");
+    }
+  }
+
   useEffect(() => {
     if (!visualMode) {
+      stopSemanticSearch();
+      setSemanticState("idle");
+      setSemanticMatches([]);
+      setVisualProducts([]);
       setVisualQuery(null);
       setVisualMatches([]);
       setVisualLoading(false);
@@ -237,6 +335,11 @@ function SmartSearchContent() {
     }
     let controller: AbortController | null = null;
     const loadVisualResults = async () => {
+      stopSemanticSearch();
+      setSemanticState("idle");
+      setSemanticMessage("");
+      setSemanticMatches([]);
+      setVisualProducts([]);
       controller?.abort();
       controller = new AbortController();
       const current = controller;
@@ -271,6 +374,7 @@ function SmartSearchContent() {
           .slice(0, 12);
         if (!current.signal.aborted) {
           setVisualMatches(ranked);
+          setVisualProducts(result.products);
           setIndexedCount(result.indexedCount || 0);
           setVisualLimited(Boolean(result.limited));
         }
@@ -284,11 +388,14 @@ function SmartSearchContent() {
     window.addEventListener(VISUAL_QUERY_EVENT, onNewPhoto);
     void loadVisualResults();
     return () => {
+      stopSemanticSearch();
       controller?.abort();
       window.removeEventListener(VISUAL_QUERY_EVENT, onNewPhoto);
     };
   }, [visualMode]);
 
+  const displayedVisualMatches = semanticState === "complete" && semanticMatches.length > 0
+    ? semanticMatches : visualMatches;
   const contentResults = [...(catalog?.guides || []), ...(catalog?.articles || [])];
   const searched = urlQuery.length >= 2;
 
@@ -371,21 +478,45 @@ function SmartSearchContent() {
               <>
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-black text-emerald-950">ছবির সঙ্গে মিলে যাওয়া পণ্য</h2>
-                    <p className="mt-1 text-sm text-slate-600">{indexedCount}টি পণ্যের ছবি বিশ্লেষণ করে {visualMatches.length}টি সম্ভাব্য মিল পাওয়া গেছে।</p>
+                    <h2 className="text-xl font-black text-emerald-950">{semanticState === "complete" ? "উন্নত AI ছবি-মিলের ফলাফল" : "ছবির সঙ্গে মিলে যাওয়া পণ্য"}</h2>
+                    <p className="mt-1 text-sm text-slate-600">{indexedCount}টি পণ্যের ছবি বিশ্লেষণ করে {displayedVisualMatches.length}টি সম্ভাব্য মিল পাওয়া গেছে।</p>
                   </div>
                   <Link href="/marketplace" className="text-sm font-bold text-emerald-800 hover:underline">সব পণ্য দেখুন →</Link>
                 </div>
-                {visualMatches.length ? (
-                  <div className="grid gap-3 sm:grid-cols-2">{visualMatches.map(({ product }) => <ProductCard key={product.id} product={product} />)}</div>
+                {displayedVisualMatches.length ? (
+                  <div className="grid gap-3 sm:grid-cols-2">{displayedVisualMatches.map(({ product }) => <ProductCard key={product.id} product={product} />)}</div>
                 ) : (
                   <div className="rounded-2xl border border-amber-100 bg-white p-5">
                     <p className="font-extrabold text-slate-900">যথেষ্ট কাছাকাছি পণ্যের ছবি পাওয়া যায়নি।</p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">পণ্যটি সামনে থেকে পরিষ্কার আলোয় তুলুন, শুধু প্যাকেট বা পণ্যটি ফ্রেমে রাখুন। অথবা নাম লিখে সার্চ করুন।</p>
                   </div>
                 )}
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5">
+                  <div className="flex flex-wrap items-start gap-3">
+                    <span className="rounded-xl bg-white p-2 text-emerald-700"><Cpu size={23} /></span>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-extrabold text-emerald-950">উন্নত AI ছবি-মিল</h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-700">Open-source CLIP মডেল ব্রাউজারেই পণ্যের ছবি থেকে বৈশিষ্ট্য বের করে তুলনা করবে। OpenAI/Gemini API লাগে না।</p>
+                      <p className="mt-2 text-xs leading-5 text-amber-900">প্রথমবার মডেল ডাউনলোডে আনুমানিক ৯০–১৬০ MB ডেটা ও কিছু সময় লাগতে পারে। মোবাইল ডেটা ব্যবহারের আগে বিবেচনা করুন।</p>
+                      <button type="button" onClick={startSemanticSearch} disabled={semanticState === "running" || visualProducts.length === 0}
+                        className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-800 px-4 py-2 text-sm font-extrabold text-white hover:bg-emerald-950 disabled:cursor-not-allowed disabled:opacity-60">
+                        {semanticState === "running" ? <Loader2 size={17} className="animate-spin" /> : <Sparkles size={17} />}
+                        {semanticState === "running" ? "উন্নত ছবি-মিল চলছে..." : semanticState === "complete" ? "আবার উন্নত ছবি-মিল করুন" : "উন্নত ছবি-মিল চালু করুন"}
+                      </button>
+                      {semanticState === "running" && (
+                        <div className="mt-3" role="status">
+                          <p className="text-xs font-semibold text-emerald-800">{semanticStep} ({semanticPercent}%)</p>
+                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-emerald-200"><div className="h-full bg-emerald-700 transition-all" style={{ width: semanticPercent + "%" }} /></div>
+                          <button type="button" className="mt-2 text-xs font-bold text-slate-600 underline" onClick={() => { stopSemanticSearch(); setSemanticState("idle"); setSemanticMessage(""); }}>বাতিল করুন</button>
+                        </div>
+                      )}
+                      {semanticState === "complete" && <p className="mt-3 inline-flex items-center gap-2 text-xs font-bold text-emerald-800"><ShieldCheck size={16} /> উন্নত মিল সম্পন্ন—সব হিসাব আপনার ডিভাইসে হয়েছে।</p>}
+                      {semanticState === "error" && <p className="mt-3 rounded-lg bg-white p-3 text-xs text-amber-900" role="alert">{semanticMessage} আগের ছবি-মিলের ফলাফল রাখা হয়েছে।</p>}
+                    </div>
+                  </div>
+                </div>
                 <p className="rounded-xl bg-amber-50 p-3 text-xs leading-6 text-amber-900">
-                  ছবি মেলানো হচ্ছে রং, নকশা ও ছবির গঠনের ভিত্তিতে। এটি পণ্যের পরিচয় নিশ্চিত করে না; ভিন্ন কোণ বা প্যাকেজিং হলে সঠিক পণ্যটি নাও আসতে পারে।{visualLimited ? " বড় ক্যাটালগের ক্ষেত্রে কিছু পণ্য এখনো অন্তর্ভুক্ত নাও থাকতে পারে।" : ""}
+                  {semanticState === "complete" ? "AI ছবির বৈশিষ্ট্য তুলনা করে সম্ভাব্য মিল সাজিয়েছে; এটি নিশ্চিত পণ্য শনাক্তকরণ নয়।" : "সাধারণ ছবি-মিল রং, নকশা ও গঠনের ভিত্তিতে কাজ করে। ভিন্ন কোণ থেকে তোলা ছবি মেলাতে উন্নত AI ছবি-মিল ব্যবহার করুন।"}{visualLimited ? " বড় ক্যাটালগের ক্ষেত্রে কিছু পণ্য অন্তর্ভুক্ত নাও থাকতে পারে।" : ""}
                 </p>
               </>
             )}

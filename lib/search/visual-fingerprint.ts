@@ -15,6 +15,8 @@ export type VisualFingerprint = number[];
 export type SavedVisualQuery = {
   fingerprint: VisualFingerprint;
   preview: string;
+  // Larger, still device-local thumbnail for the optional CLIP embedding.
+  semanticPreview?: string;
   createdAt: number;
 };
 
@@ -103,6 +105,11 @@ export function isSavedVisualQuery(value: unknown): value is SavedVisualQuery {
     typeof query.preview === "string" &&
     query.preview.startsWith("data:image/jpeg;base64,") &&
     query.preview.length < 120_000 &&
+    (query.semanticPreview === undefined || (
+      typeof query.semanticPreview === "string" &&
+      query.semanticPreview.startsWith("data:image/jpeg;base64,") &&
+      query.semanticPreview.length < 400_000
+    )) &&
     Array.isArray(query.fingerprint) &&
     query.fingerprint.length === VISUAL_FINGERPRINT_LENGTH &&
     query.fingerprint.every((v) => typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= 255)

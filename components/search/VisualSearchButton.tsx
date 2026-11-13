@@ -50,9 +50,25 @@ async function processPhoto(file: File): Promise<SavedVisualQuery> {
     previewContext.fillRect(0, 0, 128, 128);
     previewContext.drawImage(bitmap, (128 - bitmap.width * previewScale) / 2, (128 - bitmap.height * previewScale) / 2, bitmap.width * previewScale, bitmap.height * previewScale);
 
+    // Keep a locally scaled higher-resolution image for optional learned
+    // embeddings. Neither this thumbnail nor the original is uploaded.
+    const semantic = document.createElement("canvas");
+    semantic.width = 320;
+    semantic.height = 320;
+    const semanticContext = semantic.getContext("2d");
+    if (!semanticContext) throw new Error("উন্নত ছবি বিশ্লেষণের preview তৈরি করা যাচ্ছে না।");
+    const semanticScale = Math.min(320 / bitmap.width, 320 / bitmap.height);
+    semanticContext.fillStyle = "#ffffff";
+    semanticContext.fillRect(0, 0, 320, 320);
+    semanticContext.imageSmoothingQuality = "high";
+    semanticContext.drawImage(bitmap, (320 - bitmap.width * semanticScale) / 2, (320 - bitmap.height * semanticScale) / 2, bitmap.width * semanticScale, bitmap.height * semanticScale);
+    const embeddingPreview = semantic.toDataURL("image/jpeg", 0.72);
+
     return {
       fingerprint: fingerprintFromRgba(context.getImageData(0, 0, dimension, dimension).data),
       preview: preview.toDataURL("image/jpeg", 0.64),
+      // The local query validator permits up to 400 KB of base64 text.
+      semanticPreview: embeddingPreview.length < 400_000 ? embeddingPreview : undefined,
       createdAt: Date.now(),
     };
   } finally {
