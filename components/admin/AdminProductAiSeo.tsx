@@ -5,9 +5,22 @@ type Suggestion = { seo_title: string; seo_description: string; focus_keyword: s
 export default function AdminProductAiSeo({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  async function save() {
+    if (!suggestion) return;
+    setSaving(true); setError(""); setSaved(false);
+    try {
+      const response = await fetch("/api/admin/products/seo", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId, ...suggestion }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Save failed");
+      setSaved(true);
+    } catch (e) { setError(e instanceof Error ? e.message : "Save failed"); }
+    finally { setSaving(false); }
+  }
   async function generate() {
-    setLoading(true); setError("");
+    setLoading(true); setError(""); setSaved(false);
     try {
       const response = await fetch("/api/admin/products/ai-seo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId }) });
       const result = await response.json();
@@ -29,7 +42,9 @@ export default function AdminProductAiSeo({ productId }: { productId: string }) 
       <label className="block text-xs font-bold">Image Alt Text<input className="mt-1 w-full rounded-lg border p-2 text-sm font-normal" value={suggestion.image_alt} onChange={e=>setSuggestion({...suggestion,image_alt:e.target.value})}/></label>
       <details><summary className="cursor-pointer text-sm font-bold">Suggested product description (HTML preview as text)</summary><textarea className="mt-2 w-full rounded-lg border p-2 font-mono text-xs" rows={9} value={suggestion.improved_description} onChange={e=>setSuggestion({...suggestion,improved_description:e.target.value})}/></details>
       <div className="rounded-lg border p-3"><p className="text-xs font-bold text-slate-500">Google search preview (approximate)</p><p className="mt-1 text-base font-semibold text-blue-700">{suggestion.seo_title}</p><p className="text-sm text-slate-600">{suggestion.seo_description}</p></div>
-      <p className="text-xs text-amber-800">Preview only: SEO fields are not persisted by the current Admin save RPC. A dedicated, authorized save flow is required before enabling Apply.</p>
+      <p className="text-xs text-amber-800">শুধু যাচাই করা তথ্য Save করুন। Description preview আলাদা করে মূল Editor-এ প্রয়োগ করতে হবে; এটি SEO Save-এর অংশ নয়।</p>
+      <button type="button" onClick={save} disabled={saving || loading} className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">{saving ? "Saving…" : "Save reviewed SEO fields"}</button>
+      {saved && <p role="status" className="text-sm font-bold text-emerald-800">SEO fields saved. Publication status unchanged.</p> }
     </div>}
   </section>;
 }
