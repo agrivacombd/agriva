@@ -53,11 +53,12 @@ function ProductCard({
   const hasPrice = product.price !== null && product.price !== undefined && String(product.price).trim() !== "";
   const hasStock = product.stock !== null && product.stock !== undefined;
   const inStock = Number(product.stock || 0) > 0;
+  const recordListingClick = () => trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "listing_click", [product.id]);
 
   return (
     <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-emerald-950/[0.09] bg-white shadow-[0_5px_22px_rgba(15,55,32,.045)] transition duration-300 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_44px_rgba(15,55,32,.12)]">
       <div className="relative">
-        <Link href={`${productHrefPrefix}/${product.slug}`} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#f2f8ed_54%,#e5f0df_100%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
+        <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#f2f8ed_54%,#e5f0df_100%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
           <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
           {product.image_url && <Image src={product.image_url} alt={`${product.name} পণ্যের ছবি`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="object-cover p-0 transition duration-500 group-hover:scale-[1.06]" />}
         </Link>
@@ -71,14 +72,14 @@ function ProductCard({
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <p className="text-[11px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
         <h3 className="mt-2 break-words whitespace-normal text-[15px] font-extrabold leading-6 text-slate-900">
-          <Link href={`${productHrefPrefix}/${product.slug}`} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
+          <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
         <div className="mt-auto pt-3">
           <p className="text-lg font-black tracking-tight text-emerald-950 sm:text-xl">
             {hasPrice && Number(product.price) > 0 ? <>৳{money(product.price as number | string)}{product.unit ? <span className="text-xs font-semibold text-slate-500"> / {product.unit}</span> : null}</> : <span className="text-sm">দাম জানতে যোগাযোগ করুন</span>}
           </p>
           <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
-            <Link href={`${productHrefPrefix}/${product.slug}`} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
+            <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
               বিস্তারিত দেখুন <span aria-hidden="true">→</span>
             </Link>
             <button type="button" onClick={onCompare} aria-pressed={compared} className={`min-h-10 rounded-xl border px-2.5 text-[11px] font-bold transition ${compared ? "border-emerald-800 bg-emerald-50 text-emerald-900" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>

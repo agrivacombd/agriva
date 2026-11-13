@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   const events = payload.events;
   if (!events.every((event) => event && typeof event === "object" &&
       !Array.isArray(event) && UUID.test(event.product_id) &&
-      (event.event_type === "click" || event.event_type === "impression"))) {
+      (event.event_type === "click" || event.event_type === "impression" || event.event_type === "listing_click"))) {
     return NextResponse.json({ error: "Invalid event" }, { status: 400 });
   }
 
