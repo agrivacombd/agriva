@@ -180,10 +180,26 @@ export default function CropDiseasePanel() {
                 {preview ? <img src={preview} alt="আপলোডের জন্য নির্বাচিত ফসলের ছবি" className="mt-3 max-h-72 w-full rounded-2xl border border-slate-200 object-contain" /> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">পরিষ্কার আলোতে আক্রান্ত অংশের কাছ থেকে ছবি তুলুন। সম্ভব হলে পুরো গাছ ও আক্রান্ত অংশের আলাদা ছবি তুলুন—প্রতিবার একটি ছবি বিশ্লেষণ করা যাবে।</div>}
               </div>
             </div>
-            <aside aria-label="আপনার ছবি ও তথ্যের নিরাপত্তা" className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-slate-700">
-              <h2 className="font-extrabold text-emerald-950">🔒 আপনার ছবি ও তথ্যের নিরাপত্তা</h2>
-              <p className="mt-2">আপনার দেওয়া ছবি OpenAI-এর AI দিয়ে বিশ্লেষণ করা হবে। বিশ্লেষণ সফল হলে ছবি ব্যক্তিগতভাবে সংরক্ষিত থাকবে এবং ফলাফল আপনার অ্যাকাউন্টে পরে আবার দেখতে পারবেন।</p>
-              <p className="mt-2 text-xs text-slate-600">ছবি বিশ্লেষণ করতে AGRIVA অ্যাকাউন্টে লগইন থাকতে হবে। AI-এর পরামর্শ প্রাথমিক ধারণা—নিশ্চিত রোগ নির্ণয় নয়।</p>
+            <aside aria-label="AGRIVA AI কৃষি সহায়তা সম্পর্কে" className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 text-sm leading-6 text-slate-700">
+              <div className="flex items-center gap-3">
+                <span aria-hidden="true" className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-100 text-2xl">🌱</span>
+                <div>
+                  <h2 className="font-extrabold text-emerald-950">AGRIVA AI কৃষি সহায়তা</h2>
+                  <p className="text-xs text-emerald-800">স্মার্ট প্রযুক্তিতে ফসলের যত্ন</p>
+                </div>
+              </div>
+              <p className="mt-3">ফসলের আক্রান্ত অংশের পরিষ্কার ছবি আপলোড করুন। AGRIVA AI ছবির দৃশ্যমান লক্ষণ বিশ্লেষণ করে সম্ভাব্য রোগ, প্রাথমিক করণীয় ও প্রতিরোধমূলক পরামর্শ প্রদান করবে।</p>
+              <div className="mt-4 flex items-start gap-2">
+                <span aria-hidden="true" className="text-emerald-700">✓</span>
+                <div>
+                  <h3 className="font-bold text-slate-900">আপনার তথ্য, আপনার নিয়ন্ত্রণে</h3>
+                  <p className="text-xs leading-5 text-slate-600">আপনার ছবি ও বিশ্লেষণের ইতিহাস ব্যক্তিগতভাবে সংরক্ষিত থাকবে এবং অ্যাকাউন্ট থেকে পুনরায় দেখতে পারবেন।</p>
+                </div>
+              </div>
+              <div className="mt-4 border-t border-emerald-100 pt-3 text-xs leading-5 text-slate-600">
+                <p>AI বিশ্লেষণ প্রাথমিক সহায়তার জন্য। নিশ্চিত রোগ নির্ণয় ও কীটনাশক প্রয়োগের আগে কৃষি বিশেষজ্ঞের পরামর্শ নিন।</p>
+                <p className="mt-2">ছবি বিশ্লেষণে তৃতীয় পক্ষের AI সেবা ব্যবহার করা হয়। বিস্তারিত জানতে <Link href="/privacy-policy" className="font-semibold text-emerald-800 underline underline-offset-2">গোপনীয়তা নীতি</Link> দেখুন।</p>
+              </div>
             </aside>
             {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm leading-6 text-rose-800">{error} {error.includes("লগইন") || error.includes("লগ ইন") ? <Link href="/login" className="font-bold underline">লগইন করুন</Link> : null}</p>}
             <button type="submit" disabled={!photo || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
