@@ -98,6 +98,7 @@ type FeedEntry = { id: string; slug: string; displayName: string; crop: string; 
 
 function CropHealthFeed({ history }: { history: HistoryItem[] }) {
   const [feed, setFeed] = useState<FeedEntry[]>([]);
+  const [ownPublishedIds, setOwnPublishedIds] = useState<string[]>([]);
   const [displayName, setDisplayName] = useState("");
   const [consent, setConsent] = useState(false);
   const [selectedId, setSelectedId] = useState("");
@@ -105,7 +106,7 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
   const [message, setMessage] = useState("");
   async function refresh() {
     const response = await fetch("/api/crop-health-feed", { cache: "no-store" });
-    if (response.ok) { const data = await response.json(); setFeed(data.feed || []); }
+    if (response.ok) { const data = await response.json(); setFeed(data.feed || []); setOwnPublishedIds(data.ownPublishedDetectionIds || []); }
     else setMessage("পাবলিক ফিড লোড করা যায়নি।");
   }
   useEffect(() => { void refresh(); fetch("/api/crop-health-feed/profile", { cache: "no-store" }).then(async response => { if (response.ok) { const data = await response.json(); setDisplayName(data.displayName || ""); } }).catch(() => {}); }, []);
@@ -146,7 +147,7 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
       <label className="mt-4 flex items-start gap-2 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1" /><span>আমি স্বেচ্ছায় নির্বাচিত বিশ্লেষণের অ্যাকাউন্টের নাম, প্রথম ছবি ও সংক্ষিপ্ত ফলাফল সবার জন্য প্রকাশের অনুমতি দিচ্ছি। পরে প্রকাশনা সরাতে পারব।</span></label>
       <button type="button" disabled={!consent || !selectedId || displayName.trim().length < 2 || pending} onClick={publish} className="mt-3 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white disabled:opacity-50">{pending ? "অপেক্ষা করুন..." : "অনুমতি দিয়ে প্রকাশ করুন"}</button>
       {message && <p role="status" className="mt-3 text-sm text-slate-700">{message}</p>}
-      <div className="mt-3 space-y-2">{history.filter((item) => feed.some((entry) => entry.id && entry.imageUrl?.includes(item.id))).map((item) => <button type="button" key={item.id} disabled={pending} onClick={() => unpublish(item.id)} className="block text-sm font-semibold text-rose-700 underline">প্রকাশনা সরান: {item.crop} ({new Date(item.created_at).toLocaleDateString("bn-BD")})</button>)}</div>
+      <div className="mt-3 space-y-2">{history.filter((item) => ownPublishedIds.includes(item.id)).map((item) => <button type="button" key={item.id} disabled={pending} onClick={() => unpublish(item.id)} className="block text-sm font-semibold text-rose-700 underline">প্রকাশনা সরান: {item.crop} ({new Date(item.created_at).toLocaleDateString("bn-BD")})</button>)}</div>
     </div>}
     <div className="mt-5 grid gap-4 sm:grid-cols-2">{feed.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       {item.imageUrl && <img src={item.imageUrl} alt={item.crop + " ফসলের প্রকাশিত ছবি"} loading="lazy" className="h-44 w-full bg-slate-50 object-contain" />}
