@@ -306,10 +306,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="min-w-0 space-y-6">
-            <details className="group rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+            <details id="product-details" className="group rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-black text-emerald-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"><span>সম্পূর্ণ পণ্যের তথ্য ও specification</span><span className="shrink-0 rounded-full bg-emerald-50 px-4 py-2 text-sm font-extrabold text-emerald-800 group-open:hidden">See More +</span><span className="hidden shrink-0 rounded-full bg-emerald-50 px-4 py-2 text-sm font-extrabold text-emerald-800 group-open:inline">See Less −</span></summary>
               <div className="mt-5 space-y-6">
-            <section id="product-details" className="scroll-mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
+            <section className="scroll-mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
               <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Product information</p>
               <h2 className="mt-2 text-2xl font-black">পণ্যের বিস্তারিত তথ্য</h2>
               <dl className="mt-5 divide-y divide-slate-100">
