@@ -12,3 +12,12 @@ export async function POST(request:NextRequest){
  if(error){console.error("AI draft insert failed",error.code);return NextResponse.json({error:error.code==="23505"?"This slug is already in use. Choose another.":"Unable to save draft; check database permissions and schema."},{status:error.code==="23505"?409:500});}
  return NextResponse.json({draft:data},{status:201});
 }
+
+export async function GET(request:NextRequest){
+ const access=await requireAdminApi("content.edit");if(!access.ok)return access.response;
+ const id=new URL(request.url).searchParams.get("id")||"";
+ if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(id))return NextResponse.json({error:"Valid draft ID required."},{status:400});
+ const {data,error}=await access.supabase.from("content_drafts").select("id,title,slug,body_markdown,primary_keyword,meta_title,meta_description,status").eq("id",id).maybeSingle();
+ if(error||!data)return NextResponse.json({error:"Draft not found or access denied."},{status:404});
+ return NextResponse.json({draft:data});
+}
