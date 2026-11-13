@@ -74,7 +74,7 @@ function isActivePath(pathname: string, href: string) {
 function SearchForm({ english }: { english: boolean }) {
   return (
     <form
-      action="/marketplace"
+      action="/search"
       method="get"
       role="search"
       className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 transition focus-within:border-emerald-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-100"
@@ -83,8 +83,9 @@ function SearchForm({ english }: { english: boolean }) {
       <input
         type="search"
         name="q"
-        placeholder={english ? "Search products, seeds and supplies..." : "পণ্য, বীজ, সার বা কৃষি উপকরণ খুঁজুন..."}
-        aria-label={english ? "Search marketplace" : "মার্কেটপ্লেসে পণ্য খুঁজুন"}
+        maxLength={160}
+        placeholder={english ? "Search products, guides and farming advice..." : "পণ্য, বীজ, ফসল ও কৃষি তথ্য খুঁজুন..."}
+        aria-label={english ? "Search AGRIVA" : "AGRIVA-তে খুঁজুন"}
         className="h-11 min-w-0 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
       />
       <button type="submit" className="sr-only">{english ? "Search" : "খুঁজুন"}</button>
