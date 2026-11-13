@@ -53,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const supabase = createClient(url, key);
     const [productRows, plantProductRows, jobRows, exchangeRows, landingRows, articleRows] = await Promise.all([
       fetchAllSitemapRows<SitemapProduct>(async (from, to) =>
-        supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
+        supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").is("deleted_at", null).not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapPlantProduct>(async (from, to) =>
         supabase.from("plant_market_products").select("slug,updated_at").eq("status", "active").not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
