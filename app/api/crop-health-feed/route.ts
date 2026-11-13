@@ -23,11 +23,13 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "লগইন প্রয়োজন।" }, { status: 401 });
   const body = await request.json().catch(() => null);
-  if (body?.consent !== true || typeof body?.detectionId !== "string" || typeof body?.displayName !== "string") {
+  if (body?.consent !== true || typeof body?.detectionId !== "string") {
     return NextResponse.json({ error: "প্রকাশের জন্য স্পষ্ট সম্মতি, নাম ও বিশ্লেষণ নির্বাচন করুন।" }, { status: 400 });
   }
-  const displayName = body.displayName.trim();
-  if (displayName.length < 2 || displayName.length > 60) return NextResponse.json({ error: "নাম ২–৬০ অক্ষরের হতে হবে।" }, { status: 400 });
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+  if (profileError) return NextResponse.json({ error: "অ্যাকাউন্টের নাম যাচাই করা যায়নি।" }, { status: 503 });
+  const displayName = profile?.full_name?.trim() || "";
+  if (displayName.length < 2 || displayName.length > 60) return NextResponse.json({ error: "আপনার প্রোফাইলে ২–৬০ অক্ষরের নাম সেট করুন।" }, { status: 400 });
   const { data: detection, error: lookupError } = await supabase.from("crop_disease_detections")
     .select("id,image_path,mime_type,status").eq("id", body.detectionId).eq("user_id", user.id).single();
   if (lookupError || !detection || detection.status !== "completed") return NextResponse.json({ error: "নিজের সম্পন্ন বিশ্লেষণ নির্বাচন করুন।" }, { status: 404 });
