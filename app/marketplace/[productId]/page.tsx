@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
+import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import ProductImageGallery from "@/components/marketplace/ProductImageGallery";
 import ProductDescription from "@/components/marketplace/ProductDescription";
 import SeedProductInformation from "@/components/marketplace/SeedProductInformation";
@@ -193,7 +194,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]">
+    <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]"><ProductClickTracker market="marketplace" productId={product.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
 

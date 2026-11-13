@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
 import Link from "next/link";
 import Image from "next/image";
 import { MARKETPLACE_CATEGORIES, getProductTaxonomy } from "@/lib/marketplace/taxonomy";
@@ -17,9 +18,10 @@ export type MarketplaceProduct = {
   stock: number | null;
   unit?: string | null;
   image_url?: string | null;
+  created_at?: string | null;
 };
 
-type SortOption = "newest" | "price-low" | "price-high";
+type SortOption = "recommended" | "newest" | "price-low" | "price-high";
 const PAGE_SIZE = 24;
 const money = (value: number | string) =>
   new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(Number(value));
@@ -53,7 +55,7 @@ function ProductCard({
   const inStock = Number(product.stock || 0) > 0;
 
   return (
-    <article className="group flex min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-emerald-950/[0.09] bg-white shadow-[0_5px_22px_rgba(15,55,32,.045)] transition duration-300 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_44px_rgba(15,55,32,.12)]">
+    <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-emerald-950/[0.09] bg-white shadow-[0_5px_22px_rgba(15,55,32,.045)] transition duration-300 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_44px_rgba(15,55,32,.12)]">
       <div className="relative">
         <Link href={`${productHrefPrefix}/${product.slug}`} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#f2f8ed_54%,#e5f0df_100%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
           <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
@@ -92,7 +94,9 @@ function ProductCard({
 export default function MarketplaceCore({ products, showCategories = true, availableCategoriesOnly = false, initialQuery = "", emptyCatalogMessage, productHrefPrefix = "/marketplace" }: { products: MarketplaceProduct[]; showCategories?: boolean; availableCategoriesOnly?: boolean; initialQuery?: string; emptyCatalogMessage?: string; productHrefPrefix?: "/marketplace" | "/plant-market" }) {
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState<SortOption>("newest");
+  const [sort, setSort] = useState<SortOption>("recommended");
+  const catalogueRef = useRef<HTMLDivElement>(null);
+  const alreadySeen = useRef(new Set<string>());
   const [page, setPage] = useState(1);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -122,12 +126,34 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         const difference = Number(a.price) - Number(b.price);
         return sort === "price-low" ? difference : -difference;
       }
+      if (sort === "newest") return (Date.parse(b.created_at || "") || 0) - (Date.parse(a.created_at || "") || 0);
+      // The API supplies relevance order; modern JS sort is stable.
       return 0;
     });
   }, [products, query, category, sort]);
 
   useEffect(() => setPage(1), [query, category, sort]);
   const paginated = visible.slice(0, page * PAGE_SIZE);
+  const visibleProductIds = paginated.map((product) => product.id).join(",");
+  useEffect(() => {
+    const root = catalogueRef.current;
+    if (!root || !("IntersectionObserver" in window)) return;
+    const observer = new IntersectionObserver((entries) => {
+      const newlyVisible: string[] = [];
+      for (const entry of entries) {
+        if (!entry.isIntersecting || entry.intersectionRatio < 0.5) continue;
+        const id = (entry.target as HTMLElement).dataset.rankProductId;
+        if (id && !alreadySeen.current.has(id)) {
+          alreadySeen.current.add(id);
+          newlyVisible.push(id);
+        }
+        observer.unobserve(entry.target);
+      }
+      if (newlyVisible.length) trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "impression", newlyVisible);
+    }, { threshold: 0.5 });
+    root.querySelectorAll("[data-rank-product-id]").forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, [visibleProductIds, productHrefPrefix]);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((item) => item.slug === category);
   const comparedProducts = products.filter((product) => compareIds.includes(product.id));
   const hasActiveFilters = Boolean(query.trim()) || category !== "all";
@@ -137,7 +163,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   }
 
   return (
-    <div className="mt-6 lg:mt-8">
+    <div ref={catalogueRef} className="mt-6 lg:mt-8">
       <section className="rounded-[1.35rem] border border-emerald-950/10 bg-white p-4 shadow-[0_8px_28px_rgba(15,55,32,.055)] sm:p-5" aria-label="পণ্য খুঁজুন">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="min-w-0 flex-1">
@@ -156,7 +182,8 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 sm:w-56">
             <span className="shrink-0">সাজান</span>
             <select value={sort} onChange={(event) => setSort(event.target.value as SortOption)} className="min-w-0 flex-1 bg-transparent text-sm font-bold text-slate-800 outline-none">
-              <option value="newest">নতুন পণ্য</option>
+              <option value="recommended">জনপ্রিয় ও সর্বাধিক বিক্রিত</option>
+               <option value="newest">নতুন পণ্য</option>
               <option value="price-low">দাম: কম থেকে বেশি</option>
               <option value="price-high">দাম: বেশি থেকে কম</option>
             </select>
