@@ -13,6 +13,13 @@ function classify(query: string) {
   if (INFORMATIONAL.test(query)) return "Informational (estimated)";
   return "Unclassified";
 }
+function providerError(payload: any): string {
+  const raw = payload?.error;
+  const detail = typeof raw === "string" ? raw : typeof raw?.message === "string" ? raw.message : typeof payload?.message === "string" ? payload.message : "";
+  // Provider responses are untrusted. Never forward keys, request URLs or credentials.
+  const safe = detail.replace(/https?:\\/\\/\\S+/g,"[URL]").replace(/(?:api[_ -]?key|token|authorization)\\s*[:=]\\s*\\S+/gi,"[redacted]").slice(0,160);
+  return safe || "No additional details from provider";
+}
 function parseRelated(payload: any, field: "top" | "rising"): Item[] {
   const root = payload?.related_queries ?? payload?.relatedQueries ?? {};
   const raw = root[field] ?? root[field === "top" ? "top_queries" : "rising_queries"] ?? [];
@@ -45,10 +52,10 @@ export async function GET(request: NextRequest) {
       url.searchParams.set("q",term);
       url.searchParams.set("geo","BD");
       url.searchParams.set("time",period);
-      const response = await fetch(url,{headers:{Authorization:`Bearer ${apiKey}`},signal:AbortSignal.timeout(15000),next:{revalidate:3600}});
-      if (!response.ok) return NextResponse.json({error:"SearchAPI.io Google Trends request failed.",providerStatus:response.status},{status:502});
+      const response = await fetch(url,{headers:{Authorization:`Bearer ${apiKey}`},signal:AbortSignal.timeout(15000),cache:"no-store"});
+      if (!response.ok) { const body = await response.json().catch(()=>({})); return NextResponse.json({error:`SearchAPI.io HTTP ${response.status}: ${providerError(body)}`,providerStatus:response.status},{status:502}); }
       const payload = await response.json();
-      if (payload?.error) return NextResponse.json({error:"SearchAPI.io returned an error."},{status:502});
+      if (payload?.error) return NextResponse.json({error:`SearchAPI.io: ${providerError(payload)}`},{status:502});
       return NextResponse.json({
         configured:true,provider:"SearchAPI.io Google Trends",geography:"BD",keyword:term,period,
         metric:"Google Trends relative interest, not monthly search volume",
