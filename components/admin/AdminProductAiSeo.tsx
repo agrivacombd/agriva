@@ -8,7 +8,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [reviewConfirmed, setReviewConfirmed] = useState(false);
-  const [suggestion, setSuggestion] = useState<Suggestion | null>(() => initialSeo ? { seo_title: initialSeo.seo_title || "", seo_description: initialSeo.seo_description || "", focus_keyword: initialSeo.focus_keyword || "", seo_keywords: initialSeo.seo_keywords || [], highlights: initialSeo.highlights || [], image_alt: initialSeo.image_alt || "", improved_description: "" } : null);
+  const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const current = suggestion || initialSeo;
   const checks = current ? [
     { label: "SEO title (30–60 characters)", ok: (current.seo_title || "").trim().length >= 30 && (current.seo_title || "").trim().length <= 60 },
@@ -38,7 +38,7 @@ export default function AdminProductAiSeo({ productId, initialSeo }: { productId
       const response = await fetch("/api/admin/products/ai-seo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId }) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Generation failed");
-      if (!result.suggestion || typeof result.suggestion.seo_title !== "string") throw new Error("Invalid AI response");
+      if (!result.suggestion || typeof result.suggestion.seo_title !== "string" || !Array.isArray(result.suggestion.seo_keywords) || !Array.isArray(result.suggestion.highlights)) throw new Error("Invalid AI response");
       setSuggestion(result.suggestion);
     } catch (e) { setError(e instanceof Error ? e.message : "Generation failed"); }
     finally { setLoading(false); }
