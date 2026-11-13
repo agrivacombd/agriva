@@ -30,9 +30,21 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("engine", "google_trends"); url.searchParams.set("q", term); url.searchParams.set("geo", "BD"); url.searchParams.set("time", period); url.searchParams.set("data_type", "RELATED_QUERIES");
   try {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(12000), next: { revalidate: 3600 } });
-    if (!response.ok) return NextResponse.json({ error: "Google Trends data provider is temporarily unavailable.", providerStatus: response.status }, { status: 502 });
+    if (!response.ok) {
+      const messages: Record<number, string> = {
+        400: "SearchAPI rejected the request (400). Check provider parameters.",
+        401: "SearchAPI authentication failed (401). Verify the server-side API key.",
+        402: "SearchAPI requires available credits or an eligible plan (402).",
+        403: "SearchAPI denied access to Google Trends (403). Check plan and engine permissions.",
+        429: "SearchAPI rate limit or quota reached (429). Please retry later.",
+        500: "SearchAPI encountered a server error (500).",
+        502: "SearchAPI could not retrieve Google Trends data (502).",
+        503: "SearchAPI is temporarily unavailable (503)."
+      };
+      return NextResponse.json({ error: messages[response.status] ?? "Google Trends provider request failed.", providerStatus: response.status }, { status: 502 });
+    }
     const payload = await response.json();
-    if (payload?.error) return NextResponse.json({ error: "Google Trends provider returned an error." }, { status: 502 });
+    if (payload?.error) return NextResponse.json({ error: "SearchAPI returned a provider error. Check Google Trends engine access and account credits." }, { status: 502 });
     return NextResponse.json({ configured: true, provider: "SearchAPI (Google Trends)", geography: "BD", keyword: term, period, metric: "Relative search interest; not search volume", intentMethod: "Bangladesh agriculture-only keyword filtering and rule-based informational/product intent estimates; not Google-provided intent", top: parseRelated(payload, "top"), rising: parseRelated(payload, "rising"), fetchedAt: new Date().toISOString() });
   } catch { return NextResponse.json({ error: "Could not fetch Google Trends data." }, { status: 502 }); }
 }
