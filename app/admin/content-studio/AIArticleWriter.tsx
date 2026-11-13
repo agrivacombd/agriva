@@ -1,25 +1,34 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import {useState,type FormEvent} from "react";
+type Stage="draft"|"review"|"approved"|"published"|"rejected";
+const slugify=(s:string)=>s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9\s-]/g,"").trim().replace(/\s+/g,"-").slice(0,100);
 export default function AIArticleWriter(){
- const [keyword,setKeyword]=useState("");const [language,setLanguage]=useState("Bengali");
- const [article,setArticle]=useState("");const [error,setError]=useState("");const [loading,setLoading]=useState(false);
- async function generate(e:FormEvent<HTMLFormElement>){
-  e.preventDefault();if(loading)return;setLoading(true);setError("");setArticle("");
-  try{const response=await fetch("/api/admin/ai-article",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keyword,language})});
-   const data=await response.json();if(!response.ok)throw new Error(data.error||"Generation failed");
-   setArticle(data.article||"");
-  }catch(err){setError(err instanceof Error?err.message:"Generation failed");}finally{setLoading(false);}
- }
+ const [keyword,setKeyword]=useState(""),[language,setLanguage]=useState("Bengali");
+ const [article,setArticle]=useState(""),[title,setTitle]=useState(""),[slug,setSlug]=useState(""),[metaTitle,setMetaTitle]=useState(""),[metaDescription,setMetaDescription]=useState("");
+ const [id,setId]=useState(""),[status,setStatus]=useState<Stage>("draft"),[error,setError]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
+ const clean=(raw:string)=>raw.trim().replace(/^\x60{3}(?:markdown|md)?\s*\n/i,"").replace(/\n\s*\x60{3}\s*$/,"").replace(/^---\s*\n([\s\S]*?)\n---\s*\n/,(full,front:string)=>{const find=(key:string)=>front.match(new RegExp("^"+key+":\\s*[\\\"']?(.*?)[\\\"']?\\s*$","m"))?.[1]||"";setTitle(find("title"));setMetaTitle(find("meta_title"));setMetaDescription(find("meta_description"));return "";});
+ async function generate(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError("");setNotice("");try{const r=await fetch("/api/admin/ai-article",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({keyword,language})});const d=await r.json();if(!r.ok)throw Error(d.error||"Generation failed");const text=clean(d.article||"");setArticle(text);const heading=text.match(/^#\s+(.+)$/m)?.[1]||keyword;setTitle(t=>t||heading);setSlug(slugify(keyword)||"");setId("");setStatus("draft");setNotice("AI draft generated. Review and save before submitting.");}catch(e){setError(e instanceof Error?e.message:"Generation failed");}finally{setBusy(false)}}
+ const payload=()=>({title,slug,body_markdown:article,meta_title:metaTitle,meta_description:metaDescription,primary_keyword:keyword});
+ async function action(next:"save"|"review"|"approved"|"published"|"draft"){setBusy(true);setError("");setNotice("");try{
+  if(!title.trim()||!article.trim()||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw Error("Title, body and lowercase English URL slug are required.");
+  if(!id){if(next!=="save")throw Error("Save the draft first.");const r=await fetch("/api/admin/ai-article/draft",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload())});const d=await r.json();if(!r.ok)throw Error(d.error||"Save failed");setId(d.draft.id);setStatus("draft");setNotice("Draft saved. You can now submit it for review.");return;}
+  if(next==="published"&&!window.confirm("Publish this approved article publicly?"))return;
+  const r=await fetch("/admin/content-drafts/workflow",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,action:next,...payload()})});const d=await r.json();if(!r.ok)throw Error(d.error||"Workflow update failed");if(next!=="save")setStatus(next);else if(status==="review"||status==="approved")setStatus(status==="approved"?"review":"draft");setNotice(next==="save"?"Changes saved. Review status may have reset.":next==="published"?"Article published successfully.":"Workflow updated to "+next+".");
+ }catch(e){setError(e instanceof Error?e.message:"Operation failed");}finally{setBusy(false)}}
  return <section className="mt-9 rounded-3xl border border-[#dce8d8] bg-white p-6 shadow-sm sm:p-8">
-  <p className="text-xs font-bold uppercase tracking-widest text-[#a47a20]">OpenAI · Admin only</p>
-  <h2 className="mt-2 text-2xl font-black">AI Agriculture Article Writer</h2>
-  <p className="mt-2 text-sm text-[#647468]">Generate an editable Bengali or English Markdown draft. Verify crop recommendations before publishing. No automatic publishing or database saving.</p>
-  <form onSubmit={generate} className="mt-5 flex flex-wrap items-end gap-3">
-   <label className="min-w-[220px] flex-1 text-sm font-semibold">Article keyword<input required maxLength={160} value={keyword} onChange={e=>setKeyword(e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3" placeholder="যেমন: টমেটো চাষ পদ্ধতি"/></label>
-   <label className="text-sm font-semibold">Language<select value={language} onChange={e=>setLanguage(e.target.value)} className="mt-2 block rounded-xl border px-4 py-3"><option value="Bengali">বাংলা</option><option value="English">English</option></select></label>
-   <button disabled={loading} className="rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">{loading?"Writing…":"Generate AI draft"}</button>
-  </form>
-  {error&&<p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}
-  {article&&<div className="mt-6"><p className="mb-2 text-sm font-bold">Unpublished AI draft · Review required</p><textarea aria-label="Edit generated article" className="min-h-[420px] w-full rounded-xl border p-4 text-sm leading-7" value={article} onChange={e=>setArticle(e.target.value)}/><button type="button" className="mt-3 rounded-xl border px-4 py-2 text-sm font-bold" onClick={()=>navigator.clipboard.writeText(article).catch(()=>setError("Copy failed"))}>Copy edited draft</button></div>}
+  <p className="text-xs font-bold uppercase tracking-widest text-[#a47a20]">OpenAI · Admin only</p><h2 className="mt-2 text-2xl font-black">AI-powered Article Editor</h2>
+  <p className="mt-2 text-sm text-[#647468]">Generate → Edit → Save Draft → Review → Approve → Publish. Publication requires explicit admin action.</p>
+  <form onSubmit={generate} className="mt-5 flex flex-wrap items-end gap-3"><label className="min-w-[220px] flex-1 text-sm font-semibold">Article keyword<input required maxLength={160} value={keyword} onChange={e=>setKeyword(e.target.value)} className="mt-2 w-full rounded-xl border px-4 py-3" placeholder="যেমন: টমেটো চাষ পদ্ধতি"/></label><label className="text-sm font-semibold">Language<select value={language} onChange={e=>setLanguage(e.target.value)} className="mt-2 block rounded-xl border px-4 py-3"><option value="Bengali">বাংলা</option><option value="English">English</option></select></label><button disabled={busy} className="rounded-xl bg-[#17351f] px-5 py-3 font-bold text-white disabled:opacity-50">{busy?"Working…":"Generate AI draft"}</button></form>
+  {error&&<p role="alert" className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800">{error}</p>}{notice&&<p role="status" className="mt-4 rounded-xl bg-green-50 p-4 text-sm text-green-900">{notice}</p>}
+  {article&&<div className="mt-6 space-y-4"><p className="text-sm font-bold">Status: {id?status:"Unsaved"} {id&&<span className="font-normal text-[#647468]">· Draft ID: {id}</span>}</p>
+   <div className="grid gap-4 md:grid-cols-2"><label className="text-sm font-semibold">Article title<input maxLength={160} value={title} onChange={e=>setTitle(e.target.value)} className="mt-2 w-full rounded-xl border p-3"/></label><label className="text-sm font-semibold">URL slug (English)<input maxLength={180} value={slug} onChange={e=>setSlug(e.target.value)} className="mt-2 w-full rounded-xl border p-3"/></label><label className="text-sm font-semibold">SEO title<input maxLength={160} value={metaTitle} onChange={e=>setMetaTitle(e.target.value)} className="mt-2 w-full rounded-xl border p-3"/></label><label className="text-sm font-semibold">Meta description<textarea maxLength={320} rows={2} value={metaDescription} onChange={e=>setMetaDescription(e.target.value)} className="mt-2 w-full rounded-xl border p-3"/></label></div>
+   <label className="block text-sm font-semibold">Article body (Markdown)<textarea aria-label="Edit generated article" className="mt-2 min-h-[420px] w-full rounded-xl border p-4 text-sm font-normal leading-7" value={article} onChange={e=>setArticle(e.target.value)}/></label>
+   <div className="flex flex-wrap gap-2"><button type="button" disabled={busy||status==="published"} onClick={()=>action("save")} className="rounded-xl bg-[#17351f] px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{id?"Save changes":"Save draft"}</button>
+   {id&&status==="draft"&&<button type="button" disabled={busy} onClick={()=>action("review")} className="rounded-xl border px-4 py-2 text-sm font-bold">Submit for review</button>}
+   {id&&status==="review"&&<button type="button" disabled={busy} onClick={()=>action("approved")} className="rounded-xl border px-4 py-2 text-sm font-bold">Approve reviewed draft</button>}
+   {id&&status==="approved"&&<button type="button" disabled={busy} onClick={()=>action("published")} className="rounded-xl bg-[#17351f] px-4 py-2 text-sm font-bold text-white">Publish article</button>}
+   <button type="button" className="rounded-xl border px-4 py-2 text-sm font-bold" onClick={()=>navigator.clipboard.writeText(article).catch(()=>setError("Copy failed"))}>Copy Markdown</button>
+   {id&&<a href="/admin/content-drafts" className="rounded-xl border px-4 py-2 text-sm font-bold">All saved drafts</a>}</div><p className="text-xs text-[#647468]">Review agricultural facts, source evidence, author attribution and image rights before approval. Editing an approved draft resets its review status.</p>
+  </div>}
  </section>;
 }
