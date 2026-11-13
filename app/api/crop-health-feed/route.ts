@@ -33,10 +33,19 @@ export async function POST(request: NextRequest) {
   const { data: detection, error: lookupError } = await supabase.from("crop_disease_detections")
     .select("id,image_path,mime_type,status").eq("id", body.detectionId).eq("user_id", user.id).single();
   if (lookupError || !detection || detection.status !== "completed") return NextResponse.json({ error: "নিজের সম্পন্ন বিশ্লেষণ নির্বাচন করুন।" }, { status: 404 });
-  const { data: published, error: insertError } = await supabase.from("crop_health_feed")
-    .insert({ detection_id: detection.id, user_id: user.id, display_name: displayName, crop: "", disease: "", confidence: "low" })
-    .select("id,image_path,slug").single();
-  if (insertError || !published) return NextResponse.json({ error: "প্রকাশ করা যায়নি। আগে প্রকাশিত হয়ে থাকলে ফিড দেখুন।" }, { status: 409 });
+  // Retry rare short-suffix collisions with a fresh UUID. The database registry
+  // permanently reserves previously issued slugs, including unpublished ones.
+  let published: { id: string; image_path: string; slug: string } | null = null;
+  let insertError: { code?: string; message?: string } | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const result = await supabase.from("crop_health_feed")
+      .insert({ id: crypto.randomUUID(), detection_id: detection.id, user_id: user.id, display_name: displayName, crop: "", disease: "", confidence: "low" })
+      .select("id,image_path,slug").single();
+    if (!result.error && result.data) { published = result.data; break; }
+    insertError = result.error;
+    if (result.error?.code !== "23505" || !/slug|registry/i.test(result.error.message || "")) break;
+  }
+  if (!published) return NextResponse.json({ error: insertError?.code === "23505" ? "এই বিশ্লেষণ আগে প্রকাশিত হয়েছে অথবা ইউনিক লিংক তৈরি করা যায়নি।" : "প্রকাশ করা যায়নি। আবার চেষ্টা করুন।" }, { status: insertError?.code === "23505" ? 409 : 503 });
   const { data: original, error: downloadError } = await supabase.storage.from("crop-disease-photos").download(detection.image_path);
   if (downloadError || !original) {
     await supabase.from("crop_health_feed").delete().eq("id", published.id).eq("user_id", user.id);
