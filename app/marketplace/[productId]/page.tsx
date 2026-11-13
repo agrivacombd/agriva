@@ -137,8 +137,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         if (product.category_slug) query = query.eq("category_slug", product.category_slug);
         else if (product.category) query = query.eq("category", product.category);
         else return [];
-        const { data, error } = await query.limit(4);
-        return error ? [] : (data ?? []).filter((item) => Number(item.stock ?? 0) > 0);
+        const { data, error } = await query.gt("stock", 0).limit(4);
+        return error ? [] : (data ?? []);
       })()
     : [];
   const descriptionText = productDescriptionToText(description);
