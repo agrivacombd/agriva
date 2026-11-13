@@ -36,6 +36,8 @@ jobs:
         run: npm run test:product-rankings
       - name: Photo search privacy and matching regressions
         run: npm run test:visual-search
+      - name: Public search config fallback and secret isolation
+        run: npm run test:public-catalog-config
       - name: Local semantic visual-search regression
         run: npm run test:semantic-visual-search
       - name: Validate browser worker module syntax
