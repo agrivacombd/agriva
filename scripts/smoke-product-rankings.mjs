@@ -24,7 +24,7 @@ for (const fragment of [
   "where p.status = 'active'", "where market = 'plant-market'",
   "occurred_on >= current_date - 29", "on conflict do nothing",
   "from public.marketplace_orders", "from public.plant_market_orders",
-  "from public.plant_market_order_items",
+  "join public.plant_market_order_items",
 ]) assert.ok(sql.includes(fragment), "Missing ranking SQL contract: " + fragment);
 
 assert.match(sql,/revoke all on public\.product_rank_events from public, anon, authenticated;/i);
