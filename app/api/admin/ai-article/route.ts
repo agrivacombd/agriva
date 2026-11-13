@@ -19,25 +19,31 @@ export async function POST(request: NextRequest) {
   const generate=(selected:string)=>fetch(base+encodeURIComponent(selected)+":generateContent",{method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},body:payload,signal:AbortSignal.timeout(45000),cache:"no-store"});
   let selectedModel=model;
   let response=await generate(selectedModel);
+  let discoveryStatus:number|null=null;
+  let discoveredModels:string[]=[];
+  let providerMessage="";
   if(response.status===404){
     // The model configured for this key may have been retired or may not support generateContent.
     const discovery=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100",{headers:{"x-goog-api-key":key},signal:AbortSignal.timeout(10000),cache:"no-store"});
+    discoveryStatus=discovery.status;
     if(discovery.ok){
       const catalog=await discovery.json();
       const available=(Array.isArray(catalog?.models)?catalog.models:[])
         .filter((entry:{name?:string;supportedGenerationMethods?:string[]})=>entry?.supportedGenerationMethods?.includes("generateContent")&&typeof entry.name==="string")
         .map((entry:{name:string})=>entry.name.startsWith("models/") ? entry.name.slice(7) : entry.name);
-      const fallback=["gemini-2.5-flash","gemini-2.0-flash","gemini-2.5-flash-lite","gemini-2.0-flash-lite"]
-        .find(candidate=>candidate!==model&&available.includes(candidate));
+      discoveredModels=available.filter(name=>name.startsWith("gemini-"));
+      const fallback=[...discoveredModels].sort((a,b)=>Number(b.includes("flash"))-Number(a.includes("flash"))).find(candidate=>candidate!==model);
       if(fallback){selectedModel=fallback;response=await generate(selectedModel);}
     }
   }
   if(!response.ok){
     const failure=await response.json().catch(()=>null);
     const reason=typeof failure?.error?.status==="string"?failure.error.status:"UNKNOWN";
+    providerMessage=typeof failure?.error?.message==="string"?failure.error.message:"";
+    const hint=providerMessage.includes("not found for API version")?"Model unsupported by API version":providerMessage.includes("not supported for generateContent")?"Model does not support text generation":providerMessage.includes("not found")?"Model not found":"";
     const codes:Record<number,string>={400:"Invalid model or request configuration",401:"Invalid Gemini API key",403:"API key access or permissions denied",404:"No supported Gemini text model is available for this API key",429:"Gemini quota or rate limit exceeded",500:"Gemini service error",503:"Gemini temporarily unavailable"};
-    console.error("AGRIVA Gemini draft failure",{httpStatus:response.status,providerCode:reason,model:selectedModel});
-    return NextResponse.json({error:(codes[response.status]||"Gemini provider request failed")+" (HTTP "+response.status+", "+reason+").",providerStatus:response.status,providerCode:reason},{status:502});
+    console.error("AGRIVA Gemini draft failure",{httpStatus:response.status,providerCode:reason,model:selectedModel,discoveryStatus,availableCount:discoveredModels.length,hint});
+    return NextResponse.json({error:(codes[response.status]||"Gemini provider request failed")+" (HTTP "+response.status+", "+reason+")."+(hint?" "+hint+".":"")+(discoveryStatus!==null?" Model discovery HTTP "+discoveryStatus+", available models: "+discoveredModels.length+".":""),providerStatus:response.status,providerCode:reason},{status:502});
   }
   const data=await response.json();
   const article=(data?.candidates?.[0]?.content?.parts??[]).map((part:{text?:string})=>part.text??"").join("").trim();
