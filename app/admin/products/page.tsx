@@ -33,7 +33,7 @@ async function saveProduct(formData: FormData) {
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
   const subcategoryEntry = categorySlug && subcategorySlug ? getSubcategory(categorySlug, subcategorySlug) : undefined;
   if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 ||
-      !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
+      !Number.isInteger(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
       !["draft", "active", "paused", "sold_out"].includes(status) ||
       (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
     redirect("/admin/products?notice=invalid");
@@ -89,7 +89,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   if (searchTerm) filteredQuery = filteredQuery.ilike("name", `%${searchTerm}%`);
   const { data: products, error } = await filteredQuery.range((page - 1) * pageSize, page * pageSize - 1);
   const { count: totalCount } = await supabase.from("products").select("id", { count: "exact", head: true }).is("deleted_at", null);
-  const selectedProduct = (products ?? []).find(p => p.id === editId);
+  const { data: editProduct } = editId && /^[0-9a-f-]{36}$/i.test(editId) ? await supabase.from("products").select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku").eq("id",editId).maybeSingle() : { data: null };
+  const selectedProduct = editProduct && (activeStatus === "trash" ? Boolean(editProduct.deleted_at) : !editProduct.deleted_at) ? editProduct : null;
   const queryString = (changes: Record<string, string>) => {
     const params = new URLSearchParams({ status: activeStatus, q: searchTerm, page: String(page), ...changes });
     return `/admin/products?${params.toString()}`;
@@ -116,12 +117,12 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       {selectedProduct && <div className="mt-7 flex items-center justify-between"><h2 className="text-xl font-black">পণ্য সম্পাদনা: {selectedProduct.name}</h2><Link href={queryString({ edit: "" })} className="rounded-xl border px-4 py-2 text-sm font-bold">Close editor</Link></div>}
       <div className="mt-5 grid min-w-0 gap-4">{(selectedProduct ? [selectedProduct] : []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id.slice(0, 8)}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id?.slice(0, 8) ?? "—"}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
         <div className="grid min-w-0 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">Product URL Slug<input name="slug" required maxLength={100} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" defaultValue={p.slug ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
-          <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
+          <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="1" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category}/>
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
