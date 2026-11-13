@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
-type Entry = { id:string; display_name:string; crop:string; district:string|null; disease:string; confidence:string; image_path:string|null; published_at:string };
+type Entry = { id:string; slug:string; display_name:string; crop:string; district:string|null; disease:string; confidence:string; image_path:string|null; published_at:string };
 async function findEntry(id:string): Promise<Entry|null> {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
+  const isUuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (!isUuid && !/^[a-z0-9]+(?:-[a-z0-9]+)*-[0-9a-f]{12}$/.test(id)) return null;
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL, key=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) return null;
   const db=createClient(url,key,{auth:{persistSession:false}});
-  const {data,error}=await db.from("crop_health_feed").select("id,display_name,crop,district,disease,confidence,image_path,published_at").eq("id",id).maybeSingle();
+  const {data,error}=await db.from("crop_health_feed").select("id,slug,display_name,crop,district,disease,confidence,image_path,published_at").eq(isUuid?"id":"slug",id).maybeSingle();
   return error ? null : data;
 }
 function imageUrl(entry:Entry) {
@@ -25,12 +26,13 @@ export async function generateMetadata({params}:{params:Promise<{id:string}>}):P
   if (!item) return {title:"বিশ্লেষণ পাওয়া যায়নি",robots:{index:false,follow:false}};
   const title=`${item.crop} ফসলের ${item.disease} — AI বিশ্লেষণ | AGRIVA`;
   const description=`${item.district ? item.district+" জেলার " : ""}${item.crop} ফসলের সম্ভাব্য সমস্যা: ${item.disease}। AGRIVA Crop Health Feed-এ ব্যবহারকারীর অনুমোদিত ছবি ও প্রাথমিক AI বিশ্লেষণ দেখুন। নিশ্চিত রোগ নির্ণয় নয়।`;
-  const canonical=`${base}/crop-disease/feed/${id}`, img=imageUrl(item);
+  const canonical=`${base}/crop-disease/feed/${item.slug}`, img=imageUrl(item);
   return {title,description,alternates:{canonical},robots:{index:true,follow:true,googleBot:{"max-image-preview":"large"}},openGraph:{type:"article",url:canonical,title,description,locale:"bn_BD",publishedTime:item.published_at,images:img?[{url:img,alt:`${item.crop} ফসলের সম্ভাব্য ${item.disease} — AGRIVA`}]:[]},twitter:{card:img?"summary_large_image":"summary",title,description,images:img?[img]:[]}};
 }
 export default async function PublicCropDiagnosis({params}:{params:Promise<{id:string}>}) {
   const {id}=await params,item=await findEntry(id);
   if (!item) notFound();
+  if (id !== item.slug) permanentRedirect(`/crop-disease/feed/${item.slug}`);
   const img=imageUrl(item), canonical=`${base}/crop-disease/feed/${id}`;
   const schema={"@context":"https://schema.org","@type":"Article",headline:`${item.crop} ফসলের ${item.disease} — প্রাথমিক AI বিশ্লেষণ`,description:`AGRIVA Crop Health Feed-এ স্বেচ্ছায় প্রকাশিত সম্ভাব্য রোগ বিশ্লেষণ; নিশ্চিত রোগ নির্ণয় নয়।`,datePublished:item.published_at,inLanguage:"bn-BD",mainEntityOfPage:canonical,publisher:{"@type":"Organization",name:"AGRIVA",url:base},...(img?{image:[img]}:{})};
   return <main className="mx-auto max-w-3xl px-4 py-10">
