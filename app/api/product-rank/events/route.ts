@@ -9,7 +9,7 @@ const ROBOT = /bot|crawler|spider|headless|lighthouse|preview|facebookexternalhi
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
-  if (origin && new URL(origin).origin !== request.nextUrl.origin) {
+  if (origin && origin !== request.nextUrl.origin) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   if (request.headers.get("sec-gpc") === "1" || request.headers.get("dnt") === "1") {
