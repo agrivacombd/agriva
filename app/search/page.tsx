@@ -103,6 +103,18 @@ function SmartSearchContent() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState("");
   const suggestionRequest = useRef<AbortController | null>(null);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dismissOutside = (event: PointerEvent) => {
+      if (event.target instanceof Node && !searchBoxRef.current?.contains(event.target)) {
+        setFocused(false);
+        setSuggestionsOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", dismissOutside);
+    return () => document.removeEventListener("pointerdown", dismissOutside);
+  }, []);
 
   useEffect(() => {
     setQuery(urlQuery);
@@ -208,7 +220,7 @@ function SmartSearchContent() {
           <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">আগে AGRIVA-এর পণ্য ও গাইডে খুঁজুন। চাইলে আলাদাভাবে AI-কে প্রশ্ন করুন। সাধারণ সার্চে AI API ব্যবহার হয় না।</p>
         </div>
 
-        <div className="relative mt-7">
+        <div ref={searchBoxRef} className="relative mt-7">
           <form role="search" onSubmit={submit} className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex min-h-14 min-w-0 flex-1 items-center rounded-2xl border border-emerald-200 bg-white shadow-sm focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100">
               <Search size={20} className="ml-4 shrink-0 text-emerald-700" aria-hidden="true" />
@@ -220,7 +232,6 @@ function SmartSearchContent() {
                 onChange={(event) => { setQuery(event.target.value); setSuggestionsOpen(true); }}
                 onFocus={() => { setFocused(true); setSuggestionsOpen(true); }}
                 onKeyDown={(event) => { if (event.key === "Escape") setSuggestionsOpen(false); }}
-                onBlur={() => { setFocused(false); }}
                 aria-label="AGRIVA-তে পণ্য ও কৃষি তথ্য খুঁজুন"
                 aria-autocomplete="list"
                 autoComplete="off"
