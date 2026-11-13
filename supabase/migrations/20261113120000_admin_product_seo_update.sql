@@ -17,8 +17,8 @@ BEGIN
     OR length(coalesce(p_image_alt,'')) > 180
     OR coalesce(array_length(p_seo_keywords,1),0) > 8
     OR coalesce(array_length(p_highlights,1),0) > 5
-    OR EXISTS (SELECT 1 FROM unnest(coalesce(p_seo_keywords,'{}'::text[])) v WHERE length(v) > 120)
-    OR EXISTS (SELECT 1 FROM unnest(coalesce(p_highlights,'{}'::text[])) v WHERE length(v) > 120)
+    OR EXISTS (SELECT 1 FROM unnest(coalesce(p_seo_keywords,'{}'::text[])) AS keyword(value) WHERE length(keyword.value) > 120)
+    OR EXISTS (SELECT 1 FROM unnest(coalesce(p_highlights,'{}'::text[])) AS highlight(value) WHERE length(highlight.value) > 120)
   THEN RAISE EXCEPTION 'Invalid SEO fields'; END IF;
   UPDATE public.products SET
     seo_title = nullif(trim(coalesce(p_seo_title,'')),''),
