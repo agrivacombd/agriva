@@ -6,13 +6,13 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("crop_health_feed")
-    .select("id,display_name,crop,district,disease,confidence,image_path,published_at")
+    .select("id,slug,display_name,crop,district,disease,confidence,image_path,published_at")
     .order("published_at", { ascending: false }).limit(30);
   if (error) return NextResponse.json({ error: "ফিড লোড করা যায়নি।" }, { status: 503 });
   const { data: { publicUrl } } = supabase.storage.from("crop-health-feed").getPublicUrl("placeholder");
   const prefix = publicUrl.slice(0, publicUrl.lastIndexOf("/") + 1);
   return NextResponse.json({ feed: (data || []).map((item) => ({
-    id: item.id, displayName: item.display_name, crop: item.crop, district: item.district,
+    id: item.id, slug: item.slug, displayName: item.display_name, crop: item.crop, district: item.district,
     disease: item.disease, confidence: item.confidence, publishedAt: item.published_at,
     imageUrl: item.image_path ? prefix + item.image_path.split("/").map(encodeURIComponent).join("/") : null,
   })) }, { headers: { "Cache-Control": "no-store" } });
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   if (lookupError || !detection || detection.status !== "completed") return NextResponse.json({ error: "নিজের সম্পন্ন বিশ্লেষণ নির্বাচন করুন।" }, { status: 404 });
   const { data: published, error: insertError } = await supabase.from("crop_health_feed")
     .insert({ detection_id: detection.id, user_id: user.id, display_name: displayName, crop: "", disease: "", confidence: "low" })
-    .select("id,image_path").single();
+    .select("id,image_path,slug").single();
   if (insertError || !published) return NextResponse.json({ error: "প্রকাশ করা যায়নি। আগে প্রকাশিত হয়ে থাকলে ফিড দেখুন।" }, { status: 409 });
   const { data: original, error: downloadError } = await supabase.storage.from("crop-disease-photos").download(detection.image_path);
   if (downloadError || !original) {
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     await supabase.from("crop_health_feed").delete().eq("id", published.id).eq("user_id", user.id);
     return NextResponse.json({ error: "অনুমোদিত ছবি প্রকাশ করা যায়নি। আবার চেষ্টা করুন।" }, { status: 503 });
   }
-  return NextResponse.json({ published: true }, { status: 201 });
+  return NextResponse.json({ published: true, slug: published.slug }, { status: 201 });
 }
 
 export async function DELETE(request: NextRequest) {
