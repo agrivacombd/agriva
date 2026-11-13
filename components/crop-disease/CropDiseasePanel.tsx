@@ -93,6 +93,68 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
   );
 }
 
+type FeedEntry = { id: string; displayName: string; crop: string; district: string | null; disease: string; confidence: string; publishedAt: string; imageUrl: string | null };
+
+function CropHealthFeed({ history }: { history: HistoryItem[] }) {
+  const [feed, setFeed] = useState<FeedEntry[]>([]);
+  const [displayName, setDisplayName] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [selectedId, setSelectedId] = useState("");
+  const [pending, setPending] = useState(false);
+  const [message, setMessage] = useState("");
+  async function refresh() {
+    const response = await fetch("/api/crop-health-feed", { cache: "no-store" });
+    if (response.ok) { const data = await response.json(); setFeed(data.feed || []); }
+    else setMessage("পাবলিক ফিড লোড করা যায়নি।");
+  }
+  useEffect(() => { void refresh(); }, []);
+  async function publish() {
+    if (!consent || !selectedId || !displayName.trim() || pending) return;
+    setPending(true); setMessage("");
+    try {
+      const response = await fetch("/api/crop-health-feed", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ detectionId: selectedId, displayName: displayName.trim(), consent: true }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "প্রকাশ করা যায়নি।");
+      setMessage("আপনার অনুমোদিত বিশ্লেষণ ফিডে প্রকাশিত হয়েছে।");
+      setConsent(false); await refresh();
+    } catch (error) { setMessage(error instanceof Error ? error.message : "প্রকাশ করা যায়নি।"); }
+    finally { setPending(false); }
+  }
+  async function unpublish(detectionId: string) {
+    if (pending || !window.confirm("এই বিশ্লেষণ ও প্রকাশিত ছবি পাবলিক ফিড থেকে সরাতে চান?")) return;
+    setPending(true); setMessage("");
+    try {
+      const response = await fetch("/api/crop-health-feed", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ detectionId }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "সরানো যায়নি।");
+      setMessage("প্রকাশনা সরানো হয়েছে। আপনার ব্যক্তিগত ইতিহাস অক্ষত আছে।"); await refresh();
+    } catch (error) { setMessage(error instanceof Error ? error.message : "সরানো যায়নি।"); }
+    finally { setPending(false); }
+  }
+  return <section className="mt-10" aria-label="AGRIVA Crop Health Feed">
+    <p className="text-sm font-bold text-emerald-700">AGRIVA Crop Health Feed</p>
+    <h2 className="mt-1 text-2xl font-black">কৃষকদের অনুমোদিত সাম্প্রতিক বিশ্লেষণ</h2>
+    <p className="mt-2 text-sm leading-6 text-slate-600">শুধু ব্যবহারকারীর স্বেচ্ছায় প্রকাশ করা নাম, ছবি ও AI-এর সম্ভাব্য ফলাফল এখানে দেখানো হয়। এগুলো নিশ্চিত রোগ নির্ণয় নয়।</p>
+    {!!history.length && <div className="mt-5 rounded-2xl border border-emerald-100 bg-white p-4 sm:p-5">
+      <h3 className="font-extrabold">আপনার বিশ্লেষণ স্বেচ্ছায় শেয়ার করুন</h3>
+      <p className="mt-1 text-xs leading-5 text-slate-600">শেয়ার না করলে সবকিছু ব্যক্তিগত থাকবে। শেয়ার করলে আপনার দেওয়া Display Name, প্রথম ছবি, ফসল, জেলা, সম্ভাব্য রোগ ও তারিখ সবাই দেখতে পারবেন। আপনার অ্যাকাউন্ট, ফোন, ইমেইল ও ব্যক্তিগত লক্ষণের বিবরণ প্রকাশ হবে না।</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="text-sm font-semibold">Display Name<input value={displayName} maxLength={60} onChange={(event) => setDisplayName(event.target.value)} placeholder="যে নামে প্রকাশ করতে চান" className="mt-1 block w-full rounded-xl border border-slate-200 p-3" /></label>
+        <label className="text-sm font-semibold">বিশ্লেষণ নির্বাচন করুন<select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white p-3"><option value="">একটি বিশ্লেষণ নির্বাচন করুন</option>{history.map((item) => <option key={item.id} value={item.id}>{item.crop} · {new Date(item.created_at).toLocaleDateString("bn-BD")}</option>)}</select></label>
+      </div>
+      <label className="mt-4 flex items-start gap-2 text-sm leading-6"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} className="mt-1" /><span>আমি স্বেচ্ছায় নির্বাচিত বিশ্লেষণের Display Name, প্রথম ছবি ও সংক্ষিপ্ত ফলাফল সবার জন্য প্রকাশের অনুমতি দিচ্ছি। পরে প্রকাশনা সরাতে পারব।</span></label>
+      <button type="button" disabled={!consent || !selectedId || displayName.trim().length < 2 || pending} onClick={publish} className="mt-3 rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white disabled:opacity-50">{pending ? "অপেক্ষা করুন..." : "অনুমতি দিয়ে প্রকাশ করুন"}</button>
+      {message && <p role="status" className="mt-3 text-sm text-slate-700">{message}</p>}
+      <div className="mt-3 space-y-2">{history.filter((item) => feed.some((entry) => entry.id && entry.imageUrl?.includes(item.id))).map((item) => <button type="button" key={item.id} disabled={pending} onClick={() => unpublish(item.id)} className="block text-sm font-semibold text-rose-700 underline">প্রকাশনা সরান: {item.crop} ({new Date(item.created_at).toLocaleDateString("bn-BD")})</button>)}</div>
+    </div>}
+    <div className="mt-5 grid gap-4 sm:grid-cols-2">{feed.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      {item.imageUrl && <img src={item.imageUrl} alt={item.crop + " ফসলের প্রকাশিত ছবি"} loading="lazy" className="h-44 w-full bg-slate-50 object-contain" />}
+      <div className="p-4"><p className="text-sm font-bold text-emerald-800">{item.displayName}</p><p className="mt-1 text-xs text-slate-500">{item.crop}{item.district ? " · " + item.district : ""} · {new Date(item.publishedAt).toLocaleDateString("bn-BD")}</p><h3 className="mt-2 font-extrabold">{item.disease}</h3><p className="mt-1 text-xs text-slate-500">AGRIVA AI-এর প্রাথমিক বিশ্লেষণ · নিশ্চিত রোগ নির্ণয় নয়</p></div>
+    </article>)}</div>
+    {!feed.length && <p className="mt-4 rounded-xl bg-white p-5 text-sm text-slate-600">এখনও কেউ প্রকাশের অনুমতি দেননি। প্রথম বিশ্লেষণটি স্বেচ্ছায় শেয়ার করতে পারেন।</p>}
+  </section>;
+}
+
 export default function CropDiseasePanel() {
   const [photos, setPhotos] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -235,6 +297,8 @@ export default function CropDiseasePanel() {
         </section>}
 
         {result && <section className="mt-6"><div className="mb-3 flex items-center gap-2"><span aria-hidden="true">🔎</span><h2 className="text-xl font-black">বিশ্লেষণের ফলাফল</h2></div><DiagnosisCard diagnosis={result.diagnosis} /></section>}
+
+        <CropHealthFeed history={history} />
 
         <section className="mt-10">
           <div className="flex flex-wrap items-end justify-between gap-3">
