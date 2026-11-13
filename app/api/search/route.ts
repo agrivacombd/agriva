@@ -4,6 +4,7 @@ import { analyzeSearch } from "@/lib/ai/analyze";
 import { normalizeQuery } from "@/lib/ai/intent";
 import { answerAgricultureQuestion } from "@/lib/ai/respond";
 import { LESSONS } from "@/lib/learn/lessons";
+import { resolvePublicCatalogConfig } from "@/lib/search/public-catalog-config";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,9 +33,9 @@ const PUBLIC_CACHE = "public, s-maxage=60, stale-while-revalidate=300";
 const MAX_CANDIDATES = 60;
 
 function publicClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  const config = resolvePublicCatalogConfig();
+  if (!config) return null;
+  const { url, key } = config;
   // Public search must never use a privileged key or the visitor's session.
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
