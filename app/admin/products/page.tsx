@@ -68,11 +68,14 @@ async function manageProduct(formData: FormData) {
   redirect(error ? "/admin/products?notice=delete-error" : intent === "trash" ? "/admin/products?notice=trashed" : intent === "restore" ? "/admin/products?notice=restored" : "/admin/products?status=trash&notice=permanently-deleted");
 }
 
-export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string } }) {
+export default async function AdminProductsPage({ searchParams }: { searchParams?: { notice?: string; status?: string; q?: string; edit?: string; page?: string } }) {
   const supabase = await requireAdmin();
   const requestedStatus = searchParams?.status ?? "all";
   const activeStatus = ["all", "draft", "active", "paused", "sold_out", "trash"].includes(requestedStatus) ? requestedStatus : "all";
   const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
+  const page = Math.max(1, Math.min(10000, Number.parseInt(String(searchParams?.page ?? "1"), 10) || 1));
+  const pageSize = 20;
+  const editId = String(searchParams?.edit ?? "");
   const productQuery = supabase.from("products")
     .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
     .order("updated_at", { ascending: false });
@@ -83,14 +86,21 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     if (activeStatus !== "all") filteredQuery = filteredQuery.eq("status", activeStatus);
   }
   if (searchTerm) filteredQuery = filteredQuery.ilike("name", `%${searchTerm}%`);
-  const { data: products, error } = await filteredQuery.limit(500);
+  const { data: products, error } = await filteredQuery.range((page - 1) * pageSize, page * pageSize - 1);
+  const { count: totalCount } = await supabase.from("products").select("id", { count: "exact", head: true }).is("deleted_at", null);
+  const selectedProduct = (products ?? []).find(p => p.id === editId);
+  const queryString = (changes: Record<string, string>) => {
+    const params = new URLSearchParams({ status: activeStatus, q: searchTerm, page: String(page), ...changes });
+    return `/admin/products?${params.toString()}`;
+  };
 
   return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <div className="min-w-0">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, ছবি ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p></div><Link href="/admin/products" className="hidden text-xs font-semibold text-[#54705b] sm:inline-flex">সব পণ্য দেখুন</Link></div>
       {searchParams?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : searchParams.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে এবং সর্বোচ্চ ৪টি ছবি দিন।" : searchParams.notice === "description-too-long" ? "বিবরণ ২,৫০,০০০ অক্ষরের বেশি। কোনো লেখা কেটে সেভ হয়নি; বিবরণ ভাগ করে আবার চেষ্টা করুন।" : "আপডেট করা যায়নি। Product schema ও storage যাচাই করুন।"}</p>}
       {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
-      <AdminCreateProductForm />
+      <details className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-4"><summary className="cursor-pointer font-extrabold text-[#17452c]">＋ নতুন পণ্য যোগ করুন</summary><AdminCreateProductForm /></details>
+      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{[{ label: "Total products", value: totalCount ?? "—" }, { label: "Current page", value: page }, { label: "Showing", value: products?.length ?? 0 }, { label: "Page size", value: pageSize }].map(item => <div key={item.label} className="rounded-2xl border border-[#dfe8dc] bg-white p-4"><p className="text-xs font-semibold text-[#637266]">{item.label}</p><p className="mt-2 text-2xl font-black">{item.value}</p></div>)}</div>
       <form method="get" className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:flex-row">
         <input name="q" defaultValue={searchTerm} placeholder="পণ্যের নাম দিয়ে খুঁজুন..." className="min-h-11 min-w-0 flex-1 rounded-xl border px-3 py-2" />
         <select name="status" defaultValue={activeStatus} className="min-h-11 rounded-xl border bg-white px-3 py-2">
@@ -99,8 +109,11 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         <button className="min-h-11 rounded-xl bg-[#17452c] px-5 font-bold text-white">খুঁজুন / Filter</button>
         <Link href="/admin/products" className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Reset</Link>
       </form>
-      <p className="mt-3 text-sm text-[#637266]">{products?.length ?? 0}টি পণ্য দেখানো হচ্ছে · {activeStatus}</p>
-      <div className="mt-5 grid min-w-0 gap-4">{(products ?? []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
+      <p className="mt-3 text-sm text-[#637266]">Page {page} · {products?.length ?? 0}টি পণ্য · {activeStatus}</p>
+      <div className="mt-5 overflow-x-auto rounded-2xl border border-[#dfe8dc] bg-white"><table className="w-full min-w-[720px] text-left text-sm"><thead className="bg-[#f2f7ef] text-[#47604d]"><tr><th className="p-4">পণ্য</th><th className="p-4">মূল্য</th><th className="p-4">স্টক</th><th className="p-4">অবস্থা</th><th className="p-4">আপডেট</th><th className="p-4 text-right">Action</th></tr></thead><tbody>{(products ?? []).map(p => <tr key={p.id} className="border-t border-[#e7eee4] hover:bg-[#fafcf8]"><td className="p-3"><div className="flex items-center gap-3">{p.image_url ? <img src={p.image_url} alt="" className="h-12 w-12 rounded-lg object-cover" /> : <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#eef4e9] text-xs">AGRIVA</div>}<div><p className="font-bold">{p.name}</p><p className="text-xs text-[#7b887d]">{p.sku ?? p.slug}</p></div></div></td><td className="p-3 font-semibold">৳{Number(p.price).toLocaleString("en-BD")}</td><td className="p-3">{p.stock}</td><td className="p-3"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">{p.deleted_at ? "Trash" : p.status}</span></td><td className="p-3 text-xs text-[#637266]">{new Date(p.updated_at).toLocaleDateString("en-GB")}</td><td className="p-3 text-right"><Link className="rounded-lg border border-[#bcd1ba] px-3 py-2 font-bold text-[#17452c]" href={queryString({ edit: p.id })}>Edit</Link></td></tr>)}</tbody></table></div>
+      <div className="mt-4 flex items-center justify-between gap-3"><Link aria-disabled={page === 1} className={`rounded-xl border px-4 py-2 text-sm font-bold ${page === 1 ? "pointer-events-none opacity-40" : ""}`} href={queryString({ page: String(Math.max(1, page - 1)), edit: "" })}>← Previous</Link><span className="text-sm text-[#637266]">Page {page}</span><Link aria-disabled={(products?.length ?? 0) < pageSize} className={`rounded-xl border px-4 py-2 text-sm font-bold ${(products?.length ?? 0) < pageSize ? "pointer-events-none opacity-40" : ""}`} href={queryString({ page: String(page + 1), edit: "" })}>Next →</Link></div>
+      {selectedProduct && <div className="mt-7 flex items-center justify-between"><h2 className="text-xl font-black">পণ্য সম্পাদনা: {selectedProduct.name}</h2><Link href={queryString({ edit: "" })} className="rounded-xl border px-4 py-2 text-sm font-bold">Close editor</Link></div>}
+      <div className="mt-5 grid min-w-0 gap-4">{(selectedProduct ? [selectedProduct] : []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
         <input type="hidden" name="productId" value={p.id}/>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id.slice(0, 8)}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
         <div className="grid min-w-0 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
