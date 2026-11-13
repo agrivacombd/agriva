@@ -23,6 +23,7 @@ export async function PATCH(request: NextRequest) {
     console.error("Admin product SEO save failed", { code: error.code || "unknown" });
     return NextResponse.json({ error: "Unable to save SEO fields. Check database migration and permissions." }, { status: error.code === "42501" ? 403 : 500 });
   }
+  if (!data || typeof data.slug !== "string") return NextResponse.json({ error: "SEO update returned no product." }, { status: 500 });
   revalidatePath("/marketplace/" + data.slug);
   revalidatePath("/admin/products");
   revalidatePath("/sitemap.xml");
