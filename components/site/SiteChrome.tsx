@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import VisualSearchButton from "@/components/search/VisualSearchButton";
 
 const bnPrimaryLinks = [
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
@@ -88,6 +89,7 @@ function SearchForm({ english }: { english: boolean }) {
         aria-label={english ? "Search AGRIVA" : "AGRIVA-তে খুঁজুন"}
         className="h-11 min-w-0 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400"
       />
+      <VisualSearchButton english={english} />
       <button type="submit" className="sr-only">{english ? "Search" : "খুঁজুন"}</button>
     </form>
   );
