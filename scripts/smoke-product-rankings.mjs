@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL("../" + path, import.meta.url), "utf8");
 const sql = read("supabase/migrations/20261113233000_product_behavior_rankings.sql");
+const hybrid = read("supabase/migrations/20261114003000_product_rank_hybrid_retention.sql");
+const cron = read("supabase/migrations/20261114004000_product_rank_daily_cron.sql");
 const api = read("app/api/product-rank/events/route.ts");
 const tracking = read("lib/marketplace/product-rank-tracking.ts");
 const core = read("components/marketplace/MarketplaceCore.tsx");
@@ -60,3 +62,26 @@ for (const [label,source,func] of [
 assert.match(marketDetail,/ProductClickTracker market="marketplace" productId=\{product\.id\}/);
 assert.match(plantDetail,/ProductClickTracker market="plant-market" productId=\{product\.id\}/);
 console.log("Product behaviour ranking and anti-abuse source checks passed.");
+
+for (const token of [
+  "public.product_rank_daily_metrics",
+  "primary key (market, product_id, metric_date)",
+  "metric_date >= current_date - 29",
+  "occurred_on = current_date",
+  "on conflict (market, product_id, metric_date) do update",
+  "where occurred_on < current_date - 34",
+  "where metric_date < current_date - 364",
+  "coalesce(delivered_at, updated_at, created_at)",
+  "coalesce(o.updated_at, o.created_at)",
+]) assert.ok(hybrid.includes(token), "Missing hybrid SQL: " + token);
+assert.ok(hybrid.includes("event_type in ('impression', 'click', 'listing_click')"));
+assert.match(hybrid,/revoke all on public\.product_rank_daily_metrics from public, anon, authenticated/);
+assert.match(hybrid,/revoke all on function public\.maintain_product_rank_history\(\)/);
+assert.match(hybrid,/create or replace function public\.maintain_product_rank_history/);
+assert.match(cron,/cron\.schedule/);
+assert.match(cron,/30 20 \* \* \*/);
+assert.match(cron,/maintain_product_rank_history/);
+assert.ok(api.includes('event.event_type === "listing_click"'));
+assert.ok(tracking.includes('export type ProductRankEvent = "impression" | "click" | "listing_click";'));
+assert.ok(core.includes("onClick={recordListingClick}"));
+console.log("Hybrid retention and attributed listing clicks source checks passed.");

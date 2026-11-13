@@ -1,7 +1,7 @@
 "use client";
 
 export type ProductRankMarket = "marketplace" | "plant-market";
-export type ProductRankEvent = "impression" | "click";
+export type ProductRankEvent = "impression" | "click" | "listing_click";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
