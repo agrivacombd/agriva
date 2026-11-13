@@ -94,8 +94,8 @@ function DiagnosisCard({ diagnosis }: { diagnosis: Diagnosis }) {
 }
 
 export default function CropDiseasePanel() {
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
+  const [photos, setPhotos] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [crop, setCrop] = useState("ধান");
   const [location, setLocation] = useState("");
   const [symptoms, setSymptoms] = useState("");
@@ -127,28 +127,37 @@ export default function CropDiseasePanel() {
   }, []);
 
   function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
-    const next = event.target.files?.[0] || null;
+    const selected = Array.from(event.target.files || []);
     setError("");
     setResult(null);
-    if (preview) URL.revokeObjectURL(preview);
-    if (!next) {
-      setPhoto(null);
-      setPreview("");
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    if (selected.length > 4) {
+      setPhotos([]);
+      setPreviews([]);
+      event.target.value = "";
+      setError("সর্বোচ্চ ৪টি ছবি নির্বাচন করুন।");
       return;
     }
-    setPhoto(next);
-    setPreview(URL.createObjectURL(next));
+    if (selected.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size < 1 || file.size > 5 * 1024 * 1024)) {
+      setPhotos([]);
+      setPreviews([]);
+      event.target.value = "";
+      setError("প্রতিটি ছবি JPG, PNG বা WebP এবং সর্বোচ্চ ৫ MB হতে হবে।");
+      return;
+    }
+    setPhotos(selected);
+    setPreviews(selected.map((file) => URL.createObjectURL(file)));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!photo || busy || authStatus !== "authenticated") return;
+    if (!photos.length || busy || authStatus !== "authenticated") return;
     setBusy(true);
     setError("");
     setResult(null);
     try {
       const form = new FormData();
-      form.set("photo", photo);
+      photos.forEach((photo) => form.append("photo", photo));
       form.set("crop", crop);
       form.set("location", location);
       form.set("symptoms", symptoms);
@@ -193,9 +202,10 @@ export default function CropDiseasePanel() {
                 <textarea id="symptoms" value={symptoms} onChange={(event) => setSymptoms(event.target.value)} maxLength={1000} rows={4} placeholder="যেমন: পাতায় বাদামি দাগ, পাতা হলুদ হয়ে যাচ্ছে..." className="w-full rounded-xl border border-slate-200 px-4 py-3" />
               </div>
               <div>
-                <label htmlFor="photo" className="mb-2 block text-sm font-bold text-slate-800">ফসলের ছবি (JPG, PNG বা WebP; সর্বোচ্চ ৫ MB)</label>
-                <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} required className="block w-full rounded-xl border border-slate-200 p-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:font-bold file:text-emerald-900" />
-                {preview ? <img src={preview} alt="আপলোডের জন্য নির্বাচিত ফসলের ছবি" className="mt-3 max-h-72 w-full rounded-2xl border border-slate-200 object-contain" /> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">পরিষ্কার আলোতে আক্রান্ত অংশের কাছ থেকে ছবি তুলুন। সম্ভব হলে পুরো গাছ ও আক্রান্ত অংশের আলাদা ছবি তুলুন—প্রতিবার একটি ছবি বিশ্লেষণ করা যাবে।</div>}
+                <label htmlFor="photo" className="mb-2 block text-sm font-bold text-slate-800">ফসলের ছবি (১–৪টি; প্রতি ছবি সর্বোচ্চ ৫ MB)</label>
+                <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} multiple required className="block w-full rounded-xl border border-slate-200 p-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:font-bold file:text-emerald-900" />
+                {previews.length ? <div className="mt-3 grid grid-cols-2 gap-3" aria-label="নির্বাচিত ছবির প্রিভিউ">{previews.map((url, index) => <div key={url} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"><img src={url} alt={`নির্বাচিত ফসলের ছবি ${index + 1}`} className="h-36 w-full object-contain" /><p className="truncate px-2 py-1 text-center text-xs text-slate-600">{index + 1}. {photos[index]?.name}</p></div>)}</div> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">একই সমস্যার সর্বোচ্চ ৪টি ছবি দিন—পুরো গাছ, আক্রান্ত অংশের ক্লোজআপ, পাতা এবং কাণ্ড বা শীষ। সব ছবি একসঙ্গে বিশ্লেষণ করা হবে।</div>}
+                <p className="mt-2 text-xs text-slate-600">নির্বাচিত: {photos.length}/৪টি ছবি · JPG, PNG বা WebP</p>
               </div>
             </div>
             <aside aria-label="AGRIVA AI কৃষি সহায়তা সম্পর্কে" className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5 text-sm leading-6 text-slate-700">
@@ -220,7 +230,7 @@ export default function CropDiseasePanel() {
               </div>
             </aside>
             {error && <p role="alert" className="rounded-xl bg-rose-50 p-4 text-sm leading-6 text-rose-800">{error} {error.includes("লগইন") || error.includes("লগ ইন") ? <Link href="/login" className="font-bold underline">লগইন করুন</Link> : null}</p>}
-            <button type="submit" disabled={!photo || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
+            <button type="submit" disabled={!photos.length || busy} className="w-full rounded-xl bg-emerald-800 px-5 py-3.5 font-extrabold text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">{busy ? "ছবি বিশ্লেষণ হচ্ছে..." : "ছবি বিশ্লেষণ করুন"}</button>
           </form>
         </section>}
 
