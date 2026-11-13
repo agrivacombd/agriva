@@ -13,6 +13,11 @@ type Diagnosis = {
   disease: string;
   confidence: "low" | "medium" | "high";
   confidenceNote: string;
+  imageQuality: "good" | "limited" | "unusable";
+  imageQualityNote: string;
+  alternativeDiagnoses: string[];
+  followUpQuestions: string[];
+  needsMorePhotos: boolean;
   symptoms: string[];
   possibleCauses: string[];
   immediateActions: string[];
@@ -47,6 +52,11 @@ function cleanDiagnosis(raw: unknown, cropFallback: string): Diagnosis {
     disease: stringValue("disease", "ছবি থেকে নির্দিষ্ট রোগ নিশ্চিত করা যায়নি"),
     confidence,
     confidenceNote: stringValue("confidenceNote", "ছবির ভিত্তিতে অনুমান; নিশ্চিত রোগ নির্ণয় নয়।"),
+    imageQuality: value.imageQuality === "good" || value.imageQuality === "limited" ? value.imageQuality : "unusable",
+    imageQualityNote: stringValue("imageQualityNote", "ছবির স্পষ্টতা ও লক্ষণ যাচাই করুন।"),
+    alternativeDiagnoses: stringList("alternativeDiagnoses"),
+    followUpQuestions: stringList("followUpQuestions"),
+    needsMorePhotos: value.needsMorePhotos !== false,
     symptoms: stringList("symptoms"),
     possibleCauses: stringList("possibleCauses"),
     immediateActions: stringList("immediateActions"),
@@ -122,14 +132,20 @@ export async function POST(request: NextRequest) {
 
     const model = (process.env.OPENAI_CROP_DISEASE_MODEL || "gpt-4.1-mini").trim();
     const prompt = [
-      "You are a cautious agricultural triage assistant for farmers in Bangladesh. Analyze this crop photo and respond in Bengali.",
-      "Do not claim certainty from a photo. If the image is unclear, disease is not visible, or the image is not a crop, say so.",
-      "Do not prescribe pesticide brands, exact chemical doses, or unsafe mixtures. Prefer non-chemical IPM steps and recommend local agricultural officers for confirmation.",
-      "Crop supplied by user: " + crop,
-      "Location supplied by user: " + (location || "not supplied"),
-      "Additional symptoms supplied by user: " + (symptoms || "not supplied"),
-      "Return only valid JSON with keys crop, disease, confidence (low|medium|high), confidenceNote, symptoms (string array), possibleCauses (string array), immediateActions (string array), prevention (string array), whenToSeekHelp, disclaimer.",
-      "Keep each list to at most 5 practical, cautious points. If uncertain, set confidence to low.",
+      "You are AGRIVA's cautious crop-health visual triage assistant for Bangladesh. Answer in clear Bengali.",
+      "Analyze the ACTUAL visual evidence: plant part, lesion shape, margin, color, distribution, wilting, insect signs and context. Report only genuinely visible findings. Never invent signs.",
+      "Assess imageQuality as good, limited, or unusable first. For blurry, distant, wrong-subject or unclear images do NOT guess a disease. Ask for close-up and whole-plant images.",
+      "Treat selected crop, district and user symptoms as hints, not proof. Explicitly note mismatches between image and selected crop.",
+      "Consider differential diagnoses including fungal, bacterial, viral, pest, nutrient and abiotic injury ONLY where visual signs support them. Avoid generic unrelated lists.",
+      "Calibrate confidence: high only for strongly distinctive visual signs; medium for overlapping signs; low for weak or incomplete evidence. High never means laboratory confirmation.",
+      "Never automatically call brown lesions leaf spot. In rice, distinguish panicle versus leaf and consider blast, brown spot, bacterial blight, sheath blight, insects and abiotic stress only if characteristic features fit.",
+      "If image evidence is insufficient, set disease to 'রোগ নির্দিষ্টভাবে শনাক্ত করা যায়নি', confidence low, needsMorePhotos true, and ask targeted follow-up questions.",
+      "Avoid chemical recommendations, pesticide brands, dosages and unsafe mixtures. Give safe practical IPM and refer to local agricultural extension for confirmation.",
+      "Crop selected: " + crop,
+      "District: " + (location || "not supplied"),
+      "User symptoms: " + (symptoms || "not supplied"),
+      "Return valid JSON only with crop, disease, confidence (low|medium|high), confidenceNote, imageQuality (good|limited|unusable), imageQualityNote, alternativeDiagnoses (array), followUpQuestions (array), needsMorePhotos (boolean), symptoms (visible-only array), possibleCauses (array), immediateActions (array), prevention (array), whenToSeekHelp, disclaimer.",
+      "Limit lists to five concise, crop-specific items. Do not invent unseen symptoms.",
     ].join("\n");
 
     const modelResponse = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -177,6 +193,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "AI উত্তরটি পড়া যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।" }, { status: 502 });
     }
     const diagnosis = cleanDiagnosis(parsed, crop);
+    if (diagnosis.imageQuality === "unusable") {
+      diagnosis.confidence = "low";
+      diagnosis.disease = "ছবি থেকে রোগ নির্দিষ্টভাবে শনাক্ত করা যায়নি";
+      diagnosis.needsMorePhotos = true;
+    }
+    if (diagnosis.imageQuality === "limited" && diagnosis.confidence === "high") diagnosis.confidence = "medium";
+    if (diagnosis.confidence === "low" && !diagnosis.followUpQuestions.length) diagnosis.followUpQuestions = ["আক্রান্ত অংশের কাছ থেকে পরিষ্কার ছবি দিতে পারবেন?", "সমস্যাটি কতদিন ধরে দেখা যাচ্ছে এবং কতগুলো গাছে ছড়িয়েছে?"];
 
     const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : "webp";
     uploadedPath = user.id + "/" + crypto.randomUUID() + "." + extension;
