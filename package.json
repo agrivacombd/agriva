@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test:smart-search": "node scripts/smoke-smart-search.mjs",
+    "test:product-rankings": "node scripts/smoke-product-rankings.mjs",
     "test:taxonomy": "node scripts/smoke-taxonomy.mjs",
     "test:job-application-security": "node scripts/smoke-job-application-security.mjs",
     "test:jobs-data-unavailable": "node scripts/smoke-jobs-data-unavailable.mjs",
