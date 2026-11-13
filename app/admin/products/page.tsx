@@ -79,7 +79,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const pageSize = 20;
   const editId = String(params?.edit ?? "");
   const productQuery = supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku,seo_title,seo_description,focus_keyword,seo_keywords,highlights,image_alt")
     .order("updated_at", { ascending: false });
   let filteredQuery = productQuery;
   if (activeStatus === "trash") filteredQuery = filteredQuery.not("deleted_at", "is", null);
@@ -129,7 +129,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>
           <AdminProductDescriptionEditor value={sanitizeProductDescription(p.description ?? "")} productName={p.name} />
-          <AdminProductAiSeo productId={p.id}/>
+          <AdminProductAiSeo productId={p.id} initialSeo={{ seo_title: p.seo_title || "", seo_description: p.seo_description || "", focus_keyword: p.focus_keyword || "", seo_keywords: p.seo_keywords || [], highlights: p.highlights || [], image_alt: p.image_alt || "" }}/>
           <AdminProductImages productId={p.id} initialUrls={[...(Array.isArray(p.image_urls) ? p.image_urls : []), ...(p.image_url ? [p.image_url] : [])].filter((value, index, all) => all.indexOf(value) === index).slice(0, 4)}/>
         </div>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")} {p.sku ? `· SKU ${p.sku}` : ""}</p>
