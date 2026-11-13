@@ -18,6 +18,8 @@ assert.match(rpc, /product\.seo_updated/);
 assert.match(rpc, /deleted_at IS NULL/);
 assert.doesNotMatch(rpc, /status\s*=/);
 assert.match(ui, /reviewConfirmed/);
+assert.match(ui, /useState<Suggestion \| null>\(null\)/);
+assert.match(ui, /!suggestion \|\| saving \|\| !reviewConfirmed/);
 assert.match(ui, /disabled=\{saving \|\| loading \|\| !reviewConfirmed\}/);
 assert.match(page, /const params = await searchParams/);
 assert.match(page, /Number\.isInteger\(stock\)/);
