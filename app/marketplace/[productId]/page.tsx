@@ -281,13 +281,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <h1 id="product-title" className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:mt-5 sm:text-3xl lg:text-4xl">{product.name}</h1>
-            <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-slate-600 sm:mt-4 sm:line-clamp-3 sm:text-base sm:leading-7">
-              {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
-            </p>
-            {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-5 rounded-2xl border bg-white p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
-            {product.usage_instructions && <section className="mt-4 rounded-2xl bg-emerald-50 p-4"><h2 className="font-black">ব্যবহার ও প্রয়োগ নির্দেশনা</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{product.usage_instructions}</p></section>}
-            {(product.brand || product.origin) && <p className="mt-3 text-sm text-slate-600">{product.brand ? "ব্র্যান্ড: " + product.brand : ""}{product.brand && product.origin ? " · " : ""}{product.origin ? "উৎপত্তিস্থল: " + product.origin : ""}</p>}
-
             <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:mt-6 sm:rounded-2xl sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">বর্তমান তালিকাভুক্ত মূল্য</p>
               <p className="mt-1 text-2xl font-black text-emerald-950 sm:text-3xl">{isSample && product.price !== null ? "নমুনা মূল্য · " : ""}{formattedPrice}</p>
@@ -296,6 +289,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {hasStock && !isSample && <span className="rounded-lg bg-white px-3 py-2 text-slate-600">স্টক: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : " (একক উল্লেখ নেই)"}</span> }
               </div>
             </div>
+
+            <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-slate-600 sm:mt-4 sm:line-clamp-3 sm:text-base sm:leading-7">
+              {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
+            </p>
+            {(product.brand || product.origin) && <p className="mt-2 text-xs text-slate-600 sm:mt-3 sm:text-sm">{product.brand ? "ব্র্যান্ড: " + product.brand : ""}{product.brand && product.origin ? " · " : ""}{product.origin ? "উৎপত্তিস্থল: " + product.origin : ""}</p>}
 
             <div className="mt-3 sm:mt-6">
               {isSample ? (
@@ -306,6 +304,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
             <a href="#product-details" className="mt-3 inline-flex min-h-10 w-fit items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">পণ্যের বিস্তারিত দেখুন ↓</a>
+            {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-4 rounded-xl border border-emerald-100 bg-white p-3 sm:mt-5 sm:rounded-2xl sm:p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
+            {product.usage_instructions && <section className="mt-3 rounded-xl bg-emerald-50 p-3 sm:mt-4 sm:rounded-2xl sm:p-4"><h2 className="font-black">ব্যবহার ও প্রয়োগ নির্দেশনা</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{product.usage_instructions}</p></section>}
+
           </div>
         </section>
 
