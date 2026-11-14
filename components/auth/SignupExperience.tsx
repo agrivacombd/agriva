@@ -146,9 +146,7 @@ export default function SignupExperience({ embedded = false, returnTo }: { embed
             ? "ইমেইল পাঠানোর সীমা পূর্ণ হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।"
             : "Email sending limit reached. Please wait before trying again."
           : errorMessage
-        : error
-          ? t.error
-          : safeReturnTo
+        : safeReturnTo
             ? (language === "bn"
                 ? "ইমেইলে পাঠানো verification link খুলুন। নিশ্চিত করার পর একই পণ্যের পেজে ফিরে এসে কার্টে যোগ হবে।"
                 : "Check the confirmation link in your email. You will return to the same product to complete the cart action.")
