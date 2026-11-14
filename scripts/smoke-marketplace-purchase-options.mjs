@@ -52,6 +52,24 @@ assert.ok(purchase.includes('window.location.hash === "#product-direct-cod"'), "
 
 assert.ok(!purchase.includes("p_quantity: 1"), "Cart selection must never be silently reset to one");
 assert.ok(!purchase.includes("quantity: 1"), "Buy Now selection must never be silently reset to one");
+for (const required of [
+  'select("id,name,slug,image_url,unit,price,stock,status")',
+  "item.image_url",
+  "item.slug",
+  "unitLabel",
+  "item.qty + 1",
+  "item.qty - 1",
+  "item.price * item.qty",
+  "পণ্যের মোট মূল্য",
+  "ডেলিভারি চার্জ",
+  "Checkout-এ যাচাই করুন",
+  "প্রযোজ্য নয়",
+  "invalidCart",
+]) {
+  assert.ok(cart.includes(required), "Cart UX must show real catalogue data and safe totals: " + required);
+}
+assert.ok(!cart.includes("৳ 100") && !cart.includes("৳100") && !cart.includes("650"), "Cart must not fabricate image-reference delivery or discount values");
+
 assert.ok(route.includes("Number.isSafeInteger(quantity)") && route.includes("quantity > 100"), "API must validate quantity bounds");
 assert.ok(route.includes("p_quantity: quantity"), "API must forward the chosen quantity to the secure RPC");
 assert.ok(migration.includes("next_quantity > least(product_row.stock, 100)"), "Cart RPC must enforce live stock and max quantity");
