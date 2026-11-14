@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -125,8 +126,8 @@ export default function PwaRegister() {
           aria-label="AGRIVA অ্যাপ ইনস্টল করুন"
           className="fixed bottom-4 left-4 right-4 z-[100] mx-auto flex max-w-lg items-center gap-3 rounded-2xl border border-emerald-100 bg-white p-4 text-gray-900 shadow-xl"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">
-            🌱
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white" aria-hidden="true">
+            <Image src="/branding/agriva-app-icon-192.png" width={44} height={44} alt="" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">AGRIVA ফোনে ইনস্টল করুন</p>

@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, Minus, Plus, ShoppingBag, Trash2, Truck } from
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 type Item = {
   id: string;
@@ -195,6 +196,7 @@ export default function Checkout() {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
       return;
     }
+    trackMetaEvent("InitiateCheckout", { currency: "BDT", value: subtotal, content_type: "product", content_ids: items.map(item => item.product_id), num_items: totalUnits });
     setBusy(true);
     setMessage("");
     if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID();
@@ -217,6 +219,9 @@ export default function Checkout() {
       setConfirmed(true);
       window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setOrderId(String(result.orderId ?? ""));
+      if (result.orderId && Number.isFinite(Number(result.total))) {
+        trackMetaEvent("Purchase", { currency: "BDT", value: Number(result.total), content_type: "product", content_ids: items.map(item => item.product_id), num_items: totalUnits }, String(result.orderId));
+      }
       setItems([]);
       const billedTotal = Number(result.total);
       setMessage(Number.isFinite(billedTotal)

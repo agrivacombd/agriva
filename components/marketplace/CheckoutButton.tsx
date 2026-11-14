@@ -7,6 +7,7 @@ import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 type Props = {
@@ -106,6 +107,7 @@ export default function CheckoutButton({
       trackAnalyticsEvent("add_to_cart", {
         currency: "BDT", item_id: productId, quantity: requestedQuantity, value: unitPrice * requestedQuantity,
       });
+      trackMetaEvent("AddToCart", { currency: "BDT", value: unitPrice * requestedQuantity, content_type: "product", content_ids: [productId], num_items: requestedQuantity });
       setCartAdded(true);
       window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setMessage(numberBN(requestedQuantity) + " " + unitLabel + " কার্টে যোগ হয়েছে।");
@@ -130,6 +132,7 @@ export default function CheckoutButton({
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
+    trackMetaEvent("InitiateCheckout", { currency: "BDT", value: unitPrice * quantity, content_type: "product", content_ids: [productId], num_items: quantity });
     directCheckoutInFlightRef.current = true;
     setLoading(true);
     setLoginRequired(false);
@@ -166,6 +169,9 @@ export default function CheckoutButton({
         item_id: productId,
         quantity,
       });
+      if (data.orderId && Number.isFinite(orderTotal)) {
+        trackMetaEvent("Purchase", { currency: "BDT", value: orderTotal, content_type: "product", content_ids: [productId], num_items: quantity }, confirmedId);
+      }
       setMessage("অর্ডার সফল হয়েছে। " + (Number.isFinite(orderTotal) ? "মোট মূল্য ৳" + numberBN(orderTotal) + "।" : "অর্ডার নম্বরটি সংরক্ষণ করুন।"));
     } catch {
       setMessage("সংযোগে সমস্যা হয়েছে। অর্ডারটি তৈরি হয়েছে কি না যাচাই করে আবার চেষ্টা করুন।");
