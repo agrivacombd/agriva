@@ -26,9 +26,9 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
 
   return (
     <>
-      <div className="flex w-full max-w-[560px] flex-col items-center gap-2 sm:gap-3">
+      <div className="flex w-full min-w-0 flex-col items-center gap-2 sm:gap-3">
         <div
-          className="group relative w-full overflow-hidden rounded-2xl bg-white"
+          className="group relative w-full overflow-hidden rounded-xl border border-slate-100 bg-white"
           onMouseEnter={() => setHovering(true)}
           onMouseLeave={() => setHovering(false)}
           onMouseMove={updateOrigin}
