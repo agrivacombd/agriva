@@ -30,6 +30,8 @@ jobs:
         run: npm run test:auth-refresh-token
       - name: Persisted privacy consent regression test
         run: npm run test:analytics-instrumentation
+      - name: Direct COD shipping and ad landing readiness regression
+        run: node scripts/smoke-direct-cod-shipping.mjs
       - name: Meta Pixel and COD conversion regression test
         run: npm run test:meta-conversions
       - name: Smart Search smoke test syntax
