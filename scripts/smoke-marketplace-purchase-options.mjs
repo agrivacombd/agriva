@@ -34,10 +34,11 @@ for (const fragment of [
 ]) {
   assert.ok(purchase.includes(fragment), "Missing purchase-options contract: " + fragment);
 }
-for (const src of [purchase, cart, checkout]) {
-  assert.ok(src.includes('import { createSupabaseBrowserClient } from "@/lib/supabase/browser"'), "Purchase, cart and checkout must use the same SSR cookie auth as login");
+for (const src of [cart, checkout]) {
+  assert.ok(src.includes('import { createSupabaseBrowserClient } from "@/lib/supabase/browser"'), "Cart and checkout must use the cookie-based auth client");
   assert.ok(!src.includes('from "@/lib/supabase/client"'), "Legacy localStorage auth must not be used in checkout");
 }
+assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Detail purchase must use the shared guest-safe cart auth helper");
 for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "minLength={8}"]) {
   assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
 }
@@ -92,6 +93,14 @@ for (const part of ["<HeaderCartLink english={english} />", 'href="/cart"']) {
 assert.ok(headerCart.includes("CART_UPDATED_EVENT") && headerCart.includes("cart_items"), "Header cart count should use real cart rows and update on changes");
 assert.ok(catalogue.includes("setAuthReturnTo(") && catalogue.includes("MarketplaceAuthModal"), "Guest card click should open login-first modal");
 assert.ok(purchase.includes("setAuthPopupOpen(true)") && purchase.includes("MarketplaceAuthModal"), "Guest product click should open modal");
+const cartAuth = read("../lib/marketplace/cart-auth.ts");
+assert.ok(cartAuth.includes("auth.getSession()") && cartAuth.includes("auth.getUser()"), "Check existing cookie session before verifying the logged-in user");
+assert.ok(cartAuth.indexOf("auth.getSession()") < cartAuth.indexOf("auth.getUser()"), "Guest session check must happen before the remote auth request");
+assert.ok(cartAuth.includes("isMissingSessionError(sessionError)") && cartAuth.includes("isMissingSessionError(userError)"), "Missing session must be classified as a guest");
+assert.ok(cartAuth.includes("user: null"), "No login must reach the login-first popup");
+assert.ok(catalogue.includes("if (!user) {") && catalogue.includes("setAuthReturnTo("), "No login must open popup from catalog");
+assert.ok(purchase.includes("if (!user) {") && purchase.includes("setAuthPopupOpen(true)"), "No login must open popup from product details");
+assert.ok(!catalogue.includes("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।"), "No login should not appear as cart network failure");
 assert.ok(purchase.includes('searchParams.get("addToCart")') && purchase.includes('searchParams.delete("addToCart")'), "Return-to-product cart intent must be one-time");
 assert.ok(authModal.includes('useState<"login" | "signup">("login")'), "Login must be the default popup");
 assert.ok(authModal.includes('PhoneOtpAuth') && authModal.includes("SignupExperience"), "Popup must offer email, phone, signup");
@@ -109,7 +118,7 @@ assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'),
 assert.ok(catalogue.includes('productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"'), "Plant Market must retain its existing navigation behavior");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();"), "Add to Cart must retain listing-click ranking signals");
 assert.ok(catalogue.includes('rpc("add_marketplace_cart_item"') && catalogue.includes("p_quantity: 1"), "Card purchase uses the server-validated cart RPC");
-assert.ok(catalogue.includes('createSupabaseBrowserClient') && catalogue.includes("auth.getUser()"), "Card purchase must share cookie-based login authentication");
+assert.ok(catalogue.includes('resolveMarketplaceCartUser()'), "Card purchase must distinguish guests from authenticated users");
 assert.ok(catalogue.includes("showStickyCart") && catalogue.includes('href="/checkout"'), "Added products must expose persistent checkout navigation");
 assert.ok(catalogue.includes('href="/cart"') && catalogue.includes("cartSummary.units"), "Floating bar shows real cart count and cart navigation");
 assert.ok(catalogue.includes("cartNeedsLogin") && catalogue.includes("setCartError"), "Unauthenticated and failed additions must not appear successful");
