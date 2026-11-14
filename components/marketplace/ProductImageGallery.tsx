@@ -26,7 +26,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
 
   return (
     <>
-      <div className="flex w-full max-w-[560px] flex-col items-center gap-3">
+      <div className="flex w-full max-w-[560px] flex-col items-center gap-2 sm:gap-3">
         <div
           className="group relative w-full overflow-hidden rounded-2xl bg-white"
           onMouseEnter={() => setHovering(true)}
@@ -37,7 +37,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
             type="button"
             onClick={() => { setScale(2); setLightboxOpen(true); }}
             aria-label={productName + " ছবিটি বড় করে দেখুন"}
-            className="relative block h-[260px] w-full cursor-zoom-in overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:h-[330px] md:h-[400px]"
+            className="relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:aspect-square sm:rounded-2xl"
           >
             <img
               src={activeImage}
@@ -50,7 +50,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
               className="h-full w-full object-contain transition-transform duration-150 ease-out"
               style={hovering ? { transform: "scale(2)", transformOrigin: origin.x + "% " + origin.y + "%" } : undefined}
             />
-            <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-2 text-xs font-bold text-emerald-950 shadow-sm">
+            <span className="pointer-events-none absolute bottom-2 right-2 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1.5 text-[11px] font-bold text-emerald-950 shadow-sm sm:bottom-3 sm:right-3 sm:px-3 sm:py-2 sm:text-xs">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="2"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5M10.8 7.5v6.6M7.5 10.8h6.6"/></svg>
               বড় করে দেখুন
             </span>
@@ -65,14 +65,14 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
                 onClick={() => setActiveIndex(index)}
                 aria-label={productName + " ছবি " + (index + 1) + " দেখুন"}
                 aria-pressed={activeIndex === index}
-                className={"h-20 overflow-hidden rounded-xl border-2 bg-white transition sm:h-24 " + (activeIndex === index ? "border-emerald-700 ring-2 ring-emerald-100" : "border-emerald-900/10 hover:border-emerald-500")}
+                className={"h-14 overflow-hidden rounded-lg border-2 bg-white transition sm:h-20 sm:rounded-xl lg:h-24 " + (activeIndex === index ? "border-emerald-700 ring-2 ring-emerald-100" : "border-emerald-900/10 hover:border-emerald-500")}
               >
-                <img src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <img src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full bg-white object-contain" />
               </button>
             ))}
           </div>
         )}
-        <p className="text-xs text-slate-500">ছবির ওপর মাউস রাখুন বা ট্যাপ করে জুম করুন</p>
+        <p className="hidden text-xs text-slate-500 sm:block">ছবির ওপর মাউস রাখুন বা ট্যাপ করে জুম করুন</p>
       </div>
 
       {lightboxOpen && (
@@ -106,7 +106,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
               <div className="flex max-w-full gap-2 overflow-x-auto py-1">
                 {images.map((src, index) => (
                   <button key={src} type="button" onClick={() => setActiveIndex(index)} aria-label={"ছবি " + (index + 1)} aria-pressed={activeIndex === index} className={"h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 " + (activeIndex === index ? "border-lime-300" : "border-white/30")}>
-                    <img src={src} alt="" className="h-full w-full object-cover" />
+                    <img src={src} alt="" className="h-full w-full bg-white object-contain" />
                   </button>
                 ))}
               </div>
