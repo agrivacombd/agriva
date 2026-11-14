@@ -8,6 +8,7 @@ import assert from "node:assert/strict";
 
 const page = readFileSync("app/marketplace/[productId]/page.tsx", "utf8");
 const sitemap = readFileSync("app/sitemap.ts", "utf8");
+const share = readFileSync("components/marketplace/ProductShareCard.tsx", "utf8");
 
 assert.match(page, /\.eq\("slug", normalized\)\.eq\("status", "active"\)/,
   "Slug lookup must only return active products");
@@ -29,6 +30,21 @@ assert.match(page, /\.\.\.\(galleryImages\.length\s*\?\s*\{\s*image:\s*galleryIm
   "Product JSON-LD must include the uploaded product gallery when present");
 assert.match(page, /priceCurrency:\s*"BDT"/,
   "Product offer structured data must use BDT");
+assert.match(page, /const image = product\.image_url \|\| \(Array\.isArray\(product\.image_urls\)/,
+  "Social preview image should fall back to the product gallery if the main thumbnail is missing");
+assert.ok(page.includes('href="#product-description"') && page.includes('<ProductDescription html={description} />'),
+  "The short summary links to full visible and indexable product content");
+assert.ok(page.includes('<ProductShareCard productName={product.name} productUrl={productUrl}'),
+  "Share card must use the same canonical product URL as Product JSON-LD");
+assert.ok(share.includes('navigator.share({ title: productName, url: productUrl })'),
+  "Native sharing must occur only on explicit user interaction");
+assert.ok(share.includes("navigator.clipboard.writeText(productUrl)"),
+  "Copy action must use canonical product URL only");
+assert.doesNotMatch(share, /setInterval\s*\(|setTimeout\s*\(|window\.open\s*\(|utm_source|fbclid|referralId/,
+  "No automated posting or campaign/tracking parameters in the share card");
+assert.doesNotMatch(page, /aggregateRating|reviewRating|ratingValue/,
+  "Do not fabricate reviews or SEO ratings");
+
 assert.match(page, /"@type":\s*"BreadcrumbList"/,
   "BreadcrumbList structured data must be present");
 assert.match(page, /JSON\.stringify\(jsonLd\)\.replace\(\/</,
