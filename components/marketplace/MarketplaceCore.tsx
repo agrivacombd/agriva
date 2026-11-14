@@ -9,6 +9,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { MARKETPLACE_CATEGORIES, getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 
 export type MarketplaceProduct = {
@@ -188,10 +189,8 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     setCartNeedsLogin(false);
     setCartNotice("");
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user || user.is_anonymous) {
+      const { supabase, user } = await resolveMarketplaceCartUser();
+      if (!user) {
         setAuthReturnTo("/marketplace/" + encodeURIComponent(product.slug) + "?addToCart=" + encodeURIComponent(product.id) + "&qty=1");
         setCartNeedsLogin(true);
         setCartError("");
@@ -222,8 +221,11 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         // The add operation succeeded. Avoid displaying a stale item count.
         setCartSummary({ lines: 0, units: 0 });
       }
-    } catch {
-      setCartError("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।");
+    } catch (error) {
+      // A network/auth-service error is different from having no account.
+      // Never claim a cart addition succeeded or leak raw auth errors.
+      console.error("Marketplace Add to Cart failed:", error instanceof Error ? error.name : "unknown");
+      setCartError("লগইন সেবা বা সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setAddingProductId(null);
     }
