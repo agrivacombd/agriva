@@ -46,7 +46,14 @@ for (const removed of ['setField("unionOrArea"', 'setField("villageRoadHouse"', 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
-assert.ok(catalogue.includes("BUY NOW") && catalogue.includes("#product-direct-cod"), "Product card buy-now flow must link to direct COD form");
+assert.ok(catalogue.includes('onClick={onAddToCart}') && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
+assert.ok(!catalogue.includes('"BUY NOW"'), "Marketplace product cards must not retain Buy Now");
+assert.ok(catalogue.includes('rpc("add_marketplace_cart_item"') && catalogue.includes("p_quantity: 1"), "Card purchase uses the server-validated cart RPC");
+assert.ok(catalogue.includes('createSupabaseBrowserClient') && catalogue.includes("auth.getUser()"), "Card purchase must share cookie-based login authentication");
+assert.ok(catalogue.includes("showStickyCart") && catalogue.includes('href="/checkout"'), "Added products must expose persistent checkout navigation");
+assert.ok(catalogue.includes('href="/cart"') && catalogue.includes("cartSummary.units"), "Floating bar shows real cart count and cart navigation");
+assert.ok(catalogue.includes("cartNeedsLogin") && catalogue.includes("setCartError"), "Unauthenticated and failed additions must not appear successful");
+assert.ok(catalogue.includes('productHrefPrefix !== "/marketplace"'), "Plant Market is not allowed to call Marketplace cart RPC");
 assert.ok(page.includes("relatedProducts") && page.includes('.eq("marketplace_channel", "marketplace")'), "Related product cards must show published marketplace items only");
 assert.ok(purchase.includes('window.location.hash === "#product-direct-cod"'), "Buy Now link should expand the COD form");
 
