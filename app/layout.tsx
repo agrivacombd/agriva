@@ -24,8 +24,11 @@ export const metadata: Metadata = {
     title: "AGRIVA",
   },
   icons: {
-    icon: [{ url: "/icons/agriva-icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/icons/agriva-icon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/branding/agriva-favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/branding/agriva-app-icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [{ url: "/branding/agriva-apple-touch-180.png", sizes: "180x180", type: "image/png" }],
   },
   robots: {
     index: true,
@@ -40,6 +43,12 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
+    images: [{
+      url: "/branding/agriva-brand-social-share-1200x630.png",
+      width: 1200,
+      height: 630,
+      alt: "AGRIVA — বাংলাদেশের কৃষি পণ্য ও কৃষিসেবার ডিজিটাল প্ল্যাটফর্ম",
+    }],
     siteName: "AGRIVA",
     locale: "bn_BD",
     title: "AGRIVA — কৃষি ও কৃষকের ডিজিটাল প্ল্যাটফর্ম",
@@ -47,6 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/branding/agriva-brand-social-share-1200x630.png"],
     title: "AGRIVA — কৃষি ও কৃষি উদ্যোক্তাদের ডিজিটাল প্ল্যাটফর্ম",
     description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য ডিজিটাল প্ল্যাটফর্ম।",
   },
@@ -62,7 +72,7 @@ const organizationJsonLd = {
   "@id": `${siteUrl}/#organization`,
   name: "AGRIVA",
   url: siteUrl,
-  logo: { "@type": "ImageObject", url: `${siteUrl}/agriva-logo.svg` },
+  logo: { "@type": "ImageObject", "@id": `${siteUrl}/#logo`, url: `${siteUrl}/branding/agriva-agriculture-brand-logo.svg`, width: 640, height: 158, caption: "AGRIVA — Growing a Better Tomorrow" },
   telephone: "+8801717504028",
   description:
     "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য কৃষি পণ্য, কৃষি তথ্য এবং ডিজিটাল কৃষি সেবা।",

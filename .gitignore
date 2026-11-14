@@ -9,3 +9,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+
+# Built from the official AGRIVA source artwork by npm prebuild/predev
+/public/branding/agriva-app-icon-*.png
+/public/branding/agriva-app-maskable-512.png
+/public/branding/agriva-apple-touch-180.png
+/public/branding/agriva-favicon-32.png
+/public/branding/agriva-google-oauth-120.png
+
+/public/branding/agriva-brand-social-share-1200x630.png
