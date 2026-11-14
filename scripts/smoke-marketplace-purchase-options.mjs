@@ -24,7 +24,7 @@ for (const fragment of [
   "unitPrice * quantity",
   "aria-pressed={quantity === value}",
   "quantity >= maxQuantity",
-  "p_quantity: quantity",
+  "p_quantity: requestedQuantity",
   "quantity,",
   "paymentMethod: \"cod\"",
   "ফোনে অর্ডার করুন",
@@ -78,6 +78,28 @@ assert.ok(!checkout.includes("form.deliveryInstructions") && !checkout.includes(
 assert.ok(cartRoute.includes('getBangladeshDivisionForDistrict(district)'), "Server must derive division from district");
 assert.ok(divisionHelper.includes("[5, 10, 13, 16]") && divisionHelper.includes('return "ময়মনসিংহ"'), "Mymensingh district group must be handled separately");
 assert.ok(divisionHelper.includes('return "ঢাকা"') && divisionHelper.includes('return "চট্টগ্রাম"'), "Bangladesh division derivation must cover the country");
+
+const header = read("../components/site/SiteChrome.tsx");
+const headerCart = read("../components/site/HeaderCartLink.tsx");
+const authModal = read("../components/marketplace/MarketplaceAuthModal.tsx");
+const phoneOtp = read("../components/auth/PhoneOtpAuth.tsx");
+const loginPage = read("../app/login/page.tsx");
+const signupPage = read("../app/signup/page.tsx");
+const signupExperience = read("../components/auth/SignupExperience.tsx");
+for (const part of ["<HeaderCartLink english={english} />", 'href="/cart"']) {
+  assert.ok(part === 'href="/cart"' ? headerCart.includes(part) : header.includes(part), "Header must expose the cart");
+}
+assert.ok(headerCart.includes("CART_UPDATED_EVENT") && headerCart.includes("cart_items"), "Header cart count should use real cart rows and update on changes");
+assert.ok(catalogue.includes("setAuthReturnTo(") && catalogue.includes("MarketplaceAuthModal"), "Guest card click should open login-first modal");
+assert.ok(purchase.includes("setAuthPopupOpen(true)") && purchase.includes("MarketplaceAuthModal"), "Guest product click should open modal");
+assert.ok(purchase.includes('searchParams.get("addToCart")') && purchase.includes('searchParams.delete("addToCart")'), "Return-to-product cart intent must be one-time");
+assert.ok(authModal.includes('useState<"login" | "signup">("login")'), "Login must be the default popup");
+assert.ok(authModal.includes('PhoneOtpAuth') && authModal.includes("SignupExperience"), "Popup must offer email, phone, signup");
+assert.ok(authModal.includes("window.location.assign(returnTo)"), "Authentication should restore the selected product");
+assert.ok(phoneOtp.includes("signInWithOtp") && phoneOtp.includes("verifyOtp"), "Phone must authenticate with verified SMS OTP");
+assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-in must not create unknown accounts");
+assert.ok(loginPage.includes('method === "phone"') && signupExperience.includes('method === "phone"'), "Full login and signup pages must also offer phone");
+assert.ok(signupPage.includes("returnTo"), "Signup must preserve selected product return path");
 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
