@@ -33,4 +33,25 @@ await sharp(source)
   .png(png)
   .toFile(join(dir, "agriva-app-maskable-512.png"));
 
+
+// An actual 1200×630 raster preview improves appearance of shared home-page
+// links on social networks; it does not change product-specific OG images.
+const hero = await sharp(join(dir, "agriva-agriculture-brand-logo.svg"))
+  .resize({ width: 920, withoutEnlargement: false })
+  .png()
+  .toBuffer({ resolveWithObject: true });
+await sharp({
+  create: {
+    width: 1200, height: 630, channels: 4,
+    background: { r: 246, g: 250, b: 247, alpha: 1 },
+  },
+})
+  .composite([{
+    input: hero.data,
+    left: Math.floor((1200 - hero.info.width) / 2),
+    top: Math.floor((630 - hero.info.height) / 2),
+  }])
+  .png({ compressionLevel: 9, palette: true, quality: 100, effort: 10 })
+  .toFile(join(dir, "agriva-brand-social-share-1200x630.png"));
+
 console.log("Generated official AGRIVA favicon, PWA, Apple and OAuth icons.");
