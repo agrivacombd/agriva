@@ -218,7 +218,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] text-[#17351f]"><ProductClickTracker market="marketplace" productId={product.id} />
+    <main className="min-h-screen bg-[#f5f8f1] pb-20 text-[#17351f] sm:pb-0"><ProductClickTracker market="marketplace" productId={product.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
 
