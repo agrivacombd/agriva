@@ -7,6 +7,7 @@ import CheckoutButton from "@/components/marketplace/CheckoutButton";
 import RelatedProductUpsell from "@/components/marketplace/RelatedProductUpsell";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import ProductImageGallery from "@/components/marketplace/ProductImageGallery";
+import ProductShareCard from "@/components/marketplace/ProductShareCard";
 import ProductDescription from "@/components/marketplace/ProductDescription";
 import SeedProductInformation from "@/components/marketplace/SeedProductInformation";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
@@ -75,7 +76,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const title = cleanText(product.seo_title || defaultTitle).slice(0, 70);
   const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
   const description = cleanText(product.seo_description || descriptionText || ("Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.")).slice(0, 160);
-  const image = product.image_url || undefined;
+  const image = product.image_url || (Array.isArray(product.image_urls) ? product.image_urls.find(url => typeof url === "string" && url.trim()) : undefined) || undefined;
 
   return {
     title,
@@ -152,7 +153,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   })();
 
   const descriptionText = productDescriptionToText(description);
-  const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
+  const descriptionSummary = descriptionText.length > 210 ? descriptionText.slice(0, 207).replace(/\s+\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
   const unitLabel = product.unit ? unitLabels[product.unit] || null : null;
   const formattedPrice = product.price !== null && product.price !== undefined && Number.isFinite(Number(product.price))
@@ -220,12 +221,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] pb-20 text-[#17351f] sm:pb-0"><ProductClickTracker market="marketplace" productId={product.id} />
+    <main className="min-h-screen bg-[#f7f9f7] pb-20 text-[#17351f] sm:pb-0"><ProductClickTracker market="marketplace" productId={product.id} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
 
-      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-8 lg:px-8">
-        <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-y-1 text-xs text-slate-500 sm:mb-5 sm:text-sm">
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-5 sm:py-5 lg:px-8 lg:py-7">
+        <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-y-1 text-xs text-slate-500 sm:mb-4 sm:text-sm">
           <Link href="/" className="hover:text-emerald-800">হোম</Link>
           <span className="mx-2" aria-hidden="true">/</span>
           <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
@@ -241,139 +242,138 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span aria-current="page" className="font-semibold text-slate-700">{product.name}</span>
         </nav>
 
-        <section aria-labelledby="product-title" className="flex flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm sm:rounded-3xl md:grid md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:items-start">
-          <div className="contents md:flex md:min-w-0 md:flex-col">
-          <div className="order-1 relative flex min-w-0 items-start justify-center md:order-none overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:px-6">
+
+        <section aria-labelledby="product-title" className="grid min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] md:items-start lg:rounded-3xl">
+          <div className="min-w-0 border-b border-slate-100 bg-[#f8faf7] p-3 sm:p-5 md:border-b-0 md:border-r md:p-6">
             {image ? (
               <ProductImageGallery
                 images={galleryImages}
                 productName={product.name}
-                imageAlt={product.image_alt || (product.name + " — product photo on AGRIVA Marketplace")}
+                imageAlt={product.image_alt || (product.name + " — AGRIVA Marketplace product image")}
               />
             ) : (
-              <div className="flex max-w-xs flex-col items-center text-center">
-                <span className="flex h-24 w-24 items-center justify-center rounded-3xl bg-white text-5xl shadow-sm" aria-hidden="true">🌾</span>
-                <p className="mt-4 text-xs font-extrabold uppercase tracking-[.16em] text-emerald-800">AGRIVA Marketplace</p>
-                <p className="mt-2 text-sm text-slate-500">এই পণ্যের ছবি এখনো যোগ করা হয়নি।</p>
+              <div className="grid aspect-[4/3] w-full place-items-center rounded-xl border border-slate-200 bg-white p-6 text-center sm:aspect-square">
+                <div>
+                  <span className="text-5xl" aria-hidden="true">🌾</span>
+                  <p className="mt-3 text-sm text-slate-600">এই পণ্যের ছবি এখনো যোগ করা হয়নি।</p>
+                </div>
               </div>
             )}
-            <span className="absolute left-4 top-4 rounded-full border border-emerald-900/10 bg-white/90 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">AGRIVA Marketplace</span>
+            <ProductShareCard productName={product.name} productUrl={productUrl} imageUrl={image || null} priceLabel={formattedPrice} />
           </div>
 
-          {relatedProducts.length > 0 && (
-            <div className="order-3 min-w-0 border-t border-emerald-950/10 bg-white p-3 sm:p-5 md:order-none md:border-t-0 md:pt-2">
-              <RelatedProductUpsell
-                compact
-                products={relatedProducts}
-                heading={product.category_slug === "seeds" ? "আরও বীজ, একই কার্টে" : "একই কার্টে আরও পণ্য"}
-                subtitle={product.category_slug ? "একই ক্যাটাগরির প্রাসঙ্গিক পণ্য থেকে বেছে নিন।" : "আপনার প্রয়োজন অনুযায়ী আরও কৃষিপণ্য বেছে নিন।"}
-                categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
-              />
-            </div>
-          )}
-          </div>
-
-          <div className="order-2 flex min-w-0 flex-col px-4 pb-4 pt-3 sm:p-7 md:order-none md:p-8 lg:p-9">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
-                <span className="h-2 w-2 rounded-full bg-emerald-600" />
-                {isSample ? "নমুনা পণ্য · প্রিভিউ" : "পণ্যের বিবরণ"}
-              </span>
-              {product.category && <span className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600">{product.category}</span>}
+          <div className="min-w-0 px-4 pb-5 pt-4 sm:p-6 lg:p-8">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+              {product.category && <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-emerald-800">{product.category}</span>}
+              {isSample && <span className="rounded-md bg-amber-50 px-2.5 py-1 text-amber-900">নমুনা প্রিভিউ</span>}
+              {product.brand && <span className="min-w-0 break-words text-slate-500">{product.brand}</span>}
             </div>
 
-            <h1 id="product-title" className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:mt-5 sm:text-3xl lg:text-4xl">{product.name}</h1>
-            <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:mt-6 sm:rounded-2xl sm:p-5">
-              <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">বর্তমান তালিকাভুক্ত মূল্য</p>
-              <p className="mt-1 text-2xl font-black text-emerald-950 sm:text-3xl">{isSample && product.price !== null ? "নমুনা মূল্য · " : ""}{formattedPrice}</p>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs sm:mt-3 sm:text-sm">
-                <span className="rounded-lg bg-white px-3 py-2 font-semibold text-slate-700">{stockLabel}</span>
-                {hasStock && !isSample && <span className="rounded-lg bg-white px-3 py-2 text-slate-600">স্টক: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : " (একক উল্লেখ নেই)"}</span> }
+            <h1 id="product-title" className="mt-2 break-words text-[1.4rem] font-extrabold leading-[1.3] tracking-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">{product.name}</h1>
+            {product.origin && <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">উৎপত্তিস্থল: {product.origin}</p>}
+
+            <div className="mt-4 rounded-xl border border-emerald-100 bg-[#f3faf5] px-4 py-3 sm:mt-5 sm:px-5 sm:py-4">
+              <p className="text-xs font-semibold text-emerald-800">বর্তমান মূল্য</p>
+              <p className="mt-1 break-words text-3xl font-extrabold tracking-tight text-[#123d2b] sm:text-[2.1rem]">{isSample && product.price !== null ? "নমুনা · " : ""}{formattedPrice}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm">
+                <span className={Number(product.stock) > 0 && !isSample ? "font-bold text-emerald-800" : "font-bold text-rose-700"}>{stockLabel}</span>
+                {hasStock && !isSample && <span className="text-slate-600">মজুত: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : ""}</span>}
               </div>
             </div>
 
-            <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-slate-600 sm:mt-4 sm:line-clamp-3 sm:text-base sm:leading-7">
-              {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
-            </p>
-            {(product.brand || product.origin) && <p className="mt-2 text-xs text-slate-600 sm:mt-3 sm:text-sm">{product.brand ? "ব্র্যান্ড: " + product.brand : ""}{product.brand && product.origin ? " · " : ""}{product.origin ? "উৎপত্তিস্থল: " + product.origin : ""}</p>}
+            {descriptionSummary && (
+              <div className="mt-3 sm:mt-4">
+                <p className="line-clamp-3 break-words text-sm leading-6 text-slate-600">{descriptionSummary}</p>
+                {description && <a href="#product-description" className="mt-1.5 inline-flex min-h-9 items-center text-sm font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-950">সম্পূর্ণ বিবরণ দেখুন</a>}
+              </div>
+            )}
 
-            <div className="mt-3 sm:mt-6">
+            <div className="mt-4 border-t border-slate-100 pt-4">
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
                 <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || (product.slug === "black-rice-seeds" ? "কেজি" : "টি")} shippingClass={product.shipping_class ?? null} shippingWeightGrams={product.shipping_weight_grams ?? null} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
               )}
             </div>
-            <p className="mt-2 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
-            <a href="#product-details" className="mt-3 inline-flex min-h-10 w-fit items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">পণ্যের বিস্তারিত দেখুন ↓</a>
-            {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-4 rounded-xl border border-emerald-100 bg-white p-3 sm:mt-5 sm:rounded-2xl sm:p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
-            {product.usage_instructions && <section className="mt-3 rounded-xl bg-emerald-50 p-3 sm:mt-4 sm:rounded-2xl sm:p-4"><h2 className="font-black">ব্যবহার ও প্রয়োগ নির্দেশনা</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{product.usage_instructions}</p></section>}
-
+            <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডার নিশ্চিত করার আগে পণ্যের পরিমাণ, স্টক ও ডেলিভারিসহ মোট মূল্য যাচাই করুন।</p>
           </div>
         </section>
 
-        <div className="mt-5 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="min-w-0 space-y-6">
-            <section id="product-details" className="scroll-mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
-              <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Product information</p>
-              <h2 className="mt-2 text-2xl font-black">পণ্যের বিস্তারিত তথ্য</h2>
-              <dl className="mt-5 divide-y divide-slate-100">
-                <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4">
-                  <dt className="text-sm font-bold text-slate-500">পণ্যের নাম</dt>
-                  <dd className="break-words text-sm font-semibold text-slate-900">{product.name}</dd>
-                </div>
-                {product.category && <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">ক্যাটাগরি</dt><dd className="text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline decoration-emerald-300 underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd></div>}
-                <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">মূল্য</dt><dd className="text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
-                <div className="grid gap-1 py-3 sm:grid-cols-[180px_1fr] sm:gap-4"><dt className="text-sm font-bold text-slate-500">প্রাপ্যতা</dt><dd className="text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
-                {description && <div className="border-t border-slate-100 py-5"><dt className="sr-only">বিবরণ</dt><dd><ProductDescription html={description} /></dd></div>}
-              </dl>
-              {!description && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">এই পণ্যের বিস্তারিত বিবরণ বিক্রেতার কাছ থেকে নিশ্চিত করুন। সঠিক তথ্য যোগ করলে ক্রেতার সিদ্ধান্ত নেওয়া সহজ হবে এবং পেজের নিজস্ব উপযোগী কনটেন্টও বাড়বে।</p>}
-            </section>
-
-            {seedInformation && <SeedProductInformation sections={seedInformation.sections} details={seedInformation.details} />}
-
-            <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
-              <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Buyer guide</p>
-              <h2 className="mt-2 text-2xl font-black">কেনার আগে যা যাচাই করবেন</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">সঠিক পণ্য বেছে নিতে শুধু নাম ও দাম নয়, প্যাকেটের পরিমাণ, পণ্যের ধরন, বিক্রেতার specification এবং সরবরাহের শর্তও যাচাই করুন।</p>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
-                <li className="flex gap-3"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-900">1</span><span><strong>পণ্যের পরিচয়:</strong> নাম, variety বা model এবং প্যাকেটের label মিলিয়ে নিন।</span></li>
-                <li className="flex gap-3"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-900">2</span><span><strong>মূল্য ও পরিমাণ:</strong> তালিকাভুক্ত মূল্য কোন unit বা প্যাকেটের জন্য তা নিশ্চিত করুন।</span></li>
-                <li className="flex gap-3"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-900">3</span><span><strong>প্রাপ্যতা ও ডেলিভারি:</strong> মজুত, delivery area, সময় এবং অতিরিক্ত চার্জ জেনে নিন।</span></li>
-                <li className="flex gap-3"><span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs font-black text-emerald-900">4</span><span><strong>প্রয়োজনীয় প্রমাণ:</strong> বীজ হলে variety, lot/label ও germination সংক্রান্ত উপলভ্য তথ্য; অন্য পণ্য হলে প্রাসঙ্গিক specification যাচাই করুন।</span></li>
-              </ul>
-            </section>
-
-            <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
-              <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">FAQs</p>
-              <h2 className="mt-2 text-2xl font-black">সাধারণ জিজ্ঞাসা</h2>
-              <div className="mt-4 divide-y divide-slate-100">
-                {faqs.map((faq) => <details key={faq.question} className="group py-4">
-                  <summary className="cursor-pointer list-none pr-6 text-base font-extrabold leading-6 text-slate-900 marker:content-none focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{faq.question}<span aria-hidden="true" className="float-right ml-3 text-emerald-800 transition group-open:rotate-45">＋</span></summary>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">{faq.answer}</p>
-                </details>)}
+        <div className="mt-5 min-w-0 space-y-5 sm:mt-6 sm:space-y-6">
+          <section id="product-details" aria-labelledby="product-details-heading" className="scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Product information</p>
+                <h2 id="product-details-heading" className="mt-1 text-xl font-extrabold text-slate-950 sm:text-2xl">পণ্যের বিস্তারিত তথ্য</h2>
               </div>
-            </section>
-          </div>
+              <span className="text-xs text-slate-500">AGRIVA Marketplace</span>
+            </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-            <section className="rounded-3xl bg-[#103f2b] p-5 text-white shadow-sm sm:p-6">
-              <p className="text-xs font-extrabold uppercase tracking-[.16em] text-lime-300">Need more information?</p>
-              <h2 className="mt-3 text-xl font-black">পণ্যটি সম্পর্কে নিশ্চিত হয়ে নিন</h2>
-              <p className="mt-2 text-sm leading-6 text-emerald-50/85">পণ্যের specification, পরিমাণ, মূল্য বা সরবরাহ সম্পর্কে নিশ্চিত না হলে অর্ডারের আগে তথ্য যাচাই করুন।</p>
-              <a href="#product-details" className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-lime-300 px-4 py-2.5 text-sm font-extrabold text-[#17351f] transition hover:bg-lime-200">বিস্তারিত ও শর্ত দেখুন</a>
-            </section>
-            <section className="rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm">
-              <h2 className="font-black">আরও পণ্য খুঁজুন</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">AGRIVA Marketplace-এ অন্যান্য কৃষিপণ্য ও উপলভ্য listing দেখুন।</p>
-              {category && <Link href={"/marketplace/category/" + category.slug} className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-xl border border-emerald-800 px-3 py-2 text-sm font-bold text-emerald-900 hover:bg-emerald-50">{category.name} দেখুন</Link>}
-              <Link href="/marketplace" className="mt-2 inline-flex min-h-10 w-full items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-sm font-bold text-white hover:bg-emerald-800">সব পণ্য দেখুন</Link>
-            </section>
-          </aside>
+            <dl className="mt-2 grid gap-x-8 sm:grid-cols-2">
+              <div className="border-b border-slate-100 py-3">
+                <dt className="text-xs font-semibold text-slate-500">পণ্যের নাম</dt>
+                <dd className="mt-1 break-words text-sm font-semibold text-slate-900">{product.name}</dd>
+              </div>
+              {product.category && <div className="border-b border-slate-100 py-3">
+                <dt className="text-xs font-semibold text-slate-500">ক্যাটাগরি</dt>
+                <dd className="mt-1 text-sm font-semibold text-slate-900">{category ? <Link className="text-emerald-800 underline underline-offset-4" href={"/marketplace/category/" + category.slug}>{category.name}</Link> : product.category}</dd>
+              </div>}
+              <div className="border-b border-slate-100 py-3"><dt className="text-xs font-semibold text-slate-500">মূল্য</dt><dd className="mt-1 text-sm font-semibold text-slate-900">{formattedPrice}</dd></div>
+              <div className="border-b border-slate-100 py-3"><dt className="text-xs font-semibold text-slate-500">প্রাপ্যতা</dt><dd className="mt-1 text-sm font-semibold text-slate-900">{stockLabel}</dd></div>
+              {product.brand && <div className="border-b border-slate-100 py-3"><dt className="text-xs font-semibold text-slate-500">ব্র্যান্ড</dt><dd className="mt-1 text-sm font-semibold text-slate-900">{product.brand}</dd></div>}
+              {product.origin && <div className="border-b border-slate-100 py-3"><dt className="text-xs font-semibold text-slate-500">উৎপত্তিস্থল</dt><dd className="mt-1 text-sm font-semibold text-slate-900">{product.origin}</dd></div>}
+            </dl>
+
+            {product.highlights && product.highlights.length > 0 && (
+              <div className="mt-5">
+                <h3 className="text-base font-extrabold text-slate-900">মূল বৈশিষ্ট্য</h3>
+                <ul className="mt-2 grid gap-2 text-sm leading-6 text-slate-700 sm:grid-cols-2">
+                  {product.highlights.slice(0, 6).map(item => <li key={item} className="flex min-w-0 gap-2"><span className="mt-1 font-bold text-emerald-700" aria-hidden="true">✓</span><span className="break-words">{item}</span></li>)}
+                </ul>
+              </div>
+            )}
+
+            <div id="product-description" className="mt-5 scroll-mt-20 border-t border-slate-100 pt-5">
+              {description ? <ProductDescription html={description} /> : (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">পণ্যের বিস্তারিত বিবরণ এখনো যুক্ত হয়নি। অর্ডারের আগে বিক্রেতার কাছ থেকে specification নিশ্চিত করুন।</p>
+              )}
+            </div>
+            {product.usage_instructions && (
+              <section className="mt-5 rounded-xl bg-emerald-50 p-4">
+                <h3 className="text-base font-extrabold text-emerald-950">ব্যবহার ও প্রয়োগ নির্দেশনা</h3>
+                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">{product.usage_instructions}</p>
+              </section>
+            )}
+          </section>
+
+          {seedInformation && <SeedProductInformation sections={seedInformation.sections} details={seedInformation.details} />}
+
+          {relatedProducts.length > 0 && (
+            <RelatedProductUpsell
+              products={relatedProducts}
+              heading={product.category_slug === "seeds" ? "আপনার প্রয়োজন হতে পারে এমন আরও বীজ" : "সম্পর্কিত আরও পণ্য"}
+              subtitle="একই ধরনের উপলভ্য পণ্য তুলনা করুন। চাইলে পরিমাণ বেছে একই কার্টে যোগ করতে পারবেন।"
+              categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
+            />
+          )}
+
+          <section aria-labelledby="product-faq-heading" className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+            <h2 id="product-faq-heading" className="text-xl font-extrabold text-slate-950 sm:text-2xl">সাধারণ জিজ্ঞাসা</h2>
+            <div className="mt-3 divide-y divide-slate-100">
+              {faqs.map(faq => (
+                <details key={faq.question} className="group py-3">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold leading-6 text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 sm:text-base">
+                    <span className="min-w-0">{faq.question}</span>
+                    <span aria-hidden="true" className="shrink-0 text-lg text-emerald-700 transition group-open:rotate-45">＋</span>
+                  </summary>
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
         </div>
 
-
-        <footer className="mt-8 rounded-2xl border border-emerald-950/10 bg-white px-5 py-4 text-xs leading-6 text-slate-500">
+        <footer className="mt-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs leading-6 text-slate-500">
           পণ্যের তথ্য বিক্রেতার দেওয়া listing-এর ভিত্তিতে দেখানো হয়। কেনার আগে specification, প্রাপ্যতা, মূল্য ও সরবরাহের শর্ত নিশ্চিত করুন।
         </footer>
       </div>
