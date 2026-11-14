@@ -178,7 +178,7 @@ export default function CheckoutButton({
       </div>
 
       <button type="button" disabled={unavailable || loading || Boolean(orderId)} onClick={() => { setFormOpen(true); setMessage(""); }}
-        className="flex min-h-13 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-base font-black text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+        className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-base font-black text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
         <ShoppingBag size={19} /> {unavailable ? "বর্তমানে অর্ডার করা যাবে না" : "এখনই অর্ডার করুন"}
       </button>
 
@@ -202,7 +202,7 @@ export default function CheckoutButton({
 
       <div id="product-direct-cod" className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-[#fbfcf7]">
         <button type="button" aria-expanded={formOpen} aria-controls="direct-cod-form" onClick={() => setFormOpen(open => !open)}
-          className="flex min-h-13 w-full items-center justify-between gap-2 px-4 py-4 text-left text-sm font-black text-[#17351f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-5">
+          className="flex min-h-12 w-full items-center justify-between gap-2 px-4 py-4 text-left text-sm font-black text-[#17351f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-5">
           <span>সরাসরি ক্যাশ অন ডেলিভারি অর্ডার</span>
           <span className="inline-flex items-center gap-1 text-xs text-emerald-800">{formOpen ? "ফর্ম বন্ধ করুন" : "ফর্ম খুলুন"} <ChevronDown size={17} className={formOpen ? "rotate-180 transition-transform" : "transition-transform"} /></span>
         </button>
