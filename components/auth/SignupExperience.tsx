@@ -7,6 +7,7 @@ import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusine
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
 import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 type RoleId = "farmer" | "buyer" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
@@ -210,6 +211,7 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
             <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{t.subtitle}</p>
           </div>
 
+          {!embedded && <SocialAuthButtons returnTo={safeReturnTo} english={language === "en"} />}
           {!embedded && (
             <div role="group" aria-label="Signup মাধ্যম" className="mb-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
               <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")}
