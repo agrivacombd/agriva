@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 export default function CheckoutButton({ productId, disabled }: { productId: string; disabled?: boolean }) {
@@ -53,6 +54,7 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
         item_id: productId,
         quantity: 1,
       });
+      trackMetaEvent("AddToCart", { content_type: "product", content_ids: [productId], currency: "BDT", num_items: 1 });
       router.push("/cart");
     } catch (error) {
       console.error("Add to cart failed:", error);
@@ -73,6 +75,7 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
       return;
     }
 
+    trackMetaEvent("InitiateCheckout", { content_type: "product", content_ids: [productId], num_items: 1, currency: "BDT" });
     setLoading(true);
     setMessage("");
     setOrderId("");
@@ -97,6 +100,11 @@ export default function CheckoutButton({ productId, disabled }: { productId: str
           item_id: productId,
           quantity: 1,
         });
+        if (data.orderId && Number.isFinite(orderTotal)) {
+          trackMetaEvent("Purchase", {
+            currency: "BDT", value: orderTotal, content_type: "product", content_ids: [productId], num_items: 1,
+          }, String(data.orderId));
+        }
         setMessage(`অর্ডার তৈরি হয়েছে। মোট মূল্য ৳${Number(data.total).toLocaleString("bn-BD")}।`);
       }
     } catch {
