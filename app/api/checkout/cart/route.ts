@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getBangladeshDivisionForDistrict } from "@/lib/bangladesh-division";
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -31,29 +32,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।" }, { status: 400 });
   }
 
+  // New checkout asks for one full address. Map only user-provided details to
+  // the legacy required RPC keys; no additional location is fabricated.
+  const rawFullAddress = typeof rawAddress.fullAddress === "string" ? rawAddress.fullAddress.trim() : "";
+  if (rawFullAddress && (rawFullAddress.length < 8 || rawFullAddress.length > 250)) {
+    return NextResponse.json({ error: "সম্পূর্ণ ডেলিভারি ঠিকানা ৮ থেকে ২৫০ অক্ষরের মধ্যে লিখুন।" }, { status: 400 });
+  }
+  const isSimpleAddress = rawFullAddress.length > 0;
+  const district = cleanText(rawAddress.district, 80);
+  const upazila = cleanText(rawAddress.upazila, 100);
+  const legacyArea = cleanText(rawAddress.unionOrArea, 120);
+  const legacyStreet = cleanText(rawAddress.villageRoadHouse, 250);
+
   // Guest checkout does not require SMS verification. The phone is collected
   // for delivery coordination; anonymous users remain buyer-only at the DB layer.
 
   const shippingAddress = {
     fullName: cleanText(rawAddress.fullName, 100),
     phone,
-    division: cleanText(rawAddress.division, 80),
-    district: cleanText(rawAddress.district, 80),
-    upazila: cleanText(rawAddress.upazila, 100),
-    unionOrArea: cleanText(rawAddress.unionOrArea, 120),
-    villageRoadHouse: cleanText(rawAddress.villageRoadHouse, 250),
+    division: getBangladeshDivisionForDistrict(district) || cleanText(rawAddress.division, 80),
+    district,
+    upazila,
+    // Retain RPC compatibility until a future schema migration removes these legacy keys.
+    unionOrArea: isSimpleAddress ? upazila : legacyArea,
+    villageRoadHouse: isSimpleAddress ? rawFullAddress : legacyStreet,
     landmark: cleanText(rawAddress.landmark, 200),
     postalCode: cleanText(rawAddress.postalCode, 20),
     deliveryInstructions: cleanText(rawAddress.deliveryInstructions, 500),
-    address: [
-      cleanText(rawAddress.upazila, 100),
-      cleanText(rawAddress.unionOrArea, 120),
-      cleanText(rawAddress.villageRoadHouse, 250),
-    ].filter(Boolean).join(", "),
+    address: [upazila, ...(isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet])].filter(Boolean).join(", "),
   };
   if (!shippingAddress.fullName || !shippingAddress.division || !shippingAddress.district ||
       !shippingAddress.upazila || !shippingAddress.unionOrArea || !shippingAddress.villageRoadHouse) {
-    return NextResponse.json({ error: "নাম, বিভাগ, জেলা, উপজেলা/থানা, ইউনিয়ন/এলাকা এবং সম্পূর্ণ ঠিকানা পূরণ করুন।" }, { status: 400 });
+    return NextResponse.json({ error: "নাম, বিভাগ, জেলা, উপজেলা/থানা ও সম্পূর্ণ ডেলিভারি ঠিকানা পূরণ করুন।" }, { status: 400 });
   }
 
   const idempotencyKey = cleanText(body?.idempotencyKey, 100);

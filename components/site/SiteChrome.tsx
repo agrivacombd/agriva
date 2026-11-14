@@ -18,6 +18,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import VisualSearchButton from "@/components/search/VisualSearchButton";
+import HeaderCartLink from "@/components/site/HeaderCartLink";
 
 const bnPrimaryLinks = [
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
@@ -221,6 +222,7 @@ export default function SiteChrome() {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <HeaderCartLink english={english} />
             <Link href={languageTarget} lang={english ? "bn" : "en"} className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl border border-emerald-200 bg-white px-2 text-xs font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:gap-1.5 sm:px-3 sm:text-sm" aria-label={english ? "Switch language to Bangla" : "Switch language to English"}>
               <Globe2 size={16} aria-hidden="true" />
               <span>{english ? "বাংলা" : "English"}</span>

@@ -6,7 +6,8 @@ const migration=read("supabase/migrations/20261030110000_identity_verification_w
 const api=read("app/api/identity/applications/route.ts");
 const ui=read("app/account/verification/page.tsx");
 const admin=read("app/admin/identity-verification/page.tsx");
-const signup=read("app/signup/page.tsx");
+const signup=read("components/auth/SignupExperience.tsx");
+assert.match(read("app/signup/page.tsx"), /SignupExperience/, "Signup route uses the verified shared signup UI");
 const seller=read("app/api/seller/products/route.ts");
 const gardener=read("app/api/plant-seller/products/route.ts");
 const harvest=read("supabase/migrations/20261030120000_harvest_direct_posting.sql");

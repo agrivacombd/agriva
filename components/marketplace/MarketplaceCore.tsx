@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
 import Link from "next/link";
 import Image from "next/image";
+import { ShoppingCart, CheckCircle2 } from "lucide-react";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { trackAnalyticsEvent } from "@/lib/analytics";
+import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
+import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { MARKETPLACE_CATEGORIES, getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 
 export type MarketplaceProduct = {
@@ -42,6 +48,9 @@ function ProductCard({
   compared,
   onWish,
   onCompare,
+  onAddToCart,
+  addingToCart,
+  cartBusy,
 }: {
   product: MarketplaceProduct;
   productHrefPrefix: "/marketplace" | "/plant-market";
@@ -49,42 +58,70 @@ function ProductCard({
   compared: boolean;
   onWish: () => void;
   onCompare: () => void;
+  onAddToCart: () => void;
+  addingToCart: boolean;
+  cartBusy: boolean;
 }) {
   const hasPrice = product.price !== null && product.price !== undefined && String(product.price).trim() !== "";
   const hasStock = product.stock !== null && product.stock !== undefined;
   const inStock = Number(product.stock || 0) > 0;
   const recordListingClick = () => trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "listing_click", [product.id]);
 
+  const detailHref = productHrefPrefix + "/" + product.slug;
+  const unitLabels: Record<string, string> = { pack: "প্যাকেট", kg: "কেজি", g: "গ্রাম", piece: "পিস", liter: "লিটার", bag: "বস্তা" };
+  const unit = product.unit ? unitLabels[product.unit] || product.unit : null;
+
   return (
-    <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-emerald-950/[0.09] bg-white shadow-[0_5px_22px_rgba(15,55,32,.045)] transition duration-300 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_44px_rgba(15,55,32,.12)]">
-      <div className="relative">
-        <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#f2f8ed_54%,#e5f0df_100%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
-          <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
-          {product.image_url && <Image src={product.image_url} alt={`${product.name} পণ্যের ছবি`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="object-cover p-0 transition duration-500 group-hover:scale-[1.06]" />}
+    <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-[0_10px_30px_rgba(15,55,32,.07)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-700/30 hover:shadow-[0_18px_44px_rgba(15,55,32,.13)]">
+      <div className="relative overflow-hidden bg-gradient-to-b from-[#eaf9ee] via-[#f0fbf3] to-[#f8fcf7]">
+        <Link href={detailHref} onClick={recordListingClick} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={product.name + " পণ্যের বিস্তারিত দেখুন"}>
+          {product.image_url ? (
+            <Image src={product.image_url} alt={product.name + " পণ্যের ছবি"} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-4" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-center text-emerald-700/65">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-9 w-9" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m3 17 5.5-5 4.5 4 3.5-3 4.5 4"/></svg>
+              <span className="text-[10px] font-bold">ছবি শিগগিরই যোগ হবে</span>
+            </div>
+          )}
         </Link>
-        <span className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-[10px] font-extrabold shadow-sm backdrop-blur ${inStock ? "bg-white/95 text-emerald-800" : "bg-slate-900/80 text-white"}`}>
+        <span className={"absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-sm " + (inStock ? "bg-emerald-700 text-white" : "bg-slate-900/85 text-white")}>
           {inStock ? "স্টকে আছে" : hasStock ? "স্টক শেষ" : "স্টক যাচাই করুন"}
         </span>
-        <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"} className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border shadow-sm transition ${wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600"}`}>
-          <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-4 w-4" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
-        </button>
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"}
+            className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600")}>
+            <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-5 w-5" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
+          </button>
+          <button type="button" onClick={onCompare} aria-pressed={compared} aria-label={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনায় যুক্ত করুন"} title={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনা করুন"}
+            className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (compared ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-white/80 bg-white/95 text-slate-500 hover:text-emerald-800")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M5 7h14m-3-3 3 3-3 3M19 17H5m3-3-3 3 3 3"/></svg>
+          </button>
+        </div>
       </div>
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <p className="text-[11px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
-        <h3 className="mt-2 break-words whitespace-normal text-[15px] font-extrabold leading-6 text-slate-900">
-          <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
+        <p className="truncate text-[10px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
+        <h3 className="mt-1.5 min-h-12 break-words text-sm font-black leading-6 text-slate-900 sm:text-base">
+          <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
-        <div className="mt-auto pt-3">
-          <p className="text-lg font-black tracking-tight text-emerald-950 sm:text-xl">
-            {hasPrice && Number(product.price) > 0 ? <>৳{money(product.price as number | string)}{product.unit ? <span className="text-xs font-semibold text-slate-500"> / {product.unit}</span> : null}</> : <span className="text-sm">দাম জানতে যোগাযোগ করুন</span>}
-          </p>
-          <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
-            <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
-              বিস্তারিত দেখুন <span aria-hidden="true">→</span>
-            </Link>
-            <button type="button" onClick={onCompare} aria-pressed={compared} className={`min-h-10 rounded-xl border px-2.5 text-[11px] font-bold transition ${compared ? "border-emerald-800 bg-emerald-50 text-emerald-900" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
-              {compared ? "তুলনায় আছে" : "তুলনা"}
-            </button>
+        <div className="mt-auto border-t border-slate-100 pt-3">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">PRICE</p>
+          <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+            <p className="text-lg font-black tracking-tight text-emerald-900 sm:text-xl">
+              {hasPrice && Number(product.price) >= 0 ? <>৳{money(product.price as number | string)}{unit && <span className="ml-1 text-[10px] font-semibold text-slate-500">/ {unit}</span>}</> : <span className="text-xs">দাম জানতে যোগাযোগ করুন</span>}
+            </p>
+            {productHrefPrefix === "/marketplace" && inStock && hasPrice && Number.isFinite(Number(product.price)) && Number(product.price) >= 0 ? (
+              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }} disabled={cartBusy}
+                aria-label={product.name + " কার্টে যোগ করুন"}
+                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-900 bg-white px-3 py-2 text-[11px] font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-50 sm:px-4">
+                <ShoppingCart size={15} aria-hidden="true" />
+                {addingToCart ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
+              </button>
+            ) : (
+              <Link href={detailHref} onClick={recordListingClick}
+                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-4">
+                {inStock && productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"}
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -103,6 +140,101 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompare, setShowCompare] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const addRequestInFlightRef = useRef(false);
+  const [cartSummary, setCartSummary] = useState<{ lines: number; units: number }>({ lines: 0, units: 0 });
+  const [cartConfirmed, setCartConfirmed] = useState(false);
+  const [cartNotice, setCartNotice] = useState("");
+  const [cartNeedsLogin, setCartNeedsLogin] = useState(false);
+  const [authReturnTo, setAuthReturnTo] = useState<string | null>(null);
+  const [cartError, setCartError] = useState("");
+
+
+  // The existing cart RPC is authoritative for prices, quantity caps, and stock.
+  // Only fetch counts for the floating bar; never calculate discounts or fees here.
+  const loadCartSummary = useCallback(async (): Promise<{ lines: number; units: number }> => {
+    const supabase = createSupabaseBrowserClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw authError;
+    if (!user) return { lines: 0, units: 0 };
+    const { data: cart, error: cartError } = await supabase.from("carts")
+      .select("id").eq("user_id", user.id).eq("status", "active").maybeSingle();
+    if (cartError) throw cartError;
+    if (!cart) return { lines: 0, units: 0 };
+    const { data: rows, error: itemsError } = await supabase.from("cart_items")
+      .select("quantity").eq("cart_id", cart.id);
+    if (itemsError) throw itemsError;
+    return {
+      lines: (rows || []).length,
+      units: (rows || []).reduce((sum, row) => sum + Number(row.quantity || 0), 0),
+    };
+  }, []);
+
+  useEffect(() => {
+    if (productHrefPrefix !== "/marketplace") return;
+    let alive = true;
+    loadCartSummary()
+      .then((summary) => { if (alive) setCartSummary(summary); })
+      .catch(() => { /* Cart status is optional; adding still works. */ });
+    return () => { alive = false; };
+  }, [productHrefPrefix, loadCartSummary]);
+
+  async function addProductToCart(product: MarketplaceProduct) {
+    if (productHrefPrefix !== "/marketplace" || addRequestInFlightRef.current || addingProductId) return;
+    if (Number(product.stock || 0) < 1 || product.price == null || !Number.isFinite(Number(product.price)) || Number(product.price) < 0) {
+      setCartError("পণ্যের বর্তমান মূল্য বা স্টক পাওয়া যাচ্ছে না।");
+      return;
+    }
+    addRequestInFlightRef.current = true;
+    setAddingProductId(product.id);
+    setCartError("");
+    setCartNeedsLogin(false);
+    setCartNotice("");
+    try {
+      const { supabase, user } = await resolveMarketplaceCartUser();
+      if (!user) {
+        setAuthReturnTo("/marketplace/" + encodeURIComponent(product.slug) + "?addToCart=" + encodeURIComponent(product.id) + "&qty=1");
+        setCartNeedsLogin(true);
+        setCartError("");
+        return;
+      }
+      const { error } = await supabase.rpc("add_marketplace_cart_item", {
+        p_product_id: product.id,
+        p_quantity: 1,
+      });
+      if (error) {
+        setCartError(/Insufficient stock|maximum quantity|Product unavailable/i.test(error.message || "")
+          ? "স্টক শেষ বা কার্টের পরিমাণ সীমার বেশি। কার্ট দেখে পরিমাণ ঠিক করুন।"
+          : "কার্টে পণ্য যোগ করা যায়নি। আবার চেষ্টা করুন।");
+        return;
+      }
+      trackAnalyticsEvent("add_to_cart", {
+        currency: "BDT",
+        item_id: product.id,
+        quantity: 1,
+        value: Number(product.price),
+      });
+      setCartConfirmed(true);
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
+      setCartNotice(product.name + " কার্টে যোগ হয়েছে।");
+      try {
+        setCartSummary(await loadCartSummary());
+      } catch {
+        // The add operation succeeded. Avoid displaying a stale item count.
+        setCartSummary({ lines: 0, units: 0 });
+      }
+    } catch (error) {
+      // A network/auth-service error is different from having no account.
+      // Never claim a cart addition succeeded or leak raw auth errors.
+      console.error("Marketplace Add to Cart failed:", error instanceof Error ? error.name : "unknown");
+      setCartError("লগইন সেবা বা সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+    } finally {
+      addRequestInFlightRef.current = false;
+      setAddingProductId(null);
+    }
+  }
+
+  const showStickyCart = productHrefPrefix === "/marketplace" && (cartConfirmed || cartSummary.units > 0);
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
@@ -164,7 +296,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   }
 
   return (
-    <div ref={catalogueRef} className="mt-6 lg:mt-8">
+    <div ref={catalogueRef} className={"mt-6 lg:mt-8 " + (showStickyCart ? "pb-32 sm:pb-24" : "")}>
       <section className="rounded-[1.35rem] border border-emerald-950/10 bg-white p-4 shadow-[0_8px_28px_rgba(15,55,32,.055)] sm:p-5" aria-label="পণ্য খুঁজুন">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="min-w-0 flex-1">
@@ -238,9 +370,16 @@ export default function MarketplaceCore({ products, showCategories = true, avail
             <p aria-live="polite" className="shrink-0 text-xs font-bold text-slate-500">{new Intl.NumberFormat("bn-BD").format(visible.length)}টি পণ্য</p>
           </div>
 
+          {productHrefPrefix === "/marketplace" && cartError && (
+            <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
+              <span>{cartError}</span>
+              {cartNeedsLogin && <Link href={"/login?next=" + encodeURIComponent("/marketplace")} className="rounded-lg bg-emerald-900 px-4 py-2 text-xs font-bold text-white">লগইন করুন</Link>}
+              {!cartNeedsLogin && <Link href="/cart" className="text-xs font-bold underline underline-offset-2">কার্ট দেখুন</Link>}
+            </div>
+          )}
           {paginated.length ? <>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} compared={compareIds.includes(product.id)} onWish={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} onCompare={() => toggleCompare(product.id)} />)}
+              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} compared={compareIds.includes(product.id)} onWish={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} onCompare={() => toggleCompare(product.id)} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
             </div>
             {paginated.length < visible.length && <div className="mt-7 flex justify-center">
               <button type="button" onClick={() => setPage((current) => current + 1)} className="min-h-11 rounded-xl border border-emerald-800 bg-white px-6 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">আরও পণ্য দেখুন ({new Intl.NumberFormat("bn-BD").format(visible.length - paginated.length)}টি বাকি)</button>
@@ -257,13 +396,42 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </section>
       </div>
 
-      {compareIds.length > 0 && <div className="fixed inset-x-3 bottom-4 z-40 mx-auto max-w-3xl rounded-2xl border border-emerald-900/10 bg-white p-3 shadow-2xl shadow-emerald-950/20 sm:inset-x-6 sm:p-4">
+      {authReturnTo && <MarketplaceAuthModal returnTo={authReturnTo} onClose={() => setAuthReturnTo(null)} />}
+      {compareIds.length > 0 && <div className={"fixed inset-x-3 z-40 mx-auto max-w-3xl rounded-2xl border border-emerald-900/10 bg-white p-3 shadow-2xl shadow-emerald-950/20 sm:inset-x-6 sm:p-4 " + (showStickyCart ? "bottom-44 sm:bottom-28" : "bottom-4")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div><p className="text-sm font-black text-slate-900">পণ্য তুলনা <span className="text-emerald-800">({compareIds.length}/3)</span></p><p className="mt-0.5 text-[11px] text-slate-500">সর্বোচ্চ ৩টি পণ্য একসঙ্গে তুলনা করুন</p></div>
           <div className="flex items-center gap-2"><button type="button" onClick={() => setShowCompare((value) => !value)} className="rounded-xl bg-emerald-900 px-4 py-2.5 text-xs font-bold text-white">{showCompare ? "তুলনা বন্ধ করুন" : "তুলনা দেখুন"}</button><button type="button" onClick={() => { setCompareIds([]); setShowCompare(false); }} className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-600">মুছুন</button></div>
         </div>
         {showCompare && <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-xs"><thead><tr><th className="p-2 text-slate-500">পণ্য</th>{comparedProducts.map((product) => <th key={product.id} className="p-2 font-bold text-slate-900">{product.name}</th>)}</tr></thead><tbody><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">দাম</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 font-extrabold text-emerald-900">{product.price && Number(product.price) > 0 ? `৳${money(product.price)}` : "জানতে যোগাযোগ করুন"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">ক্যাটাগরি</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{product.category || "—"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">স্টক</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{Number(product.stock || 0) > 0 ? "স্টকে আছে" : "স্টক নেই / যাচাই করুন"}</td>)}</tr></tbody></table></div>}
       </div>}
+
+      {showStickyCart && (
+        <aside role="region" aria-label="কার্ট থেকে চেকআউট করুন"
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 px-3 py-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:px-4">
+          <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><ShoppingCart size={22} /></span>
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-sm font-black text-emerald-950">
+                  {cartNotice ? <CheckCircle2 size={16} className="shrink-0 text-emerald-600" /> : null}
+                  {cartSummary.units > 0 ? "কার্টে " + money(cartSummary.units) + "টি পণ্য" : "পণ্য কার্টে যোগ হয়েছে"}
+                </p>
+                <p role="status" aria-live="polite" className="truncate text-[11px] text-slate-600">
+                  {cartNotice || (cartSummary.lines > 0 ? money(cartSummary.lines) + " ধরনের পণ্য রয়েছে" : "অর্ডার করতে কার্ট যাচাই করুন")}
+                </p>
+              </div>
+            </div>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Link href="/cart" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-emerald-900 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 sm:flex-none">
+                কার্ট দেখুন
+              </Link>
+              <Link href="/checkout" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-800 sm:flex-none">
+                চেকআউট করুন
+              </Link>
+            </div>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

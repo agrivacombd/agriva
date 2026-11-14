@@ -125,6 +125,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
         return { sections: sectionResult.data ?? [], details: detailResult.data ?? null };
       })()
     : null;
+  // Offer real, currently published products only; do not create fictional reviews or discounts.
+  const relatedProducts = isSample ? [] : await (async () => {
+    const supabase = await createSupabaseServerClient();
+    let query = supabase.from("products")
+      .select("id,slug,name,price,stock,unit,image_url")
+      .eq("status", "active")
+      .eq("marketplace_channel", "marketplace")
+      .neq("id", product.id);
+    if (product.category_slug) query = query.eq("category_slug", product.category_slug);
+    const { data } = await query.order("created_at", { ascending: false }).limit(8);
+    return data || [];
+  })();
+
   const descriptionText = productDescriptionToText(description);
   const descriptionSummary = descriptionText.length > 260 ? descriptionText.slice(0, 257).replace(/\\s+\\S*$/, "") + "…" : descriptionText;
   const unitLabels: Record<string, string> = { kg: "কেজি", g: "গ্রাম", piece: "পিস", pack: "প্যাকেট", liter: "লিটার", bag: "বস্তা" };
@@ -242,8 +255,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.category && <span className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600">{product.category}</span>}
             </div>
 
-            <h1 id="product-title" className="mt-5 break-words text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.7rem]">{product.name}</h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
+            <h1 id="product-title" className="mt-5 break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl lg:text-4xl">{product.name}</h1>
+            <p className="mt-4 line-clamp-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
               {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
             </p>
             {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-5 rounded-2xl border bg-white p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
@@ -263,7 +276,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
-                <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
+                <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || "টি"} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
               )}
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
@@ -330,6 +343,32 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </section>
           </aside>
         </div>
+
+        {relatedProducts.length > 0 && (
+          <section className="mt-10" aria-labelledby="related-product-heading">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Continue shopping</p>
+                <h2 id="related-product-heading" className="mt-1 text-xl font-black text-emerald-950 sm:text-2xl">{product.category_slug ? "একই ক্যাটাগরির আরও পণ্য" : "আরও কৃষিপণ্য দেখুন"}</h2>
+              </div>
+              <Link href="/marketplace" className="text-sm font-extrabold text-emerald-800 underline decoration-emerald-200 underline-offset-4 hover:text-emerald-600">সব পণ্য দেখুন</Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {relatedProducts.map(item => (
+                <article key={item.id} className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                  <Link href={"/marketplace/" + item.slug} className="relative flex aspect-square items-center justify-center overflow-hidden bg-gradient-to-b from-emerald-50 to-white">
+                    {item.image_url ? <img src={item.image_url} alt={item.name + " — AGRIVA পণ্য"} width={360} height={360} loading="lazy" decoding="async" className="h-full w-full object-contain p-3 transition-transform duration-300 group-hover:scale-105" /> : <span className="text-4xl" aria-hidden="true">🌱</span>}
+                  </Link>
+                  <div className="flex flex-1 flex-col p-3 sm:p-4">
+                    <Link href={"/marketplace/" + item.slug} className="line-clamp-2 min-h-10 text-sm font-bold leading-5 text-slate-900 hover:text-emerald-800">{item.name}</Link>
+                    <p className="mt-2 text-lg font-black text-emerald-800">{item.price !== null && Number.isFinite(Number(item.price)) ? "৳" + Number(item.price).toLocaleString("bn-BD") : "দাম জানতে যোগাযোগ করুন"}</p>
+                    <Link href={"/marketplace/" + item.slug + "#product-direct-cod"} className="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-xs font-extrabold text-white hover:bg-emerald-800">{Number(item.stock ?? 0) > 0 ? "অর্ডার অপশন" : "বিস্তারিত দেখুন"}</Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         <footer className="mt-8 rounded-2xl border border-emerald-950/10 bg-white px-5 py-4 text-xs leading-6 text-slate-500">
           পণ্যের তথ্য বিক্রেতার দেওয়া listing-এর ভিত্তিতে দেখানো হয়। কেনার আগে specification, প্রাপ্যতা, মূল্য ও সরবরাহের শর্ত নিশ্চিত করুন।
