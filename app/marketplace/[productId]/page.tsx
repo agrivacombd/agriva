@@ -242,8 +242,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.category && <span className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600">{product.category}</span>}
             </div>
 
-            <h1 id="product-title" className="mt-5 break-words text-3xl font-black leading-tight tracking-tight sm:text-4xl lg:text-[2.7rem]">{product.name}</h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-slate-600">
+            <h1 id="product-title" className="mt-5 break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl lg:text-4xl">{product.name}</h1>
+            <p className="mt-4 line-clamp-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
               {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
             </p>
             {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-5 rounded-2xl border bg-white p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
@@ -263,7 +263,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
-                <CheckoutButton productId={product.id} disabled={Number(product.stock || 0) < 1} />
+                <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || "টি"} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
               )}
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
