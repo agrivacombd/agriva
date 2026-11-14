@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Minus, Plus, ShoppingBasket, Trash2 } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type Item = {
   id: string;
@@ -25,6 +25,7 @@ export default function Cart() {
   const total = useMemo(() => items.reduce((sum, item) => sum + item.price * item.qty, 0), [items]);
 
   const load = useCallback(async () => {
+    const supabase = createSupabaseBrowserClient();
     setLoading(true);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -89,6 +90,7 @@ export default function Cart() {
   useEffect(() => { void load(); }, [load]);
 
   async function changeQuantity(item: Item, nextQuantity: number) {
+    const supabase = createSupabaseBrowserClient();
     if (busyItem || !item.available) return;
     if (nextQuantity < 1) {
       await remove(item);
@@ -110,6 +112,7 @@ export default function Cart() {
   }
 
   async function remove(item: Item) {
+    const supabase = createSupabaseBrowserClient();
     setBusyItem(item.id);
     setMessage("");
     const { error } = await supabase.from("cart_items").delete().eq("id", item.id);
