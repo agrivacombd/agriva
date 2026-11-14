@@ -141,6 +141,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const [showCompare, setShowCompare] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const addRequestInFlightRef = useRef(false);
   const [cartSummary, setCartSummary] = useState<{ lines: number; units: number }>({ lines: 0, units: 0 });
   const [cartConfirmed, setCartConfirmed] = useState(false);
   const [cartNotice, setCartNotice] = useState("");
@@ -179,11 +180,12 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   }, [productHrefPrefix, loadCartSummary]);
 
   async function addProductToCart(product: MarketplaceProduct) {
-    if (productHrefPrefix !== "/marketplace" || addingProductId) return;
+    if (productHrefPrefix !== "/marketplace" || addRequestInFlightRef.current || addingProductId) return;
     if (Number(product.stock || 0) < 1 || product.price == null || !Number.isFinite(Number(product.price)) || Number(product.price) < 0) {
       setCartError("পণ্যের বর্তমান মূল্য বা স্টক পাওয়া যাচ্ছে না।");
       return;
     }
+    addRequestInFlightRef.current = true;
     setAddingProductId(product.id);
     setCartError("");
     setCartNeedsLogin(false);
@@ -227,6 +229,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       console.error("Marketplace Add to Cart failed:", error instanceof Error ? error.name : "unknown");
       setCartError("লগইন সেবা বা সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
+      addRequestInFlightRef.current = false;
       setAddingProductId(null);
     }
   }
