@@ -43,6 +43,35 @@ for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullA
 for (const removed of ['setField("unionOrArea"', 'setField("villageRoadHouse"', 'setField("landmark"', 'setField("postalCode"']) {
   assert.ok(!checkout.includes(removed), "Legacy form field is still visible: " + removed);
 }
+for (const fragment of [
+  'lg:grid-cols-[minmax(0,1fr)_minmax(350px,0.82fr)]',
+  'id="agriva-checkout-form"',
+  'form="agriva-checkout-form"',
+  'sm:grid-cols-2',
+  'item.image_url',
+  'item.unit',
+  'changeQuantity(item, item.quantity + 1)',
+  'changeQuantity(item, item.quantity - 1)',
+  'void remove(item)',
+  'subtotal',
+  'invalidCart',
+  'idempotencyKeyRef.current = ""',
+  'checkoutDisabled',
+  'ডিসকাউন্ট',
+  'ডেলিভারি চার্জ',
+  'কার্টে ফিরে যান',
+]) {
+  assert.ok(checkout.includes(fragment), "Responsive checkout must preserve cart controls and safe values: " + fragment);
+}
+assert.ok(checkout.includes("order-2 space-y-5") && checkout.includes("order-1 min-w-0"),
+  "Mobile should show item summary before the delivery address form");
+assert.ok(checkout.includes('select("id,product_id,quantity,unit_price")'),
+  "Checkout must operate on actual cart item IDs");
+assert.ok(checkout.includes('select("id,name,slug,image_url,unit,price,stock,status")'),
+  "Checkout must use current catalogue price, stock and images");
+assert.ok(!checkout.includes('৳১০০') && !checkout.includes('৳100') && !checkout.includes('৳৬৫০'),
+  "Checkout must not invent shipping fees or discounts");
+
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
