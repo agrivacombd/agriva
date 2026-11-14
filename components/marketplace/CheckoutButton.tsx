@@ -308,7 +308,7 @@ export default function CheckoutButton({
       )}
 
       {!primaryOrderVisible && !formOpen && !cartAdded && !authPopupOpen && !unavailable && !orderId && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-emerald-900/10 bg-white/95 px-3 pt-2 shadow-[0_-6px_28px_rgba(0,35,22,.12)] backdrop-blur-lg sm:hidden"
+        <div className="fixed inset-x-0 bottom-0 z-[60] border-t border-emerald-900/10 bg-white/95 px-3 pt-2 shadow-[0_-6px_28px_rgba(0,35,22,.12)] backdrop-blur-lg sm:hidden"
           style={{ paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))" }}>
           <div className="mx-auto flex max-w-lg items-center gap-2">
             <div className="min-w-0 shrink-0">
@@ -330,7 +330,7 @@ export default function CheckoutButton({
 
       {cartAdded && (
         <aside role="region" aria-label="কার্টে যোগ করা পণ্যের চেকআউট"
-          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 p-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:p-4">
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 p-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:p-4">
           <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
             <CheckCircle2 size={25} className="shrink-0 text-emerald-600" aria-hidden="true" />
             <p role="status" className="min-w-0 flex-1 text-sm font-bold text-emerald-950">পণ্য কার্টে যুক্ত হয়েছে।</p>
