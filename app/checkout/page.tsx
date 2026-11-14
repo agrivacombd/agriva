@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Minus, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 type Item = {
@@ -155,6 +156,7 @@ export default function Checkout() {
         .update({ quantity, unit_price: item.unit_price }).eq("id", item.id);
       if (error) throw error;
       idempotencyKeyRef.current = "";
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       await loadCart(true);
     } catch {
       setMessage("পণ্যের পরিমাণ বদলানো যায়নি। আবার চেষ্টা করুন।");
@@ -172,6 +174,7 @@ export default function Checkout() {
       const { error } = await supabase.from("cart_items").delete().eq("id", item.id);
       if (error) throw error;
       idempotencyKeyRef.current = "";
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       await loadCart(true);
     } catch {
       setMessage("কার্ট থেকে পণ্য সরানো যায়নি। আবার চেষ্টা করুন।");
@@ -212,6 +215,7 @@ export default function Checkout() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
       setConfirmed(true);
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setOrderId(String(result.orderId ?? ""));
       setItems([]);
       const billedTotal = Number(result.total);
