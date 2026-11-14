@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 
 type Item = {
   id: string;
@@ -111,6 +112,7 @@ export default function Cart() {
       const { error } = await supabase.from("cart_items")
         .update({ quantity: nextQuantity, unit_price: item.price }).eq("id", item.id);
       if (error) throw error;
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       await load(true);
     } catch {
       setMessage("পরিমাণ পরিবর্তন করা যায়নি। পুনরায় চেষ্টা করুন।");
@@ -127,6 +129,7 @@ export default function Cart() {
       const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.from("cart_items").delete().eq("id", item.id);
       if (error) throw error;
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       await load(true);
     } catch {
       setMessage("পণ্যটি কার্ট থেকে সরানো যায়নি। আবার চেষ্টা করুন।");
