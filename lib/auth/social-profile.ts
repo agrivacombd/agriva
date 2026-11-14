@@ -9,9 +9,13 @@ function textField(data: SocialData, key: string): string {
 /** Display name only, never a unique username, role, or verified identity claim. */
 export function socialDisplayName(user: User): string | null {
   const identity = user.identities?.find(item => item.provider === "google" || item.provider === "facebook");
-  if (!identity) return null;
+  const linkedProviders = user.app_metadata?.providers;
+  const hasSocialProvider = Boolean(identity)
+    || ["google", "facebook"].includes(String(user.app_metadata?.provider || ""))
+    || (Array.isArray(linkedProviders) && linkedProviders.some(provider => provider === "google" || provider === "facebook"));
+  if (!hasSocialProvider) return null;
 
-  const verifiedProviderData = identity.identity_data as SocialData;
+  const verifiedProviderData = identity?.identity_data as SocialData;
   const authMetadata = user.user_metadata as SocialData;
   const name = [
     textField(verifiedProviderData, "full_name"),
