@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -82,10 +83,8 @@ export default function CheckoutButton({
     setCartAdded(false);
     setMessage("");
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError) throw authError;
-      if (!user || user.is_anonymous) {
+      const { supabase, user } = await resolveMarketplaceCartUser();
+      if (!user) {
         setAuthPopupOpen(true);
         setMessage("লগইন করুন অথবা মোবাইল/ইমেইল দিয়ে অ্যাকাউন্ট তৈরি করুন।");
         return;
@@ -109,7 +108,7 @@ export default function CheckoutButton({
       setMessage(numberBN(requestedQuantity) + " " + unitLabel + " কার্টে যোগ হয়েছে।");
     } catch (error) {
       console.error("Add to cart failed:", error);
-      setMessage("কার্টে যোগ করা যাচ্ছে না। লগইন ও সংযোগ যাচাই করে আবার চেষ্টা করুন।");
+      setMessage("লগইন সেবা বা সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
       setAddingToCart(false);
     }
