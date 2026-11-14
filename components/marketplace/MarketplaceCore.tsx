@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
 import Link from "next/link";
 import Image from "next/image";
