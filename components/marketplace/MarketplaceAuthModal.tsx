@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Eye, EyeOff, LockKeyhole, X } from "lucide-react";
 import SignupExperience from "@/components/auth/SignupExperience";
 import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export default function MarketplaceAuthModal({
@@ -73,8 +75,7 @@ export default function MarketplaceAuthModal({
   }, [onClose]);
 
   const switchMode = () => { setMode(value => value === "login" ? "signup" : "login"); setError(""); };
-  const safeReturnTo = returnTo.startsWith("/marketplace/") && !returnTo.startsWith("//") && !returnTo.includes("\\")
-    ? returnTo : "/marketplace";
+  const safeReturnTo = safeAuthNextPath(returnTo, "/marketplace");
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-6"
@@ -97,6 +98,7 @@ export default function MarketplaceAuthModal({
               ? "কার্টে পণ্য যোগ করতে লগইন করুন। লগইন হলে একই পণ্যে ফিরে কার্টে যোগ হবে।"
               : "ইমেইল অথবা মোবাইল নম্বর দিয়ে অ্যাকাউন্ট খুলুন।"}
           </p>
+          <SocialAuthButtons returnTo={safeReturnTo} compact />
           <div className="mt-5 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="Login/Signup মাধ্যম">
             <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")}
               className={"min-h-11 rounded-lg px-3 text-sm font-black " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
