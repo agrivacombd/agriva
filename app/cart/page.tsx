@@ -244,16 +244,16 @@ export default function Cart() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <dt className="text-slate-500">ডেলিভারি চার্জ</dt>
-                  <dd className="text-xs font-semibold text-slate-600">Checkout-এ যাচাই করুন</dd>
+                  <dd className="text-xs font-semibold text-slate-600">{delivery ? `৳${money(delivery.fee)}` : "Checkout-এ যাচাই করুন"}</dd>
                 </div>
                 <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
-                  <dt className="font-black">পণ্যের মোট (ডেলিভারি ছাড়া)</dt>
-                  <dd className="text-xl font-black tabular-nums text-emerald-800">৳{money(subtotal)}</dd>
+                  <dt className="font-black">সর্বমোট (ডেলিভারিসহ)</dt>
+                  <dd className="text-xl font-black tabular-nums text-emerald-800">{delivery ? `৳${money(subtotal + delivery.fee)}` : "Checkout-এ যাচাই করুন"}</dd>
                 </div>
               </dl>
               <p className="mt-3 rounded-xl bg-emerald-50 px-3 py-3 text-xs leading-5 text-emerald-950">
                 <Truck size={15} className="mr-1 inline-block align-text-bottom" />
-                অর্ডারের চূড়ান্ত মূল্য ও প্রযোজ্য চার্জ নিশ্চিত করার আগে যাচাই করুন। কার্টের মূল্য বর্তমান পণ্যের তথ্য থেকে দেখানো হচ্ছে।
+                প্যাকেট-শুধু অর্ডার ৳৭০। ধান প্রথম কেজি ৳১৩৫, অতিরিক্ত প্রতি শুরু হওয়া কেজি ৳২০। ধানের সঙ্গে প্যাকেটের অতিরিক্ত চার্জ নেই। অর্ডার জমার সময় সার্ভার আবার হিসাব করবে।
               </p>
               <Link href={checkoutDisabled ? "/cart" : "/checkout"} aria-disabled={checkoutDisabled}
                 className={"mt-5 flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 py-3 text-center text-sm font-black text-white transition " +
