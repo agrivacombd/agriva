@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
   // New checkout asks for one full address. Map only user-provided details to
   // the legacy required RPC keys; no additional location is fabricated.
   const rawFullAddress = typeof rawAddress.fullAddress === "string" ? rawAddress.fullAddress.trim() : "";
-  if (rawFullAddress && (rawFullAddress.length < 8 || rawFullAddress.length > 250)) {
-    return NextResponse.json({ error: "সম্পূর্ণ ডেলিভারি ঠিকানা ৮ থেকে ২৫০ অক্ষরের মধ্যে লিখুন।" }, { status: 400 });
+  if (rawFullAddress.length > 250) {
+    return NextResponse.json({ error: "ঐচ্ছিক ডেলিভারি ঠিকানা সর্বোচ্চ ২৫০ অক্ষরের মধ্যে লিখুন।" }, { status: 400 });
   }
   const isSimpleAddress = rawFullAddress.length > 0;
   const district = cleanText(rawAddress.district, 80);
