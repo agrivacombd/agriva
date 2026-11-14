@@ -80,7 +80,7 @@ assert.doesNotMatch(plantDetail,/from\("products"\)/,"Plant Market detail cannot
 assert.match(adminPermissionApi,/p_module:moduleKey/,"admin revocation sends only the selected module");
 const checkout = read("components/marketplace/CheckoutButton.tsx");
 assert.match(marketplaceDetail,/CheckoutButton productId=\{product\.id\}/,"Marketplace product details retain the purchase component");
-assert.match(checkout,/router\.push\("\/cart"\)/,"successful add-to-cart opens the cart");
+assert.match(checkout,/<Link href="\/cart"/,"successful add-to-cart offers a cart navigation link");
 assert.match(checkout,/fetch\("\/api\/checkout"/,"COD checkout endpoint remains connected");
 assert.ok(checkout.includes('rpc("add_marketplace_cart_item"'), "Marketplace add-to-cart uses the stock-checked cart RPC");
 assert.ok(!checkout.includes('.from("cart_items")'), "Marketplace add-to-cart must not bypass the cart RPC");

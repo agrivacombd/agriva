@@ -6,6 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
+import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
 type Language = "bn" | "en";
 
@@ -61,10 +64,12 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [method, setMethod] = useState<"email" | "phone">("email");
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = copy[language];
   const requestedNextPath = searchParams.get("next");
+  const safeNext = safeAuthNextPath(requestedNextPath);
 
   useEffect(() => {
     let active = true;
@@ -72,9 +77,7 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!active || !user) return;
-        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//")
-          ? requestedNextPath
-          : "/dashboard";
+        const target = safeNext;
         router.replace(target);
         router.refresh();
       }).catch(() => {});
@@ -82,7 +85,7 @@ function LoginForm() {
       // Login remains available if auth configuration is temporarily unavailable.
     }
     return () => { active = false; };
-  }, [requestedNextPath, router]);
+  }, [safeNext, router]);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,8 +98,7 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      const nextPath = searchParams.get("next");
-      router.push(nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard");
+      router.push(safeNext);
       router.refresh();
     } catch {
       setMessage(t.failed);
@@ -133,7 +135,24 @@ function LoginForm() {
             <p className="text-sm font-bold text-[#167453]">{t.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">{t.subtitle}</p>
-            <form onSubmit={signIn} className="mt-8 space-y-5">
+            <SocialAuthButtons returnTo={safeNext} english={language === "en"} />
+            <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="লগইন মাধ্যম">
+              <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+                {language === "bn" ? "ইমেইল" : "Email"}
+              </button>
+              <button type="button" aria-pressed={method === "phone"} onClick={() => setMethod("phone")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+                {language === "bn" ? "মোবাইল নম্বর" : "Phone"}
+              </button>
+            </div>
+            {method === "phone" ? (
+              <div className="mt-6">
+                <PhoneOtpAuth mode="login" onAuthenticated={() => {
+                  const target = safeNext;
+                  router.replace(target);
+                  router.refresh();
+                }} />
+              </div>
+            ) : <form onSubmit={signIn} className="mt-8 space-y-5">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.email}
                 <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="email" autoComplete="email" placeholder={t.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} required />
@@ -148,8 +167,8 @@ function LoginForm() {
               <div className="-mt-2 flex justify-end"><Link href="/forgot-password" className="text-sm font-semibold text-[#167453] underline underline-offset-4">{t.forgot}</Link></div>
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}</button>
               {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{message}</p>}
-            </form>
-            <p className="mt-7 text-center text-sm text-slate-600">{t.noAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href="/signup">{t.signup}</Link></p>
+            </form>}
+            <p className="mt-7 text-center text-sm text-slate-600">{t.noAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href={requestedNextPath ? "/signup?next=" + encodeURIComponent(safeNext) : "/signup"}>{t.signup}</Link></p>
           </div>
         </section>
       </div>
