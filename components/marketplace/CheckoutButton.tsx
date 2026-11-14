@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
+import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -56,7 +57,7 @@ export default function CheckoutButton({
     url.searchParams.delete("addToCart");
     url.searchParams.delete("qty");
     window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
-    const desiredQty = rawQty && /^\\d{1,3}$/.test(rawQty) ? Number(rawQty) : 1;
+    const desiredQty = rawQty && /^\d{1,3}$/.test(rawQty) ? Number(rawQty) : 1;
     if (!Number.isSafeInteger(desiredQty) || desiredQty < 1 || desiredQty > 100 || desiredQty > maxQuantity) {
       setMessage("পণ্যের স্টক বা নির্বাচিত পরিমাণ পরিবর্তিত হয়েছে। নতুন পরিমাণ বেছে নিন।");
       return;
@@ -84,7 +85,7 @@ export default function CheckoutButton({
       const supabase = createSupabaseBrowserClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
-      if (!user) {
+      if (!user || user.is_anonymous) {
         setAuthPopupOpen(true);
         setMessage("লগইন করুন অথবা মোবাইল/ইমেইল দিয়ে অ্যাকাউন্ট তৈরি করুন।");
         return;
@@ -104,6 +105,7 @@ export default function CheckoutButton({
         currency: "BDT", item_id: productId, quantity: requestedQuantity, value: unitPrice * requestedQuantity,
       });
       setCartAdded(true);
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setMessage(numberBN(requestedQuantity) + " " + unitLabel + " কার্টে যোগ হয়েছে।");
     } catch (error) {
       console.error("Add to cart failed:", error);
