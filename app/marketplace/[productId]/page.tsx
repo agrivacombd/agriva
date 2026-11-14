@@ -259,7 +259,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
               </div>
             )}
-            <ProductShareCard productName={product.name} productUrl={productUrl} imageUrl={image || null} priceLabel={formattedPrice} />
           </div>
 
           <div className="min-w-0 px-4 pb-5 pt-4 sm:p-6 lg:p-8">
@@ -296,6 +295,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               )}
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডার নিশ্চিত করার আগে পণ্যের পরিমাণ, স্টক ও ডেলিভারিসহ মোট মূল্য যাচাই করুন।</p>
+            <ProductShareCard productName={product.name} productUrl={productUrl} imageUrl={image || null} priceLabel={formattedPrice} />
           </div>
         </section>
 
