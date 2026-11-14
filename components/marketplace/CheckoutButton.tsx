@@ -29,6 +29,8 @@ export default function CheckoutButton({
   const maxQuantity = Math.min(100, Math.max(0, Math.floor(Number(stock) || 0)));
   const unavailable = disabled || maxQuantity === 0 || !Number.isFinite(unitPrice) || unitPrice < 0;
   const [quantity, setQuantity] = useState(1);
+  const primaryOrderRef = useRef<HTMLButtonElement>(null);
+  const [primaryOrderVisible, setPrimaryOrderVisible] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
   // A synchronous guard prevents duplicate cart RPCs before React paints disabled state.
   const addRequestInFlightRef = useRef(false);
@@ -71,6 +73,26 @@ export default function CheckoutButton({
     // The one-time URL intent is removed synchronously before attempting the cart RPC.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
+
+  // Show one compact mobile action bar only when the in-page primary CTA is offscreen.
+  useEffect(() => {
+    const target = primaryOrderRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setPrimaryOrderVisible(entry.isIntersecting);
+    }, { rootMargin: "0px 0px -72px 0px" });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  function openDirectOrder() {
+    if (unavailable || loading || Boolean(orderId)) return;
+    setFormOpen(true);
+    setMessage("");
+    window.requestAnimationFrame(() => {
+      document.getElementById("product-direct-cod")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   function selectQuantity(value: number) {
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
@@ -182,25 +204,25 @@ export default function CheckoutButton({
   }
 
   return (
-    <div className={"space-y-4 " + (cartAdded ? "pb-28" : "")}>
-      <div className="rounded-2xl border border-emerald-950/10 bg-white p-4 sm:p-5">
+    <div className={"space-y-3 sm:space-y-4 " + (cartAdded ? "pb-24 sm:pb-28" : "")}>
+      <div className="rounded-xl border border-emerald-950/10 bg-white p-3 sm:rounded-2xl sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-black text-[#17351f]">পরিমাণ নির্বাচন করুন</h2>
           <span className="text-xs text-slate-500">সর্বোচ্চ {numberBN(maxQuantity)} {unitLabel} (প্রতি অর্ডার)</span>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="দ্রুত পরিমাণ নির্বাচন">
+        <div className="mt-2 flex flex-wrap gap-1.5 sm:mt-3 sm:gap-2" role="group" aria-label="দ্রুত পরিমাণ নির্বাচন">
           {CHOICES.filter(value => value <= maxQuantity).map(value => (
             <button key={value} type="button" aria-pressed={quantity === value} disabled={unavailable || loading || addingToCart || Boolean(orderId)}
-              onClick={() => selectQuantity(value)}
-              className={"min-h-11 rounded-xl border px-3 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 " +
+              onClick={() => selectQuantity(value)} aria-label={numberBN(value) + " " + unitLabel + " নির্বাচন করুন"}
+              className={"min-h-10 min-w-10 rounded-lg border px-2 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 sm:min-h-11 sm:rounded-xl sm:px-3 " +
                 (quantity === value ? "border-emerald-700 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-400")}>
-              {numberBN(value)} {unitLabel}
+              {numberBN(value)}<span className="hidden sm:inline"> {unitLabel}</span>
             </button>
           ))}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3 sm:mt-4 sm:gap-3 sm:pt-4">
           <div className="inline-flex h-11 items-center overflow-hidden rounded-xl border border-slate-200" role="group" aria-label="পরিমাণ বাড়ান বা কমান">
             <button type="button" aria-label="পরিমাণ কমান" disabled={unavailable || quantity <= 1 || loading || addingToCart || Boolean(orderId)}
               onClick={() => selectQuantity(quantity - 1)} className="grid h-11 w-11 place-items-center hover:bg-emerald-50 disabled:opacity-40"><Minus size={18} /></button>
@@ -216,25 +238,25 @@ export default function CheckoutButton({
         </div>
       </div>
 
-      <button type="button" disabled={unavailable || loading || Boolean(orderId)} onClick={() => { setFormOpen(true); setMessage(""); }}
+      <button ref={primaryOrderRef} type="button" disabled={unavailable || loading || Boolean(orderId)} onClick={openDirectOrder}
         className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3.5 text-base font-black text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
         <ShoppingBag size={19} /> {unavailable ? "বর্তমানে অর্ডার করা যাবে না" : "এখনই অর্ডার করুন"}
       </button>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-2">
         <a href="tel:+8801717504028" aria-label={"ফোনে " + productName + " অর্ডার করুন: ০১৭১৭৫০৪০২৮"}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-black text-white transition hover:bg-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2">
+          className="flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 sm:min-h-12 sm:px-4 sm:text-sm">
           <Phone size={18} /> ফোনে অর্ডার করুন
         </a>
         <button type="button" disabled={unavailable || loading || addingToCart || Boolean(orderId)} onClick={() => void addToCart()}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#17351f] bg-white px-4 py-3 text-sm font-black text-[#17351f] transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+          className="flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl border-2 border-[#17351f] bg-white px-2 py-2.5 text-xs font-black text-[#17351f] transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-12 sm:px-4 sm:text-sm">
           <ShoppingCart size={18} /> {addingToCart ? "যোগ হচ্ছে..." : "কার্টে যোগ করুন"}
         </button>
       </div>
 
 
 
-      <div id="product-direct-cod" className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-[#fbfcf7]">
+      <div id="product-direct-cod" className="scroll-mt-20 overflow-hidden rounded-xl border border-emerald-950/10 bg-[#fbfcf7] sm:rounded-2xl">
         <button type="button" aria-expanded={formOpen} aria-controls="direct-cod-form" onClick={() => setFormOpen(open => !open)}
           className="flex min-h-12 w-full items-center justify-between gap-2 px-4 py-4 text-left text-sm font-black text-[#17351f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-5">
           <span>সরাসরি ক্যাশ অন ডেলিভারি অর্ডার</span>
@@ -283,6 +305,27 @@ export default function CheckoutButton({
 
       {authPopupOpen && (
         <MarketplaceAuthModal returnTo={pendingAddHref} onClose={() => setAuthPopupOpen(false)} />
+      )}
+
+      {!primaryOrderVisible && !formOpen && !cartAdded && !authPopupOpen && !unavailable && !orderId && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-emerald-900/10 bg-white/95 px-3 pt-2 shadow-[0_-6px_28px_rgba(0,35,22,.12)] backdrop-blur-lg sm:hidden"
+          style={{ paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))" }}>
+          <div className="mx-auto flex max-w-lg items-center gap-2">
+            <div className="min-w-0 shrink-0">
+              <p aria-live="polite" className="text-sm font-black tabular-nums text-emerald-950">৳{numberBN(unitPrice * quantity)}</p>
+              <p className="text-[10px] text-slate-500">ডেলিভারি ছাড়া</p>
+            </div>
+            <button type="button" disabled={loading} onClick={openDirectOrder}
+              className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-3 text-sm font-black text-white disabled:opacity-50">
+              <ShoppingBag size={17} aria-hidden="true" /> এখনই অর্ডার
+            </button>
+            <button type="button" disabled={loading || addingToCart}
+              onClick={() => void addToCart()} aria-label={productName + " কার্টে যোগ করুন"}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-emerald-800 bg-white text-emerald-900 disabled:opacity-50">
+              <ShoppingCart size={19} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
       )}
 
       {cartAdded && (
