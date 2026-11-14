@@ -222,8 +222,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
 
-      <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
-        <nav aria-label="Breadcrumb" className="mb-5 flex flex-wrap items-center gap-y-2 text-sm text-slate-500">
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-8 lg:px-8">
+        <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-y-1 text-xs text-slate-500 sm:mb-5 sm:text-sm">
           <Link href="/" className="hover:text-emerald-800">হোম</Link>
           <span className="mx-2" aria-hidden="true">/</span>
           <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
@@ -240,7 +240,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="relative flex min-w-0 items-start justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-5 pb-5 pt-12 sm:px-8 sm:pb-7 sm:pt-14 md:col-start-1 md:row-start-1 md:px-8">
+          <div className="relative flex min-w-0 items-start justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:col-start-1 md:row-start-1 md:px-6">
             {image ? (
               <ProductImageGallery
                 images={galleryImages}
@@ -257,7 +257,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <span className="absolute left-4 top-4 rounded-full border border-emerald-900/10 bg-white/90 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">AGRIVA Marketplace</span>
           </div>
 
-          <div className="flex min-w-0 flex-col p-5 sm:p-8 md:col-start-2 md:row-span-2 md:row-start-1 md:p-10">
+          <div className="flex min-w-0 flex-col px-4 pb-4 pt-3 sm:p-7 md:col-start-2 md:row-span-2 md:row-start-1 md:p-8 lg:p-9">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
                 <span className="h-2 w-2 rounded-full bg-emerald-600" />
@@ -266,35 +266,35 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.category && <span className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600">{product.category}</span>}
             </div>
 
-            <h1 id="product-title" className="mt-5 break-words text-2xl font-black leading-tight tracking-tight sm:text-3xl lg:text-4xl">{product.name}</h1>
-            <p className="mt-4 line-clamp-3 max-w-xl text-sm leading-7 text-slate-600 sm:text-base">
+            <h1 id="product-title" className="mt-2 break-words text-xl font-black leading-tight tracking-tight sm:mt-5 sm:text-3xl lg:text-4xl">{product.name}</h1>
+            <p className="mt-2 line-clamp-2 max-w-xl text-xs leading-5 text-slate-600 sm:mt-4 sm:line-clamp-3 sm:text-base sm:leading-7">
               {descriptionSummary || "এই পণ্যের উপলভ্য তথ্য, মূল্য ও মজুত দেখে সিদ্ধান্ত নিন। বিস্তারিত specification নিশ্চিত করতে বিক্রেতার দেওয়া তথ্য যাচাই করুন।"}
             </p>
             {Array.isArray(product.highlights) && product.highlights.length > 0 && <section className="mt-5 rounded-2xl border bg-white p-4"><h2 className="font-black">পণ্যের বৈশিষ্ট্য</h2><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-700">{product.highlights.slice(0,5).map((item) => <li key={item}>{item}</li>)}</ul></section>}
             {product.usage_instructions && <section className="mt-4 rounded-2xl bg-emerald-50 p-4"><h2 className="font-black">ব্যবহার ও প্রয়োগ নির্দেশনা</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">{product.usage_instructions}</p></section>}
             {(product.brand || product.origin) && <p className="mt-3 text-sm text-slate-600">{product.brand ? "ব্র্যান্ড: " + product.brand : ""}{product.brand && product.origin ? " · " : ""}{product.origin ? "উৎপত্তিস্থল: " + product.origin : ""}</p>}
 
-            <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 sm:p-5">
+            <div className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50/70 p-3 sm:mt-6 sm:rounded-2xl sm:p-5">
               <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">বর্তমান তালিকাভুক্ত মূল্য</p>
-              <p className="mt-1 text-3xl font-black text-emerald-950">{isSample && product.price !== null ? "নমুনা মূল্য · " : ""}{formattedPrice}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-sm">
+              <p className="mt-1 text-2xl font-black text-emerald-950 sm:text-3xl">{isSample && product.price !== null ? "নমুনা মূল্য · " : ""}{formattedPrice}</p>
+              <div className="mt-2 flex flex-wrap gap-2 text-xs sm:mt-3 sm:text-sm">
                 <span className="rounded-lg bg-white px-3 py-2 font-semibold text-slate-700">{stockLabel}</span>
                 {hasStock && !isSample && <span className="rounded-lg bg-white px-3 py-2 text-slate-600">স্টক: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : " (একক উল্লেখ নেই)"}</span> }
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-3 sm:mt-6">
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
                 <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || "টি"} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
               )}
             </div>
-            <p className="mt-3 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
-            <a href="#product-details" className="mt-5 inline-flex min-h-11 w-fit items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">পণ্যের বিস্তারিত দেখুন ↓</a>
+            <p className="mt-2 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
+            <a href="#product-details" className="mt-3 inline-flex min-h-10 w-fit items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">পণ্যের বিস্তারিত দেখুন ↓</a>
           </div>
           {relatedProducts.length > 0 && (
-            <div className="min-w-0 border-t border-emerald-950/10 bg-white p-4 sm:p-5 md:col-start-1 md:row-start-2 md:border-t-0 md:pt-0">
+            <div className="min-w-0 border-t border-emerald-950/10 bg-white p-3 sm:p-5 md:col-start-1 md:row-start-2 md:border-t-0 md:pt-0">
               <RelatedProductUpsell
                 compact
                 products={relatedProducts}
@@ -306,7 +306,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
         </section>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="mt-5 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="min-w-0 space-y-6">
             <section id="product-details" className="scroll-mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm sm:p-8">
               <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Product information</p>
