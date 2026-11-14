@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -31,6 +32,7 @@ export default function CheckoutButton({
   const [formOpen, setFormOpen] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
   const [cartAdded, setCartAdded] = useState(false);
+  const [authPopupOpen, setAuthPopupOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [orderId, setOrderId] = useState("");
   const [fullName, setFullName] = useState("");
@@ -40,12 +42,30 @@ export default function CheckoutButton({
   const [address, setAddress] = useState("");
   const selectedDistrict = BANGLADESH_DISTRICTS.find(item => item.name === district);
   const availableUpazilas = selectedDistrict?.upazilas ?? [];
-  const loginHref = "/login?next=" + encodeURIComponent("/marketplace/" + productSlug);
+  const productHref = "/marketplace/" + productSlug;
+  const pendingAddHref = productHref + "?addToCart=" + encodeURIComponent(productId) + "&qty=" + quantity;
+  const loginHref = "/login?next=" + encodeURIComponent(productHref);
 
   // Product cards can link directly to the purchase form without skipping quantity selection.
   useEffect(() => {
     if (window.location.hash === "#product-direct-cod") setFormOpen(true);
-  }, []);
+    const url = new URL(window.location.href);
+    const intendedProductId = url.searchParams.get("addToCart");
+    if (intendedProductId !== productId) return;
+    const rawQty = url.searchParams.get("qty");
+    url.searchParams.delete("addToCart");
+    url.searchParams.delete("qty");
+    window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    const desiredQty = rawQty && /^\\d{1,3}$/.test(rawQty) ? Number(rawQty) : 1;
+    if (!Number.isSafeInteger(desiredQty) || desiredQty < 1 || desiredQty > 100 || desiredQty > maxQuantity) {
+      setMessage("পণ্যের স্টক বা নির্বাচিত পরিমাণ পরিবর্তিত হয়েছে। নতুন পরিমাণ বেছে নিন।");
+      return;
+    }
+    setQuantity(desiredQty);
+    void addToCart(desiredQty);
+    // The one-time URL intent is removed synchronously before attempting the cart RPC.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
 
   function selectQuantity(value: number) {
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
@@ -53,8 +73,9 @@ export default function CheckoutButton({
     setMessage("");
   }
 
-  async function addToCart() {
+  async function addToCart(requestedQuantity = quantity) {
     if (unavailable || addingToCart || loading) return;
+    if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1 || requestedQuantity > maxQuantity) { setMessage("পণ্যের স্টক যাচাই করে আবার চেষ্টা করুন।"); return; }
     setAddingToCart(true);
     setLoginRequired(false);
     setCartAdded(false);
@@ -64,13 +85,13 @@ export default function CheckoutButton({
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
-        setLoginRequired(true);
-        setMessage("কার্টে যোগ করার জন্য লগইন করুন। নির্বাচিত পরিমাণ লগইনের পর আবার যোগ করতে পারবেন।");
+        setAuthPopupOpen(true);
+        setMessage("লগইন করুন অথবা মোবাইল/ইমেইল দিয়ে অ্যাকাউন্ট তৈরি করুন।");
         return;
       }
       const { error: addError } = await supabase.rpc("add_marketplace_cart_item", {
         p_product_id: productId,
-        p_quantity: quantity,
+        p_quantity: requestedQuantity,
       });
       if (addError) {
         const reason = addError.message || "";
@@ -80,10 +101,10 @@ export default function CheckoutButton({
         return;
       }
       trackAnalyticsEvent("add_to_cart", {
-        currency: "BDT", item_id: productId, quantity, value: unitPrice * quantity,
+        currency: "BDT", item_id: productId, quantity: requestedQuantity, value: unitPrice * requestedQuantity,
       });
       setCartAdded(true);
-      setMessage(numberBN(quantity) + " " + unitLabel + " কার্টে যোগ হয়েছে।");
+      setMessage(numberBN(requestedQuantity) + " " + unitLabel + " কার্টে যোগ হয়েছে।");
     } catch (error) {
       console.error("Add to cart failed:", error);
       setMessage("কার্টে যোগ করা যাচ্ছে না। লগইন ও সংযোগ যাচাই করে আবার চেষ্টা করুন।");
@@ -192,7 +213,7 @@ export default function CheckoutButton({
           className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 py-3 text-sm font-black text-white transition hover:bg-pink-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2">
           <Phone size={18} /> ফোনে অর্ডার করুন
         </a>
-        <button type="button" disabled={unavailable || loading || addingToCart || Boolean(orderId)} onClick={addToCart}
+        <button type="button" disabled={unavailable || loading || addingToCart || Boolean(orderId)} onClick={() => void addToCart()}
           className="flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-[#17351f] bg-white px-4 py-3 text-sm font-black text-[#17351f] transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
           <ShoppingCart size={18} /> {addingToCart ? "যোগ হচ্ছে..." : "কার্টে যোগ করুন"}
         </button>
@@ -246,6 +267,10 @@ export default function CheckoutButton({
       {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
       {loginRequired && <Link href={loginHref} className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে অর্ডার করুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
+
+      {authPopupOpen && (
+        <MarketplaceAuthModal returnTo={pendingAddHref} onClose={() => setAuthPopupOpen(false)} />
+      )}
 
       {cartAdded && (
         <aside role="region" aria-label="কার্টে যোগ করা পণ্যের চেকআউট"
