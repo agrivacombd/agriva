@@ -47,7 +47,9 @@ assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server 
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
 assert.ok(catalogue.includes('onClick={onAddToCart}') && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
-assert.ok(!catalogue.includes('"BUY NOW"'), "Marketplace product cards must not retain Buy Now");
+assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'), "Marketplace cards must use Add to Cart, not Buy Now");
+assert.ok(catalogue.includes('productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"'), "Plant Market must retain its existing navigation behavior");
+assert.ok(catalogue.includes("recordListingClick(); onAddToCart();"), "Add to Cart must retain listing-click ranking signals");
 assert.ok(catalogue.includes('rpc("add_marketplace_cart_item"') && catalogue.includes("p_quantity: 1"), "Card purchase uses the server-validated cart RPC");
 assert.ok(catalogue.includes('createSupabaseBrowserClient') && catalogue.includes("auth.getUser()"), "Card purchase must share cookie-based login authentication");
 assert.ok(catalogue.includes("showStickyCart") && catalogue.includes('href="/checkout"'), "Added products must expose persistent checkout navigation");
