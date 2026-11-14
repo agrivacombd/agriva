@@ -73,6 +73,7 @@ export default function GoogleAnalytics() {
       });
     }
     setConsent(next);
+    window.dispatchEvent(new Event("agriva:consent-changed"));
     setAnalyticsChoice(analytics);
     setMarketingChoice(marketing);
     setShowPreferences(false);
