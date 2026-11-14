@@ -43,6 +43,12 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: "website",
+    images: [{
+      url: "/branding/agriva-brand-social-share-1200x630.png",
+      width: 1200,
+      height: 630,
+      alt: "AGRIVA — বাংলাদেশের কৃষি পণ্য ও কৃষিসেবার ডিজিটাল প্ল্যাটফর্ম",
+    }],
     siteName: "AGRIVA",
     locale: "bn_BD",
     title: "AGRIVA — কৃষি ও কৃষকের ডিজিটাল প্ল্যাটফর্ম",
@@ -50,6 +56,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/branding/agriva-brand-social-share-1200x630.png"],
     title: "AGRIVA — কৃষি ও কৃষি উদ্যোক্তাদের ডিজিটাল প্ল্যাটফর্ম",
     description: "বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও চাকরিপ্রার্থীদের জন্য ডিজিটাল প্ল্যাটফর্ম।",
   },
