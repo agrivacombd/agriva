@@ -1,33 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 
 export const CART_UPDATED_EVENT = "agriva:cart-updated";
 
 export default function HeaderCartLink({ english }: { english: boolean }) {
   const pathname = usePathname();
   const [count, setCount] = useState<number | null>(null);
+  const reloadVersion = useRef(0);
 
   const reload = useCallback(async () => {
+    const version = ++reloadVersion.current;
+    const updateCount = (value: number | null) => {
+      // Old network responses must not override newer add/remove or logout events.
+      if (version === reloadVersion.current) setCount(value);
+    };
     try {
-      const supabase = createSupabaseBrowserClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) { setCount(0); return; }
+      const { supabase, user } = await resolveMarketplaceCartUser();
+      if (!user) { updateCount(0); return; }
       const { data: cart, error: cartError } = await supabase.from("carts")
         .select("id").eq("user_id", user.id).eq("status", "active").maybeSingle();
       if (cartError) throw cartError;
-      if (!cart) { setCount(0); return; }
+      if (!cart) { updateCount(0); return; }
       const { data: rows, error: rowsError } = await supabase.from("cart_items")
         .select("quantity").eq("cart_id", cart.id);
       if (rowsError) throw rowsError;
-      setCount((rows || []).reduce((sum, row) => sum + Math.max(0, Number(row.quantity) || 0), 0));
+      updateCount((rows || []).reduce((sum, row) => sum + Math.max(0, Number(row.quantity) || 0), 0));
     } catch {
       // Do not show stale numbers when the cart cannot be verified.
-      setCount(null);
+      updateCount(null);
     }
   }, []);
 
