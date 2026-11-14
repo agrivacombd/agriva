@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import PwaRegister from "./pwa-register";
 import SiteChrome from "@/components/site/SiteChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
+import MetaPixel from "@/components/analytics/MetaPixel";
 import GrowthVerification from "@/components/analytics/GrowthVerification";
 import "./globals.css";
 
@@ -114,6 +115,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         />
         <GrowthVerification />
         <GoogleAnalytics />
+        <MetaPixel />
         <PwaRegister />
         <SiteChrome />
         {children}
