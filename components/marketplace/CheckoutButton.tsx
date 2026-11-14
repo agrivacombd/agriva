@@ -31,6 +31,7 @@ export default function CheckoutButton({
   const [addingToCart, setAddingToCart] = useState(false);
   // A synchronous guard prevents duplicate cart RPCs before React paints disabled state.
   const addRequestInFlightRef = useRef(false);
+  const directCheckoutInFlightRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
@@ -119,7 +120,7 @@ export default function CheckoutButton({
 
   async function checkout(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (unavailable || loading || orderId) return;
+    if (unavailable || directCheckoutInFlightRef.current || loading || orderId) return;
     if (!fullName.trim() || !phone.trim() || !district.trim() || !upazila.trim() || !address.trim()) {
       setMessage("নাম, মোবাইল নম্বর, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
       return;
@@ -129,6 +130,7 @@ export default function CheckoutButton({
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
+    directCheckoutInFlightRef.current = true;
     setLoading(true);
     setLoginRequired(false);
     setMessage("");
@@ -168,6 +170,7 @@ export default function CheckoutButton({
     } catch {
       setMessage("সংযোগে সমস্যা হয়েছে। অর্ডারটি তৈরি হয়েছে কি না যাচাই করে আবার চেষ্টা করুন।");
     } finally {
+      directCheckoutInFlightRef.current = false;
       setLoading(false);
     }
   }
