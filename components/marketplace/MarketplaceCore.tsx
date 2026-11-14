@@ -7,6 +7,8 @@ import Image from "next/image";
 import { ShoppingCart, CheckCircle2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
+import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
+import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { MARKETPLACE_CATEGORIES, getProductTaxonomy } from "@/lib/marketplace/taxonomy";
 
 export type MarketplaceProduct = {
@@ -142,6 +144,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const [cartConfirmed, setCartConfirmed] = useState(false);
   const [cartNotice, setCartNotice] = useState("");
   const [cartNeedsLogin, setCartNeedsLogin] = useState(false);
+  const [authReturnTo, setAuthReturnTo] = useState<string | null>(null);
   const [cartError, setCartError] = useState("");
 
 
@@ -188,9 +191,10 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       const supabase = createSupabaseBrowserClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
-      if (!user) {
+      if (!user || user.is_anonymous) {
+        setAuthReturnTo("/marketplace/" + encodeURIComponent(product.slug) + "?addToCart=" + encodeURIComponent(product.id) + "&qty=1");
         setCartNeedsLogin(true);
-        setCartError("কার্টে পণ্য যোগ করতে লগইন করুন।");
+        setCartError("");
         return;
       }
       const { error } = await supabase.rpc("add_marketplace_cart_item", {
@@ -210,6 +214,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         value: Number(product.price),
       });
       setCartConfirmed(true);
+      window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setCartNotice(product.name + " কার্টে যোগ হয়েছে।");
       try {
         setCartSummary(await loadCartSummary());
@@ -386,6 +391,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </section>
       </div>
 
+      {authReturnTo && <MarketplaceAuthModal returnTo={authReturnTo} onClose={() => setAuthReturnTo(null)} />}
       {compareIds.length > 0 && <div className={"fixed inset-x-3 z-40 mx-auto max-w-3xl rounded-2xl border border-emerald-900/10 bg-white p-3 shadow-2xl shadow-emerald-950/20 sm:inset-x-6 sm:p-4 " + (showStickyCart ? "bottom-44 sm:bottom-28" : "bottom-4")}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div><p className="text-sm font-black text-slate-900">পণ্য তুলনা <span className="text-emerald-800">({compareIds.length}/3)</span></p><p className="mt-0.5 text-[11px] text-slate-500">সর্বোচ্চ ৩টি পণ্য একসঙ্গে তুলনা করুন</p></div>
