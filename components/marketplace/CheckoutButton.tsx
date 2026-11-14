@@ -6,7 +6,6 @@ import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
