@@ -138,8 +138,8 @@ assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-
 assert.ok(loginPage.includes('method === "phone"') && signupExperience.includes('method === "phone"'), "Full login and signup pages must also offer phone");
 assert.ok(signupPage.includes("returnTo"), "Signup must preserve selected product return path");
 
-assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
-assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
+assert.ok(cartRoute.includes("isSimpleAddress ? upazila : (legacyArea || upazila)"), "Server should derive legacy area from an actual selected location");
+assert.ok(cartRoute.includes("isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet]"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();") && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
 assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'), "Marketplace cards must use Add to Cart, not Buy Now");
