@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 type Item = { product_id: string; quantity: number; unit_price: number; name: string };
@@ -44,6 +44,7 @@ export default function Checkout() {
   useEffect(() => {
     let active = true;
     (async () => {
+      const supabase = createSupabaseBrowserClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!active) return;
       if (!user) {
