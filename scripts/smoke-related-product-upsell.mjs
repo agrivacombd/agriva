@@ -4,6 +4,7 @@ const read = (file) => readFileSync(new URL("../" + file, import.meta.url), "utf
 const page = read("app/marketplace/[productId]/page.tsx");
 const upsell = read("components/marketplace/RelatedProductUpsell.tsx");
 const gallery = read("components/marketplace/ProductImageGallery.tsx");
+const purchase = read("components/marketplace/CheckoutButton.tsx");
 const cartHelper = read("lib/marketplace/cart-auth.ts");
 
 assert.match(page, /<RelatedProductUpsell/, "Related Products must render on detail page");
@@ -17,6 +18,15 @@ assert.match(gallery, /aspect-\[4\/3\]/, "Product gallery should be shorter on m
 assert.match(gallery, /sm:aspect-square/, "Product gallery should be square on tablet and desktop");
 assert.match(upsell, /products\.slice\(0, 2\)/, "Only two sales-focused related products should fill the left column");
 assert.ok(upsell.includes('repeat(auto-fit, minmax(min(100%, 15rem), 1fr))'), "Compact cards should follow container width");
+assert.ok(page.includes("md:order-none overflow-hidden"), "Gallery should precede upsells on larger screens");
+assert.ok(page.includes('pb-20 text-[#17351f] sm:pb-0'), "Mobile sticky purchase bar must not obscure page content");
+assert.ok(page.indexOf('বর্তমান তালিকাভুক্ত মূল্য') < page.indexOf('descriptionSummary ||'), "Price should be visible ahead of secondary text");
+assert.ok(purchase.includes("IntersectionObserver") && purchase.includes("primaryOrderVisible"), "Show mobile purchase CTA when normal CTA is offscreen");
+assert.ok(purchase.includes("!formOpen && !cartAdded && !authPopupOpen"), "Avoid sticky bar over forms, cart confirmations and auth");
+assert.ok(purchase.includes('scrollIntoView({ behavior: "smooth", block: "start" })'), "Buy now must bring COD form into view");
+assert.ok(purchase.includes('calculateShippingFee') && purchase.includes('shippingWeightGrams'), "Preserve the latest direct COD delivery pricing logic");
+assert.ok(purchase.includes("সম্পূর্ণ ঠিকানা (ঐচ্ছিক)"), "Full address remains optional, with district and upazila mandatory");
+
 
 assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-details"'),
   "Cross-sell must appear before detailed information and FAQ");
