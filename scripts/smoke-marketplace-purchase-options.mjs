@@ -58,6 +58,9 @@ assert.ok(catalogue.includes("cartNeedsLogin") && catalogue.includes("setCartErr
 assert.ok(catalogue.includes('productHrefPrefix !== "/marketplace"'), "Plant Market is not allowed to call Marketplace cart RPC");
 assert.ok(page.includes("relatedProducts") && page.includes('.eq("marketplace_channel", "marketplace")'), "Related product cards must show published marketplace items only");
 assert.ok(purchase.includes('window.location.hash === "#product-direct-cod"'), "Buy Now link should expand the COD form");
+assert.ok(purchase.includes('role="region" aria-label="কার্টে যোগ করা পণ্যের চেকআউট"'), "Product detail should show persistent cart success bar");
+assert.ok(purchase.includes('href="/checkout"'), "Product detail sticky bar should navigate to checkout");
+assert.ok(purchase.includes('setCartAdded(false)') && purchase.includes('aria-label="কার্ট বার বন্ধ করুন"'), "Sticky bar should be dismissible");
 
 assert.ok(!purchase.includes("p_quantity: 1"), "Cart selection must never be silently reset to one");
 assert.ok(!purchase.includes("quantity: 1"), "Buy Now selection must never be silently reset to one");
