@@ -213,7 +213,7 @@ export default function SiteChrome() {
       <header className="sticky top-0 z-[70] border-b border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90">
         <div className="mx-auto flex min-h-[68px] max-w-7xl items-center gap-3 px-3 sm:gap-5 sm:px-6 lg:px-8">
           <Link href={english ? "/en" : "/"} className="flex shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" aria-label="AGRIVA home">
-            <Image src="/agriva-logo.svg" alt="AGRIVA" width={320} height={85} priority sizes="(max-width: 640px) 152px, 192px" className="h-9 w-36 object-contain object-left sm:h-10 sm:w-48" />
+            <Image src="/branding/agriva-agriculture-brand-logo.webp" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-9 w-36 object-contain object-left sm:h-10 sm:w-48" />
           </Link>
 
           <div className="hidden min-w-0 flex-1 md:block md:max-w-xl lg:mx-5">
