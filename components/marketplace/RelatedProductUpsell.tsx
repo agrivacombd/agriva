@@ -26,8 +26,6 @@ type Props = {
   heading: string;
   subtitle: string;
   categoryHref: string;
-  /** Render a two-item cross-sell panel under the product gallery. */
-  compact?: boolean;
 };
 
 const numberBN = (value: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(value);
@@ -37,7 +35,7 @@ const unitLabels: Record<string, string> = {
 const maxAllowed = (stock: number | null) =>
   Math.min(100, Math.max(0, Math.floor(Number(stock) || 0)));
 
-export default function RelatedProductUpsell({ products, heading, subtitle, categoryHref, compact = false }: Props) {
+export default function RelatedProductUpsell({ products, heading, subtitle, categoryHref }: Props) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const addInFlight = useRef(false);
@@ -122,114 +120,6 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
     setNotice(null);
   }
 
-
-  if (compact) {
-    return (
-      <section id="related-products" aria-labelledby="related-product-heading"
-        className="scroll-mt-24 rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-3 shadow-sm sm:p-4">
-        <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-700">AGRIVA · আপনার জন্য</p>
-            <h2 id="related-product-heading" className="mt-1 text-base font-black leading-6 text-emerald-950 sm:text-lg">{heading}</h2>
-          </div>
-          <Link href={categoryHref} className="inline-flex min-h-9 shrink-0 items-center text-xs font-bold text-emerald-800 underline underline-offset-4">
-            সব দেখুন
-          </Link>
-        </div>
-        <p className="mb-3 text-xs leading-5 text-slate-600">{subtitle}</p>
-
-        {notice && (
-          <div role={notice.kind === "error" ? "alert" : "status"} aria-live="polite"
-            className={"mb-3 rounded-xl border px-3 py-2 text-xs font-semibold leading-5 " +
-              (notice.kind === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-950" : "border-rose-200 bg-rose-50 text-rose-900")}>
-            <span>{notice.text}</span>
-            {notice.kind === "success" && (
-              <span className="mt-2 flex flex-wrap gap-3">
-                <Link href="/cart" className="underline underline-offset-2">কার্ট দেখুন</Link>
-                <Link href="/checkout" className="underline underline-offset-2">চেকআউট</Link>
-              </span>
-            )}
-          </div>
-        )}
-
-        <div className="grid min-w-0 gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 15rem), 1fr))" }}>
-          {products.slice(0, 2).map(product => {
-            const limit = maxAllowed(product.stock);
-            const price = product.price === null ? NaN : Number(product.price);
-            const purchasable = limit > 0 && Number.isFinite(price) && price >= 0;
-            const quantity = Math.min(limit || 1, quantities[product.id] ?? 1);
-            const unit = product.unit ? unitLabels[product.unit] ?? product.unit : null;
-            const detailHref = "/marketplace/" + product.slug;
-            const busy = busyId !== null;
-            return (
-              <article key={product.id} className="min-w-0 rounded-xl border border-emerald-900/10 bg-white p-3">
-                <div className="flex min-w-0 items-start gap-3">
-                  <Link href={detailHref}
-                    onClick={() => trackProductRankEvents("marketplace", "listing_click", [product.id])}
-                    className="relative block h-[68px] w-[68px] shrink-0 overflow-hidden rounded-lg bg-emerald-50"
-                    aria-label={product.name + " বিস্তারিত দেখুন"}>
-                    {product.image_url ? (
-                      <Image src={product.image_url} fill unoptimized
-                        sizes="68px" alt={product.name + " — AGRIVA Marketplace"}
-                        className="object-contain p-1" />
-                    ) : <span className="grid h-full place-items-center text-2xl" aria-hidden="true">🌱</span>}
-                  </Link>
-                  <div className="min-w-0 flex-1">
-                    <Link href={detailHref}
-                      onClick={() => trackProductRankEvents("marketplace", "listing_click", [product.id])}
-                      className="line-clamp-2 break-words text-xs font-bold leading-5 text-emerald-950 hover:underline">
-                      {product.name}
-                    </Link>
-                    <p className="mt-1 text-sm font-black text-emerald-900">
-                      {Number.isFinite(price) && price >= 0 ? "৳" + numberBN(price) : "মূল্য যাচাই করুন"}
-                      {unit && <span className="ml-1 text-[10px] font-medium text-slate-500">/ {unit}</span>}
-                    </p>
-                    <p className="mt-0.5 text-[10px] font-semibold text-slate-500">{purchasable ? "স্টকে আছে" : "স্টক যাচাই করুন"}</p>
-                  </div>
-                </div>
-
-                {purchasable ? (
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    <div className="flex h-9 items-center rounded-lg border border-slate-200"
-                      role="group" aria-label={product.name + " পরিমাণ নির্বাচন"}>
-                      <button type="button" disabled={busy || quantity <= 1}
-                        onClick={() => updateQuantity(product.id, quantity - 1, product.stock)}
-                        aria-label={product.name + " পরিমাণ কমান"}
-                        className="grid h-9 w-9 place-items-center rounded-l-lg hover:bg-emerald-50 disabled:opacity-40">
-                        <Minus size={14} />
-                      </button>
-                      <output aria-live="polite" className="min-w-5 text-center text-xs font-black tabular-nums">{numberBN(quantity)}</output>
-                      <button type="button" disabled={busy || quantity >= limit}
-                        onClick={() => updateQuantity(product.id, quantity + 1, product.stock)}
-                        aria-label={product.name + " পরিমাণ বাড়ান"}
-                        className="grid h-9 w-9 place-items-center rounded-r-lg hover:bg-emerald-50 disabled:opacity-40">
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                    <button type="button" disabled={busy}
-                      onClick={() => {
-                        trackProductRankEvents("marketplace", "listing_click", [product.id]);
-                        void addToCart(product, quantity);
-                      }}
-                      aria-label={product.name + " কার্টে যোগ করুন"}
-                      className="flex min-h-9 min-w-[110px] flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-800 px-2 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50">
-                      <ShoppingCart size={14} aria-hidden="true" />
-                      {busyId === product.id ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
-                    </button>
-                  </div>
-                ) : (
-                  <Link href={detailHref} className="mt-3 flex min-h-9 items-center justify-center rounded-lg border border-emerald-800 text-xs font-bold text-emerald-900">
-                    বিস্তারিত দেখুন
-                  </Link>
-                )}
-              </article>
-            );
-          })}
-        </div>
-        {loginReturnTo && <MarketplaceAuthModal returnTo={loginReturnTo} onClose={() => setLoginReturnTo(null)} />}
-      </section>
-    );
-  }
 
   return (
     <section id="related-products" aria-labelledby="related-product-heading"
