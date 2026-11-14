@@ -67,7 +67,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
                 aria-pressed={activeIndex === index}
                 className={"h-14 overflow-hidden rounded-lg border-2 bg-white transition sm:h-20 sm:rounded-xl lg:h-24 " + (activeIndex === index ? "border-emerald-700 ring-2 ring-emerald-100" : "border-emerald-900/10 hover:border-emerald-500")}
               >
-                <img src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                <img src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full bg-white object-contain" />
               </button>
             ))}
           </div>
@@ -106,7 +106,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
               <div className="flex max-w-full gap-2 overflow-x-auto py-1">
                 {images.map((src, index) => (
                   <button key={src} type="button" onClick={() => setActiveIndex(index)} aria-label={"ছবি " + (index + 1)} aria-pressed={activeIndex === index} className={"h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 " + (activeIndex === index ? "border-lime-300" : "border-white/30")}>
-                    <img src={src} alt="" className="h-full w-full object-cover" />
+                    <img src={src} alt="" className="h-full w-full bg-white object-contain" />
                   </button>
                 ))}
               </div>
