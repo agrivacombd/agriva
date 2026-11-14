@@ -6,7 +6,7 @@ import Script from "next/script";
 import { hasMarketingConsent, trackMetaEvent } from "@/lib/meta-pixel";
 
 const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID?.trim();
-const validPixelId = Boolean(pixelId && /^\\d{10,25}$/.test(pixelId));
+const validPixelId = Boolean(pixelId && /^\d{10,25}$/.test(pixelId));
 
 /** Meta Pixel only loads after explicit marketing consent; there is no tracking by default. */
 export default function MetaPixel() {
