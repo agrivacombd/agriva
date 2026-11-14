@@ -22,6 +22,10 @@ assert.ok(layout.includes('/branding/agriva-agriculture-brand-logo.svg'), "SEO l
 assert.ok(layout.includes('/branding/agriva-apple-touch-180.png'), "iOS needs PNG apple-touch icon");
 assert.ok(layout.includes('/branding/agriva-favicon-32.png'), "Browser favicon must be PNG");
 assert.ok(prompt.includes('/branding/agriva-app-icon-192.png'), "PWA install dialog must display the real AGRIVA brand");
+assert.ok(layout.includes('url: "/branding/agriva-brand-social-share-1200x630.png"') &&
+  layout.includes("width: 1200") && layout.includes("height: 630") &&
+  layout.includes('images: ["/branding/agriva-brand-social-share-1200x630.png"]'),
+  "Home Open Graph and Twitter cards must use a large crawlable brand image");
 assert.ok(manifest.includes('purpose: "maskable"'), "Android maskable icon is required");
 for (const size of ["192", "512"]) {
   assert.ok(manifest.includes(`agriva-app-icon-${size}.png`) && manifest.includes(`sizes: "${size}x${size}"`), "PWA requires correct PNG " + size);
@@ -51,4 +55,8 @@ for (const [file, expected] of assets) {
   assert.equal(info.height, expected, file + " height mismatch");
   assert.equal(info.format, "png", file + " must use PNG for compatibility");
 }
+const og = await sharp(branding + "agriva-brand-social-share-1200x630.png").metadata();
+assert.equal(og.width, 1200);
+assert.equal(og.height, 630);
+assert.equal(og.format, "png");
 console.log("Official AGRIVA logo, PWA sizes, Apple icon and SEO metadata verified.");
