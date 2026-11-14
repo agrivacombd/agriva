@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
+import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 
 type Item = {
   id: string;
@@ -14,6 +15,8 @@ type Item = {
   image_url: string | null;
   name: string;
   unit: string | null;
+  shipping_class: string | null;
+  shipping_weight_grams: number | null;
   price: number;
   qty: number;
   stock: number;
@@ -35,6 +38,7 @@ export default function Cart() {
   const [message, setMessage] = useState("");
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.qty, 0), [items]);
   const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.qty, 0), [items]);
+  const delivery = useMemo(() => calculateShippingFee(items.map(item => ({ shipping_class: item.shipping_class, shipping_weight_grams: item.shipping_weight_grams, quantity: item.qty }))), [items]);
   const invalidCart = items.some(item => !item.available || !Number.isSafeInteger(item.qty) || item.qty < 1 || item.qty > Math.min(item.stock, 100));
   const checkoutDisabled = invalidCart || Boolean(busyItem);
 
@@ -64,7 +68,7 @@ export default function Cart() {
 
       const ids = (rows || []).map(row => row.product_id);
       const { data: products, error: productsError } = ids.length
-        ? await supabase.from("products").select("id,name,slug,image_url,unit,price,stock,status").in("id", ids)
+        ? await supabase.from("products").select("id,name,slug,image_url,unit,shipping_class,shipping_weight_grams,price,stock,status").in("id", ids)
         : { data: [], error: null };
       if (productsError) throw new Error("পণ্যের বর্তমান মূল্য ও স্টক যাচাই করা যায়নি।");
 
@@ -79,6 +83,8 @@ export default function Cart() {
           image_url: product?.image_url || null,
           name: product?.name || "পণ্যটি এখন পাওয়া যাচ্ছে না",
           unit: product?.unit || null,
+          shipping_class: product?.shipping_class ?? null,
+          shipping_weight_grams: product?.shipping_weight_grams ?? null,
           price: Number(product?.price ?? row.unit_price),
           qty: Number(row.quantity),
           stock,

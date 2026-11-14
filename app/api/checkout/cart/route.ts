@@ -54,16 +54,16 @@ export async function POST(request: NextRequest) {
     district,
     upazila,
     // Retain RPC compatibility until a future schema migration removes these legacy keys.
-    unionOrArea: isSimpleAddress ? upazila : legacyArea,
+    unionOrArea: isSimpleAddress ? upazila : (legacyArea || upazila),
     villageRoadHouse: isSimpleAddress ? rawFullAddress : legacyStreet,
     landmark: cleanText(rawAddress.landmark, 200),
     postalCode: cleanText(rawAddress.postalCode, 20),
     deliveryInstructions: cleanText(rawAddress.deliveryInstructions, 500),
-    address: [upazila, ...(isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet])].filter(Boolean).join(", "),
+    address: [upazila, ...(isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet]), district].filter(Boolean).join(", "),
   };
   if (!shippingAddress.fullName || !shippingAddress.division || !shippingAddress.district ||
-      !shippingAddress.upazila || !shippingAddress.unionOrArea || !shippingAddress.villageRoadHouse) {
-    return NextResponse.json({ error: "নাম, বিভাগ, জেলা, উপজেলা/থানা ও সম্পূর্ণ ডেলিভারি ঠিকানা পূরণ করুন।" }, { status: 400 });
+      !shippingAddress.upazila || !shippingAddress.unionOrArea || !shippingAddress.address) {
+    return NextResponse.json({ error: "নাম, মোবাইল, জেলা ও উপজেলা/থানা পূরণ করুন।" }, { status: 400 });
   }
 
   const idempotencyKey = cleanText(body?.idempotencyKey, 100);
@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("[checkout/cart] Checkout RPC failed", { code: error.code, message: error.message });
+    if (/Paddy shipping weight is missing/i.test(error.message)) return NextResponse.json({ error: "ধানের ওজন নির্ধারিত নেই। AGRIVA সাপোর্টে যোগাযোগ করুন।" }, { status: 409 });
     if (/Authentication required/i.test(error.message)) {
       return NextResponse.json({ error: "সেশন শেষ হয়েছে। আবার লগইন করুন।" }, { status: 401 });
     }
@@ -114,6 +115,8 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     orderId: checkout.checkoutId,
     total: Number(checkout.total),
+    subtotal: Number(checkout.subtotal ?? 0),
+    shippingFee: Number(checkout.shippingFee ?? 0),
     itemOrderCount: Number(checkout.itemOrderCount ?? 0),
     paymentMethod: "cod",
     idempotentReplay: Boolean(checkout.idempotentReplay),
