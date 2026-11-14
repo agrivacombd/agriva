@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
     phone: cleanText(raw.phone, 20),
     district: cleanText(raw.district, 80),
     upazila: cleanText(raw.upazila, 100),
-    address: cleanText(raw.address, 500),
+    address: [cleanText(raw.upazila, 100), cleanText(raw.address, 500), cleanText(raw.district, 80)].filter(Boolean).join(", "),
   };
   if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.district || !shippingAddress.upazila || !shippingAddress.address) {
-    return NextResponse.json({ error: "নাম, মোবাইল, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা দিন।" }, { status: 400 });
+    return NextResponse.json({ error: "নাম, মোবাইল, জেলা ও উপজেলা/থানা দিন।" }, { status: 400 });
   }
   if (!/^(?:\+?88)?01[3-9]\d{8}$/.test(shippingAddress.phone.replace(/[\s()-]/g, ""))) {
     return NextResponse.json({ error: "সঠিক বাংলাদেশি মোবাইল নম্বর দিন।" }, { status: 400 });
@@ -52,5 +52,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "অর্ডার সম্পন্ন করা যায়নি। পণ্য ও স্টকের তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 409 });
   }
   if (!order) return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি।" }, { status: 400 });
-  return NextResponse.json({ orderId: order.id, total: Number(order.total_amount), commission: Number(order.commission_amount), resellerAttributed: Boolean(order.reseller_id), paymentMethod: "cod" });
+  return NextResponse.json({ orderId: order.id, total: Number(order.total_amount), deliveryFee: Number(order.delivery_fee), commission: Number(order.commission_amount), resellerAttributed: Boolean(order.reseller_id), paymentMethod: "cod" });
 }
