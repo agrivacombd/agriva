@@ -12,13 +12,13 @@ const prompt = get("app/pwa-register.tsx");
 const pack = JSON.parse(get("package.json"));
 
 for (const src of [header, reusable]) {
-  assert.ok(src.includes("/branding/agriva-agriculture-brand-logo.webp"), "Both site headers must use the original wordmark");
+  assert.ok(src.includes("/branding/agriva-agriculture-brand-logo.svg"), "Both site headers must use the original wordmark");
   assert.ok(src.includes("width={640}") && src.includes("height={158}"), "Intrinsic width/height prevent logo CLS");
   assert.ok(src.includes('alt="AGRIVA'), "Site logo requires descriptive alt text");
 }
 assert.ok(header.includes("priority") && header.includes("sizes="), "Header logo must load early at appropriate sizes");
 assert.ok(layout.includes('"@type": "ImageObject"') && layout.includes('width: 640, height: 158'), "Organization schema must contain explicit logo dimensions");
-assert.ok(layout.includes('/branding/agriva-agriculture-brand-logo.webp'), "SEO logo must match visible site wordmark");
+assert.ok(layout.includes('/branding/agriva-agriculture-brand-logo.svg'), "SEO logo must match visible site wordmark");
 assert.ok(layout.includes('/branding/agriva-apple-touch-180.png'), "iOS needs PNG apple-touch icon");
 assert.ok(layout.includes('/branding/agriva-favicon-32.png'), "Browser favicon must be PNG");
 assert.ok(prompt.includes('/branding/agriva-app-icon-192.png'), "PWA install dialog must display the real AGRIVA brand");
@@ -29,13 +29,13 @@ for (const size of ["192", "512"]) {
 assert.ok(pack.scripts.prebuild?.includes("generate-agriva-brand-assets") && pack.scripts.predev?.includes("generate-agriva-brand-assets"), "Asset generation must run on build and dev");
 
 const branding = "public/branding/";
-for (const source of ["agriva-original-mark.webp", "agriva-agriculture-brand-logo.webp"]) {
+for (const source of ["agriva-original-mark.svg", "agriva-agriculture-brand-logo.svg"]) {
   assert.ok(existsSync(branding + source), "Official source missing: " + source);
 }
-const fullLogo = await sharp(branding + "agriva-agriculture-brand-logo.webp").metadata();
+const fullLogo = await sharp(branding + "agriva-agriculture-brand-logo.svg").metadata();
 assert.equal(fullLogo.width, 640);
 assert.equal(fullLogo.height, 158);
-assert.equal(fullLogo.format, "webp");
+assert.equal(fullLogo.format, "svg");
 const assets = [
   ["agriva-app-icon-192.png", 192],
   ["agriva-app-icon-512.png", 512],
