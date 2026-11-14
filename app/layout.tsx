@@ -65,7 +65,7 @@ const organizationJsonLd = {
   "@id": `${siteUrl}/#organization`,
   name: "AGRIVA",
   url: siteUrl,
-  logo: { "@type": "ImageObject", "@id": `${siteUrl}/#logo`, url: `${siteUrl}/branding/agriva-agriculture-brand-logo.webp`, width: 640, height: 158, caption: "AGRIVA — Growing a Better Tomorrow" },
+  logo: { "@type": "ImageObject", "@id": `${siteUrl}/#logo`, url: `${siteUrl}/branding/agriva-agriculture-brand-logo.svg`, width: 640, height: 158, caption: "AGRIVA — Growing a Better Tomorrow" },
   telephone: "+8801717504028",
   description:
     "বাংলাদেশের কৃষক ও কৃষি উদ্যোক্তাদের জন্য কৃষি পণ্য, কৃষি তথ্য এবং ডিজিটাল কৃষি সেবা।",
