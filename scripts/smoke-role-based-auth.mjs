@@ -8,7 +8,9 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const read = (path) => readFileSync(path, "utf8");
-const signup = read("app/signup/page.tsx");
+const signupPage = read("app/signup/page.tsx");
+const signup = read("components/auth/SignupExperience.tsx");
+assert.match(signupPage, /SignupExperience/, "Signup route must render the actual shared signup form");
 const login = read("app/login/page.tsx");
 const dashboard = read("app/dashboard/page.tsx");
 const profile = read("app/profile/page.tsx");
