@@ -46,7 +46,7 @@ for (const removed of ['setField("unionOrArea"', 'setField("villageRoadHouse"', 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
-assert.ok(catalogue.includes('onClick={onAddToCart}') && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
+assert.ok(catalogue.includes("recordListingClick(); onAddToCart();") && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
 assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'), "Marketplace cards must use Add to Cart, not Buy Now");
 assert.ok(catalogue.includes('productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"'), "Plant Market must retain its existing navigation behavior");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();"), "Add to Cart must retain listing-click ranking signals");
