@@ -10,7 +10,12 @@ const seller=read("../app/seller/orders/page.tsx");
 const buyNow=read("../app/api/checkout/route.ts");
 const button=read("../components/marketplace/CheckoutButton.tsx");
 const admin=read("../app/admin/orders/page.tsx");
-for(const field of ["division","district","upazila","unionOrArea","villageRoadHouse"]) { assert.ok(api.includes(field)); assert.ok(checkout.includes(field)); }
+for (const field of ["division", "district", "upazila"]) { assert.ok(api.includes(field)); assert.ok(checkout.includes(field)); }
+for (const legacyKey of ["unionOrArea", "villageRoadHouse"]) assert.ok(api.includes(legacyKey), "Legacy database compatibility must stay intact");
+assert.ok(checkout.includes("form.fullAddress"), "Checkout must have one full-address field");
+assert.ok(api.includes("isSimpleAddress"), "Server must normalize the simplified address");
+assert.ok(!checkout.includes('setField("unionOrArea"'), "Old extra union/area input must be removed");
+assert.ok(!checkout.includes('setField("villageRoadHouse"'), "Old extra village/road input must be removed");
 for(const token of ["normalizeBangladeshPhone","p_idempotency_key","cod_enabled","finalize_marketplace_cart_checkout"]) assert.ok(api.includes(token));
 assert.ok(checkout.includes("crypto.randomUUID"));
 assert.ok(guest.includes("require_guest_checkout_buyer_identity"));
