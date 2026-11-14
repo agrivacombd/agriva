@@ -104,6 +104,34 @@ assert.ok(!catalogue.includes("কার্টে যোগ করা যায়�
 assert.ok(purchase.includes('searchParams.get("addToCart")') && purchase.includes('searchParams.delete("addToCart")'), "Return-to-product cart intent must be one-time");
 assert.ok(authModal.includes('useState<"login" | "signup">("login")'), "Login must be the default popup");
 assert.ok(authModal.includes('PhoneOtpAuth') && authModal.includes("SignupExperience"), "Popup must offer email, phone, signup");
+const oauthButtons = read("../components/auth/SocialAuthButtons.tsx");
+const oauthCallback = read("../app/auth/callback/route.ts");
+const socialProfile = read("../lib/auth/social-profile.ts");
+const authRedirect = read("../lib/auth/safe-next.ts");
+assert.ok(authModal.includes("SocialAuthButtons") && loginPage.includes("SocialAuthButtons") && signupExperience.includes("SocialAuthButtons"),
+  "Google/Facebook OAuth must be available in popup, login and signup");
+assert.ok(oauthButtons.includes('continueWith("google")') && oauthButtons.includes('continueWith("facebook")'),
+  "Both Google and Facebook sign-in actions must be offered");
+assert.ok(oauthButtons.includes("signInWithOAuth") && oauthButtons.includes("skipBrowserRedirect: true"),
+  "Provider authentication must use Supabase OAuth with controlled browser redirect");
+assert.ok(oauthButtons.includes('new URL("/auth/callback", window.location.origin)') &&
+  oauthButtons.includes("safeAuthNextPath(returnTo"),
+  "OAuth callback must return to the intended product with a safe relative path");
+assert.ok(authRedirect.includes('value.startsWith("//")') &&
+  authRedirect.includes('value.includes("\\\\")'),
+  "External or unsafe OAuth return locations must be rejected");
+assert.ok(oauthCallback.includes("exchangeCodeForSession(code)") &&
+  oauthCallback.includes("fillMissingSocialProfileName(supabase, data.user)"),
+  "Provider identity must be exchanged and profile name enriched server-side");
+assert.ok(socialProfile.includes('item.provider === "google" || item.provider === "facebook"') &&
+  socialProfile.includes('textField(verifiedProviderData, "full_name")') &&
+  socialProfile.includes('textField(verifiedProviderData, "name")'),
+  "Name must be sourced from Google/Facebook identity metadata");
+assert.ok(socialProfile.includes('.eq("id", user.id)') &&
+  socialProfile.includes('.or("full_name.is.null,full_name.eq.")'),
+  "Social name autofill must not overwrite an existing AGRIVA display name");
+assert.ok(!socialProfile.includes("selected_roles") && !socialProfile.includes("updateUser("),
+  "Social display name autofill must not change account permissions or identity claims");
 assert.ok(authModal.includes("window.location.assign(returnTo)"), "Authentication should restore the selected product");
 assert.ok(phoneOtp.includes("signInWithOtp") && phoneOtp.includes("verifyOtp"), "Phone must authenticate with verified SMS OTP");
 assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-in must not create unknown accounts");
