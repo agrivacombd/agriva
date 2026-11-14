@@ -12,7 +12,7 @@ const checkout = read("../app/checkout/page.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
 const divisionHelper = read("../lib/bangladesh-division.ts");
 
-for (const required of ["productSlug={product.slug}", "unitPrice={Number(product.price)}", "stock={Number(product.stock ?? 0)}", "unitLabel={unitLabel || \"টি\"}"]) {
+for (const required of ["productSlug={product.slug}", "unitPrice={Number(product.price)}", "stock={Number(product.stock ?? 0)}", "shippingClass={product.shipping_class ?? null}"]) {
   assert.ok(page.includes(required), "Product page must pass its actual " + required);
 }
 assert.ok(page.includes("!hasRealPrice || !hasStock"), "Unavailable products should not be purchasable");
