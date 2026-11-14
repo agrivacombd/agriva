@@ -10,6 +10,10 @@ const header = get("components/site/SiteChrome.tsx");
 const reusable = get("components/BrandLogo.tsx");
 const prompt = get("app/pwa-register.tsx");
 const pack = JSON.parse(get("package.json"));
+assert.equal(existsSync("app/opengraph-image.tsx"), false,
+  "Root file-based OG metadata would override the optimized static AGRIVA image");
+assert.equal(existsSync("app/icon.svg"), false,
+  "Root Next.js favicon route would override the official generated favicon");
 
 for (const src of [header, reusable]) {
   assert.ok(src.includes("/branding/agriva-agriculture-brand-logo.svg"), "Both site headers must use the original wordmark");
