@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 
 const dir = fileURLToPath(new URL("../public/branding/", import.meta.url));
-const source = join(dir, "agriva-original-mark.webp");
+const source = join(dir, "agriva-original-mark.svg");
 await mkdir(dir, { recursive: true });
 
 const png = { compressionLevel: 9, palette: true, quality: 100, effort: 10 };
