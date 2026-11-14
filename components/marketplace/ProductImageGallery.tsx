@@ -37,7 +37,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
             type="button"
             onClick={() => { setScale(2); setLightboxOpen(true); }}
             aria-label={productName + " ছবিটি বড় করে দেখুন"}
-            className="relative block h-[260px] w-full cursor-zoom-in overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:h-[330px] md:h-[400px]"
+            className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
           >
             <img
               src={activeImage}
