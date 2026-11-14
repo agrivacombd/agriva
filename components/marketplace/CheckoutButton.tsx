@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
@@ -29,6 +29,8 @@ export default function CheckoutButton({
   const unavailable = disabled || maxQuantity === 0 || !Number.isFinite(unitPrice) || unitPrice < 0;
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  // A synchronous guard prevents duplicate cart RPCs before React paints disabled state.
+  const addRequestInFlightRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
@@ -75,8 +77,9 @@ export default function CheckoutButton({
   }
 
   async function addToCart(requestedQuantity = quantity) {
-    if (unavailable || addingToCart || loading) return;
+    if (unavailable || addRequestInFlightRef.current || addingToCart || loading) return;
     if (!Number.isSafeInteger(requestedQuantity) || requestedQuantity < 1 || requestedQuantity > maxQuantity) { setMessage("পণ্যের স্টক যাচাই করে আবার চেষ্টা করুন।"); return; }
+    addRequestInFlightRef.current = true;
     setAddingToCart(true);
     setLoginRequired(false);
     setCartAdded(false);
@@ -109,6 +112,7 @@ export default function CheckoutButton({
       console.error("Add to cart failed:", error);
       setMessage("লগইন সেবা বা সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {
+      addRequestInFlightRef.current = false;
       setAddingToCart(false);
     }
   }
