@@ -6,6 +6,7 @@ import { FormEvent, useState } from "react";
 import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
+import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
 
 type RoleId = "farmer" | "buyer" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
@@ -78,10 +79,16 @@ const copy = {
   },
 };
 
-export default function SignupExperience({ embedded = false, returnTo }: { embedded?: boolean; returnTo?: string }) {
+export default function SignupExperience({ embedded = false, returnTo, onAuthenticated, onSwitchToLogin }: {
+  embedded?: boolean;
+  returnTo?: string;
+  onAuthenticated?: () => void;
+  onSwitchToLogin?: () => void;
+}) {
   const router = useRouter();
   const safeReturnTo = returnTo && returnTo.startsWith("/marketplace/") && !returnTo.startsWith("//") && !returnTo.includes("\\") ? returnTo : null;
   const [language, setLanguage] = useState<Language>("bn");
+  const [method, setMethod] = useState<"email" | "phone">("email");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -128,8 +135,11 @@ export default function SignupExperience({ embedded = false, returnTo }: { embed
       if (!error && data.session && data.user) {
         setIsError(false);
         setMessage(language === "bn" ? "অ্যাকাউন্ট তৈরি হয়েছে। আপনার নির্বাচিত পণ্যে ফিরে যাচ্ছেন…" : "Account created. Returning to your product…");
-        router.replace(safeReturnTo || "/dashboard");
-        router.refresh();
+        if (onAuthenticated) onAuthenticated();
+        else {
+          router.replace(safeReturnTo || "/dashboard");
+          router.refresh();
+        }
         return;
       }
       const errorCode = error?.code ?? "";
@@ -200,7 +210,21 @@ export default function SignupExperience({ embedded = false, returnTo }: { embed
             <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{t.subtitle}</p>
           </div>
 
-          <form onSubmit={signUp} className="space-y-6">
+          {!embedded && (
+            <div role="group" aria-label="Signup মাধ্যম" className="mb-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+              <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")}
+                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>ইমেইল</button>
+              <button type="button" aria-pressed={method === "phone"} onClick={() => setMethod("phone")}
+                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>মোবাইল নম্বর</button>
+            </div>
+          )}
+          {!embedded && method === "phone" ? (
+            <PhoneOtpAuth mode="signup"
+              onAuthenticated={() => {
+                if (onAuthenticated) onAuthenticated();
+                else { router.replace(safeReturnTo || "/dashboard"); router.refresh(); }
+              }} />
+          ) : <form onSubmit={signUp} className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.name}
@@ -252,9 +276,15 @@ export default function SignupExperience({ embedded = false, returnTo }: { embed
               {busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}
             </button>
             {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${isError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"}`}>{message}</p>}
-          </form>
+          </form>}
 
-          <p className="mt-7 text-center text-sm text-slate-600">{t.haveAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href={safeReturnTo ? "/login?next=" + encodeURIComponent(safeReturnTo) : "/login"}>{t.signIn}</Link></p>
+          <p className="mt-7 text-center text-sm text-slate-600">{t.haveAccount}{" "}
+            {onSwitchToLogin ? (
+              <button type="button" className="font-bold text-[#167453] underline underline-offset-4" onClick={onSwitchToLogin}>{t.signIn}</button>
+            ) : (
+              <Link className="font-bold text-[#167453] underline underline-offset-4" href={safeReturnTo ? "/login?next=" + encodeURIComponent(safeReturnTo) : "/login"}>{t.signIn}</Link>
+            )}
+          </p>
         </section>
       </div>
     </main>
