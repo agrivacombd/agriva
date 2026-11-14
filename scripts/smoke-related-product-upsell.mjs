@@ -9,6 +9,7 @@ const cartHelper = read("lib/marketplace/cart-auth.ts");
 assert.match(page, /<RelatedProductUpsell/, "Related Products must render on detail page");
 assert.match(page, /<RelatedProductUpsell\s+compact/, "Cross-sell should use compact cards under the gallery");
 assert.ok(page.includes('className="contents md:flex md:min-w-0 md:flex-col"'), "Gallery and upsell stay grouped on desktop");
+assert.ok(page.includes("md:order-none overflow-hidden"), "Gallery must remain above upsell on desktop");
 assert.ok(page.includes("order-2 flex min-w-0 flex-col"), "Purchase appears before upsells on mobile");
 assert.ok(page.includes("order-3 min-w-0 border-t"), "Upsells follow purchase on mobile");
 assert.doesNotMatch(page, /md:h-\[560px\]/, "Gallery should not force a blank 560px image area");
