@@ -241,7 +241,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         <section aria-labelledby="product-title" className="flex flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm sm:rounded-3xl md:grid md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:items-start">
           <div className="contents md:flex md:min-w-0 md:flex-col">
-          <div className="order-1 relative flex min-w-0 items-start justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:px-6">
+          <div className="order-1 relative flex min-w-0 items-start justify-center md:order-none overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:px-6">
             {image ? (
               <ProductImageGallery
                 images={galleryImages}
