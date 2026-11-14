@@ -17,7 +17,7 @@ export default function BrandLogo({
   return (
     <Link href={href} aria-label="AGRIVA home" className={`inline-flex items-center ${className}`}>
       <Image
-        src="/branding/agriva-agriculture-brand-logo.webp"
+        src="/branding/agriva-agriculture-brand-logo.svg"
         alt="AGRIVA (এগ্রিভা) — কৃষিপণ্য, বীজ ও স্মার্ট কৃষিসেবার ডিজিটাল প্ল্যাটফর্ম"
         width={640}
         height={158}
