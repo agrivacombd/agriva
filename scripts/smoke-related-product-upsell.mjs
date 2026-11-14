@@ -8,15 +8,17 @@ const cartHelper = read("lib/marketplace/cart-auth.ts");
 
 assert.match(page, /<RelatedProductUpsell/, "Related Products must render on detail page");
 assert.match(page, /<RelatedProductUpsell\s+compact/, "Cross-sell should use compact cards under the gallery");
-assert.match(page, /md:col-start-1 md:row-start-2/, "Desktop cross-sell stays under product photos");
-assert.match(page, /md:col-start-2 md:row-span-2/, "Purchase column keeps its own space on tablet and desktop");
+assert.ok(page.includes('className="contents md:flex md:min-w-0 md:flex-col"'), "Gallery and upsell stay grouped on desktop");
+assert.ok(page.includes("order-2 flex min-w-0 flex-col"), "Purchase appears before upsells on mobile");
+assert.ok(page.includes("order-3 min-w-0 border-t"), "Upsells follow purchase on mobile");
 assert.doesNotMatch(page, /md:h-\[560px\]/, "Gallery should not force a blank 560px image area");
-assert.match(gallery, /aspect-square/, "Product photo should use a responsive square");
+assert.match(gallery, /aspect-\[4\/3\]/, "Product gallery should be shorter on mobile");
+assert.match(gallery, /sm:aspect-square/, "Product gallery should be square on tablet and desktop");
 assert.match(upsell, /products\.slice\(0, 2\)/, "Only two sales-focused related products should fill the left column");
 assert.ok(upsell.includes('repeat(auto-fit, minmax(min(100%, 15rem), 1fr))'), "Compact cards should follow container width");
 
 assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-details"'),
-  "Cross-sell must appear after main purchase and before detailed information and FAQ");
+  "Cross-sell must appear before detailed information and FAQ");
 assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('>সাধারণ জিজ্ঞাসা<'),
   "Recommendations must precede FAQ");
 assert.match(page, /\.eq\("marketplace_channel", "marketplace"\)/);
