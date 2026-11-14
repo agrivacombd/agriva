@@ -144,7 +144,7 @@ begin
     p_product_id,p_quantity,p_shipping_address,v_session.reseller_id,v_session.code,v_session.expires_at,p_visitor_token
   );
 end;
-$function$
+$function$;
 
 revoke all on function private.finalize_marketplace_cod_order(uuid,integer,jsonb,uuid,text,timestamptz,text) from public,anon,authenticated;
 CREATE OR REPLACE FUNCTION public.finalize_marketplace_cart_checkout(p_shipping_address jsonb, p_idempotency_key text, p_attribution_code text DEFAULT NULL::text, p_visitor_token text DEFAULT NULL::text)
@@ -305,7 +305,7 @@ begin
     'idempotentReplay', false
   );
 end;
-$function$
+$function$;
 
 revoke all on function public.finalize_marketplace_cart_checkout(jsonb,text,text,text) from public,anon;
 grant execute on function public.finalize_marketplace_cart_checkout(jsonb,text,text,text) to authenticated;
