@@ -49,6 +49,7 @@
     "test:marketplace-product-seo": "node scripts/smoke-marketplace-product-seo.mjs",
     "test:sell-harvest-publication": "node scripts/smoke-sell-harvest-publication.mjs",
     "test:auth-refresh-token": "node scripts/smoke-auth-refresh-token.mjs",
+    "test:social-oauth": "node scripts/smoke-social-oauth.mjs",
     "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs",
     "test:meta-conversions": "node scripts/smoke-meta-conversions.mjs",
     "test:module-access": "node scripts/smoke-module-access-architecture.mjs",

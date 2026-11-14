@@ -28,6 +28,8 @@ jobs:
         run: npx tsc --noEmit
       - name: Invalid Supabase refresh-token cookie regression test
         run: npm run test:auth-refresh-token
+      - name: Google and Facebook OAuth regression test
+        run: npm run test:social-oauth
       - name: Persisted privacy consent regression test
         run: npm run test:analytics-instrumentation
       - name: Meta Pixel and COD conversion regression test

@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
 type Language = "bn" | "en";
 
@@ -65,6 +67,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const t = copy[language];
   const requestedNextPath = searchParams.get("next");
+  const safeNext = safeAuthNextPath(requestedNextPath);
 
   useEffect(() => {
     let active = true;
@@ -72,9 +75,7 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!active || !user) return;
-        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//")
-          ? requestedNextPath
-          : "/dashboard";
+        const target = safeNext;
         router.replace(target);
         router.refresh();
       }).catch(() => {});
@@ -82,7 +83,7 @@ function LoginForm() {
       // Login remains available if auth configuration is temporarily unavailable.
     }
     return () => { active = false; };
-  }, [requestedNextPath, router]);
+  }, [safeNext, router]);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -95,8 +96,7 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      const nextPath = searchParams.get("next");
-      router.push(nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard");
+      router.push(safeNext);
       router.refresh();
     } catch {
       setMessage(t.failed);
@@ -133,6 +133,7 @@ function LoginForm() {
             <p className="text-sm font-bold text-[#167453]">{t.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">{t.subtitle}</p>
+            <SocialAuthButtons returnTo={safeNext} english={language === "en"} />
             <form onSubmit={signIn} className="mt-8 space-y-5">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.email}

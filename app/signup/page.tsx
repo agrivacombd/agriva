@@ -5,6 +5,7 @@ import { FormEvent, useState } from "react";
 import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 type RoleId = "farmer" | "buyer" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
 type Language = "bn" | "en";
@@ -182,6 +183,7 @@ export default function SignupPage() {
             <p className="text-sm font-bold text-[#167453]">{t.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">{t.subtitle}</p>
+            <SocialAuthButtons english={language === "en"} />
           </div>
 
           <form onSubmit={signUp} className="space-y-6">
