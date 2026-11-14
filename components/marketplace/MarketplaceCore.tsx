@@ -55,36 +55,53 @@ function ProductCard({
   const inStock = Number(product.stock || 0) > 0;
   const recordListingClick = () => trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "listing_click", [product.id]);
 
+  const detailHref = productHrefPrefix + "/" + product.slug;
+  const buyHref = productHrefPrefix === "/marketplace" ? detailHref + "#product-direct-cod" : detailHref;
+  const unitLabels: Record<string, string> = { pack: "প্যাকেট", kg: "কেজি", g: "গ্রাম", piece: "পিস", liter: "লিটার", bag: "বস্তা" };
+  const unit = product.unit ? unitLabels[product.unit] || product.unit : null;
+
   return (
-    <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-[1.35rem] border border-emerald-950/[0.09] bg-white shadow-[0_5px_22px_rgba(15,55,32,.045)] transition duration-300 hover:-translate-y-1 hover:border-emerald-700/25 hover:shadow-[0_18px_44px_rgba(15,55,32,.12)]">
-      <div className="relative">
-        <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,#f2f8ed_54%,#e5f0df_100%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={`${product.name} পণ্যের বিস্তারিত দেখুন`}>
-          <span aria-hidden="true" className="text-5xl opacity-60">🌱</span>
-          {product.image_url && <Image src={product.image_url} alt={`${product.name} পণ্যের ছবি`} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="object-cover p-0 transition duration-500 group-hover:scale-[1.06]" />}
+    <article data-rank-product-id={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-[0_10px_30px_rgba(15,55,32,.07)] transition-all duration-300 hover:-translate-y-1 hover:border-emerald-700/30 hover:shadow-[0_18px_44px_rgba(15,55,32,.13)]">
+      <div className="relative overflow-hidden bg-gradient-to-b from-[#eaf9ee] via-[#f0fbf3] to-[#f8fcf7]">
+        <Link href={detailHref} onClick={recordListingClick} className="relative flex aspect-[1/1] items-center justify-center overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-emerald-700" aria-label={product.name + " পণ্যের বিস্তারিত দেখুন"}>
+          {product.image_url ? (
+            <Image src={product.image_url} alt={product.name + " পণ্যের ছবি"} fill unoptimized sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" onError={(event) => { event.currentTarget.style.display = "none"; }} className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04] sm:p-4" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-center text-emerald-700/65">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="h-9 w-9" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m3 17 5.5-5 4.5 4 3.5-3 4.5 4"/></svg>
+              <span className="text-[10px] font-bold">ছবি শিগগিরই যোগ হবে</span>
+            </div>
+          )}
         </Link>
-        <span className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-[10px] font-extrabold shadow-sm backdrop-blur ${inStock ? "bg-white/95 text-emerald-800" : "bg-slate-900/80 text-white"}`}>
+        <span className={"absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-extrabold shadow-sm " + (inStock ? "bg-emerald-700 text-white" : "bg-slate-900/85 text-white")}>
           {inStock ? "স্টকে আছে" : hasStock ? "স্টক শেষ" : "স্টক যাচাই করুন"}
         </span>
-        <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"} className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full border shadow-sm transition ${wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600"}`}>
-          <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-4 w-4" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
-        </button>
+        <div className="absolute right-3 top-3 flex flex-col gap-2">
+          <button type="button" onClick={onWish} aria-pressed={wished} aria-label={wished ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে রাখুন"}
+            className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600")}>
+            <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-5 w-5" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
+          </button>
+          <button type="button" onClick={onCompare} aria-pressed={compared} aria-label={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনায় যুক্ত করুন"} title={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনা করুন"}
+            className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (compared ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-white/80 bg-white/95 text-slate-500 hover:text-emerald-800")}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M5 7h14m-3-3 3 3-3 3M19 17H5m3-3-3 3 3 3"/></svg>
+          </button>
+        </div>
       </div>
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <p className="text-[11px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
-        <h3 className="mt-2 break-words whitespace-normal text-[15px] font-extrabold leading-6 text-slate-900">
-          <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
+        <p className="truncate text-[10px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
+        <h3 className="mt-1.5 min-h-12 break-words text-sm font-black leading-6 text-slate-900 sm:text-base">
+          <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
-        <div className="mt-auto pt-3">
-          <p className="text-lg font-black tracking-tight text-emerald-950 sm:text-xl">
-            {hasPrice && Number(product.price) > 0 ? <>৳{money(product.price as number | string)}{product.unit ? <span className="text-xs font-semibold text-slate-500"> / {product.unit}</span> : null}</> : <span className="text-sm">দাম জানতে যোগাযোগ করুন</span>}
-          </p>
-          <div className="mt-3 grid grid-cols-[1fr_auto] gap-2">
-            <Link href={`${productHrefPrefix}/${product.slug}`} onClick={recordListingClick} className="inline-flex min-h-10 items-center justify-center gap-1 rounded-xl bg-emerald-900 px-3 py-2.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
-              বিস্তারিত দেখুন <span aria-hidden="true">→</span>
+        <div className="mt-auto border-t border-slate-100 pt-3">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">PRICE</p>
+          <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+            <p className="text-lg font-black tracking-tight text-emerald-900 sm:text-xl">
+              {hasPrice && Number(product.price) >= 0 ? <>৳{money(product.price as number | string)}{unit && <span className="ml-1 text-[10px] font-semibold text-slate-500">/ {unit}</span>}</> : <span className="text-xs">দাম জানতে যোগাযোগ করুন</span>}
+            </p>
+            <Link href={buyHref} onClick={recordListingClick} aria-label={product.name + " — অর্ডার অপশন দেখুন"}
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-[11px] font-extrabold text-white shadow-sm transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:px-4">
+              {inStock ? "BUY NOW" : "বিস্তারিত"}
             </Link>
-            <button type="button" onClick={onCompare} aria-pressed={compared} className={`min-h-10 rounded-xl border px-2.5 text-[11px] font-bold transition ${compared ? "border-emerald-800 bg-emerald-50 text-emerald-900" : "border-slate-200 text-slate-600 hover:border-emerald-300"}`}>
-              {compared ? "তুলনায় আছে" : "তুলনা"}
-            </button>
           </div>
         </div>
       </div>
