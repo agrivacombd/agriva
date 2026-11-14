@@ -27,6 +27,9 @@ async function saveProduct(formData: FormData) {
   const stock = Number(formData.get("stock"));
   const commission = Number(formData.get("commission"));
   const status = String(formData.get("status") ?? "");
+  const shippingClass = String(formData.get("shipping_class") ?? "");
+  const shippingWeightText = String(formData.get("shipping_weight_grams") ?? "").trim();
+  const shippingWeight = shippingWeightText ? Number(shippingWeightText) : null;
   const categorySlug = String(formData.get("category_slug") ?? "").trim();
   const subcategorySlug = String(formData.get("subcategory_slug") ?? "").trim();
   const categoryEntry = categorySlug ? getCategory(categorySlug) : undefined;
@@ -34,6 +37,7 @@ async function saveProduct(formData: FormData) {
   if (!productId || !name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !Number.isFinite(price) || price < 0 ||
       !Number.isFinite(stock) || stock < 0 || !Number.isFinite(commission) || commission < 0 || commission > 100 ||
       !["draft", "active", "paused", "sold_out"].includes(status) ||
+      !["packet","paddy"].includes(shippingClass) || (shippingClass === "paddy" && (!Number.isSafeInteger(shippingWeight) || Number(shippingWeight) < 1)) || (shippingClass === "packet" && shippingWeight !== null) ||
       (!categorySlug ? Boolean(subcategorySlug) : !categoryEntry || Boolean(subcategorySlug && !subcategoryEntry))) {
     redirect("/admin/products?notice=invalid");
   }
@@ -50,7 +54,8 @@ async function saveProduct(formData: FormData) {
   revalidatePath("/admin/products");
   revalidatePath("/marketplace");
   revalidatePath("/sitemap.xml");
-  redirect(productError || categoryError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
+  const { error: shippingError } = productError || categoryError ? { error: productError || categoryError } : await supabase.rpc("admin_set_product_shipping", { p_product_id: productId, p_shipping_class: shippingClass, p_shipping_weight_grams: shippingWeight });
+  redirect(productError || categoryError || shippingError ? "/admin/products?notice=error" : "/admin/products?notice=saved");
 }
 
 async function manageProduct(formData: FormData) {
@@ -74,7 +79,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
   const activeStatus = ["all", "draft", "active", "paused", "sold_out", "trash"].includes(requestedStatus) ? requestedStatus : "all";
   const searchTerm = String(searchParams?.q ?? "").trim().slice(0, 120);
   const productQuery = supabase.from("products")
-    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,updated_at,deleted_at,sku")
+    .select("id,name,slug,description,price,stock,reseller_commission_percent,status,farmer_id,category,category_slug,subcategory_slug,image_url,image_urls,shipping_class,shipping_weight_grams,updated_at,deleted_at,sku")
     .order("updated_at", { ascending: false });
   let filteredQuery = productQuery;
   if (activeStatus === "trash") filteredQuery = filteredQuery.not("deleted_at", "is", null);
@@ -109,6 +114,8 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
           <label className="text-sm font-bold">মূল্য (৳)<input name="price" type="number" min="0" step="0.01" required defaultValue={p.price} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">স্টক<input name="stock" type="number" min="0" step="0.01" required defaultValue={p.stock} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">রিসেলার কমিশন (%)<input name="commission" type="number" min="0" max="100" step="0.01" required defaultValue={p.reseller_commission_percent} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
+          <label className="text-sm font-bold">ডেলিভারি শ্রেণি<select name="shipping_class" defaultValue={p.shipping_class ?? "packet"} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="packet">প্যাকেট (এক অর্ডারে ৳৭০; ধানের সাথে অতিরিক্ত চার্জ নেই)</option><option value="paddy">ধান (ওজনভিত্তিক)</option></select></label>
+          <label className="text-sm font-bold">ধানের প্রতি ইউনিটের ওজন (গ্রাম)<input name="shipping_weight_grams" type="number" min="1" max="1000000" step="1" defaultValue={p.shipping_weight_grams ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal" placeholder="শুধু ধানের জন্য, যেমন 1000"/></label>
           <TaxonomyFields categorySlug={p.category_slug} subcategorySlug={p.subcategory_slug} legacyCategory={p.category}/>
           <label className="text-sm font-bold">অবস্থা<select name="status" defaultValue={p.status} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="draft">Draft</option><option value="active">Active</option><option value="paused">Paused</option><option value="sold_out">Sold out</option></select></label>
           <div className="flex items-end"><button className="w-full rounded-xl bg-[#17452c] px-4 py-3 text-sm font-extrabold text-white">Save changes</button></div>

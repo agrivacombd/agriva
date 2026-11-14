@@ -8,6 +8,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 
 type Item = {
   id: string;
@@ -18,6 +19,8 @@ type Item = {
   slug: string | null;
   image_url: string | null;
   unit: string | null;
+  shipping_class: string | null;
+  shipping_weight_grams: number | null;
   stock: number;
   available: boolean;
 };
@@ -66,11 +69,13 @@ export default function Checkout() {
   const availableUpazilas = selectedDistrict?.upazilas ?? [];
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0), [items]);
   const totalUnits = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const delivery = useMemo(() => calculateShippingFee(items), [items]);
+  const grandTotal = delivery ? subtotal + delivery.fee : null;
   const invalidCart = items.some(item =>
     !item.available || !Number.isSafeInteger(item.quantity) || item.quantity < 1 ||
     item.quantity > Math.min(item.stock, 100) || !Number.isFinite(item.unit_price) || item.unit_price < 0
   );
-  const checkoutDisabled = busy || Boolean(busyItem) || !codEnabled || invalidCart || !items.length;
+  const checkoutDisabled = busy || Boolean(busyItem) || !codEnabled || invalidCart || !delivery || !items.length;
 
   const loadCart = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -105,7 +110,7 @@ export default function Checkout() {
 
       const ids = (rows || []).map(row => row.product_id);
       const { data: products, error: productsError } = ids.length
-        ? await supabase.from("products").select("id,name,slug,image_url,unit,price,stock,status").in("id", ids)
+        ? await supabase.from("products").select("id,name,slug,image_url,unit,shipping_class,shipping_weight_grams,price,stock,status").in("id", ids)
         : { data: [], error: null };
       if (productsError) throw new Error("পণ্যের বর্তমান মূল্য ও স্টক যাচাই করা যায়নি।");
 
@@ -122,6 +127,8 @@ export default function Checkout() {
           slug: product?.slug || null,
           image_url: product?.image_url || null,
           unit: product?.unit || null,
+          shipping_class: product?.shipping_class ?? null,
+          shipping_weight_grams: product?.shipping_weight_grams ?? null,
           stock,
           available: Boolean(product && product.status === "active" && stock > 0),
         };
@@ -187,10 +194,6 @@ export default function Checkout() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (checkoutDisabled || confirmed) return;
-    if (form.fullAddress.trim().length < 8) {
-      setMessage("সম্পূর্ণ ডেলিভারি ঠিকানা লিখুন (কমপক্ষে ৮ অক্ষর)।");
-      return;
-    }
     const normalizedPhone = normalizeBangladeshPhone(form.phone);
     if (!normalizedPhone) {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
@@ -290,12 +293,12 @@ export default function Checkout() {
                     </label>
                   </div>
                   <label className="block">
-                    <span className="text-sm font-bold">সম্পূর্ণ ডেলিভারি ঠিকানা *</span>
-                    <span className="mt-1 block text-xs leading-5 text-slate-500">এলাকা, গ্রাম/রোড, বাড়ি বা হোল্ডিং নম্বর একসঙ্গে লিখুন।</span>
+                    <span className="text-sm font-bold">সম্পূর্ণ ডেলিভারি ঠিকানা <span className="font-medium text-slate-500">(ঐচ্ছিক)</span></span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-500">চাইলে এলাকা, গ্রাম/রোড, বাড়ি বা হোল্ডিং নম্বর লিখুন। জেলা ও উপজেলা/থানা বাধ্যতামূলক।</span>
                     <textarea value={form.fullAddress} onChange={event => setField("fullAddress", event.target.value)}
-                      autoComplete="street-address" maxLength={250} minLength={8} required rows={3}
+                      autoComplete="street-address" maxLength={250} rows={3}
                       className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
-                      placeholder="যেমন: বাড়ি ১২, পূর্বপাড়া, ৩ নং ওয়ার্ড, বাজার রোড" />
+                      placeholder="ঐচ্ছিক: যেমন বাড়ি ১২, পূর্বপাড়া, বাজার রোড" />
                   </label>
                 </div>
               </section>
@@ -366,13 +369,14 @@ export default function Checkout() {
                     <span>ডিসকাউন্ট</span><span className="text-xs">প্রযোজ্য নয়</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 text-slate-500">
-                    <span>ডেলিভারি চার্জ</span><span className="text-xs">অর্ডারে যাচাই হবে</span>
+                    <span>ডেলিভারি চার্জ</span><strong>{delivery ? `৳${money(delivery.fee)}` : "ওজন যাচাই প্রয়োজন"}</strong>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-t border-slate-200 pt-4">
-                    <strong className="text-base">পণ্যের মোট (ডেলিভারি ছাড়া)</strong>
-                    <strong className="text-xl font-black tabular-nums text-emerald-800">৳{money(subtotal)}</strong>
+                    <strong className="text-base">সর্বমোট (ডেলিভারিসহ)</strong>
+                    <strong className="text-xl font-black tabular-nums text-emerald-800">{grandTotal === null ? "ওজন যাচাই প্রয়োজন" : `৳${money(grandTotal)}`}</strong>
                   </div>
                 </div>
+                {!delivery && <p role="alert" className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">ধানের ওজন নির্ধারিত নেই। সঠিক ডেলিভারি চার্জের জন্য AGRIVA সাপোর্টে যোগাযোগ করুন।</p>}
                 {invalidCart && <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">স্টক বা পরিমাণের সমস্যা আছে। অর্ডার করার আগে কার্ট ঠিক করুন।</p>}
                 <button type="submit" form="agriva-checkout-form" disabled={checkoutDisabled}
                   className="mt-5 hidden min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-black text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-400 lg:flex">
@@ -383,7 +387,7 @@ export default function Checkout() {
                 </Link>
               </div>
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-xs leading-5 text-emerald-900">
-                <Truck size={15} className="mr-2 inline-block align-text-bottom" /> চূড়ান্ত মূল্য ও প্রযোজ্য চার্জ অর্ডার নিশ্চিত হওয়ার সময় সার্ভার থেকে নির্ধারিত হবে।
+                <Truck size={15} className="mr-2 inline-block align-text-bottom" /> শুধু প্যাকেটজাত পণ্য: ৳৭০ (যত প্যাকেটই হোক)। ধান: প্রথম ১ কেজি ৳১৩৫, পরের প্রতি শুরু হওয়া কেজি ৳২০। ধানের সঙ্গে প্যাকেট নিলে প্যাকেটের অতিরিক্ত চার্জ নেই। চূড়ান্ত হিসাব সার্ভারে যাচাই হবে।
               </div>
             </aside>
           </div>

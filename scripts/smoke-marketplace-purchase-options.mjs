@@ -39,7 +39,7 @@ for (const src of [cart, checkout]) {
   assert.ok(!src.includes('from "@/lib/supabase/client"'), "Legacy localStorage auth must not be used in checkout");
 }
 assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Detail purchase must use the shared guest-safe cart auth helper");
-for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "minLength={8}"]) {
+for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "maxLength={250}"]) {
   assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
 }
 for (const removed of ['setField("unionOrArea"', 'setField("villageRoadHouse"', 'setField("landmark"', 'setField("postalCode"']) {
@@ -69,7 +69,7 @@ assert.ok(checkout.includes("order-2 space-y-5") && checkout.includes("order-1 m
   "Mobile should show item summary before the delivery address form");
 assert.ok(checkout.includes('select("id,product_id,quantity,unit_price")'),
   "Checkout must operate on actual cart item IDs");
-assert.ok(checkout.includes('select("id,name,slug,image_url,unit,price,stock,status")'),
+assert.ok(checkout.includes('select("id,name,slug,image_url,unit,shipping_class,shipping_weight_grams,price,stock,status")'),
   "Checkout must use current catalogue price, stock and images");
 assert.ok(!checkout.includes('৳১০০') && !checkout.includes('৳100') && !checkout.includes('৳৬৫০'),
   "Checkout must not invent shipping fees or discounts");
@@ -138,8 +138,8 @@ assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-
 assert.ok(loginPage.includes('method === "phone"') && signupExperience.includes('method === "phone"'), "Full login and signup pages must also offer phone");
 assert.ok(signupPage.includes("returnTo"), "Signup must preserve selected product return path");
 
-assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
-assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
+assert.ok(cartRoute.includes("isSimpleAddress ? upazila : (legacyArea || upazila)"), "Server should derive legacy area from an actual selected location");
+assert.ok(cartRoute.includes("isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet]"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();") && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
 assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'), "Marketplace cards must use Add to Cart, not Buy Now");
@@ -160,7 +160,7 @@ assert.ok(purchase.includes('setCartAdded(false)') && purchase.includes('aria-la
 assert.ok(!purchase.includes("p_quantity: 1"), "Cart selection must never be silently reset to one");
 assert.ok(!purchase.includes("quantity: 1"), "Buy Now selection must never be silently reset to one");
 for (const required of [
-  'select("id,name,slug,image_url,unit,price,stock,status")',
+  'select("id,name,slug,image_url,unit,shipping_class,shipping_weight_grams,price,stock,status")',
   "item.image_url",
   "item.slug",
   "unitLabel",
