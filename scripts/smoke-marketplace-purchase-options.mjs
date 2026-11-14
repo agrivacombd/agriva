@@ -10,6 +10,7 @@ const catalogue = read("../components/marketplace/MarketplaceCore.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
+const divisionHelper = read("../lib/bangladesh-division.ts");
 
 for (const required of ["productSlug={product.slug}", "unitPrice={Number(product.price)}", "stock={Number(product.stock ?? 0)}", "unitLabel={unitLabel || \"টি\"}"]) {
   assert.ok(page.includes(required), "Product page must pass its actual " + required);
@@ -71,6 +72,12 @@ assert.ok(checkout.includes('select("id,name,slug,image_url,unit,price,stock,sta
   "Checkout must use current catalogue price, stock and images");
 assert.ok(!checkout.includes('৳১০০') && !checkout.includes('৳100') && !checkout.includes('৳৬৫০'),
   "Checkout must not invent shipping fees or discounts");
+
+assert.ok(!checkout.includes('label="বিভাগ *"') && !checkout.includes('form.division'), "Checkout must not ask for division");
+assert.ok(!checkout.includes("form.deliveryInstructions") && !checkout.includes("ডেলিভারির অতিরিক্ত নির্দেশনা"), "Checkout must not ask for optional delivery instructions");
+assert.ok(cartRoute.includes('getBangladeshDivisionForDistrict(district)'), "Server must derive division from district");
+assert.ok(divisionHelper.includes("[5, 10, 13, 16]") && divisionHelper.includes('return "ময়মনসিংহ"'), "Mymensingh district group must be handled separately");
+assert.ok(divisionHelper.includes('return "ঢাকা"') && divisionHelper.includes('return "চট্টগ্রাম"'), "Bangladesh division derivation must cover the country");
 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
 assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
