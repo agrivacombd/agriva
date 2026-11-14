@@ -107,7 +107,7 @@ function ProductCard({
               {hasPrice && Number(product.price) >= 0 ? <>৳{money(product.price as number | string)}{unit && <span className="ml-1 text-[10px] font-semibold text-slate-500">/ {unit}</span>}</> : <span className="text-xs">দাম জানতে যোগাযোগ করুন</span>}
             </p>
             {productHrefPrefix === "/marketplace" && inStock && hasPrice && Number.isFinite(Number(product.price)) && Number(product.price) >= 0 ? (
-              <button type="button" onClick={onAddToCart} disabled={cartBusy}
+              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }} disabled={cartBusy}
                 aria-label={product.name + " কার্টে যোগ করুন"}
                 className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-900 bg-white px-3 py-2 text-[11px] font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-50 sm:px-4">
                 <ShoppingCart size={15} aria-hidden="true" />
@@ -116,7 +116,7 @@ function ProductCard({
             ) : (
               <Link href={detailHref} onClick={recordListingClick}
                 className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-4">
-                বিস্তারিত দেখুন
+                {inStock && productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"}
               </Link>
             )}
           </div>
@@ -214,7 +214,8 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       try {
         setCartSummary(await loadCartSummary());
       } catch {
-        // The add operation succeeded. Let buyers open the cart to verify its state.
+        // The add operation succeeded. Avoid displaying a stale item count.
+        setCartSummary({ lines: 0, units: 0 });
       }
     } catch {
       setCartError("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।");
