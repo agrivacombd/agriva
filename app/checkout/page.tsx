@@ -194,10 +194,6 @@ export default function Checkout() {
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (checkoutDisabled || confirmed) return;
-    if (form.fullAddress.trim().length > 0 && form.fullAddress.trim().length < 8) {
-      setMessage("সম্পূর্ণ ডেলিভারি ঠিকানা লিখুন (কমপক্ষে ৮ অক্ষর)।");
-      return;
-    }
     const normalizedPhone = normalizeBangladeshPhone(form.phone);
     if (!normalizedPhone) {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
