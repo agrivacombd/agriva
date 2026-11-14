@@ -29,6 +29,7 @@ export default function PhoneOtpAuth({
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [signupSuggested, setSignupSuggested] = useState(false);
   const [notice, setNotice] = useState("");
   const [lastSentAt, setLastSentAt] = useState(0);
 
@@ -36,6 +37,7 @@ export default function PhoneOtpAuth({
     event.preventDefault();
     if (busy) return;
     setError("");
+    setSignupSuggested(false);
     const normalized = normalizeBangladeshPhone(phone);
     if (!normalized) { setError("সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন। যেমন: 017XXXXXXXX"); return; }
     if (mode === "signup" && (!acceptedTerms || fullName.trim().length < 2)) {
@@ -57,9 +59,25 @@ export default function PhoneOtpAuth({
         },
       });
       if (sendError) {
-        setError(/provider|sms|phone signups|disabled|unsupported/i.test(sendError.message)
-          ? "মোবাইল OTP সেবা এখন চালু নেই। AGRIVA প্রশাসককে Supabase Phone Auth ও SMS provider সক্রিয় করতে হবে। আপাতত ইমেইল ব্যবহার করুন।"
-          : sendError.message || "OTP পাঠানো যায়নি। আবার চেষ্টা করুন।");
+        const code = sendError.code || "";
+        const detail = sendError.message || "";
+        // With shouldCreateUser=false, GoTrue returns otp_disabled for an
+        // unknown phone even when the SMS provider itself is healthy.
+        const unregisteredPhone = mode === "login" &&
+          (code === "otp_disabled" || /signups not allowed for otp/i.test(detail));
+        setSignupSuggested(unregisteredPhone);
+        if (unregisteredPhone) {
+          setError("এই নম্বর দিয়ে OTP লগইন করা যাচ্ছে না। আগে ইমেইল বা Google দিয়ে অ্যাকাউন্ট খুলে থাকলে সেই মাধ্যম ব্যবহার করুন। নতুন হলে অ্যাকাউন্ট তৈরি করুন।");
+        } else if (
+          code === "phone_provider_disabled" || code === "signup_disabled" ||
+          /unsupported phone provider|phone signups are disabled|sms provider/i.test(detail)
+        ) {
+          setError("মোবাইল OTP সেবা বর্তমানে কনফিগার করা নেই। Supabase Phone Auth ও SMS provider সক্রিয় করতে হবে। আপাতত ইমেইল বা Google দিয়ে লগইন করুন।");
+        } else if (code === "over_sms_send_rate_limit" || code === "over_request_rate_limit") {
+          setError("OTP অনুরোধের সীমা পূর্ণ হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।");
+        } else {
+          setError(detail || "OTP পাঠানো যায়নি। আবার চেষ্টা করুন।");
+        }
         return;
       }
       setVerifiedPhone(normalized);
@@ -130,6 +148,11 @@ export default function PhoneOtpAuth({
         </form>
       )}
       {error && <p role="alert" className="rounded-xl border border-red-100 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</p>}
+      {signupSuggested && !onSwitchMode && (
+        <Link href="/signup" className="inline-block text-sm font-bold text-emerald-800 underline underline-offset-2">
+          নতুন অ্যাকাউন্ট তৈরি করুন (মোবাইল নম্বর নির্বাচন করুন)
+        </Link>
+      )}
       {onSwitchMode && <button type="button" onClick={onSwitchMode} className="text-sm font-bold text-emerald-800 underline underline-offset-2">
         {mode === "login" ? "অ্যাকাউন্ট নেই? মোবাইল নম্বর দিয়ে তৈরি করুন" : "আগে অ্যাকাউন্ট আছে? লগইন করুন"}
       </button>}
