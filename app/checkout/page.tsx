@@ -20,8 +20,8 @@ type Item = {
   available: boolean;
 };
 type Address = {
-  name: string; phone: string; division: string; district: string; upazila: string;
-  fullAddress: string; deliveryInstructions: string;
+  name: string; phone: string; district: string; upazila: string;
+  fullAddress: string;
 };
 
 const UNIT_LABELS: Record<string, string> = {
@@ -32,8 +32,8 @@ const money = (value: number) =>
   new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(value);
 
 const initialAddress: Address = {
-  name: "", phone: "", division: "", district: "", upazila: "",
-  fullAddress: "", deliveryInstructions: "",
+  name: "", phone: "", district: "", upazila: "",
+  fullAddress: "",
 };
 
 function normalizeBangladeshPhone(input: string): string | null {
@@ -199,11 +199,9 @@ export default function Checkout() {
       const address = {
         fullName: form.name.trim(),
         phone: normalizedPhone,
-        division: form.division.trim(),
         district: form.district.trim(),
         upazila: form.upazila.trim(),
         fullAddress: form.fullAddress.trim(),
-        deliveryInstructions: form.deliveryInstructions.trim(),
         // Existing API normalizes the single full address into required RPC fields.
       };
       const response = await fetch("/api/checkout/cart", {
@@ -266,7 +264,6 @@ export default function Checkout() {
               <section aria-labelledby="delivery-address-heading" className="border-t border-slate-100 pt-5">
                 <h2 id="delivery-address-heading" className="text-lg font-black">২. বাংলাদেশের ডেলিভারি ঠিকানা</h2>
                 <div className="mt-4 space-y-4">
-                  <Field label="বিভাগ *" value={form.division} onChange={value => setField("division", value)} placeholder="যেমন: রাজশাহী" autoComplete="address-level1" />
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block">
                       <span className="text-sm font-bold">জেলা *</span>
@@ -290,12 +287,6 @@ export default function Checkout() {
                       autoComplete="street-address" maxLength={250} minLength={8} required rows={3}
                       className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
                       placeholder="যেমন: বাড়ি ১২, পূর্বপাড়া, ৩ নং ওয়ার্ড, বাজার রোড" />
-                  </label>
-                  <label className="block">
-                    <span className="text-sm font-bold">ডেলিভারির অতিরিক্ত নির্দেশনা (ঐচ্ছিক)</span>
-                    <textarea value={form.deliveryInstructions} onChange={event => setField("deliveryInstructions", event.target.value)}
-                      maxLength={500} rows={2} className="mt-2 w-full resize-y rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/15"
-                      placeholder="কখন ফোন করবেন বা বিশেষ কোনো নির্দেশনা" />
                   </label>
                 </div>
               </section>
