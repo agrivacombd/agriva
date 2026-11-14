@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getBangladeshDivisionForDistrict } from "@/lib/bangladesh-division";
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
   const shippingAddress = {
     fullName: cleanText(rawAddress.fullName, 100),
     phone,
-    division: cleanText(rawAddress.division, 80),
+    division: getBangladeshDivisionForDistrict(district) || cleanText(rawAddress.division, 80),
     district,
     upazila,
     // Retain RPC compatibility until a future schema migration removes these legacy keys.
