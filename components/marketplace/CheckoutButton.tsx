@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart } from "lucide-react";
+import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
@@ -51,7 +51,6 @@ export default function CheckoutButton({
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
     setQuantity(Math.min(maxQuantity, Math.max(1, value)));
     setMessage("");
-    setCartAdded(false);
   }
 
   async function addToCart() {
@@ -149,7 +148,7 @@ export default function CheckoutButton({
   }
 
   return (
-    <div className="space-y-4">
+    <div className={"space-y-4 " + (cartAdded ? "pb-28" : "")}>
       <div className="rounded-2xl border border-emerald-950/10 bg-white p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-black text-[#17351f]">পরিমাণ নির্বাচন করুন</h2>
@@ -199,12 +198,7 @@ export default function CheckoutButton({
         </button>
       </div>
 
-      {cartAdded && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900" role="status">
-          <span>পণ্যটি কার্টে যুক্ত হয়েছে।</span>
-          <Link href="/cart" className="underline underline-offset-2">কার্ট দেখুন</Link>
-        </div>
-      )}
+
 
       <div id="product-direct-cod" className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-[#fbfcf7]">
         <button type="button" aria-expanded={formOpen} aria-controls="direct-cod-form" onClick={() => setFormOpen(open => !open)}
@@ -252,6 +246,21 @@ export default function CheckoutButton({
       {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
       {loginRequired && <Link href={loginHref} className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে অর্ডার করুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
+
+      {cartAdded && (
+        <aside role="region" aria-label="কার্টে যোগ করা পণ্যের চেকআউট"
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 p-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:p-4">
+          <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
+            <CheckCircle2 size={25} className="shrink-0 text-emerald-600" aria-hidden="true" />
+            <p role="status" className="min-w-0 flex-1 text-sm font-bold text-emerald-950">পণ্য কার্টে যুক্ত হয়েছে।</p>
+            <div className="flex w-full items-center gap-2 sm:w-auto">
+              <Link href="/cart" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-emerald-900 px-4 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 sm:flex-none">কার্ট দেখুন</Link>
+              <Link href="/checkout" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-black text-white hover:bg-emerald-800 sm:flex-none">চেকআউট করুন</Link>
+            </div>
+            <button type="button" onClick={() => setCartAdded(false)} aria-label="কার্ট বার বন্ধ করুন" className="absolute right-2 top-1 rounded-full p-1 text-slate-500 hover:bg-slate-100 sm:-right-2 sm:-top-2 sm:bg-white sm:shadow-sm"><X size={14} /></button>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }
