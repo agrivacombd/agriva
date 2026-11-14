@@ -243,24 +243,27 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
               <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="password" autoComplete="new-password" minLength={8} placeholder={t.passwordPlaceholder} value={password} onChange={(e) => setPassword(e.target.value)} required />
             </label>
 
-            <fieldset>
-              <div className="flex flex-wrap items-end justify-between gap-2">
-                <legend className="text-base font-bold text-[#173b2d]">{t.rolesTitle}</legend>
-                <span className="rounded-full bg-[#eaf4eb] px-3 py-1 text-xs font-bold text-[#167453]">{selectedRoles.length} {t.selected}</span>
+            <fieldset className="min-w-0">
+              <legend className="text-base font-bold text-[#173b2d]">{t.rolesTitle}</legend>
+              <div className="mt-2 flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
+                <p className="min-w-0 flex-1 text-sm leading-6 text-slate-500">{t.rolesHint}</p>
+                <span className="shrink-0 rounded-full bg-[#eaf4eb] px-3 py-1 text-xs font-bold text-[#167453]">{selectedRoles.length} {t.selected}</span>
               </div>
-              <p className="mt-2 text-sm leading-6 text-slate-500">{t.rolesHint}</p>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {/* Size cards by their actual container, not the page viewport (especially inside auth dialogs). */}
+              <div className="mt-4 grid min-w-0 gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))" }}>
                 {roles.map((role) => {
                   const Icon = role.icon;
                   const selected = selectedRoles.includes(role.id);
                   return (
-                    <button key={role.id} type="button" aria-pressed={selected} onClick={() => toggleRole(role.id)} className={`group flex min-h-[112px] items-start gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-4 focus:ring-[#167453]/15 ${selected ? "border-[#167453] bg-[#eef7ef] ring-1 ring-[#167453]/20" : "border-slate-200 bg-white hover:border-[#9bc6a8] hover:bg-[#fbfdf9]"}`}>
-                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${selected ? "bg-[#167453] text-white" : "bg-[#f1f5ef] text-[#426b50]"}`}><Icon size={20} /></span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold leading-5 text-slate-800">{language === "bn" ? role.bn : role.en}</span>
-                        <span className="mt-1 block text-xs leading-5 text-slate-500">{language === "bn" ? role.bnDesc : role.enDesc}</span>
+                    <button key={role.id} type="button" aria-pressed={selected} onClick={() => toggleRole(role.id)} className={`group flex min-h-[124px] min-w-0 flex-col gap-3 rounded-2xl border p-4 text-left transition focus:outline-none focus:ring-4 focus:ring-[#167453]/15 ${selected ? "border-[#167453] bg-[#eef7ef] ring-1 ring-[#167453]/20" : "border-slate-200 bg-white hover:border-[#9bc6a8] hover:bg-[#fbfdf9]"}`}>
+                      <span className="flex w-full items-center justify-between gap-3">
+                        <span aria-hidden="true" className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${selected ? "bg-[#167453] text-white" : "bg-[#f1f5ef] text-[#426b50]"}`}><Icon size={20} /></span>
+                        <span aria-hidden="true" className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${selected ? "border-[#167453] bg-[#167453] text-white" : "border-slate-300 bg-white text-transparent"}`}><Check size={13} strokeWidth={3} /></span>
                       </span>
-                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${selected ? "border-[#167453] bg-[#167453] text-white" : "border-slate-300 bg-white text-transparent"}`}><Check size={13} strokeWidth={3} /></span>
+                      <span className="block w-full min-w-0">
+                        <span className="block break-words text-sm font-bold leading-5 text-slate-800">{language === "bn" ? role.bn : role.en}</span>
+                        <span className="mt-1 block break-words text-xs leading-5 text-slate-500">{language === "bn" ? role.bnDesc : role.enDesc}</span>
+                      </span>
                     </button>
                   );
                 })}

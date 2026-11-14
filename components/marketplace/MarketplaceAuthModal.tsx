@@ -78,15 +78,15 @@ export default function MarketplaceAuthModal({
   const safeReturnTo = safeAuthNextPath(returnTo, "/marketplace");
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm sm:p-6"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-0 backdrop-blur-sm sm:p-6"
       onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
       <div role="dialog" aria-modal="true" aria-label="AGRIVA Login ও Signup"
-        className="relative max-h-[92dvh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl sm:rounded-3xl">
+        className="relative h-[100dvh] max-h-[100dvh] w-full min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain bg-white shadow-2xl sm:h-auto sm:max-h-[92dvh] sm:max-w-3xl sm:rounded-3xl">
         <button type="button" ref={closeRef} onClick={onClose} aria-label="Login popup বন্ধ করুন"
           className="sticky right-3 top-3 z-10 ml-auto mr-3 mt-3 grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">
           <X size={19} />
         </button>
-        <div className="mx-auto max-w-lg px-5 pb-8 sm:px-8 sm:pb-10">
+        <div className={`mx-auto w-full min-w-0 px-4 pb-8 sm:px-8 sm:pb-10 ${mode === "signup" && method === "email" ? "max-w-2xl" : "max-w-lg"}`}>
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800">
             <LockKeyhole size={24} />
           </span>
