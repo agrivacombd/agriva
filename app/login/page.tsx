@@ -7,6 +7,8 @@ import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
 import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
 type Language = "bn" | "en";
 
@@ -67,6 +69,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const t = copy[language];
   const requestedNextPath = searchParams.get("next");
+  const safeNext = safeAuthNextPath(requestedNextPath);
 
   useEffect(() => {
     let active = true;
@@ -74,9 +77,7 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!active || !user) return;
-        const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//")
-          ? requestedNextPath
-          : "/dashboard";
+        const target = safeNext;
         router.replace(target);
         router.refresh();
       }).catch(() => {});
@@ -84,7 +85,7 @@ function LoginForm() {
       // Login remains available if auth configuration is temporarily unavailable.
     }
     return () => { active = false; };
-  }, [requestedNextPath, router]);
+  }, [safeNext, router]);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,8 +98,7 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      const nextPath = searchParams.get("next");
-      router.push(nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/dashboard");
+      router.push(safeNext);
       router.refresh();
     } catch {
       setMessage(t.failed);
@@ -135,6 +135,7 @@ function LoginForm() {
             <p className="text-sm font-bold text-[#167453]">{t.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">{t.subtitle}</p>
+            <SocialAuthButtons returnTo={safeNext} english={language === "en"} />
             <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="লগইন মাধ্যম">
               <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
                 {language === "bn" ? "ইমেইল" : "Email"}
@@ -146,8 +147,7 @@ function LoginForm() {
             {method === "phone" ? (
               <div className="mt-6">
                 <PhoneOtpAuth mode="login" onAuthenticated={() => {
-                  const target = requestedNextPath && requestedNextPath.startsWith("/") && !requestedNextPath.startsWith("//") && !requestedNextPath.includes("\\")
-                    ? requestedNextPath : "/dashboard";
+                  const target = safeNext;
                   router.replace(target);
                   router.refresh();
                 }} />
@@ -168,7 +168,7 @@ function LoginForm() {
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}</button>
               {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{message}</p>}
             </form>}
-            <p className="mt-7 text-center text-sm text-slate-600">{t.noAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href={requestedNextPath ? "/signup?next=" + encodeURIComponent(requestedNextPath) : "/signup"}>{t.signup}</Link></p>
+            <p className="mt-7 text-center text-sm text-slate-600">{t.noAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href={requestedNextPath ? "/signup?next=" + encodeURIComponent(safeNext) : "/signup"}>{t.signup}</Link></p>
           </div>
         </section>
       </div>
