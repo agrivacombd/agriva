@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = p => readFileSync(new URL("../" + p, import.meta.url), "utf8");
+const ui=read("components/marketplace/CheckoutButton.tsx");
+const page=read("app/marketplace/[productId]/page.tsx");
+const api=read("app/api/checkout/route.ts");
+const sql=read("supabase/migrations/20261115003100_direct_cod_delivery_readiness.sql");
+assert.match(page,/shippingClass=\{product.shipping_class \?\? null\}/);
+assert.match(page,/shippingWeightGrams=\{product.shipping_weight_grams \?\? null\}/);
+assert.match(ui,/calculateShippingFee\(\[/);
+assert.match(ui,/সর্বমোট \(ডেলিভারিসহ\)/);
+assert.match(ui,/সম্পূর্ণ ঠিকানা \(ঐচ্ছিক\)/);
+assert.doesNotMatch(ui,/autoComplete="street-address" maxLength=\{500\} required/);
+assert.match(api,/deliveryFee: Number\(order.delivery_fee\)/);
+assert.match(api,/cleanText\(raw.upazila, 100\), cleanText\(raw.address, 500\), cleanText\(raw.district, 80\)/);
+assert.match(sql,/if v_product.shipping_class = 'paddy'/);
+assert.match(sql,/v_delivery := 135/);
+assert.match(sql,/v_delivery := 70/);
+assert.match(sql,/total_amount = round\(v_order.unit_price \* v_order.quantity, 2\) \+ v_delivery/);
+assert.match(sql,/v_order := private.finalize_marketplace_cod_order/);
+assert.match(sql,/grant execute on function public.finalize_marketplace_cod_order_safe/);
+console.log("Direct COD shipping and ad landing readiness passed.");
