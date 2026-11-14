@@ -8,12 +8,12 @@ import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 type Item = { product_id: string; quantity: number; unit_price: number; name: string };
 type Address = {
   name: string; phone: string; division: string; district: string; upazila: string;
-  unionOrArea: string; villageRoadHouse: string; landmark: string; postalCode: string; deliveryInstructions: string;
+  fullAddress: string; deliveryInstructions: string;
 };
 
 const initialAddress: Address = {
   name: "", phone: "", division: "", district: "", upazila: "",
-  unionOrArea: "", villageRoadHouse: "", landmark: "", postalCode: "", deliveryInstructions: "",
+  fullAddress: "", deliveryInstructions: "",
 };
 
 function normalizeBangladeshPhone(input: string): string | null {
@@ -98,6 +98,10 @@ export default function Checkout() {
       setMessage("Cash on Delivery বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।");
       return;
     }
+    if (form.fullAddress.trim().length < 8) {
+      setMessage("সম্পূর্ণ ডেলিভারি ঠিকানা লিখুন (কমপক্ষে ৮ অক্ষর)।");
+      return;
+    }
     const normalizedPhone = normalizeBangladeshPhone(form.phone);
     if (!normalizedPhone) {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
@@ -113,13 +117,9 @@ export default function Checkout() {
         division: form.division.trim(),
         district: form.district.trim(),
         upazila: form.upazila.trim(),
-        unionOrArea: form.unionOrArea.trim(),
-        villageRoadHouse: form.villageRoadHouse.trim(),
-        landmark: form.landmark.trim(),
-        postalCode: form.postalCode.trim(),
+        fullAddress: form.fullAddress.trim(),
         deliveryInstructions: form.deliveryInstructions.trim(),
-        // Keep a backward-compatible printable address for older order views.
-        address: [form.upazila, form.unionOrArea, form.villageRoadHouse].map(value => value.trim()).filter(Boolean).join(", "),
+        // API normalizes the single visible address into legacy RPC-required fields.
       };
       const response = await fetch("/api/checkout/cart", {
         method: "POST",
@@ -145,6 +145,7 @@ export default function Checkout() {
     <div className="mx-auto max-w-3xl">
       <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Checkout · বাংলাদেশ</p>
       <h1 className="mt-3 text-3xl font-black sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>
+      <p className="mt-2 text-sm leading-6 text-slate-600">দ্রুত অর্ডারের জন্য শুধু প্রয়োজনীয় তথ্য দিন। আপনার ঠিকানা নিরাপদে অর্ডারের সঙ্গে সংরক্ষিত হবে।</p>
       {items.length > 0 && <section className="mt-6 rounded-2xl bg-white p-5">
         <h2 className="font-bold">অর্ডার সারাংশ · {items.length} ধরনের পণ্য</h2>
         {items.map(item => <p key={item.product_id} className="mt-2 flex justify-between gap-3 text-sm text-[#647468]"><span>{item.name} × {item.quantity}</span><span className="shrink-0">৳{(item.unit_price * item.quantity).toLocaleString("bn-BD")}</span></p>)}
@@ -164,12 +165,7 @@ export default function Checkout() {
           <label className="block"><span className="text-sm font-bold">জেলা *</span><select value={form.district} onChange={event => setField("district", event.target.value)} autoComplete="address-level2" required className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700"><option value="">জেলা বেছে নিন</option>{BANGLADESH_DISTRICTS.map(item => <option key={item.id} value={item.name}>{item.name}</option>)}</select></label>
           <label className="block"><span className="text-sm font-bold">উপজেলা / থানা *</span><select value={form.upazila} onChange={event => setField("upazila", event.target.value)} autoComplete="address-level3" required disabled={!form.district} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700 disabled:cursor-not-allowed disabled:bg-slate-100"><option value="">{form.district ? "উপজেলা / থানা বেছে নিন" : "আগে জেলা নির্বাচন করুন"}</option>{availableUpazilas.map(name => <option key={name} value={name}>{name}</option>)}</select></label>
         </div>
-        <Field label="ইউনিয়ন / এলাকা / ওয়ার্ড *" value={form.unionOrArea} onChange={v => setField("unionOrArea", v)} />
-        <Field label="গ্রাম / রোড / বাড়ি / হোল্ডিং নম্বর *" value={form.villageRoadHouse} onChange={v => setField("villageRoadHouse", v)} autoComplete="street-address" />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="নিকটস্থ পরিচিত স্থান (ঐচ্ছিক)" value={form.landmark} onChange={v => setField("landmark", v)} required={false} />
-          <Field label="পোস্ট কোড (ঐচ্ছিক)" value={form.postalCode} onChange={v => setField("postalCode", v)} required={false} />
-        </div>
+        <label className="block"><span className="text-sm font-bold">সম্পূর্ণ ডেলিভারি ঠিকানা *</span><span className="mt-1 block text-xs leading-5 text-slate-500">এলাকা, গ্রাম/রোড, বাড়ি বা হোল্ডিং নম্বর একসঙ্গে লিখুন।</span><textarea value={form.fullAddress} onChange={event => setField("fullAddress", event.target.value)} autoComplete="street-address" maxLength={250} minLength={8} required rows={3} className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/20" placeholder="যেমন: বাড়ি ১২, পূর্বপাড়া, ৩ নং ওয়ার্ড, বাজার রোড" /></label>
         <label className="block"><span className="text-sm font-bold">ডেলিভারির অতিরিক্ত নির্দেশনা (ঐচ্ছিক)</span><textarea value={form.deliveryInstructions} onChange={event => setField("deliveryInstructions", event.target.value)} maxLength={500} rows={3} className="mt-2 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-700" placeholder="কখন ফোন করবেন, কীভাবে আসবেন ইত্যাদি" /></label>
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
           <b>ক্যাশ অন ডেলিভারি (COD)</b>
