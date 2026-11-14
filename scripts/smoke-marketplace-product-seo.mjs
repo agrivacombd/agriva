@@ -13,7 +13,7 @@ assert.match(page, /\.eq\("slug", normalized\)\.eq\("status", "active"\)/,
   "Slug lookup must only return active products");
 assert.match(page, /\.eq\("id", normalized\)\.eq\("status", "active"\)/,
   "UUID lookup must only return active products");
-assert.match(page, /subcategory_slug,price,stock,unit,description,image_url/,
+assert.match(page, /subcategory_slug,price,stock,unit,(?:shipping_class,shipping_weight_grams,)?description,image_url/,
   "Product lookup must select uploaded image URLs");
 assert.match(page, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/,
   "Product metadata must publish a canonical slug URL");
