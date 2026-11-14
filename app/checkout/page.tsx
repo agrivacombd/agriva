@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase/client";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
+import { trackMetaEvent } from "@/lib/meta-pixel";
 
 type Item = { product_id: string; quantity: number; unit_price: number; name: string };
 type Address = {
@@ -102,6 +103,7 @@ export default function Checkout() {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
       return;
     }
+    trackMetaEvent("InitiateCheckout", { currency: "BDT", value: subtotal, content_type: "product", content_ids: items.map(item => item.product_id), num_items: items.reduce((sum, item) => sum + item.quantity, 0) });
     setBusy(true);
     setMessage("");
     if (!idempotencyKeyRef.current) idempotencyKeyRef.current = crypto.randomUUID();
@@ -129,6 +131,9 @@ export default function Checkout() {
       if (!response.ok) throw new Error(result.error || "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
       setConfirmed(true);
       setOrderId(String(result.orderId ?? ""));
+      if (result.orderId && Number.isFinite(Number(result.total))) {
+        trackMetaEvent("Purchase", { currency: "BDT", value: Number(result.total), content_type: "product", content_ids: items.map(item => item.product_id), num_items: items.reduce((sum, item) => sum + item.quantity, 0) }, String(result.orderId));
+      }
       setItems([]);
       setMessage(`অর্ডার নিশ্চিত হয়েছে। মোট ${Number(result.total).toLocaleString("bn-BD", { style: "currency", currency: "BDT" })}।`);
     } catch (error) {
