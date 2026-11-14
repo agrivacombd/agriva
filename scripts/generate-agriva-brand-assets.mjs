@@ -19,12 +19,33 @@ const tasks = [
   ["agriva-app-icon-512.png", 512],
   ["agriva-apple-touch-180.png", 180],
   ["agriva-favicon-32.png", 32],
-  ["agriva-google-oauth-120.png", 120],
 ];
 
 for (const [name, pixels] of tasks) {
   await sharp(source).resize(pixels, pixels, { fit: "contain" }).png(png).toFile(join(dir, name));
 }
+
+// The Google OAuth review logo must include the AGRIVA wordmark, not just
+// a generic letter A. Stack the same official A mark and site wordmark.
+const oauthMark = await sharp(source)
+  .extract({ left: 80, top: 56, width: 355, height: 266 })
+  .resize(110, 80, { fit: "contain" })
+  .png()
+  .toBuffer();
+const oauthText = await sharp(join(dir, "agriva-agriculture-brand-logo.svg"))
+  .extract({ left: 200, top: 43, width: 440, height: 107 })
+  .resize(116, 30, { fit: "contain" })
+  .png()
+  .toBuffer();
+await sharp({
+  create: { width: 120, height: 120, channels: 4, background: "#ffffff" },
+})
+  .composite([
+    { input: oauthMark, left: 5, top: 3 },
+    { input: oauthText, left: 2, top: 87 },
+  ])
+  .png(png)
+  .toFile(join(dir, "agriva-google-oauth-120.png"));
 
 // Android adaptive/maskable icons must reserve a central safe zone.
 await sharp(source)
