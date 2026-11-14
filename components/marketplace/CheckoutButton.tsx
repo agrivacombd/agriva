@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart } from "lucide-react";
-import { supabase } from "@/lib/supabase/client";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
@@ -56,6 +56,7 @@ export default function CheckoutButton({
     setCartAdded(false);
     setMessage("");
     try {
+      const supabase = createSupabaseBrowserClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError) throw authError;
       if (!user) {
