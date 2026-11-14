@@ -24,6 +24,8 @@ type ProductRecord = {
   price: number | string | null;
   stock: number | null;
   unit?: string | null;
+  shipping_class?: string | null;
+  shipping_weight_grams?: number | null;
   description: string | null;
   image_url?: string | null;
   image_urls?: string[] | null;
@@ -53,7 +55,7 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
   if (sample) return { ...sample, id: sample.id, slug: sample.slug, commission_percent: null } as ProductRecord;
 
   const supabase = await createSupabaseServerClient();
-  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,description,image_url,image_urls,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt";
+  const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,shipping_class,shipping_weight_grams,description,image_url,image_urls,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt";
   const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
@@ -299,7 +301,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
               ) : (
-                <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || "টি"} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
+                <CheckoutButton productId={product.id} productSlug={product.slug} productName={product.name} unitPrice={Number(product.price)} stock={Number(product.stock ?? 0)} unitLabel={unitLabel || (product.slug === "black-rice-seeds" ? "কেজি" : "টি")} shippingClass={product.shipping_class ?? null} shippingWeightGrams={product.shipping_weight_grams ?? null} disabled={!hasRealPrice || !hasStock || Number(product.stock) < 1} />
               )}
             </div>
             <p className="mt-2 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>

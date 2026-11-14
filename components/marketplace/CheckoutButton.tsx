@@ -8,6 +8,7 @@ import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 
 type Props = {
@@ -17,6 +18,8 @@ type Props = {
   unitPrice: number;
   stock: number;
   unitLabel: string;
+  shippingClass: string | null;
+  shippingWeightGrams: number | null;
   disabled?: boolean;
 };
 
@@ -24,11 +27,12 @@ const CHOICES = [1, 2, 3, 5, 10];
 const numberBN = (value: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(value);
 
 export default function CheckoutButton({
-  productId, productSlug, productName, unitPrice, stock, unitLabel, disabled = false,
+  productId, productSlug, productName, unitPrice, stock, unitLabel, shippingClass, shippingWeightGrams, disabled = false,
 }: Props) {
   const maxQuantity = Math.min(100, Math.max(0, Math.floor(Number(stock) || 0)));
-  const unavailable = disabled || maxQuantity === 0 || !Number.isFinite(unitPrice) || unitPrice < 0;
   const [quantity, setQuantity] = useState(1);
+  const delivery = calculateShippingFee([{ shipping_class: shippingClass, shipping_weight_grams: shippingWeightGrams, quantity }]);
+  const unavailable = disabled || maxQuantity === 0 || !Number.isFinite(unitPrice) || unitPrice < 0 || !delivery;
   const primaryOrderRef = useRef<HTMLButtonElement>(null);
   const [primaryOrderVisible, setPrimaryOrderVisible] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
@@ -145,8 +149,8 @@ export default function CheckoutButton({
   async function checkout(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (unavailable || directCheckoutInFlightRef.current || loading || orderId) return;
-    if (!fullName.trim() || !phone.trim() || !district.trim() || !upazila.trim() || !address.trim()) {
-      setMessage("নাম, মোবাইল নম্বর, জেলা, উপজেলা ও সম্পূর্ণ ঠিকানা পূরণ করুন।");
+    if (!fullName.trim() || !phone.trim() || !district.trim() || !upazila.trim()) {
+      setMessage("নাম, মোবাইল নম্বর, জেলা ও উপজেলা/থানা পূরণ করুন।");
       return;
     }
     const normalizedPhone = phone.trim().replace(/[\s()-]/g, "");
@@ -154,7 +158,7 @@ export default function CheckoutButton({
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
-    trackMetaEvent("InitiateCheckout", { currency: "BDT", value: unitPrice * quantity, content_type: "product", content_ids: [productId], num_items: quantity });
+    trackMetaEvent("InitiateCheckout", { currency: "BDT", value: unitPrice * quantity + (delivery?.fee ?? 0), content_type: "product", content_ids: [productId], num_items: quantity });
     directCheckoutInFlightRef.current = true;
     setLoading(true);
     setLoginRequired(false);
@@ -233,7 +237,7 @@ export default function CheckoutButton({
           <div className="text-right">
             <p className="text-xs text-slate-500">পণ্যের মোট মূল্য (ডেলিভারি ছাড়া)</p>
             <p aria-live="polite" className="text-2xl font-black text-emerald-700">৳{numberBN(unitPrice * quantity)}</p>
-            <p className="text-xs text-slate-500">৳{numberBN(unitPrice)} × {numberBN(quantity)} {unitLabel}</p>
+            <p className="text-xs text-slate-500">৳{numberBN(unitPrice)} × {numberBN(quantity)} {unitLabel} · ডেলিভারি {delivery ? "৳" + numberBN(delivery.fee) : "যাচাই প্রয়োজন"}</p>
           </div>
         </div>
       </div>
@@ -284,15 +288,15 @@ export default function CheckoutButton({
                   {availableUpazilas.map((name, index) => <option key={district + "-" + index} value={name.trim()}>{name.trim()}</option>)}
                 </select>
               </label>
-              <label className="text-sm font-bold text-[#17351f] sm:col-span-2">সম্পূর্ণ ঠিকানা *
-                <textarea value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" maxLength={500} required rows={3} placeholder="গ্রাম/এলাকা, ইউনিয়ন/ওয়ার্ড, বাড়ি/রোড" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
+              <label className="text-sm font-bold text-[#17351f] sm:col-span-2">সম্পূর্ণ ঠিকানা (ঐচ্ছিক)
+                <textarea value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" maxLength={500} rows={3} placeholder="গ্রাম/এলাকা, ইউনিয়ন/ওয়ার্ড, বাড়ি/রোড" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
               </label>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
-              <span className="text-sm font-bold">নির্বাচিত পণ্যের মোট</span>
-              <strong className="text-lg text-emerald-800">৳{numberBN(unitPrice * quantity)}</strong>
+              <span className="text-sm font-bold">সর্বমোট (ডেলিভারিসহ)</span>
+              <strong className="text-lg text-emerald-800">{delivery ? "৳" + numberBN(unitPrice * quantity + delivery.fee) : "ওজন যাচাই প্রয়োজন"}</strong>
             </div>
-            <p className="text-xs leading-5 text-slate-500">ডেলিভারি চার্জ ও স্টক অর্ডার নিশ্চিত করার সময় যাচাই হবে।</p>
+            <p className="text-xs leading-5 text-slate-500">পণ্যের দাম: ৳{numberBN(unitPrice * quantity)} · ডেলিভারি: {delivery ? "৳" + numberBN(delivery.fee) : "ওজন যাচাই প্রয়োজন"}। চূড়ান্ত পরিমাণ ও চার্জ সার্ভারে যাচাই হবে।</p>
             <button type="submit" disabled={unavailable || loading || Boolean(orderId)} className="w-full rounded-xl bg-[#17351f] px-5 py-3.5 font-black text-white hover:bg-emerald-900 disabled:cursor-not-allowed disabled:opacity-50">
               {loading ? "অর্ডার তৈরি হচ্ছে..." : orderId ? "অর্ডার নিশ্চিত হয়েছে" : "ক্যাশ অন ডেলিভারিতে অর্ডার নিশ্চিত করুন"}
             </button>
