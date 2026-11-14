@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -41,6 +41,11 @@ export default function CheckoutButton({
   const selectedDistrict = BANGLADESH_DISTRICTS.find(item => item.name === district);
   const availableUpazilas = selectedDistrict?.upazilas ?? [];
   const loginHref = "/login?next=" + encodeURIComponent("/marketplace/" + productSlug);
+
+  // Product cards can link directly to the purchase form without skipping quantity selection.
+  useEffect(() => {
+    if (window.location.hash === "#product-direct-cod") setFormOpen(true);
+  }, []);
 
   function selectQuantity(value: number) {
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
