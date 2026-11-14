@@ -5,6 +5,8 @@ const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const page = read("../app/marketplace/[productId]/page.tsx");
 const purchase = read("../components/marketplace/CheckoutButton.tsx");
 const route = read("../app/api/checkout/route.ts");
+const cartRoute = read("../app/api/checkout/cart/route.ts");
+const catalogue = read("../components/marketplace/MarketplaceCore.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
@@ -35,6 +37,19 @@ for (const src of [purchase, cart, checkout]) {
   assert.ok(src.includes('import { createSupabaseBrowserClient } from "@/lib/supabase/browser"'), "Purchase, cart and checkout must use the same SSR cookie auth as login");
   assert.ok(!src.includes('from "@/lib/supabase/client"'), "Legacy localStorage auth must not be used in checkout");
 }
+for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "minLength={8}"]) {
+  assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
+}
+for (const removed of ['setField("unionOrArea"', 'setField("villageRoadHouse"', 'setField("landmark"', 'setField("postalCode"']) {
+  assert.ok(!checkout.includes(removed), "Legacy form field is still visible: " + removed);
+}
+assert.ok(cartRoute.includes("isSimpleAddress ? upazila : legacyArea"), "Server should derive legacy area from an actual selected location");
+assert.ok(cartRoute.includes("isSimpleAddress ? rawFullAddress : legacyStreet"), "Server must preserve the user-entered full address");
+assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
+assert.ok(catalogue.includes("BUY NOW") && catalogue.includes("#product-direct-cod"), "Product card buy-now flow must link to direct COD form");
+assert.ok(page.includes("relatedProducts") && page.includes('.eq("marketplace_channel", "marketplace")'), "Related product cards must show published marketplace items only");
+assert.ok(purchase.includes('window.location.hash === "#product-direct-cod"'), "Buy Now link should expand the COD form");
+
 assert.ok(!purchase.includes("p_quantity: 1"), "Cart selection must never be silently reset to one");
 assert.ok(!purchase.includes("quantity: 1"), "Buy Now selection must never be silently reset to one");
 assert.ok(route.includes("Number.isSafeInteger(quantity)") && route.includes("quantity > 100"), "API must validate quantity bounds");
