@@ -239,8 +239,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span aria-current="page" className="font-semibold text-slate-700">{product.name}</span>
         </nav>
 
-        <section aria-labelledby="product-title" className="grid overflow-hidden rounded-3xl border border-emerald-950/10 bg-white shadow-sm md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <div className="relative flex min-w-0 items-start justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:col-start-1 md:row-start-1 md:px-6">
+        <section aria-labelledby="product-title" className="flex flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm sm:rounded-3xl md:grid md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] md:items-start">
+          <div className="contents md:flex md:min-w-0 md:flex-col">
+          <div className="order-1 relative flex min-w-0 items-start justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-100 px-3 pb-2 pt-10 sm:px-6 sm:pb-5 sm:pt-12 md:px-6">
             {image ? (
               <ProductImageGallery
                 images={galleryImages}
@@ -257,7 +258,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <span className="absolute left-4 top-4 rounded-full border border-emerald-900/10 bg-white/90 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">AGRIVA Marketplace</span>
           </div>
 
-          <div className="flex min-w-0 flex-col px-4 pb-4 pt-3 sm:p-7 md:col-start-2 md:row-span-2 md:row-start-1 md:p-8 lg:p-9">
+          {relatedProducts.length > 0 && (
+            <div className="order-3 min-w-0 border-t border-emerald-950/10 bg-white p-3 sm:p-5 md:order-none md:border-t-0 md:pt-2">
+              <RelatedProductUpsell
+                compact
+                products={relatedProducts}
+                heading={product.category_slug === "seeds" ? "আরও বীজ, একই কার্টে" : "একই কার্টে আরও পণ্য"}
+                subtitle={product.category_slug ? "একই ক্যাটাগরির প্রাসঙ্গিক পণ্য থেকে বেছে নিন।" : "আপনার প্রয়োজন অনুযায়ী আরও কৃষিপণ্য বেছে নিন।"}
+                categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
+              />
+            </div>
+          )}
+          </div>
+
+          <div className="order-2 flex min-w-0 flex-col px-4 pb-4 pt-3 sm:p-7 md:order-none md:p-8 lg:p-9">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-extrabold text-emerald-800">
                 <span className="h-2 w-2 rounded-full bg-emerald-600" />
@@ -293,17 +307,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <p className="mt-2 text-xs leading-5 text-slate-500">অর্ডারের আগে পণ্যের specification, পরিমাণ, ডেলিভারি ও চূড়ান্ত মূল্য যাচাই করুন। মূল্য ও মজুত পরিবর্তিত হতে পারে।</p>
             <a href="#product-details" className="mt-3 inline-flex min-h-10 w-fit items-center justify-center rounded-xl border border-emerald-800 px-4 py-2.5 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">পণ্যের বিস্তারিত দেখুন ↓</a>
           </div>
-          {relatedProducts.length > 0 && (
-            <div className="min-w-0 border-t border-emerald-950/10 bg-white p-3 sm:p-5 md:col-start-1 md:row-start-2 md:border-t-0 md:pt-0">
-              <RelatedProductUpsell
-                compact
-                products={relatedProducts}
-                heading={product.category_slug === "seeds" ? "আরও বীজ, একই কার্টে" : "একই কার্টে আরও পণ্য"}
-                subtitle={product.category_slug ? "একই ক্যাটাগরির প্রাসঙ্গিক পণ্য থেকে বেছে নিন।" : "আপনার প্রয়োজন অনুযায়ী আরও কৃষিপণ্য বেছে নিন।"}
-                categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
-              />
-            </div>
-          )}
         </section>
 
         <div className="mt-5 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
