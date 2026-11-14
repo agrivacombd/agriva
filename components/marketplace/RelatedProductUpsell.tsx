@@ -233,8 +233,8 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
 
   return (
     <section id="related-products" aria-labelledby="related-product-heading"
-      className="mt-7 scroll-mt-24 rounded-3xl border border-emerald-100 bg-gradient-to-br from-[#edf8f0] via-white to-[#f5fbef] p-4 shadow-sm sm:mt-9 sm:p-7">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      className="scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-black uppercase tracking-[.14em] text-emerald-700">Continue shopping · AGRIVA</p>
           <h2 id="related-product-heading" className="mt-1 text-xl font-black tracking-tight text-emerald-950 sm:text-2xl">{heading}</h2>
@@ -260,7 +260,7 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {products.map(product => {
           const limit = maxAllowed(product.stock);
           const price = product.price === null ? NaN : Number(product.price);
@@ -270,18 +270,18 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
           const detailHref = "/marketplace/" + product.slug;
           const busy = busyId !== null;
           return (
-            <article key={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:border-emerald-400 hover:shadow-md">
+            <article key={product.id} className="group flex min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-emerald-400 hover:shadow-sm">
               <Link href={detailHref} onClick={() => trackProductRankEvents("marketplace", "listing_click", [product.id])}
-                className="relative block aspect-square overflow-hidden bg-[#f5faf6]" aria-label={product.name + " বিস্তারিত দেখুন"}>
+                className="relative block aspect-square overflow-hidden bg-[#f7faf8]" aria-label={product.name + " বিস্তারিত দেখুন"}>
                 {product.image_url ? <Image src={product.image_url} alt={product.name + " — AGRIVA Marketplace"} fill unoptimized
-                  sizes="(max-width: 1023px) 50vw, 25vw" className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]" />
+                  sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw" className="object-contain p-3 transition-transform duration-300 group-hover:scale-[1.04]" />
                   : <span className="grid h-full place-items-center text-4xl" aria-hidden="true">🌱</span>}
                 <span className={"absolute left-2 top-2 rounded-lg px-2 py-1 text-[10px] font-black shadow-sm " +
                   (purchasable ? "bg-emerald-800 text-white" : "bg-slate-800 text-white")}>
                   {purchasable ? "স্টকে আছে" : "স্টক যাচাই করুন"}
                 </span>
               </Link>
-              <div className="flex flex-1 flex-col p-3 sm:p-4">
+              <div className="flex flex-1 flex-col p-2.5 sm:p-4">
                 <Link href={detailHref} onClick={() => trackProductRankEvents("marketplace", "listing_click", [product.id])}
                   className="line-clamp-2 min-h-10 break-words text-xs font-bold leading-5 text-slate-900 hover:text-emerald-800 sm:text-sm">{product.name}</Link>
                 <p className="mt-2 text-base font-black text-emerald-900 sm:text-lg">
@@ -291,7 +291,7 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
                 <div className="mt-auto pt-3">
                   {purchasable ? (
                     <>
-                      <div className="mb-2 flex h-10 items-center justify-between overflow-hidden rounded-xl border border-slate-200"
+                      <div className="mb-2 flex h-10 items-center justify-between overflow-hidden rounded-lg border border-slate-200"
                         role="group" aria-label={product.name + " পরিমাণ নির্বাচন"}>
                         <button type="button" aria-label={product.name + " পরিমাণ কমান"} disabled={busy || qty <= 1}
                           onClick={() => updateQuantity(product.id, qty - 1, product.stock)}
