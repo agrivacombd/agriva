@@ -17,7 +17,7 @@ assert.match(page, /\.eq\("id", normalized\)\.eq\("status", "active"\)/,
 assert.match(page, /subcategory_slug,price,stock,unit,(?:shipping_class,shipping_weight_grams,)?description,image_url/,
   "Product lookup must select uploaded image URLs");
 assert.ok(page.includes('title: { absolute: title }'), "Product title must bypass the root layout suffix to avoid duplicate AGRIVA branding");
-assert.ok(page.includes('unbrandedTitle.slice(0, 61).trimEnd() + " | AGRIVA"'), "SEO title length must preserve the full AGRIVA suffix");
+assert.ok(page.includes('const title = titleBase + " | AGRIVA"') && page.includes('unbrandedTitle.slice(0, 61).replace(/\\s+\\S*$/, "")'), "SEO title must preserve the AGRIVA suffix and avoid cutting individual words");
 assert.match(page, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/,
   "Product metadata must publish a canonical slug URL");
 assert.match(page, /openGraph:\s*\{[\s\S]*?images:\s*\[\{\s*url:\s*image/,
