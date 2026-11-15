@@ -36,7 +36,8 @@ export default function MicrosoftClarityClient({ projectId }: { projectId: strin
       previouslyAllowed = true;
       if (typeof window.clarity !== "function") {
         const queued: unknown[][] = [];
-        const stub = (...args: unknown[]) => { queued.push(args); };
+        const stub: ((...args: unknown[]) => void) & { q?: unknown[][] } =
+          (...args: unknown[]) => { queued.push(args); };
         stub.q = queued;
         window.clarity = stub;
       }
