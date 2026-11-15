@@ -23,7 +23,24 @@ export function hasAnalyticsConsent(): boolean {
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
+    clarity?: ((...args: unknown[]) => void) & { q?: unknown[][] };
   }
+}
+
+export type ClarityEventName =
+  | "product_viewed"
+  | "cart_viewed"
+  | "checkout_started"
+  | "checkout_submitted"
+  | "cart_item_added"
+  | "order_completed"
+  | "marketplace_search_used"
+  | "marketplace_category_used";
+
+/** Only fixed funnel milestones, never free text, IDs, order refs, or PII. */
+export function trackClarityEvent(eventName: ClarityEventName): void {
+  if (!hasAnalyticsConsent() || typeof window.clarity !== "function") return;
+  window.clarity("event", eventName);
 }
 
 /**
@@ -34,7 +51,10 @@ export function trackAnalyticsEvent(
   eventName: AnalyticsEventName,
   params: AnalyticsEventParams = {},
 ) {
-  if (!hasAnalyticsConsent() || typeof window.gtag !== "function") return;
+  if (!hasAnalyticsConsent()) return;
+  if (eventName === "add_to_cart") trackClarityEvent("cart_item_added");
+  if (eventName === "marketplace_order_placed") trackClarityEvent("order_completed");
+  if (typeof window.gtag !== "function") return;
 
   const safeParams = Object.fromEntries(
     Object.entries(params).filter(([, value]) =>

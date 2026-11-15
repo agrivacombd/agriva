@@ -95,7 +95,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const pageTitle = currentItem?.label ?? "Admin workspace";
 
   return (
-    <div className="min-h-screen bg-[#f4f7f2] text-[#173b2d]">
+    <div data-clarity-mask="true" className="min-h-screen bg-[#f4f7f2] text-[#173b2d]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[76px] flex-col border-r border-white/10 bg-[#123b2d] text-white lg:flex xl:w-[264px]">
         <Link href="/admin" className="flex h-[76px] items-center justify-center border-b border-white/10 px-4 xl:justify-start xl:px-6" aria-label="AGRIVA Admin home">
           <span className="text-xl font-black tracking-[0.14em] text-white">AG<span className="text-lime-300">R</span>IVA</span>

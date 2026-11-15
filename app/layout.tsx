@@ -5,6 +5,7 @@ import SiteChrome from "@/components/site/SiteChrome";
 import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import MetaPixel from "@/components/analytics/MetaPixel";
 import GrowthVerification from "@/components/analytics/GrowthVerification";
+import MicrosoftClarity from "@/components/analytics/MicrosoftClarity";
 import "./globals.css";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -115,6 +116,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         />
         <GrowthVerification />
         <GoogleAnalytics />
+        <MicrosoftClarity />
         <MetaPixel />
         <PwaRegister />
         <SiteChrome />

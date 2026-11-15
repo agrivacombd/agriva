@@ -8,6 +8,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 import { trackMetaEvent } from "@/lib/meta-pixel";
+import { trackAnalyticsEvent, trackClarityEvent } from "@/lib/analytics";
 import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 
 type Item = {
@@ -141,7 +142,7 @@ export default function Checkout() {
     }
   }, []);
 
-  useEffect(() => { void loadCart(); }, [loadCart]);
+  useEffect(() => { void loadCart(); trackClarityEvent("checkout_started"); }, [loadCart]);
 
   function setField<K extends keyof Address>(key: K, value: Address[K]) {
     setForm(previous => ({
@@ -199,6 +200,7 @@ export default function Checkout() {
       setMessage("বাংলাদেশের সঠিক মোবাইল নম্বর দিন: 01XXXXXXXXX অথবা +8801XXXXXXXXX।");
       return;
     }
+    trackClarityEvent("checkout_submitted");
     trackMetaEvent("InitiateCheckout", { currency: "BDT", value: subtotal, content_type: "product", content_ids: items.map(item => item.product_id), num_items: totalUnits });
     setBusy(true);
     setMessage("");
@@ -220,6 +222,11 @@ export default function Checkout() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Checkout ব্যর্থ হয়েছে। আবার চেষ্টা করুন।");
       setConfirmed(true);
+      trackAnalyticsEvent("marketplace_order_placed", {
+        currency: "BDT",
+        ...(Number.isFinite(Number(result.total)) ? { value: Number(result.total) } : {}),
+        quantity: totalUnits,
+      });
       window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setOrderId(String(result.orderId ?? ""));
       if (result.orderId && Number.isFinite(Number(result.total))) {
@@ -244,7 +251,7 @@ export default function Checkout() {
   );
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] px-4 py-7 text-[#17351f] sm:px-6 sm:py-10">
+    <main data-clarity-mask="true" className="min-h-screen bg-[#f5f7f2] px-4 py-7 text-[#17351f] sm:px-6 sm:py-10">
       <div className="mx-auto max-w-7xl">
         <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA CHECKOUT · বাংলাদেশ</p>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>

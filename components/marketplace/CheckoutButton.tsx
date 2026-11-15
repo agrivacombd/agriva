@@ -6,7 +6,7 @@ import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
-import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackAnalyticsEvent, trackClarityEvent } from "@/lib/analytics";
 import { trackMetaEvent } from "@/lib/meta-pixel";
 import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
@@ -91,6 +91,7 @@ export default function CheckoutButton({
 
   function openDirectOrder() {
     if (unavailable || loading || Boolean(orderId)) return;
+    if (!formOpen) trackClarityEvent("checkout_started");
     setFormOpen(true);
     setMessage("");
     window.requestAnimationFrame(() => {
@@ -158,6 +159,7 @@ export default function CheckoutButton({
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
+    trackClarityEvent("checkout_submitted");
     trackMetaEvent("InitiateCheckout", { currency: "BDT", value: unitPrice * quantity + (delivery?.fee ?? 0), content_type: "product", content_ids: [productId], num_items: quantity });
     directCheckoutInFlightRef.current = true;
     setLoading(true);
@@ -267,7 +269,7 @@ export default function CheckoutButton({
           <span className="inline-flex items-center gap-1 text-xs text-emerald-800">{formOpen ? "ফর্ম বন্ধ করুন" : "ফর্ম খুলুন"} <ChevronDown size={17} className={formOpen ? "rotate-180 transition-transform" : "transition-transform"} /></span>
         </button>
         {formOpen && (
-          <form id="direct-cod-form" onSubmit={checkout} className="space-y-4 border-t border-emerald-950/10 px-4 py-5 sm:px-5">
+          <form id="direct-cod-form" data-clarity-mask="true" onSubmit={checkout} className="space-y-4 border-t border-emerald-950/10 px-4 py-5 sm:px-5">
             <p className="text-sm leading-6 text-slate-600">নির্বাচিত {numberBN(quantity)} {unitLabel} সরাসরি অর্ডার করুন। পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন। লগইন প্রয়োজন।</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-bold text-[#17351f]">আপনার নাম *
@@ -303,7 +305,7 @@ export default function CheckoutButton({
           </form>
         )}
       </div>
-      {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
+      {message && <p data-clarity-mask="true" role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
       {loginRequired && <Link href={loginHref} className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে অর্ডার করুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
 

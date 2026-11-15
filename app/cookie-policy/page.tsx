@@ -16,7 +16,7 @@ const categories = [
   {
     name: "Analytics (ঐচ্ছিক)",
     status: "শুধু সম্মতিতে",
-    description: "Google Analytics 4 (GA4) ব্যবহারকারীরা কোন পৃষ্ঠা বা ফিচার ব্যবহার করছেন তা পরিমাপ করতে পারে। সাইটে Analytics-এর অনুমতি না থাকলে GA4 tag লোড হয় না।",
+    description: "Google Analytics 4 (GA4) কোন পৃষ্ঠা বা ফিচার ব্যবহার হচ্ছে তা পরিমাপ করতে পারে। Microsoft Clarity চালু থাকলে session recordings, heatmaps ও সীমিত conversion events পরিমাপ করতে পারে। Analytics অনুমতি ছাড়া এই দুটি script লোড করা হয় না; Clarity-তে checkout-এর ব্যক্তিগত তথ্য আড়াল করার ব্যবস্থা থাকে।",
   },
   {
     name: "Marketing (ঐচ্ছিক)",
@@ -55,7 +55,7 @@ export default function CookiePolicyPage() {
         </section>
         <section className="mt-9 border-t border-slate-100 pt-7">
           <h2 className="text-xl font-extrabold">৩. Google Consent Mode v2</h2>
-          <p className="mt-3 leading-8 text-slate-600">AGRIVA-তে Google Analytics-এর জন্য Basic Consent Mode v2 অনুসরণ করা হয়: অনুমতি না থাকলে GA4 tag লোড হয় না; Analytics অনুমতির পর প্রয়োজনীয় consent signal পাঠিয়ে পরিসংখ্যান সংগ্রহ শুরু হয়। বিজ্ঞাপন-সংক্রান্ত consent signal-ও আপনার Marketing পছন্দ অনুযায়ী নিয়ন্ত্রিত হয়।</p>
+          <p className="mt-3 leading-8 text-slate-600">AGRIVA-তে Google Analytics-এর জন্য Basic Consent Mode v2 এবং Microsoft Clarity-এর জন্য consentv2 signal অনুসরণ করা হয়: অনুমতি না থাকলে GA4 tag লোড হয় না; Analytics অনুমতির পর প্রয়োজনীয় consent signal পাঠিয়ে পরিসংখ্যান সংগ্রহ শুরু হয়। বিজ্ঞাপন-সংক্রান্ত consent signal-ও আপনার Marketing পছন্দ অনুযায়ী নিয়ন্ত্রিত হয়। Clarity-এর ক্ষেত্রেও analytics ও advertising cookie consent পৃথকভাবে পাঠানো হয়।</p>
           <p className="mt-3 leading-8 text-slate-600">Google Tag Manager-এর ID Admin Settings-এ সংরক্ষিত থাকলেও এই মুহূর্তে সেটি আলাদা ট্র্যাকিং চালু করার নির্দেশ নয়। একই ইভেন্ট একাধিকবার গণনা এড়াতে পৃথক tag ব্যবহারে সতর্কতা রাখা হয়।</p>
         </section>
         <section className="mt-9 border-t border-slate-100 pt-7">
