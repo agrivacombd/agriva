@@ -267,7 +267,7 @@ export default function CheckoutButton({
           <span className="inline-flex items-center gap-1 text-xs text-emerald-800">{formOpen ? "ফর্ম বন্ধ করুন" : "ফর্ম খুলুন"} <ChevronDown size={17} className={formOpen ? "rotate-180 transition-transform" : "transition-transform"} /></span>
         </button>
         {formOpen && (
-          <form id="direct-cod-form" onSubmit={checkout} className="space-y-4 border-t border-emerald-950/10 px-4 py-5 sm:px-5">
+          <form id="direct-cod-form" data-clarity-mask="true" onSubmit={checkout} className="space-y-4 border-t border-emerald-950/10 px-4 py-5 sm:px-5">
             <p className="text-sm leading-6 text-slate-600">নির্বাচিত {numberBN(quantity)} {unitLabel} সরাসরি অর্ডার করুন। পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন। লগইন প্রয়োজন।</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-bold text-[#17351f]">আপনার নাম *
@@ -303,7 +303,7 @@ export default function CheckoutButton({
           </form>
         )}
       </div>
-      {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
+      {message && <p data-clarity-mask="true" role="status" aria-live="polite" className="break-words rounded-xl bg-[#eef5ed] p-3 text-sm text-[#17351f]">{message}</p>}
       {loginRequired && <Link href={loginHref} className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">লগইন করে অর্ডার করুন</Link>}
       {orderId && <Link href="/orders" className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-emerald-800 px-5 py-3 font-bold text-emerald-900 hover:bg-emerald-50">আমার অর্ডার দেখুন</Link>}
 
