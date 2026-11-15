@@ -33,4 +33,18 @@ assert.match(plantPage,/data\.seo_description/,"Plant Market metadata must prefe
 assert.match(plantPage,/additionalProperty/,"Plant Market Product JSON-LD must include seller highlights");
 assert.match(marketplacePage,/Product highlight/,"Marketplace Product JSON-LD must include seller highlights");
 assert.match(migration,/ADD COLUMN IF NOT EXISTS seo_title/,"Migration must be additive and safe to re-run");
+// Plant Seller guided entry must preserve the existing secured review workflow.
+assert.match(plantForm, /function suggestSeo\(/, "Plant Seller must have a free on-device SEO draft helper");
+assert.match(plantForm, /seo_title: form\.seo_title\.trim\(\) \|\| auto\.seo_title/, "empty SEO title gets a seller-text-only fallback");
+assert.match(plantForm, /seo_description: form\.seo_description\.trim\(\) \|\| auto\.seo_description/, "empty meta description gets a seller-text-only fallback");
+assert.match(plantForm, /focus_keyword: form\.focus_keyword\.trim\(\) \|\| auto\.focus_keyword/, "focus keyword must have a plain-text fallback");
+assert.match(plantForm, /"plant-product-images"/, "Plant Seller must retain the isolated Storage bucket");
+assert.match(plantForm, /URL\.revokeObjectURL\(preview\)/, "uploaded photo object URLs must be released");
+assert.match(plantForm, /uploadedPath[\s\S]*\.remove\(\[uploadedPath\]\)/, "failed API submission must clean up an uploaded photo");
+assert.match(plantForm, /"\/api\/plant-seller\/products"/, "Product Seller writes must still use the authenticated API");
+assert.match(plantForm, /ProductSeoEditor/, "Plant SEO input and preview must remain editable");
+assert.match(plantForm, /inputMode="decimal"/, "Mobile sellers need an appropriate price keypad");
+assert.match(plantForm, /"পর্যালোচনার জন্য পণ্য জমা দিন"/, "seller CTA must explain approval workflow");
+assert.match(plantApi, /status:"draft"/, "submitted Plant Market products may not become public before review");
+
 console.log("Seller product SEO editor regression checks passed.");
