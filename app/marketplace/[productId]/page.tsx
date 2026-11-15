@@ -72,14 +72,17 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   if (!product) return { title: "পণ্য পাওয়া যায়নি", robots: { index: false, follow: false } };
 
   const name = cleanText(product.name);
-  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") ? name + " | AGRIVA" : name + " in Bangladesh | AGRIVA";
-  const title = cleanText(product.seo_title || defaultTitle).slice(0, 70);
+  // The site layout already defines a title template. Product titles are absolute
+  // so the brand is not duplicated in search previews or cut off mid-word.
+  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") ? name : name + " in Bangladesh";
+  const unbrandedTitle = cleanText(product.seo_title || defaultTitle).replace(/\\s*\\|\\s*AGRIVA\\s*$/i, "");
+  const title = unbrandedTitle.slice(0, 61).trimEnd() + " | AGRIVA";
   const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
   const description = cleanText(product.seo_description || descriptionText || ("Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.")).slice(0, 160);
   const image = product.image_url || (Array.isArray(product.image_urls) ? product.image_urls.find(url => typeof url === "string" && url.trim()) : undefined) || undefined;
 
   return {
-    title,
+    title: { absolute: title },
     description,
     alternates: { canonical: `/marketplace/${product.slug}` },
     ...(product.id.startsWith("sample-") ? { robots: { index: false, follow: false } } : {}),
