@@ -371,6 +371,7 @@ export default async function Home() {
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <nav aria-label="Legal links" className="flex flex-wrap gap-x-5 gap-y-2">
               <Link href="/privacy-policy" className="hover:text-emerald-800">Privacy Policy</Link>
+              <Link href="/cookie-policy" className="hover:text-emerald-800">Cookie Policy</Link>
               <Link href="/terms-of-service" className="hover:text-emerald-800">Terms of Service</Link>
             </nav>
             <p>Copyright © {new Date().getFullYear()} | Agriva.com.bd</p>

@@ -154,6 +154,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/about-us`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/contact-us`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/privacy-policy`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/cookie-policy`, changeFrequency: "yearly", priority: 0.3 },
     { url: `${base}/terms-of-service`, changeFrequency: "yearly", priority: 0.3 },
   ];
 

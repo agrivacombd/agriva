@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
+import Link from "next/link";
 import { hasAnalyticsConsent } from "@/lib/analytics";
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -160,7 +161,7 @@ export default function GoogleAnalytics() {
               </>
             )}
           </div>
-          <p className="mt-3 text-[11px] leading-5 text-[#849087]">অনুমতি না দিলেও AGRIVA ব্যবহার করতে পারবেন। Privacy Policy-তে বিস্তারিত দেখুন।</p>
+          <p className="mt-3 text-xs leading-5 text-[#647267]">অনুমতি না দিলেও AGRIVA ব্যবহার করতে পারবেন। <Link href="/privacy-policy" className="font-bold text-emerald-800 underline underline-offset-2">গোপনীয়তা নীতি</Link> ও <Link href="/cookie-policy" className="font-bold text-emerald-800 underline underline-offset-2">Cookie Policy</Link>-তে বিস্তারিত দেখুন।</p>
         </div>
       )}
 
