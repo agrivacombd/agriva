@@ -46,15 +46,6 @@ export default function GoogleAnalytics() {
     return () => window.removeEventListener("storage", syncConsent);
   }, []);
 
-  useEffect(() => {
-    if (!consent?.analytics || !hasAnalyticsConsent() || !ready || !pathname || typeof window.gtag !== "function") return;
-    window.gtag("event", "page_view", {
-      page_path: pathname,
-      page_location: window.location.href,
-      page_title: document.title,
-    });
-  }, [consent?.analytics, ready, pathname]);
-
   // Respect changes made in another tab (or after revoking consent).
   // Once loaded, a Google tag stays on the page even when its Script unmounts.
   useEffect(() => {
@@ -66,6 +57,15 @@ export default function GoogleAnalytics() {
       ad_personalization: consent?.marketing ? "granted" : "denied",
     });
   }, [consent?.analytics, consent?.marketing, ready]);
+
+  useEffect(() => {
+    if (!consent?.analytics || !hasAnalyticsConsent() || !ready || !pathname || typeof window.gtag !== "function") return;
+    window.gtag("event", "page_view", {
+      page_path: pathname,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  }, [consent?.analytics, ready, pathname]);
 
   function savePreferences(analytics: boolean, marketing: boolean) {
     const next: Consent = { analytics, marketing, updatedAt: new Date().toISOString() };
