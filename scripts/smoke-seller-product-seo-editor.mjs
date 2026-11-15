@@ -43,6 +43,9 @@ assert.match(plantForm, /URL\.revokeObjectURL\(preview\)/, "uploaded photo objec
 assert.match(plantForm, /uploadedPath[\s\S]*\.remove\(\[uploadedPath\]\)/, "failed API submission must clean up an uploaded photo");
 assert.match(plantForm, /"\/api\/plant-seller\/products"/, "Product Seller writes must still use the authenticated API");
 assert.match(plantForm, /ProductSeoEditor/, "Plant SEO input and preview must remain editable");
+assert.match(plantForm, /<ProductSeoEditor guided/, "Plant Seller SEO editor should prioritize essential fields");
+assert.match(editor, /guided \? allChecks\.slice\(0,3\) : allChecks/, "optional editor remains fully functional for existing Marketplace sellers");
+assert.match(editor, /আরও বিস্তারিত SEO ও পণ্যের তথ্য/, "Plant Seller optional SEO data should be collapsible");
 assert.match(plantForm, /inputMode="decimal"/, "Mobile sellers need an appropriate price keypad");
 assert.match(plantForm, /"পর্যালোচনার জন্য পণ্য জমা দিন"/, "seller CTA must explain approval workflow");
 assert.match(plantApi, /status:"draft"/, "submitted Plant Market products may not become public before review");
