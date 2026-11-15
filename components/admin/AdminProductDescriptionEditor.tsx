@@ -28,6 +28,13 @@ const tools = [
 ];
 
 
+const alignmentTools = [
+  { label: "বামে", command: "justifyLeft", title: "বামদিকে সাজান" },
+  { label: "মাঝে", command: "justifyCenter", title: "মাঝখানে সাজান" },
+  { label: "ডানে", command: "justifyRight", title: "ডানদিকে সাজান" },
+  { label: "সমান", command: "justifyFull", title: "দুই পাশে সমানভাবে সাজান" },
+];
+
 export default function AdminProductDescriptionEditor({
   value, onChange, productName = "", variant = "standard", focusKeyword = "",
   previewPath = "/marketplace/product-slug", maxHtmlLength = MAX_PRODUCT_DESCRIPTION_HTML_LENGTH,
@@ -86,12 +93,11 @@ export default function AdminProductDescriptionEditor({
       <div className="flex flex-wrap gap-1 border-b bg-[#f7faf6] p-2">
         {(isPlant ? tools.filter(tool => ["B", "I", "H2", "H3", "• List", "1. List", "↶ Undo", "↷ Redo"].includes(tool.label)) : tools).map(tool => <button key={tool.label} type="button" title={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command, tool.value)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
         {!isPlant && <span className="mx-1 hidden h-8 w-px bg-[#d9e4d7] sm:block" aria-hidden="true" />}
-        {!isPlant && [
-          { label: "বামে", command: "justifyLeft", title: "বামদিকে সাজান" },
-          { label: "মাঝে", command: "justifyCenter", title: "মাঝখানে সাজান" },
-          { label: "ডানে", command: "justifyRight", title: "ডানদিকে সাজান" },
-          { label: "সমান", command: "justifyFull", title: "দুই পাশে সমানভাবে সাজান" },
-        ].map(tool => <button key={tool.command} type="button" title={tool.title} aria-label={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+        {isPlant ? null : (
+          <div className="contents">
+            {alignmentTools.map(tool => <button key={tool.command} type="button" title={tool.title} aria-label={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+          </div>
+        )}
         {!isPlant && <button type="button" title="Formatting মুছুন" onMouseDown={event => event.preventDefault()} onClick={() => run("removeFormat")} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Format মুছুন</button>}
         {!isPlant && <button type="button" onMouseDown={event => event.preventDefault()} onClick={addLink} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Link</button>}
         <button type="button" onClick={insertOutline} className="ml-auto min-h-9 rounded-lg bg-[#e8f2e6] px-3 text-xs font-bold text-[#17452c] hover:bg-[#dcebd9]">SEO outline বসান</button>
