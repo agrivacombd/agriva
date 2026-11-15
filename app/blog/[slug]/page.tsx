@@ -12,7 +12,47 @@ async function getCmsArticle(slug:string):Promise<CmsArticle|null>{
   const {data,error}=await supabase.from("content_drafts").select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,created_at,updated_at").eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
   return error||!data?null:data as CmsArticle;
 }
-function CmsMarkdown({body}:{body:string}){return <div className="space-y-4">{body.split(/\r?\n/).map((line,index)=>{const v=line.trim();if(!v)return <div key={index}/>;if(v.startsWith("## "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(3)}</h2>;if(v.startsWith("### "))return <h3 key={index} className="pt-3 text-xl font-black">{v.slice(4)}</h3>;if(v.startsWith("# "))return <h2 key={index} className="pt-4 text-2xl font-black">{v.slice(2)}</h2>;if(v.startsWith("- "))return <p key={index} className="pl-4">• {v.slice(2)}</p>;return <p key={index} className="leading-8">{v}</p>})}</div>}
+type InlinePart = { label: string; url?: string; strong?: boolean; emphasis?: boolean };
+function parseCmsInline(source: string): InlinePart[] {
+  const result: InlinePart[] = [];
+  const token = /\[([^\]]+)\]\((https?:\/\/[^\s)]+|\/(?!\/)[^\s)]*)\)|\*\*([^*]+)\*\*|\*([^*]+)\*/g;
+  let last = 0;
+  for (const match of source.matchAll(token)) {
+    const start = match.index ?? last;
+    if (start > last) result.push({ label: source.slice(last, start) });
+    if (match[1] && match[2]) result.push({ label: match[1], url: match[2] });
+    else if (match[3]) result.push({ label: match[3], strong: true });
+    else if (match[4]) result.push({ label: match[4], emphasis: true });
+    last = start + match[0].length;
+  }
+  if (last < source.length) result.push({ label: source.slice(last) });
+  return result;
+}
+function CmsInline({ value }: { value: string }) {
+  return <>{parseCmsInline(value).map((part, index) => {
+    if (part.url) {
+      const internal = part.url.startsWith("/") && !part.url.startsWith("//");
+      return internal
+        ? <Link key={index} href={part.url} className="font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-950">{part.label}</Link>
+        : <a key={index} href={part.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline underline-offset-2 hover:text-emerald-950">{part.label}</a>;
+    }
+    if (part.strong) return <strong key={index}>{part.label}</strong>;
+    if (part.emphasis) return <em key={index}>{part.label}</em>;
+    return <span key={index}>{part.label}</span>;
+  })}</>;
+}
+function CmsMarkdown({ body }: { body: string }) {
+  return <div className="space-y-4">{body.split(/\r?\n/).map((line, index) => {
+    const value = line.trim();
+    if (!value) return <div key={index}/>;
+    if (value.startsWith("## ")) return <h2 key={index} className="pt-4 text-2xl font-black"><CmsInline value={value.slice(3)}/></h2>;
+    if (value.startsWith("### ")) return <h3 key={index} className="pt-3 text-xl font-black"><CmsInline value={value.slice(4)}/></h3>;
+    if (value.startsWith("# ")) return <h2 key={index} className="pt-4 text-2xl font-black"><CmsInline value={value.slice(2)}/></h2>;
+    if (/^[-*] /.test(value)) return <p key={index} className="pl-4 leading-8">• <CmsInline value={value.slice(2)}/></p>;
+    if (/^\d+\. /.test(value)) return <p key={index} className="pl-4 leading-8"><CmsInline value={value}/></p>;
+    return <p key={index} className="leading-8"><CmsInline value={value}/></p>;
+  })}</div>;
+}
 
 
 const articles = [
