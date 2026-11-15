@@ -46,4 +46,43 @@ assert.match(analytics, /href="\/cookie-policy"/, "Consent banner must link to C
 assert.match(sitemap, /\/cookie-policy/, "Sitemap must include the cookie policy route");
 assert.doesNotMatch(privacy, /প্রকাশের আগে বাস্তবে/, "Do not leave legacy draft-only notice on live privacy page");
 assert.doesNotMatch(terms, /প্রকাশের আগে এই খসড়াটি/, "Do not leave legacy draft-only notice on live terms");
+
+const clarityServer = readFileSync("components/analytics/MicrosoftClarity.tsx", "utf8");
+const clarityClient = readFileSync("components/analytics/MicrosoftClarityClient.tsx", "utf8");
+const clarityMigration = readFileSync("supabase/migrations/20261115090000_public_enabled_clarity_project_id.sql", "utf8");
+const productTracker = readFileSync("components/marketplace/ProductClickTracker.tsx", "utf8");
+const marketplace = readFileSync("components/marketplace/MarketplaceCore.tsx", "utf8");
+const cart = readFileSync("app/cart/page.tsx", "utf8");
+const checkout = readFileSync("app/checkout/page.tsx", "utf8");
+const directCod = readFileSync("components/marketplace/CheckoutButton.tsx", "utf8");
+const adminShell = readFileSync("components/admin/shell/AdminShell.tsx", "utf8");
+const orders = readFileSync("app/orders/page.tsx", "utf8");
+
+assert.match(layout, /<MicrosoftClarity \/>/, "The root layout must enable the optional, admin-controlled Clarity loader");
+assert.match(clarityServer, /rpc\("get_enabled_clarity_project_id"\)/, "Clarity ID must be read via the limited public RPC");
+assert.match(clarityMigration, /security definer/, "Only the ID-only RPC should bypass the admin RLS protection");
+assert.match(clarityMigration, /revoke all on function/, "Avoid broad function privileges");
+assert.doesNotMatch(clarityMigration, /create policy .*Public reads enabled Clarity/, "Never expose the entire integration config in a public row");
+assert.match(clarityClient, /hasAnalyticsConsent\(\)/, "Do not initialize Clarity before analytics opt-in");
+assert.match(clarityClient, /consentv2/, "Send Clarity Consent V2 signals");
+assert.match(clarityClient, /ad_Storage:[\s\S]*?analytics_Storage:/, "Send both advertising and analytics consent independently");
+assert.match(clarityClient, /agriva:consent-changed/, "Respond to same-tab consent updates");
+assert.match(clarityClient, /window\.location\.reload\(\)/, "After withdrawal, unload the SDK instead of keeping cookieless captures");
+assert.match(clarityClient, /script\[src\*=/, "Avoid injecting a duplicate third-party Clarity script");
+assert.match(helper, /trackClarityEvent/, "Funnel event helper must exist");
+assert.match(helper, /hasAnalyticsConsent\(\)/, "Clarity custom events must require consent");
+assert.match(productTracker, /product_viewed/, "Product pages must emit consented view milestone");
+assert.match(marketplace, /marketplace_search_used/, "Marketplace searches must be observable without search terms");
+assert.doesNotMatch(marketplace, /trackClarityEvent\([^)]*query/, "Never transmit the user search query to Clarity");
+assert.match(cart, /cart_viewed/, "Cart entry milestone must exist");
+assert.match(checkout, /checkout_started/, "Checkout entry milestone must exist");
+assert.match(checkout, /checkout_submitted/, "Checkout submit milestone must exist");
+assert.match(checkout, /marketplace_order_placed/, "Successful cart checkout must be measured in GA4 and Clarity");
+assert.match(checkout, /data-clarity-mask="true"/, "Checkout address and order confirmation should be masked");
+assert.match(directCod, /id="direct-cod-form" data-clarity-mask="true"/, "Direct checkout should mask its sensitive form");
+assert.match(adminShell, /data-clarity-mask="true"/, "Admin details must be masked in recordings");
+assert.match(orders, /data-clarity-mask="true"/, "Order data must be masked");
+assert.match(privacy, /Microsoft Clarity/, "Privacy Policy must describe recording and masking");
+assert.match(cookies, /Microsoft Clarity/, "Cookie Policy must describe Clarity consent");
+
 console.log("Analytics instrumentation regression checks passed.");
