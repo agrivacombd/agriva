@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +23,13 @@ export default async function PlantMarketPage() {
   let loadFailed = false;
 
   try {
-    const supabase = await createSupabaseServerClient();
+    // The catalogue is public: never let an expired visitor session block the list.
+    // Only the public/anon key is used; RLS still restricts product visibility.
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+    );
     const ranked = await supabase.rpc("get_ranked_plant_market_products", { p_limit: 500 });
     const { data, error } = ranked.error
       ? await supabase.from("plant_market_products")
@@ -79,7 +85,11 @@ export default async function PlantMarketPage() {
           <h1 className="mt-6 max-w-3xl text-[2.15rem] font-black leading-[1.16] tracking-tight sm:text-5xl sm:leading-[1.12] lg:text-[3.65rem]">আপনার সবুজ জায়গার জন্য <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span></h1>
           <p className="mt-5 max-w-2xl text-[15px] leading-7 text-emerald-50/90 sm:text-lg sm:leading-8">ঘরের গাছ থেকে ছাদবাগান—গাছ, চারা, বীজ, টব ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন। এখানে শুধু ডেটাবেসে থাকা সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <a href="#plant-catalogue" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl bg-lime-300 px-7 py-3.5 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
+            {products.length ? (
+              <a href="#plant-catalogue" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl bg-lime-300 px-7 py-3.5 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
+            ) : (
+              <Link href="/green-exchange/board" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl bg-lime-300 px-7 py-3.5 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ বিনিময়ের পোস্ট দেখুন</Link>
+            )}
             <Link href="/sell-on-plant-market" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Seller হন</Link><Link href="/plant-seller/products" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Seller Dashboard</Link><Link href="/plant-market/cart" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Cart</Link><Link href="/plant-market/orders" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">আমার অর্ডার</Link><Link href="/green-exchange" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">গাছ বিনিময় করুন</Link>
           </div>
           <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/85 sm:text-sm"><span>✓ বাস্তব পণ্য তালিকা</span><span>✓ অনুমোদিত পণ্য</span><span>✓ মোবাইল-ফ্রেন্ডলি</span></div>
@@ -89,8 +99,8 @@ export default async function PlantMarketPage() {
       <section id="plant-catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="mb-8 border-b border-emerald-900/10 pb-6 sm:mb-9">
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Plants & gardening</p>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-[#17351f] sm:text-3xl">Plant Market-এ খুঁজুন</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">পণ্যের নাম লিখে খুঁজুন। পণ্যের বিস্তারিত পেজে গিয়ে মূল্য, মজুত এবং উপলভ্য কেনাকাটার ধাপ যাচাই করুন।</p>
+          <h2 className="mt-2 text-2xl font-black tracking-tight text-[#17351f] sm:text-3xl">{products.length ? "Plant Market-এ খুঁজুন" : "Plant Market-এ নতুন পণ্য আসছে"}</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">{products.length ? "পণ্যের নাম লিখে খুঁজুন। পণ্যের বিস্তারিত পেজে গিয়ে মূল্য, মজুত এবং উপলভ্য কেনাকাটার ধাপ যাচাই করুন।" : "এখনো কোনো সক্রিয় ও অনুমোদিত গাছ বা বাগানের পণ্য প্রকাশ হয়নি। চাইলে গাছ বিনিময়ের পোস্ট দেখুন অথবা যাচাইয়ের জন্য নিজের পণ্য জমা দিন।"}</p>
         </div>
         {loadFailed ? (
           <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-amber-950">
@@ -102,14 +112,14 @@ export default async function PlantMarketPage() {
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
             <div aria-hidden="true" className="text-5xl">🪴</div>
             <h3 className="mt-4 text-xl font-extrabold">এখনো কোনো গাছ বা বাগান-সম্পর্কিত পণ্য পাওয়া যায়নি</h3>
-            <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">নতুন বাস্তব পণ্য সক্রিয় ও অনুমোদিত হলে এখানে দেখা যাবে। আপাতত গাছ বিনিময়ের বোর্ডে অন্য গাছপ্রেমীদের পোস্ট দেখতে পারেন।</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">যাচাই ও অনুমোদনের পরে নতুন গাছ ও বাগান-সম্পর্কিত পণ্য এখানে দেখা যাবে। ততদিন গাছ বিনিময়ের পোস্ট দেখতে পারেন অথবা Plant Seller হিসেবে আবেদন করতে পারেন।</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">
               <Link href="/green-exchange/board" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800">Green Exchange দেখুন</Link>
               <Link href="/sell-on-plant-market" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800">Plant Seller হন</Link><Link href="/marketplace" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-900/20 bg-white px-5 py-3 text-sm font-bold text-emerald-950 hover:bg-emerald-50">সব কৃষিপণ্য দেখুন</Link>
             </div>
           </div>
         )}
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ঘর ও বারান্দার গাছ</h3><p className="mt-2 text-sm leading-6 text-slate-600">ইনডোর গাছ, ফুলের চারা এবং ছোট জায়গার বাগানের উপকরণ খুঁজুন।</p></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">ছাদবাগান ও ফলের চারা</h3><p className="mt-2 text-sm leading-6 text-slate-600">আপনার জায়গা, আলো ও যত্নের সামর্থ্য অনুযায়ী পণ্য বেছে নিন।</p></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">গাছ বিনিময়</h3><p className="mt-2 text-sm leading-6 text-slate-600">কেনার পাশাপাশি অনুমোদিত Green Exchange পোস্টে বিনিময়ের প্রস্তাব দিতে পারেন।</p></article><article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">নিজের Garden</h3><p className="mt-2 text-sm leading-6 text-slate-600">কেনা গাছের যত্নের কাজ ও নির্ধারিত তারিখ Personal Garden-এ রাখুন।</p><Link href="/garden" className="mt-3 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Garden খুলুন</Link></article><article className="rounded-2xl border border-emerald-950/10 bg-white p-5"><h3 className="font-extrabold">Green Impact</h3><p className="mt-2 text-sm leading-6 text-slate-600">অনুমোদিত listing ও সম্পন্ন বিনিময়ের aggregate হিসাব দেখুন।</p><Link href="/impact" className="mt-3 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact দেখুন</Link></article>

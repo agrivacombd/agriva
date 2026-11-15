@@ -119,7 +119,7 @@ function ProductCard({
             ) : (
               <Link href={detailHref} onClick={recordListingClick}
                 className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-4">
-                {inStock && productHrefPrefix === "/plant-market" ? "BUY NOW" : "বিস্তারিত দেখুন"}
+                বিস্তারিত দেখুন
               </Link>
             )}
           </div>
@@ -130,6 +130,7 @@ function ProductCard({
 }
 
 export default function MarketplaceCore({ products, showCategories = true, availableCategoriesOnly = false, initialQuery = "", emptyCatalogMessage, productHrefPrefix = "/marketplace" }: { products: MarketplaceProduct[]; showCategories?: boolean; availableCategoriesOnly?: boolean; initialQuery?: string; emptyCatalogMessage?: string; productHrefPrefix?: "/marketplace" | "/plant-market" }) {
+  const isPlantMarket = productHrefPrefix === "/plant-market";
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState<SortOption>("recommended");
@@ -303,12 +304,12 @@ export default function MarketplaceCore({ products, showCategories = true, avail
             <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 transition focus-within:border-emerald-700 focus-within:bg-white focus-within:ring-4 focus-within:ring-emerald-700/10">
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5 shrink-0 text-emerald-800"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" strokeWidth="1.8"/><path d="m16 16 4.2 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
               <span className="sr-only">পণ্যের নাম লিখে খুঁজুন</span>
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="পণ্যের নাম লিখুন — যেমন ধানের বীজ, জৈব সার..." className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 sm:text-base" />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={isPlantMarket ? "গাছ, চারা বা টবের নাম লিখুন..." : "পণ্যের নাম লিখুন — যেমন ধানের বীজ, জৈব সার..."} className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400 sm:text-base" />
               {query && <button type="button" onClick={() => setQuery("")} className="rounded-lg px-2 py-1 text-xs font-bold text-slate-500 hover:bg-slate-200" aria-label="সার্চ মুছুন">মুছুন</button>}
             </label>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-bold text-slate-500">জনপ্রিয়:</span>
-              {["ধানের বীজ", "জৈব সার", "কৃষি যন্ত্রপাতি"].map((term) => <button key={term} type="button" onClick={() => setQuery(term)} className="rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100">{term}</button>)}
+              {(isPlantMarket ? ["ইনডোর গাছ", "ফলের চারা", "ফুলের চারা"] : ["ধানের বীজ", "জৈব সার", "কৃষি যন্ত্রপাতি"]).map((term) => <button key={term} type="button" onClick={() => setQuery(term)} className="rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100">{term}</button>)}
             </div>
 
           </div>
@@ -365,7 +366,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
               <h2 id="marketplace-products-heading" className="text-lg font-black tracking-tight text-slate-950 sm:text-xl">{selectedCategory?.name || "সব পণ্য"}</h2>
-              <p className="mt-1 text-xs text-slate-500">{query ? `“${query}” অনুসন্ধানের ফলাফল` : "আপনার প্রয়োজনীয় কৃষিপণ্য বেছে নিন"}</p>
+              <p className="mt-1 text-xs text-slate-500">{query ? `“${query}” অনুসন্ধানের ফলাফল` : isPlantMarket ? "আপনার জায়গার জন্য গাছ, চারা ও বাগানের পণ্য বেছে নিন" : "আপনার প্রয়োজনীয় কৃষিপণ্য বেছে নিন"}</p>
             </div>
             <p aria-live="polite" className="shrink-0 text-xs font-bold text-slate-500">{new Intl.NumberFormat("bn-BD").format(visible.length)}টি পণ্য</p>
           </div>
@@ -387,10 +388,10 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           </> : <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center sm:px-8">
             <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden="true">⌕</span>
             <p className="mt-4 font-extrabold text-slate-900">{emptyCatalogMessage ? "Marketplace ক্যাটালগ এখন খালি" : "এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি"}</p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।"}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || (isPlantMarket ? "গাছ বা চারার অন্য নাম দিয়ে খুঁজে দেখুন। গাছ বিনিময়ের বোর্ডেও নতুন পোস্ট পেতে পারেন।" : "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।")}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
               {!emptyCatalogMessage && hasActiveFilters && <button type="button" onClick={() => { setQuery(""); setCategory("all"); }} className="min-h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50">সার্চ ও ক্যাটাগরি মুছুন</button>}
-              {!emptyCatalogMessage && <Link href="/buyer-demands" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">চাহিদা জানান</Link>}
+              {!emptyCatalogMessage && (isPlantMarket ? <Link href="/green-exchange/board" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">গাছ বিনিময় দেখুন</Link> : <Link href="/buyer-demands" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">চাহিদা জানান</Link>)}
             </div>
           </div>}
         </section>
