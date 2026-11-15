@@ -84,4 +84,15 @@ assert.match(checkout,/<Link href="\/cart"/,"successful add-to-cart offers a car
 assert.match(checkout,/fetch\("\/api\/checkout"/,"COD checkout endpoint remains connected");
 assert.ok(checkout.includes('rpc("add_marketplace_cart_item"'), "Marketplace add-to-cart uses the stock-checked cart RPC");
 assert.ok(!checkout.includes('.from("cart_items")'), "Marketplace add-to-cart must not bypass the cart RPC");
+const impactFix = read("supabase/migrations/20261115080000_green_impact_plant_market_count.sql");
+const sharedCatalogue = read("components/marketplace/MarketplaceCore.tsx");
+const plantCartButton = read("components/plant-market/PlantMarketAddToCart.tsx");
+assert.match(impactFix, /create or replace function public\\.get_green_impact_metrics\\(\\)/i, "Green Impact RPC contract is preserved");
+assert.match(impactFix, /from public\\.plant_market_products p[\\s\\S]*?where p\\.status = 'active'/i, "Green Impact counts active products from the independent Plant Market table");
+assert.doesNotMatch(impactFix, /from public\\.products\\b/i, "Green Impact must not count Marketplace products or seeds as Plant Market products");
+assert.match(page, /persistSession: false/, "public Plant Market feed cannot depend on a stale auth session");
+assert.match(sharedCatalogue, /isPlantMarket \\? \\["ইনডোর গাছ", "ফলের চারা", "ফুলের চারা"\\]/, "Plant Market shows relevant search suggestions");
+assert.doesNotMatch(sharedCatalogue, /"BUY NOW"/, "product-detail navigation must not claim to immediately buy");
+assert.match(plantCartButton, /response\\.status === 401/, "guest Plant Market shoppers receive a login prompt");
+
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");
