@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, CheckCircle2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackAnalyticsEvent, trackClarityEvent } from "@/lib/analytics";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
@@ -133,6 +133,17 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const isPlantMarket = productHrefPrefix === "/plant-market";
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
+  // Track funnel friction without ever sending the visitor's search text.
+  useEffect(() => {
+    if (isPlantMarket || normalize(query).length < 2) return;
+    const timer = window.setTimeout(() => trackClarityEvent("marketplace_search_used"), 800);
+    return () => window.clearTimeout(timer);
+  }, [isPlantMarket, query]);
+
+  useEffect(() => {
+    if (!isPlantMarket && category !== "all") trackClarityEvent("marketplace_category_used");
+  }, [category, isPlantMarket]);
+
   const [sort, setSort] = useState<SortOption>("recommended");
   const catalogueRef = useRef<HTMLDivElement>(null);
   const alreadySeen = useRef(new Set<string>());
