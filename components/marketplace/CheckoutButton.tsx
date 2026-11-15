@@ -6,7 +6,7 @@ import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
-import { trackAnalyticsEvent } from "@/lib/analytics";
+import { trackAnalyticsEvent, trackClarityEvent } from "@/lib/analytics";
 import { trackMetaEvent } from "@/lib/meta-pixel";
 import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
@@ -91,6 +91,7 @@ export default function CheckoutButton({
 
   function openDirectOrder() {
     if (unavailable || loading || Boolean(orderId)) return;
+    if (!formOpen) trackClarityEvent("checkout_started");
     setFormOpen(true);
     setMessage("");
     window.requestAnimationFrame(() => {
@@ -158,6 +159,7 @@ export default function CheckoutButton({
       setMessage("সঠিক মোবাইল নম্বর দিন। উদাহরণ: 01XXXXXXXXX");
       return;
     }
+    trackClarityEvent("checkout_submitted");
     trackMetaEvent("InitiateCheckout", { currency: "BDT", value: unitPrice * quantity + (delivery?.fee ?? 0), content_type: "product", content_ids: [productId], num_items: quantity });
     directCheckoutInFlightRef.current = true;
     setLoading(true);
