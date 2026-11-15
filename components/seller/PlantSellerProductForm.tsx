@@ -337,11 +337,7 @@ export default function PlantSellerProductForm() {
               )}
             </div>
           </div>
-          <label className="mt-5 block text-sm font-bold text-slate-800">
-            ছবির বর্ণনা (Alt text) <span className="text-xs font-normal text-slate-400">(ঐচ্ছিক, SEO-তে সহায়ক)</span>
-            <input maxLength={180} value={form.image_alt} onChange={(event) => set("image_alt", event.target.value)} className={inputClass} placeholder="যেমন: টবে রাখা কলম করা থাই পেয়ারা গাছ" />
-          </label>
-          <p className="mt-2 flex items-start gap-2 text-xs leading-5 text-slate-500"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" /> ছবি ছাড়া পণ্য জমা দেওয়া যাবে, তবে বাস্তব ছবি যুক্ত করার পরামর্শ দেওয়া হচ্ছে।</p>
+          <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-slate-500"><CircleHelp size={15} className="mt-0.5 shrink-0" aria-hidden="true" /> ছবি ছাড়া পণ্য জমা দেওয়া যাবে, তবে বাস্তব ছবি যুক্ত করার পরামর্শ দেওয়া হচ্ছে। ছবির Alt text নিচের SEO অংশে লিখতে পারবেন।</p>
         </section>
 
         <section className="rounded-3xl border border-emerald-900/10 bg-white p-5 shadow-sm sm:p-7">
@@ -349,7 +345,7 @@ export default function PlantSellerProductForm() {
           <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-lime-200 bg-lime-50 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-extrabold text-emerald-950">SEO কী লিখবেন বুঝতে পারছেন না?</p>
-              <p className="mt-1 text-xs leading-5 text-slate-700">আপনার দেওয়া তথ্য থেকেই শিরোনাম, বিবরণ ও keyword সাজানো হবে। কোনো কৃত্রিম দাবি যোগ হবে না।</p>
+              <p className="mt-1 text-xs leading-5 text-slate-700">আপনার দেওয়া তথ্য থেকেই শিরোনাম, বিবরণ ও keyword সাজানো হবে। খালি থাকলেও জমা দেওয়ার সময় এই মৌলিক SEO তথ্য স্বয়ংক্রিয় যুক্ত হবে। কোনো কৃত্রিম দাবি যোগ হবে না।</p>
             </div>
             <button type="button" onClick={generateSeoDraft} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-700"><Sparkles size={17} aria-hidden="true" /> খালি SEO ঘর পূরণ করুন</button>
           </div>
