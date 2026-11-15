@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CalendarDays, CheckCircle2, Clock3, MapPin, PackageSearch, Phone, Plus, Search, Wheat, X } from "lucide-react";
@@ -26,6 +27,7 @@ const districts = ["নওগাঁ", "রাজশাহী", "বগুড়�
 const units: { value: Unit; label: string }[] = [
   { value: "maund", label: "মণ" }, { value: "kg", label: "কেজি" }, { value: "ton", label: "টন" }, { value: "bag", label: "বস্তা" },
 ];
+const todayBD = () => new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10);
 const bn = (n: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(n);
 const unitLabel = (unit: Unit) => units.find((u) => u.value === unit)?.label ?? unit;
 const dateLabel = (value: string) => new Date(value + "T00:00:00").toLocaleDateString("bn-BD", { day: "numeric", month: "short", year: "numeric" });
@@ -37,6 +39,12 @@ const labelClass = "block text-sm font-semibold text-slate-700";
 
 export default function BuyerDemandBoard() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  // A separate anonymous client means expired login sessions cannot break the public list.
+  const publicSupabase = useMemo(() => createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+  ), []);
   const [demands, setDemands] = useState<Demand[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -82,33 +90,66 @@ export default function BuyerDemandBoard() {
   const loadBoard = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
-    const { data: { user } } = await supabase.auth.getUser();
-    setUserId(user?.id ?? null);
-    const { data, error } = await supabase.from("buyer_demands")
-      .select("id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at")
-      .order("created_at", { ascending: false }).limit(100);
-    if (error) {
-      setLoadError(true);
-      setDemands([]);
-    } else {
-      setDemands((data ?? []) as Demand[]);
+    setResponses([]);
+    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at";
+    let publicDemands: Demand[] = [];
+    let publicFailed = false;
+
+    try {
+      let result = await publicSupabase.from("buyer_demands").select(demandColumns)
+        .eq("status", "active").order("created_at", { ascending: false }).limit(100);
+      if (result.error) {
+        result = await publicSupabase.from("buyer_demands").select(demandColumns)
+          .eq("status", "active").order("created_at", { ascending: false }).limit(100);
+      }
+      if (result.error) {
+        console.error("Buyer demands public query failed", result.error.code);
+        publicFailed = true;
+      } else {
+        publicDemands = (result.data ?? []) as Demand[];
+      }
+    } catch (error) {
+      console.error("Buyer demands public query failed", error);
+      publicFailed = true;
     }
-    if (user) {
-      const { data: ownResponses, error: responseError } = await supabase.from("buyer_demand_responses")
-        .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
-        .order("created_at", { ascending: false }).limit(200);
-      if (!responseError) setResponses((ownResponses ?? []) as Response[]);
-    } else {
-      setResponses([]);
-    }
+
+    setDemands(publicDemands);
+    setLoadError(publicFailed);
     setLoading(false);
-  }, [supabase]);
+
+    // User-specific data loads separately; a failed auth check never hides public results.
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        setUserId(null);
+        return;
+      }
+      setUserId(user.id);
+      const [mine, replies] = await Promise.all([
+        supabase.from("buyer_demands").select(demandColumns)
+          .eq("buyer_id", user.id).order("created_at", { ascending: false }).limit(100),
+        supabase.from("buyer_demand_responses")
+          .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
+          .order("created_at", { ascending: false }).limit(200),
+      ]);
+      if (!mine.error) {
+        const merged = new Map(publicDemands.map((d) => [d.id, d]));
+        for (const demand of (mine.data ?? []) as Demand[]) merged.set(demand.id, demand);
+        setDemands([...merged.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)));
+        setLoadError(false);
+      }
+      if (!replies.error) setResponses((replies.data ?? []) as Response[]);
+    } catch (error) {
+      console.error("Buyer demand account query failed", error);
+      setUserId(null);
+    }
+  }, [publicSupabase, supabase]);
 
   useEffect(() => { void loadBoard(); }, [loadBoard]);
 
   const visibleDemands = useMemo(() => demands.filter((d) => {
     if (mineOnly && d.buyer_id !== userId) return false;
-    if (!mineOnly && (d.status !== "active" || (d.response_deadline && d.response_deadline < new Date().toISOString().slice(0, 10)))) return false;
+    if (!mineOnly && (d.status !== "active" || (d.response_deadline && d.response_deadline < todayBD()))) return false;
     if (cropFilter !== "সব ফসল" && d.crop_name !== cropFilter) return false;
     if (districtFilter !== "সব জেলা" && d.district !== districtFilter) return false;
     const q = search.trim().toLocaleLowerCase();
@@ -121,9 +162,10 @@ export default function BuyerDemandBoard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/login?next=%2Fbuyer-demands"; return; }
     if (priceType === "fixed" && (!targetPrice || Number(targetPrice) <= 0)) { setNotice("নির্দিষ্ট দাম দিলে প্রতি এককের সঠিক দাম লিখুন।"); return; }
-    if (needMode === "specific_date" && !needDate) { setNotice("পণ্য লাগার তারিখ দিন।"); return; }
-    if (needMode === "date_range" && (!needStartDate || !needEndDate || needStartDate > needEndDate)) { setNotice("সময়সীমার শুরু ও শেষ তারিখ সঠিকভাবে দিন।"); return; }
-    if (responseDeadline && responseDeadline < new Date().toISOString().slice(0, 10)) { setNotice("আগ্রহ জানানোর শেষ তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
+    if (phonePublic && contactPhone.trim().length < 6) { setNotice("নম্বর প্রকাশ করতে চাইলে ফোন নম্বর লিখুন।"); return; }
+    if (needMode === "specific_date" && (!needDate || needDate < todayBD())) { setNotice("পণ্য লাগার তারিখ দিন।"); return; }
+    if (needMode === "date_range" && (!needStartDate || !needEndDate || needStartDate < todayBD() || needStartDate > needEndDate)) { setNotice("সময়সীমার শুরু ও শেষ তারিখ সঠিকভাবে দিন।"); return; }
+    if (responseDeadline && responseDeadline < todayBD()) { setNotice("আগ্রহ জানানোর শেষ তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
     setBusy(true);
     const { error } = await supabase.from("buyer_demands").insert({
       buyer_id: user.id, crop_name: cropName, variety: variety.trim() || null, quantity: Number(quantity), unit,
@@ -155,6 +197,8 @@ export default function BuyerDemandBoard() {
     if (user.id === respondingTo.buyer_id) { setNotice("নিজের পোস্টে আগ্রহ পাঠানো যাবে না।"); return; }
     if (!sharePhone || farmerPhone.trim().length < 6) { setNotice("ক্রেতার সঙ্গে যোগাযোগের জন্য ফোন নম্বর দিন এবং নম্বর শেয়ারের সম্মতি দিন।"); return; }
     if (Number(availableQuantity) <= 0) { setNotice("আপনার কাছে থাকা ফসলের পরিমাণ লিখুন।"); return; }
+    if (offeredPrice && Number(offeredPrice) <= 0) { setNotice("প্রস্তাবিত দাম সঠিকভাবে লিখুন।"); return; }
+    if (availableDate && availableDate < todayBD()) { setNotice("সরবরাহের তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
     setBusy(true);
     const { error } = await supabase.from("buyer_demand_responses").insert({
       demand_id: respondingTo.id, farmer_id: user.id, available_quantity: Number(availableQuantity),
@@ -193,9 +237,9 @@ export default function BuyerDemandBoard() {
             <button type="button" onClick={() => { setShowForm((v) => !v); setRespondingTo(null); }} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-3 text-sm font-extrabold text-[#173629] transition hover:bg-lime-200"><Plus size={18} /> চাহিদা পোস্ট করুন</button>
           </div>
           <div className="mt-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(demands.filter((d) => d.status === "active").length)}</p><p className="mt-1 text-emerald-50/80">সক্রিয় চাহিদা</p></div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(responses.filter((r) => r.farmer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পাঠানো আগ্রহ</p></div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(demands.filter((d) => d.buyer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পোস্ট</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(demands.filter((d) => d.status === "active" && (!d.response_deadline || d.response_deadline >= todayBD())).length)}</p><p className="mt-1 text-emerald-50/80">সক্রিয় চাহিদা</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(responses.filter((r) => r.farmer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পাঠানো আগ্রহ</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(demands.filter((d) => d.buyer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পোস্ট</p></div>
           </div>
         </div>
       </section>
@@ -217,9 +261,9 @@ export default function BuyerDemandBoard() {
               <label className={labelClass}>উপজেলা / বাজার<input className={inputClass} value={upazila} onChange={(e) => setUpazila(e.target.value)} maxLength={100} placeholder="যেমন: মান্দা বাজার" /></label>
               <label className={labelClass}>সংগ্রহ / ডেলিভারি<select className={inputClass} value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as Demand["delivery_method"])}><option value="buyer_pickup">ক্রেতা নিজে সংগ্রহ করবেন</option><option value="seller_delivery">বিক্রেতাকে পৌঁছে দিতে হবে</option><option value="discuss">আলোচনা করে ঠিক হবে</option></select></label>
               <label className={labelClass}>কবে পণ্য লাগবে?<select className={inputClass} value={needMode} onChange={(e) => setNeedMode(e.target.value as NeedMode)}><option value="urgent">জরুরি · ১–৩ দিনের মধ্যে</option><option value="specific_date">নির্দিষ্ট তারিখে</option><option value="date_range">তারিখের মধ্যে (সময়সীমা)</option><option value="flexible">সময় আলোচনা সাপেক্ষে</option></select></label>
-              {needMode === "specific_date" && <label className={labelClass}>পণ্য লাগার তারিখ<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} required value={needDate} onChange={(e) => setNeedDate(e.target.value)} /></label>}
-              {needMode === "date_range" && <><label className={labelClass}>সময়সীমা শুরু<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} required value={needStartDate} onChange={(e) => setNeedStartDate(e.target.value)} /></label><label className={labelClass}>সময়সীমা শেষ<input className={inputClass} type="date" min={needStartDate || new Date().toISOString().slice(0, 10)} required value={needEndDate} onChange={(e) => setNeedEndDate(e.target.value)} /></label></>}
-              <label className={labelClass}>আগ্রহ জানানোর শেষ তারিখ (ঐচ্ছিক)<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} value={responseDeadline} onChange={(e) => setResponseDeadline(e.target.value)} /></label>
+              {needMode === "specific_date" && <label className={labelClass}>পণ্য লাগার তারিখ<input className={inputClass} type="date" min={todayBD()} required value={needDate} onChange={(e) => setNeedDate(e.target.value)} /></label>}
+              {needMode === "date_range" && <><label className={labelClass}>সময়সীমা শুরু<input className={inputClass} type="date" min={todayBD()} required value={needStartDate} onChange={(e) => setNeedStartDate(e.target.value)} /></label><label className={labelClass}>সময়সীমা শেষ<input className={inputClass} type="date" min={needStartDate || todayBD()} required value={needEndDate} onChange={(e) => setNeedEndDate(e.target.value)} /></label></>}
+              <label className={labelClass}>আগ্রহ জানানোর শেষ তারিখ (ঐচ্ছিক)<input className={inputClass} type="date" min={todayBD()} value={responseDeadline} onChange={(e) => setResponseDeadline(e.target.value)} /></label>
               <label className={labelClass}>যোগাযোগের ফোন (ঐচ্ছিক)<input className={inputClass} type="tel" maxLength={30} value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="01XXXXXXXXX" /></label>
             </div>
             <label className="mt-4 flex items-start gap-2 text-sm text-slate-700"><input type="checkbox" checked={allowPartial} onChange={(e) => setAllowPartial(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700" /><span><strong>আংশিক সরবরাহ চলবে</strong><span className="block text-slate-500">একজন কৃষকের কাছে পুরো পরিমাণ না থাকলেও আগ্রহ জানাতে পারবেন।</span></span></label>
@@ -236,7 +280,7 @@ export default function BuyerDemandBoard() {
               <label className={labelClass}>আপনার কাছে কত মজুদ আছে?<input className={inputClass} type="number" min="0.01" step="0.01" required value={availableQuantity} onChange={(e) => setAvailableQuantity(e.target.value)} placeholder="পরিমাণ" /></label>
               <label className={labelClass}>একক<select className={inputClass} value={availableUnit} onChange={(e) => setAvailableUnit(e.target.value as Unit)}>{units.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}</select></label>
               <label className={labelClass}>আপনার প্রস্তাবিত দাম (ঐচ্ছিক)<input className={inputClass} type="number" min="0.01" step="0.01" value={offeredPrice} onChange={(e) => setOfferedPrice(e.target.value)} placeholder="প্রতি একক টাকা" /></label>
-              <label className={labelClass}>কবে দিতে পারবেন?<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} value={availableDate} onChange={(e) => setAvailableDate(e.target.value)} /></label>
+              <label className={labelClass}>কবে দিতে পারবেন?<input className={inputClass} type="date" min={todayBD()} value={availableDate} onChange={(e) => setAvailableDate(e.target.value)} /></label>
               <label className={labelClass}>ফসল কোথায় আছে?<input className={inputClass} required maxLength={160} value={farmerLocation} onChange={(e) => setFarmerLocation(e.target.value)} placeholder="জেলা / উপজেলা / বাজার" /></label>
               <label className={labelClass}>আপনার ফোন নম্বর<input className={inputClass} type="tel" required minLength={6} maxLength={30} value={farmerPhone} onChange={(e) => setFarmerPhone(e.target.value)} placeholder="01XXXXXXXXX" /></label>
             </div>
