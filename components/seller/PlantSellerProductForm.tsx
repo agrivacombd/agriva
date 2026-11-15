@@ -211,7 +211,7 @@ export default function PlantSellerProductForm() {
     } catch (error) {
       if (uploadedPath) {
         const { error: cleanupError } = await supabase.storage.from("plant-product-images").remove([uploadedPath]);
-        if (cleanupError) console.warn("Plant product image cleanup failed", cleanupError.code);
+        if (cleanupError) console.warn("Plant product image cleanup failed", cleanupError.name);
       }
       setIsError(true);
       setMessage(error instanceof Error ? error.message : "সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
