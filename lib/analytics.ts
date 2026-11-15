@@ -33,7 +33,9 @@ export type ClarityEventName =
   | "checkout_started"
   | "checkout_submitted"
   | "cart_item_added"
-  | "order_completed";
+  | "order_completed"
+  | "marketplace_search_used"
+  | "marketplace_category_used";
 
 /** Only fixed funnel milestones, never free text, IDs, order refs, or PII. */
 export function trackClarityEvent(eventName: ClarityEventName): void {
