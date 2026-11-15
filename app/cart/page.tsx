@@ -7,6 +7,7 @@ import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Trash2, Truck } f
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
+import { trackClarityEvent } from "@/lib/analytics";
 
 type Item = {
   id: string;
@@ -99,7 +100,7 @@ export default function Cart() {
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); trackClarityEvent("cart_viewed"); }, [load]);
 
   async function changeQuantity(item: Item, nextQuantity: number) {
     if (busyItem || !item.available) return;
