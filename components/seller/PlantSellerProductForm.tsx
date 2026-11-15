@@ -351,7 +351,7 @@ export default function PlantSellerProductForm() {
           </div>
           {seoGenerated && <p className="mt-3 text-xs font-semibold text-emerald-800"><Check size={14} className="mr-1 inline" /> SEO খসড়া তৈরি হয়েছে—যাচাই করে প্রয়োজনে পরিবর্তন করুন।</p>}
           <div className="mt-5">
-            <ProductSeoEditor value={form} onChange={set} productName={form.name} description={form.description} previewPath={"/plant-market/" + slugHint} />
+            <ProductSeoEditor guided value={form} onChange={set} productName={form.name} description={form.description} previewPath={"/plant-market/" + slugHint} />
           </div>
         </section>
 
