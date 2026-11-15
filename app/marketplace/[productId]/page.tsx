@@ -74,9 +74,14 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const name = cleanText(product.name);
   // The site layout already defines a title template. Product titles are absolute
   // so the brand is not duplicated in search previews or cut off mid-word.
-  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") ? name : name + " in Bangladesh";
+  const countrySuffix = " in Bangladesh";
+  const defaultTitle = name.toLocaleLowerCase().includes("bangladesh") || name.length + countrySuffix.length > 61
+    ? name : name + countrySuffix;
   const unbrandedTitle = cleanText(product.seo_title || defaultTitle).replace(/\s*\|\s*AGRIVA\s*$/i, "");
-  const title = unbrandedTitle.slice(0, 61).trimEnd() + " | AGRIVA";
+  const titleBase = unbrandedTitle.length > 61
+    ? (unbrandedTitle.slice(0, 61).replace(/\s+\S*$/, "").trimEnd() || unbrandedTitle.slice(0, 61))
+    : unbrandedTitle;
+  const title = titleBase + " | AGRIVA";
   const descriptionText = productDescriptionToText(sanitizeProductDescription(product.description || ""));
   const description = cleanText(product.seo_description || descriptionText || ("Explore " + name + " on AGRIVA Marketplace. Check product details, current price, availability and seller-provided information.")).slice(0, 160);
   const image = product.image_url || (Array.isArray(product.image_urls) ? product.image_urls.find(url => typeof url === "string" && url.trim()) : undefined) || undefined;
