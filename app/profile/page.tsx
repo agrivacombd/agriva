@@ -118,7 +118,7 @@ export default function ProfilePage() {
     : { eyebrow: "Profile settings", title: "Manage your roles", subtitle: "You can have multiple roles in one account. Select the roles that apply to you.", selected: "selected", save: "Save changes", loading: "Loading roles…" };
 
   return (
-    <main className="min-h-screen bg-[#f5f8f2] pb-28 text-[#173b2d] md:pb-0">
+    <main data-clarity-mask="true" className="min-h-screen bg-[#f5f8f2] pb-28 text-[#173b2d] md:pb-0">
       <header className="border-b border-[#e1e9df] bg-white"><div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6"><BrandLogo href="/dashboard" imageClassName="h-10 w-40 sm:w-48" /><button type="button" onClick={() => setLanguage(language === "bn" ? "en" : "bn")} className="inline-flex items-center gap-2 rounded-full border border-[#dce6da] px-3 py-2 text-sm font-semibold"><Globe2 size={16} />{language === "bn" ? "English" : "বাংলা"}</button></div></header>
       <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
         <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-semibold text-[#52705d] hover:text-[#126b4f]"><ArrowLeft size={16} />{language === "bn" ? "ড্যাশবোর্ডে ফিরুন" : "Back to dashboard"}</Link>
