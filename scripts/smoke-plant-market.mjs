@@ -87,12 +87,12 @@ assert.ok(!checkout.includes('.from("cart_items")'), "Marketplace add-to-cart mu
 const impactFix = read("supabase/migrations/20261115080000_green_impact_plant_market_count.sql");
 const sharedCatalogue = read("components/marketplace/MarketplaceCore.tsx");
 const plantCartButton = read("components/plant-market/PlantMarketAddToCart.tsx");
-assert.match(impactFix, /create or replace function public\\.get_green_impact_metrics\\(\\)/i, "Green Impact RPC contract is preserved");
-assert.match(impactFix, /from public\\.plant_market_products p[\\s\\S]*?where p\\.status = 'active'/i, "Green Impact counts active products from the independent Plant Market table");
-assert.doesNotMatch(impactFix, /from public\\.products\\b/i, "Green Impact must not count Marketplace products or seeds as Plant Market products");
-assert.match(page, /persistSession: false/, "public Plant Market feed cannot depend on a stale auth session");
-assert.match(sharedCatalogue, /isPlantMarket \\? \\["ইনডোর গাছ", "ফলের চারা", "ফুলের চারা"\\]/, "Plant Market shows relevant search suggestions");
-assert.doesNotMatch(sharedCatalogue, /"BUY NOW"/, "product-detail navigation must not claim to immediately buy");
-assert.match(plantCartButton, /response\\.status === 401/, "guest Plant Market shoppers receive a login prompt");
+assert.ok(impactFix.includes("create or replace function public.get_green_impact_metrics()"), "Green Impact RPC contract is preserved");
+assert.ok(impactFix.includes("from public.plant_market_products p") && impactFix.includes("where p.status = 'active'"), "Green Impact must count active products from Plant Market only");
+assert.ok(!impactFix.includes("from public.products "), "Green Impact must never count Marketplace seeds as plant products");
+assert.ok(page.includes("persistSession: false"), "public catalogue cannot depend on stale auth cookies");
+assert.ok(sharedCatalogue.includes('isPlantMarket ? ["ইনডোর গাছ", "ফলের চারা", "ফুলের চারা"]'), "Plant Market search suggestions must be specific");
+assert.ok(!sharedCatalogue.includes('"BUY NOW"'), "detail-page navigation must not imply instant purchase");
+assert.ok(plantCartButton.includes("response.status === 401"), "guests must be offered a sign-in path");
 
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");
