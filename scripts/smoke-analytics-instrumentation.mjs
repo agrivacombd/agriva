@@ -21,11 +21,11 @@ assert.match(helper, /Never pass names, phone numbers, addresses, email addresse
 assert.match(analytics, /consentChecked/, "Consent UI must wait until the saved preference has been read");
 assert.match(analytics, /const showBanner = consentChecked && consent === null/, "Returning visitors must not see the consent banner while preferences hydrate");
 assert.match(analytics, /addEventListener\("storage", syncConsent\)/, "Consent choices must stay in sync across browser tabs");
-assert.match(analytics, /window\\.gtag\\('consent', 'default', \\{[\\s\\S]*?analytics_storage: 'denied'/, "Consent Mode v2 must default to denied");
-assert.match(analytics, /window\\.gtag\\('consent', 'update', \\{[\\s\\S]*?analytics_storage: 'granted'/, "Consent Mode v2 must update to granted after opt-in");
+assert.match(analytics, /window\.gtag\('consent', 'default', \{[\s\S]*?analytics_storage: 'denied'/, "Consent Mode v2 must default to denied");
+assert.match(analytics, /window\.gtag\('consent', 'update', \{[\s\S]*?analytics_storage: 'granted'/, "Consent Mode v2 must update to granted after opt-in");
 assert.match(analytics, /ad_user_data: 'denied'/, "Consent Mode v2 must default ad_user_data to denied");
 assert.match(analytics, /ad_personalization: 'denied'/, "Consent Mode v2 must default ad personalization to denied");
-assert.match(analytics, /consent\\?\\.marketing, ready/, "Consent update must react to changed marketing permission");
-assert.match(analytics, /hasAnalyticsConsent\\(\\)/, "Page views must respect the current analytics consent");
-assert.match(helper, /if \\(!hasAnalyticsConsent\\(\\)/, "Custom analytics events must stop after consent is revoked");
+assert.match(analytics, /consent\?\.marketing, ready/, "Consent update must react to changed marketing permission");
+assert.match(analytics, /hasAnalyticsConsent\(\)/, "Page views must respect the current analytics consent");
+assert.match(helper, /if \(!hasAnalyticsConsent\(\)/, "Custom analytics events must stop after consent is revoked");
 console.log("Analytics instrumentation regression checks passed.");
