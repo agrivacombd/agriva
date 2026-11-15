@@ -7,37 +7,30 @@ const gallery = read("components/marketplace/ProductImageGallery.tsx");
 const purchase = read("components/marketplace/CheckoutButton.tsx");
 const cartHelper = read("lib/marketplace/cart-auth.ts");
 
-assert.match(page, /<RelatedProductUpsell/, "Related Products must render on detail page");
-assert.match(page, /<RelatedProductUpsell\s+compact/, "Cross-sell should use compact cards under the gallery");
-assert.ok(page.includes('className="contents md:flex md:min-w-0 md:flex-col"'), "Gallery and upsell stay grouped on desktop");
-assert.ok(page.includes("md:order-none overflow-hidden"), "Gallery must remain above upsell on desktop");
-assert.ok(page.includes("order-2 flex min-w-0 flex-col"), "Purchase appears before upsells on mobile");
-assert.ok(page.includes("order-3 min-w-0 border-t"), "Upsells follow purchase on mobile");
-assert.doesNotMatch(page, /md:h-\[560px\]/, "Gallery should not force a blank 560px image area");
-assert.match(gallery, /aspect-\[4\/3\]/, "Product gallery should be shorter on mobile");
-assert.match(gallery, /sm:aspect-square/, "Product gallery should be square on tablet and desktop");
-assert.match(upsell, /products\.slice\(0, 2\)/, "Only two sales-focused related products should fill the left column");
-assert.ok(upsell.includes('repeat(auto-fit, minmax(min(100%, 15rem), 1fr))'), "Compact cards should follow container width");
-assert.ok(page.includes("md:order-none overflow-hidden"), "Gallery should precede upsells on larger screens");
+assert.match(page, /<RelatedProductUpsell/, "Related Products render on product detail page");
+assert.ok(page.indexOf("<RelatedProductUpsell") > page.indexOf('id="product-description"'), "Related products appear after complete description");
+assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-faq-heading"'), "Related products appear before FAQs");
+assert.ok(page.includes('md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]'), "Desktop/tablet gallery and purchase use two stable columns");
+assert.ok(page.includes('<ProductShareCard'), "Product details must include a canonical share card");
+assert.ok(page.includes('<ProductDescription html={description} />'), "Full product description must remain server-rendered");
+assert.ok(page.includes('href="#product-description"'), "Short summary must link to complete description");
 assert.ok(page.includes('pb-20 text-[#17351f] sm:pb-0'), "Mobile sticky purchase bar must not obscure page content");
-assert.ok(page.indexOf('বর্তমান তালিকাভুক্ত মূল্য') < page.indexOf('descriptionSummary ||'), "Price should be visible ahead of secondary text");
-assert.ok(purchase.includes("IntersectionObserver") && purchase.includes("primaryOrderVisible"), "Show mobile purchase CTA when normal CTA is offscreen");
-assert.ok(purchase.includes("!formOpen && !cartAdded && !authPopupOpen"), "Avoid sticky bar over forms, cart confirmations and auth");
-assert.ok(purchase.includes('scrollIntoView({ behavior: "smooth", block: "start" })'), "Buy now must bring COD form into view");
-assert.ok(purchase.includes('calculateShippingFee') && purchase.includes('shippingWeightGrams'), "Preserve the latest direct COD delivery pricing logic");
+assert.ok(page.indexOf('বর্তমান মূল্য') < page.indexOf('descriptionSummary &&'), "Price must appear before secondary summary");
+assert.ok(purchase.includes("IntersectionObserver") && purchase.includes("primaryOrderVisible"), "Keep mobile purchase CTA visible when normal CTA scrolls away");
+assert.ok(purchase.includes("!formOpen && !cartAdded && !authPopupOpen"), "Do not cover active order, cart or login UI");
+assert.ok(purchase.includes('scrollIntoView({ behavior: "smooth", block: "start" })'), "Buy now brings the real COD form into view");
+assert.ok(purchase.includes('calculateShippingFee') && purchase.includes('shippingWeightGrams'), "Preserve quantity-based direct COD shipping logic");
 assert.ok(purchase.includes("সম্পূর্ণ ঠিকানা (ঐচ্ছিক)"), "Full address remains optional, with district and upazila mandatory");
+assert.doesNotMatch(page, /md:h-\[560px\]/, "No forced blank 560px gallery height");
+assert.match(gallery, /aspect-\[4\/3\]/, "Compact mobile image gallery");
+assert.match(gallery, /sm:aspect-square/, "Square product image gallery on larger screens");
 
-
-assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-details"'),
-  "Cross-sell must appear before detailed information and FAQ");
-assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('>সাধারণ জিজ্ঞাসা<'),
-  "Recommendations must precede FAQ");
 assert.match(page, /\.eq\("marketplace_channel", "marketplace"\)/);
 assert.match(page, /\.eq\("status", "active"\)/);
 assert.match(page, /\.neq\("id", product.id\)/);
 assert.match(page, /\.gt\("stock", 0\)/);
 assert.match(page, /product.subcategory_slug/, "Same subcategory should rank higher");
-assert.match(upsell, /grid-cols-2 gap-3 lg:grid-cols-4/, "Mobile and desktop cards");
+assert.match(upsell, /grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4/, "Recommendation cards have mobile/tablet/desktop columns");
 assert.match(upsell, /কার্টে যোগ করুন/, "Related cards must have Add to Cart");
 assert.match(upsell, /updateQuantity/, "Related cards must have adjustable quantity");
 assert.match(upsell, /resolveMarketplaceCartUser\(\)/, "Use existing session classifier");
