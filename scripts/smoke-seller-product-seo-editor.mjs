@@ -50,4 +50,24 @@ assert.match(plantForm, /inputMode="decimal"/, "Mobile sellers need an appropria
 assert.match(plantForm, /"পর্যালোচনার জন্য পণ্য জমা দিন"/, "seller CTA must explain approval workflow");
 assert.match(plantApi, /status:"draft"/, "submitted Plant Market products may not become public before review");
 
+// Plant Market rich text must use shared editor, sanitize at the API boundary,
+// preserve legacy plaintext and never leak HTML into metadata or schema.org.
+const richEditor = read("components/admin/AdminProductDescriptionEditor.tsx");
+const descriptionHelpers = read("lib/marketplace/product-description.ts");
+assert.match(plantForm, /AdminProductDescriptionEditor/, "Plant Seller must reuse the existing rich editor");
+assert.match(plantForm, /variant="plant"/, "Plant Seller must get a simplified contextual editor");
+assert.match(plantForm, /maxHtmlLength=\{5000\}/, "Plant Seller must enforce the existing HTML column limit");
+assert.match(plantForm, /productDescriptionToText\(values\.description\)/, "SEO drafts must use plain text, not HTML tags");
+assert.match(plantForm, /description=\{descriptionText\}/, "search preview must receive plain text");
+assert.match(richEditor, /variant = "standard"/, "Admin rich text editor must retain its original default experience");
+assert.match(richEditor, /গাছ বা পণ্যের বৈশিষ্ট্য/, "Plant Seller needs an accurate plant-oriented outline");
+assert.match(richEditor, /window\.confirm/, "inserting outline must not silently overwrite existing content");
+assert.match(plantApi, /sanitizeProductDescription\(rawDescription\)/, "untrusted seller HTML must be sanitized server-side");
+assert.match(plantApi, /rawDescription\.length>5000/, "Plant Market API must reject overlong HTML before writing");
+assert.match(plantPage, /sanitizeProductDescription\(product\.description \|\| ""\)/, "public product detail must sanitize stored descriptions again");
+assert.match(plantPage, /dangerouslySetInnerHTML=\{\{__html:safeDescription\}\}/, "public product detail must render sanitized rich text");
+assert.match(plantPage, /productDescriptionToText\(safeDescription\)/, "Product schema description must be plain text");
+assert.match(plantPage, /productDescriptionToText\(sanitizeProductDescription\(data\.description\|\|""\)\)/, "SEO metadata must be plain text");
+assert.match(descriptionHelpers, /ALLOWED_TAGS/, "Shared description sanitizer must allowlist formatting");
+
 console.log("Seller product SEO editor regression checks passed.");

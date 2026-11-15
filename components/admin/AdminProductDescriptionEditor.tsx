@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
+import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
-type Props = { value: string; onChange?: (value: string) => void; productName?: string };
+type Props = {
+  value: string;
+  onChange?: (value: string) => void;
+  productName?: string;
+  variant?: "standard" | "plant";
+  focusKeyword?: string;
+  previewPath?: string;
+  maxHtmlLength?: number;
+};
 
 const tools = [
   { label: "B", command: "bold", title: "Bold" },
@@ -19,26 +27,25 @@ const tools = [
   { label: "↷ Redo", command: "redo", title: "Redo" },
 ];
 
-function toText(html: string) {
-  return html.replace(/<\/(p|div|h[1-6]|li|blockquote)>/gi, " ")
-    .replace(/<br\s*\/?\s*>/gi, " ")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
-export default function AdminProductDescriptionEditor({ value, onChange, productName = "" }: Props) {
+const alignmentTools = [
+  { label: "বামে", command: "justifyLeft", title: "বামদিকে সাজান" },
+  { label: "মাঝে", command: "justifyCenter", title: "মাঝখানে সাজান" },
+  { label: "ডানে", command: "justifyRight", title: "ডানদিকে সাজান" },
+  { label: "সমান", command: "justifyFull", title: "দুই পাশে সমানভাবে সাজান" },
+];
+
+export default function AdminProductDescriptionEditor({
+  value, onChange, productName = "", variant = "standard", focusKeyword = "",
+  previewPath = "/marketplace/product-slug", maxHtmlLength = MAX_PRODUCT_DESCRIPTION_HTML_LENGTH,
+}: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [keyword, setKeyword] = useState(productName);
+  const [editorKeyword, setEditorKeyword] = useState(productName);
+  const keyword = variant === "plant" ? focusKeyword : editorKeyword;
+  const isPlant = variant === "plant";
   const [html, setHtml] = useState(value);
   const [showPreview, setShowPreview] = useState(false);
-  const text = useMemo(() => toText(html), [html]);
+  const text = useMemo(() => productDescriptionToText(html), [html]);
   const words = text ? text.split(/\s+/).length : 0;
   const hasKeyword = Boolean(keyword.trim()) && text.toLocaleLowerCase().includes(keyword.trim().toLocaleLowerCase());
   const hasSections = /<(h2|h3|ul|ol|li)\b/i.test(html);
@@ -65,8 +72,11 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
   }
 
   function insertOutline() {
+    if (text && !window.confirm("বর্তমান বিবরণ মুছে একটি নতুন SEO কাঠামো বসাতে চান?")) return;
     const safeName = (productName || "পণ্যের নাম").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const outline = `<p><strong>${safeName}</strong> সম্পর্কে সংক্ষেপে পরিচিতি লিখুন। পণ্যটি কী, কার জন্য এবং এর প্রধান বৈশিষ্ট্য কী—শুধু যাচাই করা তথ্য দিন।</p><h2>পণ্যের প্রধান বৈশিষ্ট্য</h2><ul><li>উপাদান / জাত / মডেল:</li><li>প্যাক সাইজ / পরিমাণ:</li><li>উৎপত্তিস্থল / প্রস্তুতকারক:</li></ul><h2>ব্যবহার ও উপকারিতা</h2><p>কীভাবে এবং কোন কাজে ব্যবহার করা যায় তা বাস্তব তথ্য দিয়ে লিখুন।</p><h2>সংরক্ষণ ও অতিরিক্ত তথ্য</h2><p>মেয়াদ, সংরক্ষণ, প্যাকেজিং, সতর্কতা বা প্রাসঙ্গিক নির্দেশনা উল্লেখ করুন।</p>`;
+    const outline = isPlant
+      ? `<p><strong>${safeName}</strong> সম্পর্কে সঠিক পরিচিতি লিখুন। ক্রেতা কোন গাছ বা পণ্যটি পাবেন তা স্পষ্ট করুন।</p><h2>গাছ বা পণ্যের বৈশিষ্ট্য</h2><ul><li>সঠিক জাত / ধরন:</li><li>বয়স, আকার ও টবের বিবরণ (প্রযোজ্য হলে):</li><li>প্যাকেট বা সরবরাহের অবস্থা:</li></ul><h2>রোপণ ও পরিচর্যা</h2><p>সূর্যের আলো, পানি, মাটি ও পরিচর্যা সম্পর্কে জানা তথ্য লিখুন।</p><h2>সরবরাহ ও সতর্কতা</h2><p>কীভাবে সরবরাহ করা হবে ও গুরুত্বপূর্ণ তথ্য যোগ করুন।</p>`
+      : `<p><strong>${safeName}</strong> সম্পর্কে সংক্ষেপে পরিচিতি লিখুন। পণ্যটি কী, কার জন্য এবং এর প্রধান বৈশিষ্ট্য কী—শুধু যাচাই করা তথ্য দিন।</p><h2>পণ্যের প্রধান বৈশিষ্ট্য</h2><ul><li>উপাদান / জাত / মডেল:</li><li>প্যাক সাইজ / পরিমাণ:</li><li>উৎপত্তিস্থল / প্রস্তুতকারক:</li></ul><h2>ব্যবহার ও উপকারিতা</h2><p>কীভাবে এবং কোন কাজে ব্যবহার করা যায় তা বাস্তব তথ্য দিয়ে লিখুন।</p><h2>সংরক্ষণ ও অতিরিক্ত তথ্য</h2><p>মেয়াদ, সংরক্ষণ, প্যাকেজিং, সতর্কতা বা প্রাসঙ্গিক নির্দেশনা উল্লেখ করুন।</p>`;
     if (editorRef.current) {
       editorRef.current.innerHTML = outline;
       setHtml(outline);
@@ -76,28 +86,28 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
 
   return <section className="md:col-span-2 xl:col-span-3">
     <div className="flex flex-wrap items-end justify-between gap-2">
-      <div><label className="text-sm font-bold">Product description</label><p className="mt-1 text-xs font-normal text-[#637266]">Text alignment, formatting, SEO guidance এবং live preview — একই editor-এ</p></div>
-      <span className="text-xs font-semibold text-[#637266]">{words} words · {html.length.toLocaleString("en-US")}/{MAX_PRODUCT_DESCRIPTION_HTML_LENGTH.toLocaleString("en-US")} HTML characters</span>
+      <div><label className="text-sm font-bold">{isPlant ? "পণ্যের বিস্তারিত বিবরণ" : "Product description"}</label><p className="mt-1 text-xs font-normal text-[#637266]">{isPlant ? "শিরোনাম, তালিকা ও পরিচর্যার তথ্য সহজে সাজান। SEO outline ব্যবহার করলে লেখা যাচাই করে নিন।" : "Text alignment, formatting, SEO guidance এবং live preview — একই editor-এ"}</p></div>
+      <span className="text-xs font-semibold text-[#637266]">{words} words · <span className={html.length > maxHtmlLength ? "font-black text-rose-700" : ""}>{html.length.toLocaleString("en-US")}/{maxHtmlLength.toLocaleString("en-US")} HTML characters</span></span>
     </div>
     <div className="mt-2 overflow-hidden rounded-xl border border-[#cfdccf] bg-white focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-100">
       <div className="flex flex-wrap gap-1 border-b bg-[#f7faf6] p-2">
-        {tools.map(tool => <button key={tool.label} type="button" title={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command, tool.value)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
-        <span className="mx-1 hidden h-8 w-px bg-[#d9e4d7] sm:block" aria-hidden="true" />
-        {[
-          { label: "বামে", command: "justifyLeft", title: "বামদিকে সাজান" },
-          { label: "মাঝে", command: "justifyCenter", title: "মাঝখানে সাজান" },
-          { label: "ডানে", command: "justifyRight", title: "ডানদিকে সাজান" },
-          { label: "সমান", command: "justifyFull", title: "দুই পাশে সমানভাবে সাজান" },
-        ].map(tool => <button key={tool.command} type="button" title={tool.title} aria-label={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
-        <button type="button" title="Formatting মুছুন" onMouseDown={event => event.preventDefault()} onClick={() => run("removeFormat")} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Format মুছুন</button>
-        <button type="button" onMouseDown={event => event.preventDefault()} onClick={addLink} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Link</button>
+        {(isPlant ? tools.filter(tool => ["B", "I", "H2", "H3", "• List", "1. List", "↶ Undo", "↷ Redo"].includes(tool.label)) : tools).map(tool => <button key={tool.label} type="button" title={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command, tool.value)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+        {!isPlant && <span className="mx-1 hidden h-8 w-px bg-[#d9e4d7] sm:block" aria-hidden="true" />}
+        {isPlant ? null : (
+          <div className="contents">
+            {alignmentTools.map(tool => <button key={tool.command} type="button" title={tool.title} aria-label={tool.title} onMouseDown={event => event.preventDefault()} onClick={() => run(tool.command)} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">{tool.label}</button>)}
+          </div>
+        )}
+        {!isPlant && <button type="button" title="Formatting মুছুন" onMouseDown={event => event.preventDefault()} onClick={() => run("removeFormat")} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Format মুছুন</button>}
+        {!isPlant && <button type="button" onMouseDown={event => event.preventDefault()} onClick={addLink} className="min-h-9 rounded-lg border border-[#e1e9df] bg-white px-3 text-xs font-bold text-[#244b32] hover:bg-emerald-50">Link</button>}
         <button type="button" onClick={insertOutline} className="ml-auto min-h-9 rounded-lg bg-[#e8f2e6] px-3 text-xs font-bold text-[#17452c] hover:bg-[#dcebd9]">SEO outline বসান</button>
       </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Product description editor" aria-multiline="true" onInput={event => { setHtml(event.currentTarget.innerHTML); onChange?.(event.currentTarget.innerHTML); }} className="prose prose-sm max-w-none min-h-48 px-4 py-3 text-sm leading-7 outline-none [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:font-bold [&_li]:ml-5 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:pl-3" data-placeholder="পণ্যের পরিচিতি, বৈশিষ্ট্য, ব্যবহার, প্যাক সাইজ ও যাচাই করা তথ্য লিখুন..." />
+      <div ref={editorRef} contentEditable suppressContentEditableWarning role="textbox" aria-label="Product description editor" aria-multiline="true" onInput={event => { setHtml(event.currentTarget.innerHTML); onChange?.(event.currentTarget.innerHTML); }} className="prose prose-sm max-w-none min-h-48 px-4 py-3 text-sm leading-7 outline-none [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:font-bold [&_li]:ml-5 [&_ul]:list-disc [&_ol]:list-decimal [&_blockquote]:border-l-4 [&_blockquote]:pl-3" data-placeholder={isPlant ? "গাছের সঠিক জাত, আকার, যত্ন ও সরবরাহ সম্পর্কে লিখুন..." : "পণ্যের পরিচিতি, বৈশিষ্ট্য, ব্যবহার, প্যাক সাইজ ও যাচাই করা তথ্য লিখুন..."} />
     </div>
     <input type="hidden" name="description" value={html} />
+    {html.length > maxHtmlLength && <p role="alert" className="mt-2 text-xs font-bold text-rose-700">বিবরণ অনেক বড় হয়েছে। সর্বোচ্চ {maxHtmlLength.toLocaleString("bn-BD")} HTML অক্ষরে সীমাবদ্ধ করুন।</p>}
     <div className="mt-3 grid gap-3 rounded-xl border border-[#e1e9df] bg-[#f8fbf7] p-3 sm:grid-cols-[minmax(0,1fr)_auto]">
-      <label className="text-xs font-bold text-[#385640]">Focus keyword<input value={keyword} onChange={event => setKeyword(event.target.value)} placeholder="যেমন: organic chia seeds" className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal"/></label>
+      {!isPlant && <label className="text-xs font-bold text-[#385640]">Focus keyword<input value={keyword} onChange={event => setEditorKeyword(event.target.value)} placeholder="যেমন: organic chia seeds" className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2 text-sm font-normal"/></label>}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className={hasKeyword ? "rounded-full bg-emerald-100 px-3 py-1.5 font-bold text-emerald-800" : "rounded-full bg-amber-100 px-3 py-1.5 font-bold text-amber-800"}>{hasKeyword ? "✓ Keyword আছে" : "Keyword যোগ করুন"}</span>
         <span className={hasSections ? "rounded-full bg-emerald-100 px-3 py-1.5 font-bold text-emerald-800" : "rounded-full bg-amber-100 px-3 py-1.5 font-bold text-amber-800"}>{hasSections ? "✓ Headings / list আছে" : "Heading বা list যোগ করুন"}</span>
@@ -111,7 +121,7 @@ export default function AdminProductDescriptionEditor({ value, onChange, product
     {showPreview && <div className="mt-3 rounded-xl border border-[#dfe8dc] bg-white p-4">
       <p className="text-[11px] font-bold uppercase tracking-wide text-[#6a7c6c]">Search snippet preview</p>
       <p className="mt-2 text-base font-semibold text-[#1a0dab]">{productName || "Product name"} | AGRIVA</p>
-      <p className="mt-1 text-xs text-emerald-800">agriva.com.bd/marketplace/product-slug</p>
+      <p className="mt-1 text-xs text-emerald-800">agriva.com.bd{previewPath}</p>
       <p className="mt-1 text-sm leading-6 text-[#4b5563]">{text.slice(0, 155) || "পণ্যের বিবরণ লিখলে এখানে search snippet-এর preview দেখা যাবে।"}</p>
       <div className="mt-4 border-t pt-3">
         <p className="text-xs font-bold text-[#526454]">পণ্যের বিবরণ Preview</p>
