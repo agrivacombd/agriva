@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { CalendarDays, CheckCircle2, Clock3, MapPin, PackageSearch, Phone, Plus, Search, Wheat, X } from "lucide-react";
@@ -22,10 +23,20 @@ type Response = {
 };
 
 const crops = ["ধান", "চাল", "গম", "ভুট্টা", "আলু", "পেঁয়াজ", "রসুন", "সরিষা", "ডাল", "সবজি", "ফল", "পাট", "অন্যান্য"];
-const districts = ["নওগাঁ", "রাজশাহী", "বগুড়া", "জয়পুরহাট", "চাঁপাইনবাবগঞ্জ", "নাটোর", "পাবনা", "দিনাজপুর", "রংপুর", "কুষ্টিয়া", "যশোর", "ময়মনসিংহ", "ঢাকা", "চট্টগ্রাম", "অন্যান্য"];
+const districts = [
+  "ঢাকা", "গাজীপুর", "নরসিংদী", "নারায়ণগঞ্জ", "টাঙ্গাইল", "কিশোরগঞ্জ", "মানিকগঞ্জ", "মুন্সীগঞ্জ", "ফরিদপুর", "রাজবাড়ী", "গোপালগঞ্জ", "মাদারীপুর", "শরীয়তপুর",
+  "চট্টগ্রাম", "কক্সবাজার", "কুমিল্লা", "ব্রাহ্মণবাড়িয়া", "চাঁদপুর", "লক্ষ্মীপুর", "নোয়াখালী", "ফেনী", "খাগড়াছড়ি", "রাঙ্গামাটি", "বান্দরবান",
+  "রাজশাহী", "নাটোর", "নওগাঁ", "চাঁপাইনবাবগঞ্জ", "পাবনা", "সিরাজগঞ্জ", "বগুড়া", "জয়পুরহাট",
+  "খুলনা", "বাগেরহাট", "সাতক্ষীরা", "যশোর", "নড়াইল", "মাগুরা", "ঝিনাইদহ", "কুষ্টিয়া", "চুয়াডাঙ্গা", "মেহেরপুর",
+  "বরিশাল", "পটুয়াখালী", "ভোলা", "ঝালকাঠি", "বরগুনা", "পিরোজপুর",
+  "সিলেট", "সুনামগঞ্জ", "মৌলভীবাজার", "হবিগঞ্জ",
+  "রংপুর", "দিনাজপুর", "কুড়িগ্রাম", "গাইবান্ধা", "নীলফামারী", "লালমনিরহাট", "ঠাকুরগাঁও", "পঞ্চগড়",
+  "ময়মনসিংহ", "জামালপুর", "শেরপুর", "নেত্রকোনা", "অন্যান্য",
+];
 const units: { value: Unit; label: string }[] = [
   { value: "maund", label: "মণ" }, { value: "kg", label: "কেজি" }, { value: "ton", label: "টন" }, { value: "bag", label: "বস্তা" },
 ];
+const todayBD = () => new Date(Date.now() + 6 * 3600 * 1000).toISOString().slice(0, 10);
 const bn = (n: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(n);
 const unitLabel = (unit: Unit) => units.find((u) => u.value === unit)?.label ?? unit;
 const dateLabel = (value: string) => new Date(value + "T00:00:00").toLocaleDateString("bn-BD", { day: "numeric", month: "short", year: "numeric" });
@@ -37,6 +48,12 @@ const labelClass = "block text-sm font-semibold text-slate-700";
 
 export default function BuyerDemandBoard() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  // A separate anonymous client means expired login sessions cannot break the public list.
+  const publicSupabase = useMemo(() => createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } },
+  ), []);
   const [demands, setDemands] = useState<Demand[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -82,33 +99,69 @@ export default function BuyerDemandBoard() {
   const loadBoard = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
-    const { data: { user } } = await supabase.auth.getUser();
-    setUserId(user?.id ?? null);
-    const { data, error } = await supabase.from("buyer_demands")
-      .select("id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at")
-      .order("created_at", { ascending: false }).limit(100);
-    if (error) {
-      setLoadError(true);
-      setDemands([]);
-    } else {
-      setDemands((data ?? []) as Demand[]);
+    setResponses([]);
+    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at";
+    let publicDemands: Demand[] = [];
+    let publicFailed = false;
+
+    try {
+      let result = await publicSupabase.from("buyer_demands").select(demandColumns)
+        .eq("status", "active").order("created_at", { ascending: false }).limit(100);
+      if (result.error) {
+        result = await publicSupabase.from("buyer_demands").select(demandColumns)
+          .eq("status", "active").order("created_at", { ascending: false }).limit(100);
+      }
+      if (result.error) {
+        console.error("Buyer demands public query failed", result.error.code);
+        publicFailed = true;
+      } else {
+        publicDemands = (result.data ?? []) as Demand[];
+      }
+    } catch (error) {
+      console.error("Buyer demands public query failed", error);
+      publicFailed = true;
     }
-    if (user) {
-      const { data: ownResponses, error: responseError } = await supabase.from("buyer_demand_responses")
-        .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
-        .order("created_at", { ascending: false }).limit(200);
-      if (!responseError) setResponses((ownResponses ?? []) as Response[]);
-    } else {
-      setResponses([]);
-    }
+
+    setDemands(publicDemands);
+    setLoadError(publicFailed);
     setLoading(false);
-  }, [supabase]);
+
+    // User-specific data loads separately; a failed auth check never hides public results.
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        setUserId(null);
+        return;
+      }
+      setUserId(user.id);
+      const [mine, replies] = await Promise.all([
+        supabase.from("buyer_demands").select(demandColumns)
+          .eq("buyer_id", user.id).order("created_at", { ascending: false }).limit(100),
+        supabase.from("buyer_demand_responses")
+          .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
+          .order("created_at", { ascending: false }).limit(200),
+      ]);
+      if (!mine.error) {
+        const merged = new Map(publicDemands.map((d) => [d.id, d]));
+        for (const demand of (mine.data ?? []) as Demand[]) merged.set(demand.id, demand);
+        setDemands([...merged.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)));
+        setLoadError(false);
+      }
+      if (!replies.error) setResponses((replies.data ?? []) as Response[]);
+    } catch (error) {
+      console.error("Buyer demand account query failed", error);
+      setUserId(null);
+    }
+  }, [publicSupabase, supabase]);
 
   useEffect(() => { void loadBoard(); }, [loadBoard]);
 
+  const filterCrops = useMemo(() => [...new Set([...crops, ...demands.map((d) => d.crop_name)])], [demands]);
+  const filterDistricts = useMemo(() => [...new Set([...districts, ...demands.map((d) => d.district)])], [demands]);
+
   const visibleDemands = useMemo(() => demands.filter((d) => {
     if (mineOnly && d.buyer_id !== userId) return false;
-    if (!mineOnly && (d.status !== "active" || (d.response_deadline && d.response_deadline < new Date().toISOString().slice(0, 10)))) return false;
+    if (!mineOnly && (d.status !== "active" || (d.response_deadline && d.response_deadline < todayBD()))) return false;
     if (cropFilter !== "সব ফসল" && d.crop_name !== cropFilter) return false;
     if (districtFilter !== "সব জেলা" && d.district !== districtFilter) return false;
     const q = search.trim().toLocaleLowerCase();
@@ -121,9 +174,10 @@ export default function BuyerDemandBoard() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/login?next=%2Fbuyer-demands"; return; }
     if (priceType === "fixed" && (!targetPrice || Number(targetPrice) <= 0)) { setNotice("নির্দিষ্ট দাম দিলে প্রতি এককের সঠিক দাম লিখুন।"); return; }
-    if (needMode === "specific_date" && !needDate) { setNotice("পণ্য লাগার তারিখ দিন।"); return; }
-    if (needMode === "date_range" && (!needStartDate || !needEndDate || needStartDate > needEndDate)) { setNotice("সময়সীমার শুরু ও শেষ তারিখ সঠিকভাবে দিন।"); return; }
-    if (responseDeadline && responseDeadline < new Date().toISOString().slice(0, 10)) { setNotice("আগ্রহ জানানোর শেষ তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
+    if (phonePublic && contactPhone.trim().length < 6) { setNotice("নম্বর প্রকাশ করতে চাইলে ফোন নম্বর লিখুন।"); return; }
+    if (needMode === "specific_date" && (!needDate || needDate < todayBD())) { setNotice("পণ্য লাগার তারিখ দিন।"); return; }
+    if (needMode === "date_range" && (!needStartDate || !needEndDate || needStartDate < todayBD() || needStartDate > needEndDate)) { setNotice("সময়সীমার শুরু ও শেষ তারিখ সঠিকভাবে দিন।"); return; }
+    if (responseDeadline && responseDeadline < todayBD()) { setNotice("আগ্রহ জানানোর শেষ তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
     setBusy(true);
     const { error } = await supabase.from("buyer_demands").insert({
       buyer_id: user.id, crop_name: cropName, variety: variety.trim() || null, quantity: Number(quantity), unit,
@@ -155,6 +209,8 @@ export default function BuyerDemandBoard() {
     if (user.id === respondingTo.buyer_id) { setNotice("নিজের পোস্টে আগ্রহ পাঠানো যাবে না।"); return; }
     if (!sharePhone || farmerPhone.trim().length < 6) { setNotice("ক্রেতার সঙ্গে যোগাযোগের জন্য ফোন নম্বর দিন এবং নম্বর শেয়ারের সম্মতি দিন।"); return; }
     if (Number(availableQuantity) <= 0) { setNotice("আপনার কাছে থাকা ফসলের পরিমাণ লিখুন।"); return; }
+    if (offeredPrice && Number(offeredPrice) <= 0) { setNotice("প্রস্তাবিত দাম সঠিকভাবে লিখুন।"); return; }
+    if (availableDate && availableDate < todayBD()) { setNotice("সরবরাহের তারিখ আজ বা ভবিষ্যতের হতে হবে।"); return; }
     setBusy(true);
     const { error } = await supabase.from("buyer_demand_responses").insert({
       demand_id: respondingTo.id, farmer_id: user.id, available_quantity: Number(availableQuantity),
@@ -193,9 +249,9 @@ export default function BuyerDemandBoard() {
             <button type="button" onClick={() => { setShowForm((v) => !v); setRespondingTo(null); }} className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-lime-300 px-5 py-3 text-sm font-extrabold text-[#173629] transition hover:bg-lime-200"><Plus size={18} /> চাহিদা পোস্ট করুন</button>
           </div>
           <div className="mt-7 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(demands.filter((d) => d.status === "active").length)}</p><p className="mt-1 text-emerald-50/80">সক্রিয় চাহিদা</p></div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(responses.filter((r) => r.farmer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পাঠানো আগ্রহ</p></div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{bn(demands.filter((d) => d.buyer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পোস্ট</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(demands.filter((d) => d.status === "active" && (!d.response_deadline || d.response_deadline >= todayBD())).length)}</p><p className="mt-1 text-emerald-50/80">সক্রিয় চাহিদা</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(responses.filter((r) => r.farmer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পাঠানো আগ্রহ</p></div>
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4"><p className="text-2xl font-black">{loading || loadError ? "—" : bn(demands.filter((d) => d.buyer_id === userId).length)}</p><p className="mt-1 text-emerald-50/80">আপনার পোস্ট</p></div>
           </div>
         </div>
       </section>
@@ -217,9 +273,9 @@ export default function BuyerDemandBoard() {
               <label className={labelClass}>উপজেলা / বাজার<input className={inputClass} value={upazila} onChange={(e) => setUpazila(e.target.value)} maxLength={100} placeholder="যেমন: মান্দা বাজার" /></label>
               <label className={labelClass}>সংগ্রহ / ডেলিভারি<select className={inputClass} value={deliveryMethod} onChange={(e) => setDeliveryMethod(e.target.value as Demand["delivery_method"])}><option value="buyer_pickup">ক্রেতা নিজে সংগ্রহ করবেন</option><option value="seller_delivery">বিক্রেতাকে পৌঁছে দিতে হবে</option><option value="discuss">আলোচনা করে ঠিক হবে</option></select></label>
               <label className={labelClass}>কবে পণ্য লাগবে?<select className={inputClass} value={needMode} onChange={(e) => setNeedMode(e.target.value as NeedMode)}><option value="urgent">জরুরি · ১–৩ দিনের মধ্যে</option><option value="specific_date">নির্দিষ্ট তারিখে</option><option value="date_range">তারিখের মধ্যে (সময়সীমা)</option><option value="flexible">সময় আলোচনা সাপেক্ষে</option></select></label>
-              {needMode === "specific_date" && <label className={labelClass}>পণ্য লাগার তারিখ<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} required value={needDate} onChange={(e) => setNeedDate(e.target.value)} /></label>}
-              {needMode === "date_range" && <><label className={labelClass}>সময়সীমা শুরু<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} required value={needStartDate} onChange={(e) => setNeedStartDate(e.target.value)} /></label><label className={labelClass}>সময়সীমা শেষ<input className={inputClass} type="date" min={needStartDate || new Date().toISOString().slice(0, 10)} required value={needEndDate} onChange={(e) => setNeedEndDate(e.target.value)} /></label></>}
-              <label className={labelClass}>আগ্রহ জানানোর শেষ তারিখ (ঐচ্ছিক)<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} value={responseDeadline} onChange={(e) => setResponseDeadline(e.target.value)} /></label>
+              {needMode === "specific_date" && <label className={labelClass}>পণ্য লাগার তারিখ<input className={inputClass} type="date" min={todayBD()} required value={needDate} onChange={(e) => setNeedDate(e.target.value)} /></label>}
+              {needMode === "date_range" && <><label className={labelClass}>সময়সীমা শুরু<input className={inputClass} type="date" min={todayBD()} required value={needStartDate} onChange={(e) => setNeedStartDate(e.target.value)} /></label><label className={labelClass}>সময়সীমা শেষ<input className={inputClass} type="date" min={needStartDate || todayBD()} required value={needEndDate} onChange={(e) => setNeedEndDate(e.target.value)} /></label></>}
+              <label className={labelClass}>আগ্রহ জানানোর শেষ তারিখ (ঐচ্ছিক)<input className={inputClass} type="date" min={todayBD()} value={responseDeadline} onChange={(e) => setResponseDeadline(e.target.value)} /></label>
               <label className={labelClass}>যোগাযোগের ফোন (ঐচ্ছিক)<input className={inputClass} type="tel" maxLength={30} value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="01XXXXXXXXX" /></label>
             </div>
             <label className="mt-4 flex items-start gap-2 text-sm text-slate-700"><input type="checkbox" checked={allowPartial} onChange={(e) => setAllowPartial(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700" /><span><strong>আংশিক সরবরাহ চলবে</strong><span className="block text-slate-500">একজন কৃষকের কাছে পুরো পরিমাণ না থাকলেও আগ্রহ জানাতে পারবেন।</span></span></label>
@@ -236,7 +292,7 @@ export default function BuyerDemandBoard() {
               <label className={labelClass}>আপনার কাছে কত মজুদ আছে?<input className={inputClass} type="number" min="0.01" step="0.01" required value={availableQuantity} onChange={(e) => setAvailableQuantity(e.target.value)} placeholder="পরিমাণ" /></label>
               <label className={labelClass}>একক<select className={inputClass} value={availableUnit} onChange={(e) => setAvailableUnit(e.target.value as Unit)}>{units.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}</select></label>
               <label className={labelClass}>আপনার প্রস্তাবিত দাম (ঐচ্ছিক)<input className={inputClass} type="number" min="0.01" step="0.01" value={offeredPrice} onChange={(e) => setOfferedPrice(e.target.value)} placeholder="প্রতি একক টাকা" /></label>
-              <label className={labelClass}>কবে দিতে পারবেন?<input className={inputClass} type="date" min={new Date().toISOString().slice(0, 10)} value={availableDate} onChange={(e) => setAvailableDate(e.target.value)} /></label>
+              <label className={labelClass}>কবে দিতে পারবেন?<input className={inputClass} type="date" min={todayBD()} value={availableDate} onChange={(e) => setAvailableDate(e.target.value)} /></label>
               <label className={labelClass}>ফসল কোথায় আছে?<input className={inputClass} required maxLength={160} value={farmerLocation} onChange={(e) => setFarmerLocation(e.target.value)} placeholder="জেলা / উপজেলা / বাজার" /></label>
               <label className={labelClass}>আপনার ফোন নম্বর<input className={inputClass} type="tel" required minLength={6} maxLength={30} value={farmerPhone} onChange={(e) => setFarmerPhone(e.target.value)} placeholder="01XXXXXXXXX" /></label>
             </div>
@@ -249,8 +305,8 @@ export default function BuyerDemandBoard() {
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_190px_190px_auto]">
             <label className="relative block"><span className="sr-only">ফসল বা এলাকা খুঁজুন</span><Search size={17} className="absolute left-3 top-4 text-slate-400" /><input className="w-full rounded-xl border border-slate-200 py-3 pl-9 pr-3 text-sm outline-none focus:border-emerald-600" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="ফসল, জাত বা এলাকা খুঁজুন" /></label>
-            <select aria-label="ফসল বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={cropFilter} onChange={(e) => setCropFilter(e.target.value)}><option>সব ফসল</option>{crops.map((c) => <option key={c}>{c}</option>)}</select>
-            <select aria-label="জেলা বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={districtFilter} onChange={(e) => setDistrictFilter(e.target.value)}><option>সব জেলা</option>{districts.map((d) => <option key={d}>{d}</option>)}</select>
+            <select aria-label="ফসল বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={cropFilter} onChange={(e) => setCropFilter(e.target.value)}><option>সব ফসল</option>{filterCrops.map((c) => <option key={c}>{c}</option>)}</select>
+            <select aria-label="জেলা বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={districtFilter} onChange={(e) => setDistrictFilter(e.target.value)}><option>সব জেলা</option>{filterDistricts.map((d) => <option key={d}>{d}</option>)}</select>
             {userId && <button type="button" onClick={() => setMineOnly((v) => !v)} className={"rounded-xl px-4 py-3 text-sm font-bold " + (mineOnly ? "bg-emerald-700 text-white" : "border border-slate-200 text-slate-700")}>{mineOnly ? "সব চাহিদা দেখুন" : "আমার পোস্ট"}</button>}
           </div>
           <p className="mt-3 text-xs text-slate-500">ফোন নম্বর শুধু ক্রেতা প্রকাশের সম্মতি দিলে দেখা যাবে। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
@@ -263,19 +319,20 @@ export default function BuyerDemandBoard() {
             <button type="button" onClick={() => { void loadBoard(); }} className="mt-5 rounded-xl bg-emerald-800 px-5 py-3 text-sm font-bold text-white">আবার চেষ্টা করুন</button>
           </div>
         ) : visibleDemands.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><Wheat className="mx-auto text-emerald-700" size={34} /><h2 className="mt-3 text-lg font-black">{mineOnly ? "আপনার কোনো পোস্ট নেই" : "এখনো কোনো চাহিদা পাওয়া যায়নি"}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{mineOnly ? "প্রথম চাহিদাটি পোস্ট করে কৃষকের কাছ থেকে আগ্রহ পান।" : "ফিল্টার পরিবর্তন করুন অথবা নতুন চাহিদা পোস্ট করতে ক্রেতাকে জানান।"}</p><button type="button" onClick={() => { setMineOnly(userId ? true : false); setShowForm(true); }} className="mt-5 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white">চাহিদা পোস্ট করুন</button></div>
+          <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center"><Wheat className="mx-auto text-emerald-700" size={34} /><h2 className="mt-3 text-lg font-black">{mineOnly ? "আপনার কোনো পোস্ট নেই" : (search || cropFilter !== "সব ফসল" || districtFilter !== "সব জেলা") ? "খোঁজার সঙ্গে মিলছে না" : "এখনো কোনো চাহিদা পাওয়া যায়নি"}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{mineOnly ? "প্রথম চাহিদাটি পোস্ট করে কৃষকের কাছ থেকে আগ্রহ পান।" : "ফিল্টার পরিবর্তন করুন অথবা নতুন চাহিদা পোস্ট করুন।"}</p><button type="button" onClick={() => { setMineOnly(userId ? true : false); setShowForm(true); }} className="mt-5 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white">চাহিদা পোস্ট করুন</button></div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">
             {visibleDemands.map((d) => {
               const own = d.buyer_id === userId;
               const replies = responses.filter((r) => r.demand_id === d.id);
+              const alreadyResponded = !!userId && responses.some((r) => r.demand_id === d.id && r.farmer_id === userId);
               return <article key={d.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md sm:p-6">
                 <div className="flex items-start justify-between gap-3"><div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">{d.crop_name}</span>{d.variety && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">{d.variety}</span>}{own && <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">আপনার পোস্ট</span>}</div><h2 className="mt-3 text-2xl font-black">{bn(Number(d.quantity))} {unitLabel(d.unit)}</h2><p className="mt-1 text-sm font-bold text-emerald-800">{priceLabel(d)}</p></div><span className={"rounded-full px-3 py-1 text-xs font-bold " + (d.status === "active" ? "bg-lime-100 text-lime-900" : "bg-slate-100 text-slate-600")}>{d.status === "active" ? "সক্রিয়" : d.status === "fulfilled" ? "পূরণ হয়েছে" : "বন্ধ"}</span></div>
                 <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2"><p className="flex items-start gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-emerald-700" />{d.upazila ? d.upazila + ", " : ""}{d.district}</p><p className="flex items-start gap-2"><CalendarDays size={16} className="mt-0.5 shrink-0 text-emerald-700" />{needLabel(d)}</p><p className="flex items-start gap-2"><PackageSearch size={16} className="mt-0.5 shrink-0 text-emerald-700" />{deliveryLabel(d)}</p><p className="flex items-start gap-2"><Clock3 size={16} className="mt-0.5 shrink-0 text-emerald-700" />{d.allow_partial ? "আংশিক সরবরাহ চলবে" : "একজনের কাছ থেকে পুরো পরিমাণ লাগবে"}</p></div>
                 {d.notes && <p className="mt-4 whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">{d.notes}</p>}
                 {d.contact_phone_public && d.contact_phone && <a href={"tel:" + d.contact_phone} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-emerald-800"><Phone size={16} /> ক্রেতার ফোন: {d.contact_phone}</a>}
                 <p className="mt-4 text-xs text-slate-400">পোস্ট: {dateLabel(d.created_at.slice(0, 10))}{d.response_deadline ? " · আগ্রহ জানানোর শেষ তারিখ: " + dateLabel(d.response_deadline) : ""}</p>
-                {own ? <div className="mt-4 border-t border-slate-100 pt-4"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-800">কৃষকের আগ্রহ ({bn(replies.length)})</p>{d.status === "active" && <div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void closeDemand(d, "fulfilled")} className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 disabled:opacity-60">পূরণ হয়েছে</button><button type="button" disabled={busy} onClick={() => void closeDemand(d, "cancelled")} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-60">চাহিদা বন্ধ</button></div>}</div>{replies.length > 0 && <div className="mt-3 space-y-3">{replies.map((r) => <div key={r.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">{bn(Number(r.available_quantity))} {unitLabel(r.unit)} মজুদ আছে</strong><span className="text-xs text-slate-500">{r.offered_price ? "প্রস্তাব: ৳" + bn(Number(r.offered_price)) + "/" + unitLabel(r.unit) : "দাম আলোচনা সাপেক্ষে"}</span></div><p className="mt-1 text-xs text-slate-500">{r.location}{r.available_date ? " · দিতে পারবেন " + dateLabel(r.available_date) : ""}</p>{r.message && <p className="mt-2 text-sm text-slate-600">{r.message}</p>}<a href={"tel:" + r.contact_phone} className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-emerald-800"><Phone size={15} /> {r.contact_phone}</a></div>)}</div>}{replies.length === 0 && <p className="mt-2 text-sm text-slate-500">এখনো কেউ আগ্রহ জানাননি।</p>}</div> : d.status === "active" && <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4"><button type="button" onClick={() => { setShowForm(false); setRespondingTo(d); setAvailableUnit(d.unit); }} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-extrabold text-white hover:bg-emerald-800"><CheckCircle2 size={16} /> আমার ফসল আছে</button>{!userId && <Link href={"/login?next=%2Fbuyer-demands"} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600">লগইন করে আগ্রহ জানান</Link>}</div>}
+                {own ? <div className="mt-4 border-t border-slate-100 pt-4"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-800">কৃষকের আগ্রহ ({bn(replies.length)})</p>{d.status === "active" && <div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void closeDemand(d, "fulfilled")} className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 disabled:opacity-60">পূরণ হয়েছে</button><button type="button" disabled={busy} onClick={() => void closeDemand(d, "cancelled")} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-60">চাহিদা বন্ধ</button></div>}</div>{replies.length > 0 && <div className="mt-3 space-y-3">{replies.map((r) => <div key={r.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">{bn(Number(r.available_quantity))} {unitLabel(r.unit)} মজুদ আছে</strong><span className="text-xs text-slate-500">{r.offered_price ? "প্রস্তাব: ৳" + bn(Number(r.offered_price)) + "/" + unitLabel(r.unit) : "দাম আলোচনা সাপেক্ষে"}</span></div><p className="mt-1 text-xs text-slate-500">{r.location}{r.available_date ? " · দিতে পারবেন " + dateLabel(r.available_date) : ""}</p>{r.message && <p className="mt-2 text-sm text-slate-600">{r.message}</p>}<a href={"tel:" + r.contact_phone} className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-emerald-800"><Phone size={15} /> {r.contact_phone}</a></div>)}</div>}{replies.length === 0 && <p className="mt-2 text-sm text-slate-500">এখনো কেউ আগ্রহ জানাননি।</p>}</div> : d.status === "active" && <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4"><button type="button" disabled={alreadyResponded} onClick={() => { setShowForm(false); setRespondingTo(d); setAvailableUnit(d.unit); }} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-extrabold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-400"><CheckCircle2 size={16} /> {alreadyResponded ? "আগ্রহ পাঠানো হয়েছে" : "আমার ফসল আছে"}</button>{!userId && <Link href={"/login?next=%2Fbuyer-demands"} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600">লগইন করে আগ্রহ জানান</Link>}</div>}
               </article>;
             })}
           </div>
