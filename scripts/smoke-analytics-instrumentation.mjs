@@ -80,6 +80,8 @@ assert.match(checkout, /checkout_submitted/, "Checkout submit milestone must exi
 assert.match(checkout, /marketplace_order_placed/, "Successful cart checkout must be measured in GA4 and Clarity");
 assert.match(checkout, /data-clarity-mask="true"/, "Checkout address and order confirmation should be masked");
 assert.match(directCod, /id="direct-cod-form" data-clarity-mask="true"/, "Direct checkout should mask its sensitive form");
+assert.match(directCod, /if \(!formOpen\) trackClarityEvent\("checkout_started"\)/, "Direct COD opening must record the checkout funnel entry");
+assert.match(directCod, /trackClarityEvent\("checkout_submitted"\)/, "Direct COD submitting must record the checkout funnel milestone");
 assert.match(adminShell, /data-clarity-mask="true"/, "Admin details must be masked in recordings");
 assert.match(orders, /data-clarity-mask="true"/, "Order data must be masked");
 assert.match(privacy, /Microsoft Clarity/, "Privacy Policy must describe recording and masking");
