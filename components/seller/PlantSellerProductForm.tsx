@@ -8,6 +8,8 @@ import {
 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import ProductSeoEditor from "@/components/seller/ProductSeoEditor";
+import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
+import { productDescriptionToText } from "@/lib/marketplace/product-description";
 
 const CATEGORIES = [
   ["indoor-outdoor-plants", "ইনডোর ও আউটডোর গাছ"],
@@ -31,13 +33,12 @@ const INITIAL = {
 };
 type Field = keyof typeof INITIAL;
 const inputClass = "mt-2 min-h-12 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-emerald-700 focus:ring-4 focus:ring-emerald-700/10";
-const textareaClass = inputClass + " min-h-0 resize-y leading-6";
 const bnNumber = (number: number) => new Intl.NumberFormat("bn-BD").format(number);
 
 function suggestSeo(values: typeof INITIAL) {
   const name = values.name.trim();
   const category = CATEGORIES.find(([slug]) => slug === values.category_slug)?.[1] || "গাছ ও বাগানের পণ্য";
-  const cleanSummary = values.description.trim().replace(/\s+/g, " ");
+  const cleanSummary = productDescriptionToText(values.description);
   const title = (name + " | AGRIVA Plant Market").slice(0, 70);
   const description = cleanSummary
     ? cleanSummary.slice(0, 160)
@@ -130,14 +131,15 @@ export default function PlantSellerProductForm() {
   }
 
   const categoryLabel = CATEGORIES.find(([slug]) => slug === form.category_slug)?.[1] || "";
+  const descriptionText = useMemo(() => productDescriptionToText(form.description), [form.description]);
   const checks = useMemo(() => [
     { label: "পণ্যের নাম ও ক্যাটাগরি", ok: form.name.trim().length >= 2 && !!categoryLabel },
     { label: "মূল্য ও মজুত", ok: Number(form.price) > 0 && form.stock !== "" && Number.isInteger(Number(form.stock)) && Number(form.stock) >= 0 },
-    { label: "অন্তত ৪০ অক্ষরের বাস্তব বিবরণ", ok: form.description.trim().length >= 40 },
+    { label: "অন্তত ৪০ অক্ষরের বাস্তব বিবরণ", ok: descriptionText.length >= 40 && form.description.length <= 5000 },
     { label: "পণ্যের বাস্তব ছবি", ok: !!image },
     { label: "SEO title ও meta description", ok: !!form.seo_title.trim() && !!form.seo_description.trim() },
     { label: "Focus keyword", ok: !!form.focus_keyword.trim() },
-  ], [form, image, categoryLabel]);
+  ], [form, image, categoryLabel, descriptionText]);
   const completed = checks.filter((item) => item.ok).length;
   const suggestions = suggestSeo(form);
   const effectiveTitle = form.seo_title.trim() || suggestions.seo_title || "আপনার পণ্যের নাম | AGRIVA";
@@ -153,6 +155,12 @@ export default function PlantSellerProductForm() {
     if (name.length < 2 || price <= 0 || !Number.isFinite(price) || form.stock.trim() === "" || !Number.isInteger(stock) || stock < 0) {
       setIsError(true);
       setMessage("পণ্যের নাম, সঠিক মূল্য ও মজুতের পরিমাণ পূরণ করুন।");
+      return;
+    }
+    if (form.description.length > 5000) {
+      setIsError(true);
+      setMessage("পণ্যের বিবরণ সর্বোচ্চ ৫,০০০ HTML অক্ষরের মধ্যে রাখতে হবে।");
+      document.getElementById("plant-description-editor")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     if (form.highlights.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).some((item) => item.length > 200)) {
@@ -253,11 +261,18 @@ export default function PlantSellerProductForm() {
               বৈজ্ঞানিক নাম <span className="text-xs font-normal text-slate-400">(ঐচ্ছিক)</span>
               <input maxLength={160} value={form.scientific_name} onChange={(event) => set("scientific_name", event.target.value)} className={inputClass} placeholder="সঠিক নাম জানা থাকলে দিন" />
             </label>
-            <label className="block text-sm font-bold text-slate-800 md:col-span-2">
-              পণ্যের বিস্তারিত বিবরণ
-              <textarea maxLength={5000} rows={5} value={form.description} onChange={(event) => set("description", event.target.value)} className={textareaClass} placeholder="গাছ বা পণ্যটি কী, ক্রেতা কী পাবেন, আকার/জাত ও প্যাকেজিং কেমন, কীভাবে ব্যবহার বা রোপণ করবেন—যা সত্য ও জানা আছে লিখুন।" />
-              <span className="mt-1.5 flex justify-between gap-3 text-xs font-normal text-slate-500"><span>সঠিক তথ্য লিখুন; ফলন বা সুবিধার নিশ্চয়তা দেবেন না।</span><span>{bnNumber(form.description.length)}/৫,০০০</span></span>
-            </label>
+            <div id="plant-description-editor" className="min-w-0 md:col-span-2">
+              <AdminProductDescriptionEditor
+                variant="plant"
+                productName={form.name}
+                focusKeyword={form.focus_keyword}
+                previewPath={"/plant-market/" + (form.name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 70) || "your-plant") + "-xxxxxxxx"}
+                maxHtmlLength={5000}
+                value={form.description}
+                onChange={(html) => set("description", html)}
+              />
+              <p className="mt-2 text-xs leading-5 text-slate-500">শুধু বাস্তব ও যাচাইযোগ্য তথ্য লিখুন। SEO outline একটি খালি কাঠামো; ভুল বা অপ্রযোজ্য তথ্য মুছে দিন।</p>
+            </div>
           </div>
         </section>
 
@@ -351,7 +366,7 @@ export default function PlantSellerProductForm() {
           </div>
           {seoGenerated && <p className="mt-3 text-xs font-semibold text-emerald-800"><Check size={14} className="mr-1 inline" /> SEO খসড়া তৈরি হয়েছে—যাচাই করে প্রয়োজনে পরিবর্তন করুন।</p>}
           <div className="mt-5">
-            <ProductSeoEditor guided value={form} onChange={set} productName={form.name} description={form.description} previewPath={"/plant-market/" + slugHint} />
+            <ProductSeoEditor guided value={form} onChange={set} productName={form.name} description={descriptionText} previewPath={"/plant-market/" + slugHint} />
           </div>
         </section>
 
