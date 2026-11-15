@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
+import { hasAnalyticsConsent } from "@/lib/analytics";
 
 const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 const CONSENT_KEY = "agriva_privacy_consent_v1";
@@ -46,13 +47,25 @@ export default function GoogleAnalytics() {
   }, []);
 
   useEffect(() => {
-    if (!consent?.analytics || !ready || !pathname || typeof window.gtag !== "function") return;
+    if (!consent?.analytics || !hasAnalyticsConsent() || !ready || !pathname || typeof window.gtag !== "function") return;
     window.gtag("event", "page_view", {
       page_path: pathname,
       page_location: window.location.href,
       page_title: document.title,
     });
   }, [consent?.analytics, ready, pathname]);
+
+  // Respect changes made in another tab (or after revoking consent).
+  // Once loaded, a Google tag stays on the page even when its Script unmounts.
+  useEffect(() => {
+    if (!ready || typeof window.gtag !== "function") return;
+    window.gtag("consent", "update", {
+      analytics_storage: consent?.analytics ? "granted" : "denied",
+      ad_storage: consent?.marketing ? "granted" : "denied",
+      ad_user_data: consent?.marketing ? "granted" : "denied",
+      ad_personalization: consent?.marketing ? "granted" : "denied",
+    });
+  }, [consent?.analytics, consent?.marketing, ready]);
 
   function savePreferences(analytics: boolean, marketing: boolean) {
     const next: Consent = { analytics, marketing, updatedAt: new Date().toISOString() };
@@ -96,7 +109,15 @@ export default function GoogleAnalytics() {
               window.dataLayer = window.dataLayer || [];
               window.gtag = function(){window.dataLayer.push(arguments);};
               window.gtag('js', new Date());
+              // Basic Consent Mode v2: defaults first, then the stored opt-in.
+              // No Google tag is loaded at all for visitors who denied analytics.
               window.gtag('consent', 'default', {
+                analytics_storage: 'denied',
+                ad_storage: 'denied',
+                ad_user_data: 'denied',
+                ad_personalization: 'denied'
+              });
+              window.gtag('consent', 'update', {
                 analytics_storage: 'granted',
                 ad_storage: '${consent?.marketing ? "granted" : "denied"}',
                 ad_user_data: '${consent?.marketing ? "granted" : "denied"}',
