@@ -12,7 +12,6 @@ const labels:Record<Status,string>={
   all:"সব নিবন্ধ",draft:"Draft",review:"Review",approved:"Approved",
   published:"Published",rejected:"Needs revision",trash:"Trash",
 };
-const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const dateLabel=(value:string|null)=>value&&Number.isFinite(Date.parse(value))
   ?new Date(value).toLocaleDateString("en-GB",{timeZone:"Asia/Dhaka",day:"2-digit",month:"short",year:"numeric"})
   :"—";
