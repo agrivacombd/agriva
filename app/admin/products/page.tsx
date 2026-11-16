@@ -5,6 +5,7 @@ import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import TaxonomyFields from "@/components/admin/TaxonomyFields";
 import AdminCreateProductForm from "@/components/admin/AdminCreateProductForm";
 import AdminProductImages from "@/components/admin/AdminProductImages";
+import ProductRemovalControls from "@/components/admin/ProductRemovalControls";
 import AdminProductAiSeo from "@/components/admin/AdminProductAiSeo";
 import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
 import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
@@ -63,8 +64,13 @@ async function manageProduct(formData: FormData) {
   "use server";
   const productId = String(formData.get("productId") ?? "");
   const intent = String(formData.get("intent") ?? "");
+  const confirmSlug = String(formData.get("confirmSlug") ?? "");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(productId) || !["trash", "restore", "permanent"].includes(intent)) redirect("/admin/products?notice=invalid");
   const supabase = await requireAdmin("catalog.delete");
+  if (intent === "permanent") {
+    const { data: target, error: lookupError } = await supabase.from("products").select("slug,deleted_at").eq("id", productId).maybeSingle();
+    if (lookupError || !target?.deleted_at || target.slug !== confirmSlug) redirect("/admin/products?status=trash&notice=invalid-confirmation");
+  }
   const rpc = intent === "trash" ? "admin_trash_marketplace_product" : intent === "restore" ? "admin_restore_marketplace_product" : "admin_permanently_delete_marketplace_product";
   const { error } = await supabase.rpc(rpc, { p_product_id: productId });
   revalidatePath("/admin");
@@ -127,7 +133,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
       {selectedProduct && <div className="mt-7 flex items-center justify-between"><h2 className="text-xl font-black">পণ্য সম্পাদনা: {selectedProduct.name}</h2><Link href={queryString({ edit: "" })} className="rounded-xl border px-4 py-2 text-sm font-bold">Close editor</Link></div>}
       <div className="mt-5 grid min-w-0 gap-4">{(selectedProduct ? [selectedProduct] : []).map(p => <form key={p.id} action={saveProduct} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
         <input type="hidden" name="productId" value={p.id}/>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id?.slice(0, 8) ?? "—"}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span>{p.deleted_at ? <><button formAction={manageProduct} name="intent" value="restore" className="rounded-lg border border-emerald-300 px-3 py-2 text-xs font-bold text-emerald-800">Restore</button><button formAction={manageProduct} name="intent" value="permanent" formNoValidate className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold text-red-700">Permanently delete</button></> : <button formAction={manageProduct} name="intent" value="trash" formNoValidate className="rounded-lg border border-amber-300 px-3 py-2 text-xs font-bold text-amber-800">Move to Trash</button>}</div></div>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2"><div><p className="font-black">{p.name}</p><p className="mt-1 text-xs text-[#7b887d]">ID {p.id.slice(0, 8)} · Seller {p.farmer_id?.slice(0, 8) ?? "—"}</p></div><div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-extrabold">{p.deleted_at ? "Trash" : p.status}</span><ProductRemovalControls id={p.id} slug={p.slug} trashed={Boolean(p.deleted_at)} action={manageProduct}/></div></div>
         <div className="grid min-w-0 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
           <label className="text-sm font-bold">পণ্যের নাম<input name="name" required maxLength={160} defaultValue={p.name} className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2.5 font-normal"/></label>
           <label className="text-sm font-bold">Product URL Slug<input name="slug" required maxLength={100} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" defaultValue={p.slug ?? ""} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
