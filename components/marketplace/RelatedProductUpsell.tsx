@@ -229,7 +229,7 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
           </div>
         </aside>
       )}
-      {loginReturnTo && <MarketplaceAuthModal returnTo={loginReturnTo} onClose={() => setLoginReturnTo(null)} />
+      {loginReturnTo && <MarketplaceAuthModal returnTo={loginReturnTo} onClose={() => setLoginReturnTo(null)} />}
     </section>
   );
 }
