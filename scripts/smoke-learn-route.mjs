@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
+const lesson=read("app/learn/[slug]/page.tsx");
+const hub=read("app/learn/page.tsx");
+assert.match(lesson,/params: Promise<\{ slug: string \}>/);
+assert.match(lesson,/const \{slug\} = await params/g);
+assert.match(lesson,/generateStaticParams/);
+assert.doesNotMatch(lesson,/getLesson\(params\.slug\)/);
+assert.match(hub,/href=\{\`\/learn\/\$\{lesson\.slug\}\`\}/);
+assert.match(hub,/canonical: "\/learn"/);
+console.log("Learn guides await Next.js 16 params; metadata and links remain indexable.");
