@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import Link from "next/link";
 import {LESSONS} from "@/lib/learn/lessons";
+import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 
 const site=(process.env.NEXT_PUBLIC_SITE_URL||"https://agriva.com.bd").replace(/\/$/,"");
 const canonical=site+"/learn";
@@ -154,6 +155,7 @@ export default function LearnPage(){
           <Link href="/blog" className="rounded-xl border border-emerald-100 bg-white p-4 text-sm font-bold hover:border-emerald-400 hover:text-emerald-800">কৃষি ব্লগ ও নতুন লেখা <span aria-hidden="true">↗</span></Link>
         </div>
       </section>
+      <KnowledgeNetwork current="/learn" className="mt-10" />
       <aside className="mt-9 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
         <strong>গুরুত্বপূর্ণ:</strong> এগুলো সাধারণ শিক্ষামূলক তথ্য। জাত, মৌসুম, মাটি, আবহাওয়া ও এলাকার রোগবালাই অনুযায়ী করণীয় বদলায়।
         নির্দিষ্ট সার বা বালাইনাশক ব্যবহারের আগে স্থানীয় কৃষি অফিসের সুপারিশ, নিবন্ধিত পণ্যের লেবেল এবং নিরাপত্তাবিধি যাচাই করুন।

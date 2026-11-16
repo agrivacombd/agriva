@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 import ReportCorrectionForm from "@/components/learn/ReportCorrectionForm";
 import { supabase } from "@/lib/supabase/client";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -69,5 +70,6 @@ export default function PlantDiseaseLearningLab() {
    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-black text-amber-950">🧤 নিরাপত্তা আগে</h2><ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-amber-950"><li>শুধু লক্ষণ দেখে নিশ্চিত রোগ নির্ণয় বা ওষুধ নির্বাচন করবেন না।</li><li>বালাইনাশক দরকার হলে বাংলাদেশে নিবন্ধিত পণ্য, লেবেল, ফসল, মাত্রা ও অপেক্ষাকাল মেনে চলুন।</li><li>লেবেল অনুযায়ী PPE ব্যবহার করুন; শিশু ও খাদ্য/পানির উৎস থেকে দূরে রাখুন।</li><li>রোগাক্রান্ত নমুনা এক জমি থেকে অন্য জমিতে ছড়াবেন না।</li></ul></div>
    <div className="rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-black">গবেষণা ও নির্ভরযোগ্য সূত্র</h2><ul className="mt-3 space-y-3 text-sm leading-6"><li><a className="font-semibold text-emerald-800 underline" href="https://www.bamis.gov.bd/en/diseases/1/all/76/" target="_blank" rel="noreferrer">BAMIS / DAE — ধানের রোগ তথ্য ↗</a></li><li><a className="font-semibold text-emerald-800 underline" href="https://brri.gov.bd/pages/static-pages/6922dc06933eb65569e0e050" target="_blank" rel="noreferrer">BRRI — উদ্ভিদ রোগতত্ত্ব প্রকাশনা ↗</a></li><li><a className="font-semibold text-emerald-800 underline" href="https://www.cabi.org/plantwiseplus/countries/bangladesh/" target="_blank" rel="noreferrer">CABI PlantwisePlus — বাংলাদেশ ↗</a></li><li><a className="font-semibold text-emerald-800 underline" href="https://www.fao.org/family-farming/detail/en/c/1708034/" target="_blank" rel="noreferrer">FAO / CABI — Plantwise Diagnostic Field Guide ↗</a></li><li><a className="font-semibold text-emerald-800 underline" href="https://plantwiseplustoolkit.org/browse-tools/crop-pest-diagnosis-course/" target="_blank" rel="noreferrer">CABI — Crop Pest Diagnosis interactive course ↗</a></li><li><a className="font-semibold text-emerald-800 underline" href="https://ais.gov.bd/pages/static-pages/6922db72933eb65569e0a2ca" target="_blank" rel="noreferrer">কৃষি তথ্য সার্ভিস — নিরাপদ বালাইনাশক ব্যবহার ↗</a></li></ul><p className="mt-3 text-xs leading-5 text-slate-500">শিক্ষামূলক সারাংশ। ব্যবস্থাপনার সিদ্ধান্তে সর্বশেষ স্থানীয় সুপারিশ ও অনুমোদিত লেবেল অগ্রাধিকার পাবে।</p></div></aside>
   </div>
+  <div className="mx-auto max-w-6xl px-5 pb-10"><KnowledgeNetwork current="/learn/plant-disease" /></div>
  </main>;
 }

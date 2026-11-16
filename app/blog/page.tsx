@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import ArticlesBrowser from "./articles-browser";
+import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 import { getLearnBlogFeed, type BlogFeedEntry } from "@/lib/learn/blog-feed";
 
 export const dynamic = "force-dynamic";
@@ -77,6 +78,7 @@ export default async function BlogPage() {
           <p className="text-sm font-semibold text-slate-500">{articles.length}টি লেখা ও গাইড</p>
         </div>
         <ArticlesBrowser articles={articles} />
+        <KnowledgeNetwork current="/blog" className="mt-8" />
         <aside className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">মাটি, জাত, মৌসুম ও স্থানীয় আবহাওয়ার ওপর কৃষি পরামর্শ নির্ভর করে। নির্দিষ্ট সিদ্ধান্তের আগে সরকারি বা স্থানীয় কৃষি পরামর্শ যাচাই করুন।</aside>
       </section>
     </main>

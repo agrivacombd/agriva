@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 import { useEffect, useMemo, useState } from "react";
 
 import { plants, type Plant } from "./plants";
@@ -107,7 +108,7 @@ export default function PlantSciencePage() {
         </div>
       </section>
       <section className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>শেখার টিপস:</strong> প্রতিদিন ৫–১০টি নাম অনুশীলন করুন। বৈজ্ঞানিক নামের genus-এর প্রথম অক্ষর বড়, species ছোট হাতের হয়; দুটো শব্দই সাধারণত italic লেখা হয়। উদ্ভিদের বৈজ্ঞানিক নাম ও পরিবার পরীক্ষার আগে আপনার কোর্সের নির্ধারিত রেফারেন্সের সঙ্গে মিলিয়ে নিন। বিষাক্ত বা ঔষধি উদ্ভিদ নিজে খাওয়া/ব্যবহার করবেন না।</section>
-      <div className="mt-6 flex flex-wrap justify-center gap-4 text-center"><Link href="/learn/plant-disease" className="rounded-xl bg-emerald-800 px-5 py-3 text-sm font-extrabold text-white hover:bg-emerald-900">🩺 Plant Disease Learning Lab →</Link><Link href="/learn" className="text-sm font-bold text-emerald-800 hover:underline">কৃষি শেখার কেন্দ্র →</Link></div>
+      <KnowledgeNetwork current="/learn/plant-science" className="mt-8" />
     </div>
   </main>;
 }
