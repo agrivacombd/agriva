@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "আমাদের সম্পর্কে | AGRIVA",
+  title: "আমাদের সম্পর্কে",
   description: "AGRIVA—বাংলাদেশের কৃষক, কৃষি উদ্যোক্তা ও কৃষি-সংশ্লিষ্ট মানুষের জন্য তৈরি একটি ডিজিটাল কৃষি প্ল্যাটফর্ম।",
   alternates: { canonical: "/about-us" },
 };
