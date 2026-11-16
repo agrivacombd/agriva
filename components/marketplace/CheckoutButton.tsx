@@ -334,10 +334,10 @@ export default function CheckoutButton({
           className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 p-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:p-4">
           <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
             <CheckCircle2 size={25} className="shrink-0 text-emerald-600" aria-hidden="true" />
-            <p role="status" className="min-w-0 flex-1 text-sm font-bold text-emerald-950">পণ্য কার্টে যুক্ত হয়েছে।</p>
+            <div className="min-w-0 flex-1"><p role="status" className="text-sm font-bold text-emerald-950">নির্বাচিত পণ্য কার্টে যোগ হয়েছে।</p><p className="mt-1 text-[11px] leading-4 text-slate-600">পরের পেজে ঠিকানা ও ডেলিভারি চার্জ যাচাই করে COD অর্ডার নিশ্চিত করুন।</p></div>
             <div className="flex w-full items-center gap-2 sm:w-auto">
               <Link href="/cart" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-emerald-900 px-4 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 sm:flex-none">কার্ট দেখুন</Link>
-              <Link href="/checkout" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-black text-white hover:bg-emerald-800 sm:flex-none">চেকআউট করুন</Link>
+              <Link href="/checkout" className="inline-flex min-h-11 min-w-0 flex-[1.6] items-center justify-center rounded-xl bg-emerald-700 px-2 py-2 text-center text-[11px] font-black leading-5 text-white hover:bg-emerald-800 sm:flex-none sm:px-4 sm:text-xs">COD অর্ডার নিশ্চিত করতে যান</Link>
             </div>
             <button type="button" onClick={() => setCartAdded(false)} aria-label="কার্ট বার বন্ধ করুন" className="absolute right-2 top-1 rounded-full p-1 text-slate-500 hover:bg-slate-100 sm:-right-2 sm:-top-2 sm:bg-white sm:shadow-sm"><X size={14} /></button>
           </div>

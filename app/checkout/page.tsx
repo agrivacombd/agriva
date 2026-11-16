@@ -244,7 +244,7 @@ export default function Checkout() {
   );
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] px-4 py-7 text-[#17351f] sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-[#f5f7f2] px-3 pb-32 pt-7 text-[#17351f] sm:px-6 sm:py-10 lg:pb-10">
       <div className="mx-auto max-w-7xl">
         <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA CHECKOUT · বাংলাদেশ</p>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>
@@ -262,8 +262,8 @@ export default function Checkout() {
         {!items.length && !confirmed && <Link href="/cart" className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-emerald-900 px-5 py-3 font-bold text-emerald-900"><ArrowLeft size={17} /> কার্টে ফিরে যান</Link>}
 
         {!confirmed && items.length > 0 && (
-          <div className="mt-6 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(350px,0.82fr)] lg:gap-7">
-            <form id="agriva-checkout-form" onSubmit={submit} className="order-2 space-y-5 rounded-3xl border border-emerald-950/10 bg-white p-4 shadow-sm sm:p-7 lg:order-1">
+          <div className="mt-6 grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(350px,0.82fr)] lg:gap-7">
+            <form id="agriva-checkout-form" onSubmit={submit} className="order-2 min-w-0 space-y-5 rounded-3xl border border-emerald-950/10 bg-white p-4 shadow-sm sm:p-7 lg:order-1">
               <section aria-labelledby="customer-info-heading">
                 <h2 id="customer-info-heading" className="text-lg font-black">১. গ্রাহকের তথ্য</h2>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -309,10 +309,6 @@ export default function Checkout() {
                   ? "অর্ডার নিশ্চিত হলে পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন।"
                   : "Cash on Delivery বর্তমানে বন্ধ আছে। সাপোর্টের সঙ্গে যোগাযোগ করুন।"}</p>
               </div>
-              <button type="submit" disabled={checkoutDisabled}
-                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-400 lg:hidden">
-                <CheckCircle2 size={18} /> {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : "COD অর্ডার নিশ্চিত করুন"}
-              </button>
               <p className="text-xs leading-5 text-slate-500">অর্ডার নিশ্চিত করার সময় সার্ভার থেকে মূল্য ও স্টক আবার যাচাই করা হবে।</p>
             </form>
 
@@ -393,6 +389,22 @@ export default function Checkout() {
           </div>
         )}
       </div>
+      {!confirmed && items.length > 0 && (
+        <aside role="region" aria-label="মোবাইল COD অর্ডার কনফার্মেশন" className="fixed inset-x-0 bottom-0 z-50 border-t border-emerald-900/10 bg-white/95 px-3 pt-2 shadow-[0_-10px_30px_rgba(0,35,22,.12)] backdrop-blur-md lg:hidden"
+          style={{ paddingBottom: "max(0.625rem, env(safe-area-inset-bottom))" }}>
+          <div className="mx-auto flex max-w-lg items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold text-slate-600">ডেলিভারিসহ মোট</p>
+              <p className="text-base font-black text-emerald-900">{grandTotal === null ? "যাচাই প্রয়োজন" : "৳" + money(grandTotal)}</p>
+            </div>
+            <button type="submit" form="agriva-checkout-form" disabled={checkoutDisabled}
+              className="inline-flex min-h-12 min-w-0 flex-[1.5] items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3 py-2 text-center text-xs font-black text-white transition hover:bg-emerald-900 disabled:cursor-not-allowed disabled:bg-slate-400">
+              <CheckCircle2 size={17} className="shrink-0" aria-hidden="true" />
+              {busy ? "অর্ডার নিশ্চিত হচ্ছে…" : "COD অর্ডার নিশ্চিত করুন"}
+            </button>
+          </div>
+        </aside>
+      )}
     </main>
   );
 }

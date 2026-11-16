@@ -10,7 +10,7 @@ const cartHelper = read("lib/marketplace/cart-auth.ts");
 assert.match(page, /<RelatedProductUpsell/, "Related Products render on product detail page");
 assert.ok(page.indexOf("<RelatedProductUpsell") > page.indexOf('id="product-description"'), "Related products appear after complete description");
 assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-faq-heading"'), "Related products appear before FAQs");
-assert.ok(page.includes('md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)]'), "Desktop/tablet gallery and purchase use two stable columns");
+assert.ok(page.includes('lg:grid-cols-[minmax(0,1.03fr)_minmax(0,.97fr)]'), "Responsive gallery and purchase use two columns at desktop widths");
 assert.ok(page.includes('<ProductShareCard'), "Product details must include a canonical share card");
 assert.ok(page.includes('<ProductDescription html={description} />'), "Full product description must remain server-rendered");
 assert.ok(page.includes('href="#product-description"'), "Short summary must link to complete description");

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, CheckCircle2 } from "lucide-react";
+import { ShoppingCart, CheckCircle2, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
@@ -147,6 +147,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const addRequestInFlightRef = useRef(false);
   const [cartSummary, setCartSummary] = useState<{ lines: number; units: number }>({ lines: 0, units: 0 });
   const [cartConfirmed, setCartConfirmed] = useState(false);
+  const [cartBarDismissed, setCartBarDismissed] = useState(false);
   const [cartNotice, setCartNotice] = useState("");
   const [cartNeedsLogin, setCartNeedsLogin] = useState(false);
   const [authReturnTo, setAuthReturnTo] = useState<string | null>(null);
@@ -218,6 +219,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         value: Number(product.price),
       });
       setCartConfirmed(true);
+      setCartBarDismissed(false);
       window.dispatchEvent(new Event(CART_UPDATED_EVENT));
       setCartNotice(product.name + " কার্টে যোগ হয়েছে।");
       try {
@@ -237,7 +239,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     }
   }
 
-  const showStickyCart = productHrefPrefix === "/marketplace" && (cartConfirmed || cartSummary.units > 0);
+  const showStickyCart = productHrefPrefix === "/marketplace" && (cartConfirmed || cartSummary.units > 0) && !cartBarDismissed && !authReturnTo;
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
@@ -396,27 +398,31 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
       {authReturnTo && <MarketplaceAuthModal returnTo={authReturnTo} onClose={() => setAuthReturnTo(null)} />}
       {showStickyCart && (
-        <aside role="region" aria-label="কার্ট থেকে চেকআউট করুন"
-          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 px-3 py-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:px-4">
-          <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
-            <div className="flex min-w-0 flex-1 items-center gap-2.5">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><ShoppingCart size={22} /></span>
+        <aside role="region" aria-label="কার্ট থেকে COD অর্ডারে এগিয়ে যান"
+          className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 px-3 pb-3 pt-4 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:px-4">
+          <button type="button" onClick={() => setCartBarDismissed(true)} aria-label="কার্টের নিচের বার বন্ধ করুন"
+            className="absolute right-1 top-0 grid h-7 w-7 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+            <X size={15} aria-hidden="true" />
+          </button>
+          <div className="flex flex-wrap items-center gap-2.5 sm:flex-nowrap sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5 pr-4">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-emerald-50 text-emerald-800"><ShoppingCart size={22} aria-hidden="true" /></span>
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-sm font-black text-emerald-950">
-                  {cartNotice ? <CheckCircle2 size={16} className="shrink-0 text-emerald-600" /> : null}
+                  {cartNotice ? <CheckCircle2 size={16} className="shrink-0 text-emerald-600" aria-hidden="true" /> : null}
                   {cartSummary.units > 0 ? "কার্টে " + money(cartSummary.units) + "টি পণ্য" : "পণ্য কার্টে যোগ হয়েছে"}
                 </p>
-                <p role="status" aria-live="polite" className="truncate text-[11px] text-slate-600">
-                  {cartNotice || (cartSummary.lines > 0 ? money(cartSummary.lines) + " ধরনের পণ্য রয়েছে" : "অর্ডার করতে কার্ট যাচাই করুন")}
+                <p role="status" aria-live="polite" className="line-clamp-2 text-[11px] leading-4 text-slate-600">
+                  {cartNotice || (cartSummary.lines > 0 ? money(cartSummary.lines) + " ধরনের পণ্য রয়েছে। COD অর্ডার করতে এগিয়ে যান।" : "পরের পেজে ঠিকানা ও মূল্য যাচাই করে অর্ডার নিশ্চিত করুন।")}
                 </p>
               </div>
             </div>
-            <div className="flex w-full items-center gap-2 sm:w-auto">
-              <Link href="/cart" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-emerald-900 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50 sm:flex-none">
+            <div className="grid w-full grid-cols-[minmax(0,.75fr)_minmax(0,1.25fr)] gap-2 sm:w-auto sm:min-w-[320px]">
+              <Link href="/cart" className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl border border-emerald-900 px-2 py-2 text-center text-[11px] font-bold text-emerald-900 hover:bg-emerald-50 sm:text-xs">
                 কার্ট দেখুন
               </Link>
-              <Link href="/checkout" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-xs font-extrabold text-white hover:bg-emerald-800 sm:flex-none">
-                চেকআউট করুন
+              <Link href="/checkout" className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl bg-emerald-700 px-2 py-2 text-center text-[11px] font-extrabold leading-5 text-white hover:bg-emerald-800 sm:px-3 sm:text-xs">
+                COD অর্ডার নিশ্চিত করতে যান
               </Link>
             </div>
           </div>

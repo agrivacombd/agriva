@@ -142,19 +142,19 @@ assert.ok(cartRoute.includes("isSimpleAddress ? upazila : (legacyArea || upazila
 assert.ok(cartRoute.includes("isSimpleAddress ? [rawFullAddress] : [legacyArea, legacyStreet]"), "Server must preserve the user-entered full address");
 assert.ok(cartRoute.includes("p_idempotency_key: idempotencyKey"), "Idempotency protection must remain present");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();") && catalogue.includes("কার্টে যোগ করুন"), "Marketplace cards must provide an actual Add to Cart button");
-assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" && inStock'), "Marketplace cards must use Add to Cart, not Buy Now");
+assert.ok(catalogue.includes('productHrefPrefix === "/marketplace" ? (') && catalogue.includes('href={detailHref + "#product-direct-cod"}'), "Marketplace cards must present real add-to-cart and buy-now actions");
 assert.ok(catalogue.includes('const detailHref = productHrefPrefix + "/" + product.slug;') && !catalogue.includes('"BUY NOW"'), "Plant Market must navigate to its own product details without promising an instant purchase");
 assert.ok(catalogue.includes("recordListingClick(); onAddToCart();"), "Add to Cart must retain listing-click ranking signals");
 assert.ok(catalogue.includes('rpc("add_marketplace_cart_item"') && catalogue.includes("p_quantity: 1"), "Card purchase uses the server-validated cart RPC");
 assert.ok(catalogue.includes('resolveMarketplaceCartUser()'), "Card purchase must distinguish guests from authenticated users");
-assert.ok(catalogue.includes("showStickyCart") && catalogue.includes('href="/checkout"'), "Added products must expose persistent checkout navigation");
+assert.ok(catalogue.includes("showStickyCart") && catalogue.includes('href="/checkout"') && catalogue.includes("setCartBarDismissed(true)"), "Added products must expose dismissible persistent COD checkout navigation");
 assert.ok(catalogue.includes('href="/cart"') && catalogue.includes("cartSummary.units"), "Floating bar shows real cart count and cart navigation");
 assert.ok(catalogue.includes("cartNeedsLogin") && catalogue.includes("setCartError"), "Unauthenticated and failed additions must not appear successful");
 assert.ok(catalogue.includes('productHrefPrefix !== "/marketplace"'), "Plant Market is not allowed to call Marketplace cart RPC");
 assert.ok(page.includes("relatedProducts") && page.includes('.eq("marketplace_channel", "marketplace")'), "Related product cards must show published marketplace items only");
 assert.ok(purchase.includes('window.location.hash === "#product-direct-cod"'), "Buy Now link should expand the COD form");
 assert.ok(purchase.includes('role="region" aria-label="কার্টে যোগ করা পণ্যের চেকআউট"'), "Product detail should show persistent cart success bar");
-assert.ok(purchase.includes('href="/checkout"'), "Product detail sticky bar should navigate to checkout");
+assert.ok(purchase.includes('href="/checkout"') && purchase.includes("COD অর্ডার নিশ্চিত করতে যান"), "Product detail sticky bar should navigate to dedicated COD checkout");
 assert.ok(purchase.includes('setCartAdded(false)') && purchase.includes('aria-label="কার্ট বার বন্ধ করুন"'), "Sticky bar should be dismissible");
 
 assert.ok(!purchase.includes("p_quantity: 1"), "Cart selection must never be silently reset to one");
