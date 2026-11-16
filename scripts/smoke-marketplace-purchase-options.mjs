@@ -7,6 +7,7 @@ const purchase = read("../components/marketplace/CheckoutButton.tsx");
 const route = read("../app/api/checkout/route.ts");
 const cartRoute = read("../app/api/checkout/cart/route.ts");
 const catalogue = read("../components/marketplace/MarketplaceCore.tsx");
+const storefront = read("../app/marketplace/page.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
@@ -16,6 +17,10 @@ for (const required of ["productSlug={product.slug}", "unitPrice={Number(product
   assert.ok(page.includes(required), "Product page must pass its actual " + required);
 }
 assert.ok(page.includes("!hasRealPrice || !hasStock"), "Unavailable products should not be purchasable");
+for (const selector of ["min-[375px]:py-5", "sm:py-10", "lg:py-14", "text-[clamp(1.35rem,5.5vw,1.75rem)]", "sm:hidden", "hidden sm:inline", 'href="#catalogue"', 'href="#marketplace-product-list"', "scroll-mt-24"]) {
+  assert.ok(storefront.includes(selector), "Marketplace banner responsive/mobile fast-navigation contract: " + selector);
+}
+assert.ok(catalogue.includes('id="marketplace-product-list"'), "Mobile product shortcut must target the real catalogue list");
 
 for (const fragment of [
   "const CHOICES = [1, 2, 3, 5, 10]",
