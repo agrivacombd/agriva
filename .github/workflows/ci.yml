@@ -38,6 +38,8 @@ jobs:
         run: node --check scripts/smoke-smart-search.mjs
       - name: Marketplace personalized recommendations regression test
         run: node scripts/smoke-marketplace-personalization.mjs
+      - name: Editorial SEO workflow and navigation regression test
+        run: node scripts/smoke-editorial-workflow.mjs
       - name: Homepage mobile layout regression test
         run: node scripts/smoke-home-mobile-responsive.mjs
       - name: Marketplace and Plant Market behavioural ranking regression test

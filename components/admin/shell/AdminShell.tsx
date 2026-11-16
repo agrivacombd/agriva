@@ -44,6 +44,7 @@ const groups: NavGroup[] = [
     { label: "Content Studio", href: "/admin/content-studio", icon: FlaskConical },
     { label: "AI Content", href: "/admin/ai-content", icon: Activity },
     { label: "Content drafts", href: "/admin/content-drafts", icon: FileText },
+    { label: "SEO Dashboard", href: "/admin/seo", icon: Search },
     { label: "SEO pages", href: "/admin/seo-pages", icon: Search },
     { label: "Search intelligence", href: "/admin/search-intelligence", icon: Search },
     { label: "Opportunities", href: "/admin/opportunities", icon: Handshake },

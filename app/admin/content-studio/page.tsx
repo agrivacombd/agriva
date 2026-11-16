@@ -26,16 +26,17 @@ export default async function ContentStudioPage() {
 
   const [articlesResult, draftsResult] = await Promise.all([
     supabase.from("article_drafts").select("id,status", { count: "exact", head: false }).limit(500),
-    supabase.from("content_drafts").select("id,status", { count: "exact", head: false }).limit(500),
+    supabase.from("content_drafts").select("id,title,slug,content_type,status", { count: "exact", head: false }).limit(500),
   ]);
   const articleRows = articlesResult.error ? null : (articlesResult.data ?? []);
   const draftRows = draftsResult.error ? null : (draftsResult.data ?? []);
+  const readyArticles = draftRows?.filter(item => item.content_type === "article" && item.status === "approved") ?? [];
   const pending = articleRows?.filter((item) => ["pending", "pending_review", "review", "in_review"].includes(String(item.status ?? "").toLowerCase())).length;
   const metrics = [
     { label: "Article drafts", value: articlesResult.error ? "—" : String(articlesResult.count ?? articleRows?.length ?? 0), note: "Article review queue" },
     { label: "SEO drafts", value: draftsResult.error ? "—" : String(draftsResult.count ?? draftRows?.length ?? 0), note: "Content draft records" },
     { label: "Pending review", value: pending === undefined ? "—" : String(pending), note: "Recognized review statuses" },
-    { label: "Publishing", value: "Manual", note: "Admin approval required" },
+    { label: "Ready for publication", value: draftsResult.error ? "—" : String(readyArticles.length), note: "Approved SEO articles" },
   ];
 
   return (
@@ -46,6 +47,11 @@ export default async function ContentStudioPage() {
           <Link href="/admin/articles" className="rounded-xl bg-[#17351f] px-5 py-3 text-sm font-bold text-white hover:bg-[#28583a]">Open review queue →</Link>
         </div>
         <section aria-label="Editorial overview" className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{metrics.map((item) => <div key={item.label} className="rounded-2xl border border-[#e4e9df] bg-white p-5 shadow-sm"><p className="text-xs font-semibold uppercase tracking-wide text-[#647468]">{item.label}</p><p className="mt-3 text-3xl font-black">{item.value}</p><p className="mt-2 text-xs text-[#647468]">{item.note}</p></div>)}</section>
+        {readyArticles.length > 0 && <section className="mt-5 rounded-2xl border border-emerald-200 bg-white p-4 shadow-sm sm:p-5" aria-label="Approved articles ready for publishing">
+          <h2 className="text-lg font-black text-emerald-950">Approved SEO Articles · Ready for publication</h2>
+          <p className="mt-1 text-xs leading-5 text-slate-600">Approval does not publish content. Open the editor, verify facts and SEO, then publish explicitly.</p>
+          <div className="mt-3 flex flex-col gap-2">{readyArticles.slice(0,8).map(item=><Link key={item.id} href={"/admin/content-drafts?draft="+item.id} className="flex min-h-11 min-w-0 items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-sm font-semibold text-emerald-900 hover:border-emerald-400"><span className="min-w-0 break-words">{item.title}</span><span className="shrink-0 text-xs">Review & Publish →</span></Link>)}</div>
+        </section>}
         {(articlesResult.error || draftsResult.error) && <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Some statistics are unavailable. Check database permissions or schema; no values have been estimated.</p>}
         <div className="mt-9 grid gap-7 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
           <section className="rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm sm:p-8"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#a47a20]">Editorial planning</p><h2 className="mt-2 text-2xl font-black">Create a content brief</h2></div><span className="rounded-full bg-[#eef5ed] px-3 py-1 text-xs font-semibold text-[#315d3c]">Template-based · Not AI</span></div><p className="mt-3 text-sm leading-6 text-[#647468]">Generate a starting outline from a keyword. Review and verify agricultural facts before writing or publishing. This tool does not automatically save or publish content.</p><BriefGenerator /></section>

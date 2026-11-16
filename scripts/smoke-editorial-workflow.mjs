@@ -1,0 +1,17 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
+const seo=read("app/admin/seo/page.tsx"),queue=read("app/admin/articles/page.tsx"),studio=read("app/admin/content-studio/page.tsx"),op=read("app/admin/opportunities/page.tsx");
+assert.match(seo,/requireAdminPage\("content.read"\)/);
+assert.match(seo,/Approved articles/);
+assert.match(seo,/content_drafts/);
+assert.match(queue,/article_drafts/);
+assert.match(queue,/content_drafts/);
+assert.match(queue,/content_type","article"/);
+assert.match(queue,/content-drafts\?draft=/);
+assert.match(studio,/Approved SEO Articles/);
+assert.match(op,/content-drafts\?opportunity=/);
+assert.match(read("components/admin/shell/AdminShell.tsx"),/href: "\/admin\/seo"/);
+assert.match(read("app/admin/content-drafts/workflow/route.ts"),/requireAdminApi\("content.publish"\)/);
+assert.match(read("app/sitemap.ts"),/content_drafts/);
+console.log("SEO dashboard, content studio, unified article queue and linked opportunities verified.");

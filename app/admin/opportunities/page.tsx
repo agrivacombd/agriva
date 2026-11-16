@@ -1,13 +1,22 @@
-import { requireAdminPage } from "@/lib/admin/authz";
-
-export default async function OpportunitiesPage() {
-  const { supabase } = await requireAdminPage("content.read");
-
-  const { data: opportunities, error: opportunitiesError } = await supabase
-    .from("content_opportunities")
-    .select("*")
-    .order("search_count", { ascending: false })
-    .limit(50);
-
-  return <main className="min-h-screen bg-[#f6f8f3] px-6 py-12 text-[#17351f]"><div className="mx-auto max-w-6xl"><p className="font-bold text-[#b58b28]">ADMIN AI INTELLIGENCE</p><h1 className="mt-2 text-4xl font-black">Demand opportunities</h1><p className="mt-3 text-[#657467]">Search demand detected from AGRIVA users. Use these signals to plan articles, FAQs and products.</p>{opportunitiesError && <p role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">চাহিদার তথ্য লোড করা যায়নি। Admin read policy ও database schema যাচাই করুন।</p>}<div className="mt-8 overflow-hidden rounded-3xl bg-white shadow-sm"><div className="grid grid-cols-4 border-b bg-[#eef4ed] px-5 py-4 text-xs font-bold uppercase tracking-wide"><span>Keyword</span><span>Intent</span><span>Searches</span><span>Type</span></div>{(opportunities ?? []).map((item) => <div key={item.id} className="grid grid-cols-4 border-b px-5 py-5 text-sm"><span className="font-bold">{item.keyword}</span><span>{item.intent ?? "—"}</span><span className="font-black">{item.search_count}</span><span><span className="rounded-full bg-[#e7f0e6] px-3 py-1 text-xs font-bold">{item.opportunity_type}</span></span></div>)}{!opportunitiesError && !opportunities?.length && <div className="p-8 text-sm text-[#657467]">No search opportunities yet. User searches will appear here automatically.</div>}</div></div></main>;
+import Link from "next/link";
+import {requireAdminPage} from "@/lib/admin/authz";
+export const metadata={title:"Content Opportunities | AGRIVA Admin",robots:{index:false,follow:false}};
+export default async function OpportunitiesPage(){
+  const {supabase}=await requireAdminPage("content.read");
+  const {data:rows,error}=await supabase.from("content_opportunities").select("id,keyword,intent,search_count,opportunity_type,status").order("search_count",{ascending:false}).limit(100);
+  return <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
+    <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">AGRIVA · Search Intelligence</p>
+    <h1 className="mt-2 text-2xl font-black sm:text-3xl">Content Opportunities</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">বৈধ search opportunities থেকে SEO Draft তৈরি করুন। Draft তৈরি হলে Editor → Review → Approval → Publication ধাপগুলো ব্যবহার করুন।</p>
+    <div className="mt-4 flex flex-wrap gap-2"><Link href="/admin/seo" className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold">SEO Dashboard</Link><Link href="/admin/content-drafts" className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">SEO Drafts</Link></div>
+    {error&&<p role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">Search opportunities লোড হয়নি। অনুমতি ও database schema যাচাই করুন।</p>}
+    <section className="mt-6 grid gap-3 md:grid-cols-2">
+      {(rows||[]).map(item=><article key={item.id} className="min-w-0 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2"><span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-extrabold uppercase text-emerald-800">{item.opportunity_type}</span><span className="text-xs font-semibold capitalize text-slate-500">{item.status}</span></div>
+        <h2 className="mt-2 break-words text-lg font-extrabold">{item.keyword}</h2>
+        <p className="mt-2 text-xs leading-6 text-slate-600">Searches: {item.search_count} · Intent: {item.intent??"—"}</p>
+        {["open","approved"].includes(item.status)?<Link href={"/admin/content-drafts?opportunity="+item.id} className="mt-4 inline-flex min-h-10 items-center rounded-xl bg-[#173b2d] px-4 py-2 text-sm font-bold text-white hover:bg-emerald-800">Create SEO Draft →</Link>:<Link href="/admin/content-drafts" className="mt-4 inline-flex min-h-10 items-center rounded-xl border border-emerald-200 px-4 py-2 text-sm font-bold text-emerald-800">View existing Drafts →</Link>}
+      </article>)}
+      {!error&&!rows?.length&&<p className="p-5 text-sm text-slate-600">এখনো কোনো Search Opportunity নেই।</p>}
+    </section>
+  </div></main>;
 }
