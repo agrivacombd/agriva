@@ -58,10 +58,10 @@ export default function HeaderCartLink({ english }: { english: boolean }) {
   }, [reload]);
 
   return (
-    <Link href="/cart" aria-label={english ? "Shopping cart" : "শপিং কার্ট"}
-      className="relative inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-emerald-200 bg-white px-2.5 py-2 text-sm font-bold text-emerald-900 transition hover:border-emerald-600 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-3">
+    <Link href="/cart" aria-label={english ? `Shopping cart, ${count ?? 0} items` : `কার্ট দেখুন, ${count ?? 0}টি পণ্য`} title={english ? "View shopping cart" : "কার্ট দেখুন"}
+      className="relative inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-2 py-2 text-xs font-extrabold text-emerald-900 transition hover:border-emerald-600 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-3 sm:text-sm">
       <ShoppingCart size={19} aria-hidden="true" />
-      <span className="hidden lg:inline">{english ? "Cart" : "কার্ট"}</span>
+      <span className="hidden min-[400px]:inline">{english ? "Cart" : "কার্ট"}</span>
       {count !== null && count > 0 && (
         <span aria-live="polite" className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-800 px-1 text-[10px] font-extrabold tabular-nums text-white">
           {count > 99 ? "99+" : count}

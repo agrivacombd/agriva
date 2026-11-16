@@ -252,8 +252,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
 
-        <section aria-labelledby="product-title" className="grid min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm md:grid-cols-[minmax(0,0.96fr)_minmax(0,1.04fr)] md:items-start lg:rounded-3xl">
-          <div className="min-w-0 border-b border-slate-100 bg-[#f8faf7] p-3 sm:p-5 md:border-b-0 md:border-r md:p-6">
+        <section aria-labelledby="product-title" className="grid min-w-0 rounded-2xl border border-emerald-950/10 bg-white shadow-[0_18px_60px_rgba(19,63,43,.08)] lg:grid-cols-[minmax(0,1.03fr)_minmax(0,.97fr)] lg:items-start lg:rounded-3xl">
+          <div className="min-w-0 border-b border-slate-100 bg-[#f8faf7] p-3 sm:p-5 lg:sticky lg:top-24 lg:self-start lg:border-b-0 lg:border-r lg:p-6">
             {image ? (
               <ProductImageGallery
                 images={galleryImages}
@@ -270,19 +270,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </div>
 
-          <div className="min-w-0 px-4 pb-5 pt-4 sm:p-6 lg:p-8">
+          <div className="min-w-0 px-4 pb-6 pt-5 sm:p-6 lg:p-8">
             <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
-              {product.category && <span className="rounded-md bg-emerald-50 px-2.5 py-1 text-emerald-800">{product.category}</span>}
+              {(category || product.category) && <span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-emerald-800">{category?.name || product.category}</span>}
               {isSample && <span className="rounded-md bg-amber-50 px-2.5 py-1 text-amber-900">নমুনা প্রিভিউ</span>}
               {product.brand && <span className="min-w-0 break-words text-slate-500">{product.brand}</span>}
             </div>
 
-            <h1 id="product-title" className="mt-2 break-words text-[1.4rem] font-extrabold leading-[1.3] tracking-tight text-slate-950 sm:text-[1.75rem] lg:text-[2rem]">{product.name}</h1>
+            <h1 id="product-title" className="mt-3 break-words text-[1.5rem] font-black leading-[1.35] tracking-tight text-slate-950 sm:text-[1.85rem] lg:text-[2.1rem]">{product.name}</h1>
             {product.origin && <p className="mt-1.5 text-xs text-slate-500 sm:text-sm">উৎপত্তিস্থল: {product.origin}</p>}
 
-            <div className="mt-4 rounded-xl border border-emerald-100 bg-[#f3faf5] px-4 py-3 sm:mt-5 sm:px-5 sm:py-4">
+            <div className="mt-5 rounded-2xl border border-emerald-100 bg-gradient-to-br from-[#eff9f1] to-[#f9fcf8] px-4 py-4 sm:px-5 sm:py-5">
               <p className="text-xs font-semibold text-emerald-800">বর্তমান মূল্য</p>
-              <p className="mt-1 break-words text-3xl font-extrabold tracking-tight text-[#123d2b] sm:text-[2.1rem]">{isSample && product.price !== null ? "নমুনা · " : ""}{formattedPrice}</p>
+              <p className="mt-1 break-words text-[2rem] font-black tracking-tight text-[#123d2b] sm:text-[2.5rem]">{isSample && product.price !== null ? "নমুনা · " : ""}{formattedPrice}</p>
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm">
                 <span className={Number(product.stock) > 0 && !isSample ? "font-bold text-emerald-800" : "font-bold text-rose-700"}>{stockLabel}</span>
                 {hasStock && !isSample && <span className="text-slate-600">মজুত: {Number(product.stock).toLocaleString("en-BD")}{unitLabel ? " " + unitLabel : ""}</span>}
@@ -296,6 +296,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             )}
 
+            <div className="mt-4 grid gap-2 text-xs font-semibold text-emerald-950 sm:grid-cols-2">
+              <p className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5"><span className="text-base" aria-hidden="true">✓</span> ক্যাশ অন ডেলিভারিতে অর্ডার</p>
+              <p className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"><span className="text-base" aria-hidden="true">৳</span> চূড়ান্ত চার্জ অর্ডারের আগে দেখুন</p>
+            </div>
             <div className="mt-4 border-t border-slate-100 pt-4">
               {isSample ? (
                 <p className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900">এটি শুধু UI প্রিভিউ। নমুনা পণ্যে অর্ডার করা যাবে না।</p>
@@ -361,7 +365,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <RelatedProductUpsell
               products={relatedProducts}
               heading={product.category_slug === "seeds" ? "আপনার প্রয়োজন হতে পারে এমন আরও বীজ" : "সম্পর্কিত আরও পণ্য"}
-              subtitle="একই ধরনের উপলভ্য পণ্য তুলনা করুন। চাইলে পরিমাণ বেছে একই কার্টে যোগ করতে পারবেন।"
+              subtitle="একই ধরনের আরও পণ্য দেখুন। প্রয়োজন অনুযায়ী একই কার্টে যোগ করতে পারবেন।"
               categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
             />
           )}

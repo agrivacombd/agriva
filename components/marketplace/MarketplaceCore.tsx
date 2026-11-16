@@ -45,9 +45,7 @@ function ProductCard({
   product,
   productHrefPrefix,
   wished,
-  compared,
   onWish,
-  onCompare,
   onAddToCart,
   addingToCart,
   cartBusy,
@@ -55,9 +53,7 @@ function ProductCard({
   product: MarketplaceProduct;
   productHrefPrefix: "/marketplace" | "/plant-market";
   wished: boolean;
-  compared: boolean;
   onWish: () => void;
-  onCompare: () => void;
   onAddToCart: () => void;
   addingToCart: boolean;
   cartBusy: boolean;
@@ -92,10 +88,6 @@ function ProductCard({
             className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (wished ? "border-rose-200 bg-rose-50 text-rose-600" : "border-white/80 bg-white/95 text-slate-500 hover:text-rose-600")}>
             <svg viewBox="0 0 24 24" fill={wished ? "currentColor" : "none"} className="h-5 w-5" aria-hidden="true"><path d="M20.8 8.8c0 5.1-8.8 10.1-8.8 10.1S3.2 13.9 3.2 8.8a4.5 4.5 0 0 1 8.8-1.2 4.5 4.5 0 0 1 8.8 1.2Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/></svg>
           </button>
-          <button type="button" onClick={onCompare} aria-pressed={compared} aria-label={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনায় যুক্ত করুন"} title={compared ? "তুলনা থেকে সরান" : "পণ্য তুলনা করুন"}
-            className={"grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (compared ? "border-emerald-700 bg-emerald-50 text-emerald-900" : "border-white/80 bg-white/95 text-slate-500 hover:text-emerald-800")}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true"><path d="M5 7h14m-3-3 3 3-3 3M19 17H5m3-3-3 3 3 3"/></svg>
-          </button>
         </div>
       </div>
       <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
@@ -109,20 +101,32 @@ function ProductCard({
             <p className="text-lg font-black tracking-tight text-emerald-900 sm:text-xl">
               {hasPrice && Number(product.price) >= 0 ? <>৳{money(product.price as number | string)}{unit && <span className="ml-1 text-[10px] font-semibold text-slate-500">/ {unit}</span>}</> : <span className="text-xs">দাম জানতে যোগাযোগ করুন</span>}
             </p>
-            {productHrefPrefix === "/marketplace" && inStock && hasPrice && Number.isFinite(Number(product.price)) && Number(product.price) >= 0 ? (
-              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }} disabled={cartBusy}
+          </div>
+          {productHrefPrefix === "/marketplace" ? (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }}
+                disabled={!inStock || !hasPrice || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || cartBusy}
                 aria-label={product.name + " কার্টে যোগ করুন"}
-                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-900 bg-white px-3 py-2 text-[11px] font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-50 sm:px-4">
-                <ShoppingCart size={15} aria-hidden="true" />
+                className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl border border-emerald-800 bg-white px-2 py-2 text-[11px] font-extrabold leading-5 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-not-allowed disabled:opacity-45 sm:text-xs">
+                <ShoppingCart size={15} className="shrink-0" aria-hidden="true" />
                 {addingToCart ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
               </button>
-            ) : (
-              <Link href={detailHref} onClick={recordListingClick}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-900 px-3 py-2 text-[11px] font-extrabold text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-4">
-                বিস্তারিত দেখুন
-              </Link>
-            )}
-          </div>
+              {inStock && hasPrice && Number.isFinite(Number(product.price)) && Number(product.price) >= 0 ? (
+                <Link href={detailHref + "#product-direct-cod"} onClick={recordListingClick}
+                  className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-emerald-800 px-2 py-2 text-[11px] font-black leading-5 text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:text-xs">
+                  এখনই কিনুন
+                </Link>
+              ) : (
+                <span aria-disabled="true" className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-center text-[11px] font-bold text-slate-500">
+                  {hasStock && !inStock ? "স্টক শেষ" : "অর্ডার বন্ধ"}
+                </span>
+              )}
+            </div>
+          ) : (
+            <Link href={detailHref} onClick={recordListingClick} className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-900">
+              পণ্যের বিস্তারিত
+            </Link>
+          )}
         </div>
       </div>
     </article>
@@ -138,8 +142,6 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const alreadySeen = useRef(new Set<string>());
   const [page, setPage] = useState(1);
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const [compareIds, setCompareIds] = useState<string[]>([]);
-  const [showCompare, setShowCompare] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const addRequestInFlightRef = useRef(false);
@@ -289,12 +291,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     return () => observer.disconnect();
   }, [visibleProductIds, productHrefPrefix]);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((item) => item.slug === category);
-  const comparedProducts = products.filter((product) => compareIds.includes(product.id));
   const hasActiveFilters = Boolean(query.trim()) || category !== "all";
-
-  function toggleCompare(id: string) {
-    setCompareIds((current) => current.includes(id) ? current.filter((item) => item !== id) : current.length < 3 ? [...current, id] : current);
-  }
 
   return (
     <div ref={catalogueRef} className={"mt-6 lg:mt-8 " + (showStickyCart ? "pb-32 sm:pb-24" : "")}>
@@ -380,7 +377,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           )}
           {paginated.length ? <>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} compared={compareIds.includes(product.id)} onWish={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} onCompare={() => toggleCompare(product.id)} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
+              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} onWish={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
             </div>
             {paginated.length < visible.length && <div className="mt-7 flex justify-center">
               <button type="button" onClick={() => setPage((current) => current + 1)} className="min-h-11 rounded-xl border border-emerald-800 bg-white px-6 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">আরও পণ্য দেখুন ({new Intl.NumberFormat("bn-BD").format(visible.length - paginated.length)}টি বাকি)</button>
@@ -398,14 +395,6 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       </div>
 
       {authReturnTo && <MarketplaceAuthModal returnTo={authReturnTo} onClose={() => setAuthReturnTo(null)} />}
-      {compareIds.length > 0 && <div className={"fixed inset-x-3 z-40 mx-auto max-w-3xl rounded-2xl border border-emerald-900/10 bg-white p-3 shadow-2xl shadow-emerald-950/20 sm:inset-x-6 sm:p-4 " + (showStickyCart ? "bottom-44 sm:bottom-28" : "bottom-4")}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div><p className="text-sm font-black text-slate-900">পণ্য তুলনা <span className="text-emerald-800">({compareIds.length}/3)</span></p><p className="mt-0.5 text-[11px] text-slate-500">সর্বোচ্চ ৩টি পণ্য একসঙ্গে তুলনা করুন</p></div>
-          <div className="flex items-center gap-2"><button type="button" onClick={() => setShowCompare((value) => !value)} className="rounded-xl bg-emerald-900 px-4 py-2.5 text-xs font-bold text-white">{showCompare ? "তুলনা বন্ধ করুন" : "তুলনা দেখুন"}</button><button type="button" onClick={() => { setCompareIds([]); setShowCompare(false); }} className="rounded-xl border border-slate-200 px-3 py-2.5 text-xs font-bold text-slate-600">মুছুন</button></div>
-        </div>
-        {showCompare && <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[420px] text-left text-xs"><thead><tr><th className="p-2 text-slate-500">পণ্য</th>{comparedProducts.map((product) => <th key={product.id} className="p-2 font-bold text-slate-900">{product.name}</th>)}</tr></thead><tbody><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">দাম</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 font-extrabold text-emerald-900">{product.price && Number(product.price) > 0 ? `৳${money(product.price)}` : "জানতে যোগাযোগ করুন"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">ক্যাটাগরি</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{product.category || "—"}</td>)}</tr><tr className="border-t border-slate-100"><td className="p-2 text-slate-500">স্টক</td>{comparedProducts.map((product) => <td key={product.id} className="p-2 text-slate-700">{Number(product.stock || 0) > 0 ? "স্টকে আছে" : "স্টক নেই / যাচাই করুন"}</td>)}</tr></tbody></table></div>}
-      </div>}
-
       {showStickyCart && (
         <aside role="region" aria-label="কার্ট থেকে চেকআউট করুন"
           className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 px-3 py-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:px-4">
