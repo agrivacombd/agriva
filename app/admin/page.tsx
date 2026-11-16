@@ -171,15 +171,14 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
       {hasDashboardQueryError && <div role="alert" className="mt-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-950">কিছু dashboard data লোড করা যায়নি। যেসব metric-এ “—” দেখাচ্ছে সেগুলোকে শূন্য ধরে নেবেন না। Database permissions বা query error যাচাই করে আবার চেষ্টা করুন।</div>}
 
       <section aria-label="Platform metrics" className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4 2xl:grid-cols-8">
-        {cards.map(([label, value, tag]) => (
-          <article key={String(label)} className="min-w-0 rounded-2xl border border-[#e1e9de] bg-white p-3 shadow-sm sm:p-4">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-xs font-semibold leading-5 text-[#657467] sm:text-sm">{label}</p>
-              <span className="hidden shrink-0 rounded-lg bg-[#eaf3e8] px-2 py-1 text-[9px] font-black tracking-wide text-[#267044] sm:inline-flex">{tag}</span>
-            </div>
-            <p className="mt-3 break-words text-2xl font-black tabular-nums text-[#173b2d] sm:mt-4 sm:text-3xl">{value}</p>
-          </article>
-        ))}
+        {cards.map(([label, value, tag]) => {
+          const destinations:Record<string,string>={USERS:"/admin/users",FARMERS:"/admin/users",RESELLERS:"/admin/users",PRODUCTS:"/admin/products",ORDERS:"/admin/orders",ACTION:"/admin/orders?status=processing",COMMISSIONS:"/admin/finance",PAYOUTS:"/admin/finance"};
+          return <Link key={String(label)} href={destinations[String(tag)]||"/admin"} className="group min-w-0 rounded-2xl border border-[#e1e9de] bg-white p-3 shadow-sm transition hover:border-emerald-600 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:p-4">
+             <div className="flex items-start justify-between gap-2"><p className="text-xs font-semibold leading-5 text-[#657467] sm:text-sm">{label}</p><span className="hidden shrink-0 rounded-lg bg-[#eaf3e8] px-2 py-1 text-[9px] font-black tracking-wide text-[#267044] sm:inline-flex">{tag}</span></div>
+             <p className="mt-3 break-words text-2xl font-black tabular-nums text-[#173b2d] sm:mt-4 sm:text-3xl">{value}</p>
+             <span className="mt-2 inline-block text-xs font-bold text-emerald-800 group-hover:underline">বিস্তারিত দেখুন ↗</span>
+           </Link>;
+        })}
       </section>
 
       <section className="mt-5 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,.8fr)]">
@@ -219,7 +218,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
               <table className="w-full min-w-[860px] text-left text-sm">
                 <thead className="bg-[#f7faf5] text-[11px] uppercase tracking-wide text-[#6d7b6e]"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">Product / buyer</th><th className="px-5 py-3">Amount</th><th className="px-5 py-3">Payment</th><th className="px-5 py-3">Status / update</th></tr></thead>
                 <tbody>{recentOrders.data.map(order => <tr key={order.id} className="border-t border-[#edf1ea] align-top">
-                  <td className="px-5 py-4"><p className="font-bold">#{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td>
+                  <td className="px-5 py-4"><Link href={`/admin/orders#order-${order.id}`} className="font-bold text-emerald-900 underline-offset-2 hover:underline">#{order.id.slice(0,8)}</Link><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></td>
                   <td className="px-5 py-4"><p className="font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-1 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></td>
                   <td className="px-5 py-4 font-black">{money(order.total_amount)}</td>
                   <td className="px-5 py-4"><p className="font-semibold uppercase">{order.payment_method}</p><p className="mt-1 text-xs text-[#7b887d]">{order.payment_status}</p></td>
@@ -229,7 +228,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
             </div>
             <div className="divide-y divide-[#edf1ea] md:hidden">
               {recentOrders.data.map(order => <article key={order.id} className="space-y-3 p-4">
-                <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="font-bold text-[#173b2d]">Order #{order.id.slice(0,8)}</p><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></div><span className="shrink-0 rounded-full bg-[#edf4e9] px-2.5 py-1 text-[11px] font-bold text-[#356748]">{order.status}</span></div>
+                <div className="flex items-start justify-between gap-3"><div className="min-w-0"><Link href={`/admin/orders#order-${order.id}`} className="font-bold text-emerald-900 underline-offset-2 hover:underline">Order #{order.id.slice(0,8)}</Link><p className="mt-1 text-xs text-[#7b887d]">{new Date(order.created_at).toLocaleDateString("en-GB")}</p></div><span className="shrink-0 rounded-full bg-[#edf4e9] px-2.5 py-1 text-[11px] font-bold text-[#356748]">{order.status}</span></div>
                 <div className="grid grid-cols-2 gap-3 text-sm"><div className="min-w-0"><p className="text-[11px] text-[#879187]">Product / buyer</p><p className="mt-1 break-words font-semibold">{(order.product as {name?:string}|null)?.name ?? "Product"}</p><p className="mt-0.5 text-xs text-[#7b887d]">Qty: {order.quantity} · {(order.shipping_address as {fullName?:string}|null)?.fullName ?? "Buyer"}</p></div><div><p className="text-[11px] text-[#879187]">Order amount</p><p className="mt-1 font-black">{money(order.total_amount)}</p><p className="mt-0.5 text-xs uppercase text-[#7b887d]">{order.payment_method} · {order.payment_status}</p></div></div>
                 <form action={updateOrderStatus} className="flex flex-col gap-2 sm:flex-row"><input type="hidden" name="orderId" value={order.id}/><label className="sr-only" htmlFor={`order-status-${order.id}`}>Update order status</label><select id={`order-status-${order.id}`} name="status" defaultValue={order.status} className="min-h-11 min-w-0 flex-1 rounded-xl border border-[#d9e3d5] bg-white px-3 text-sm">{orderStatuses.map(status => <option key={status} value={status}>{status.charAt(0).toUpperCase()+status.slice(1)}</option>)}</select><button className="min-h-11 rounded-xl bg-[#17452c] px-4 text-sm font-bold text-white hover:bg-[#22613d]">Update status</button></form>
               </article>)}
@@ -254,7 +253,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
 
       <section className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-lg font-black text-[#173b2d] sm:text-xl">AI Search Opportunities</h2><p className="mt-1 text-xs text-[#748074] sm:text-sm">জনপ্রিয় search demand থেকে product ও content আইডিয়া</p></div><Link href="/admin/opportunities" className="inline-flex min-h-10 w-fit items-center rounded-xl border border-[#d9e3d5] px-4 py-2 text-sm font-bold">সব দেখুন ↗</Link></div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{(opportunities.data ?? []).map(item=><article key={item.id} className="min-w-0 rounded-xl bg-[#f7faf5] p-4"><p className="break-words font-bold">{item.keyword}</p><p className="mt-2 text-xs text-[#748074]">{item.search_count} searches · {item.opportunity_type}</p><p className="mt-1 text-xs font-semibold text-[#39724a]">{item.status}</p></article>)}{opportunities.error ? <p role="alert" className="text-sm text-red-800">Search opportunity data লোড করা যায়নি।</p> : !opportunities.data?.length && <p className="text-sm text-[#748074]">এখনো search signal নেই।</p>}</div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{(opportunities.data ?? []).map(item=><Link key={item.id} href={`/admin/content-drafts?opportunity=${encodeURIComponent(item.id)}`} className="min-w-0 rounded-xl bg-[#f7faf5] p-4 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"><p className="break-words font-bold">{item.keyword}</p><p className="mt-2 text-xs text-[#748074]">{item.search_count} searches · {item.opportunity_type}</p><p className="mt-1 text-xs font-semibold text-[#39724a]">{item.status}</p><span className="mt-2 block text-xs font-bold text-emerald-800">ড্রাফট খুলুন ↗</span></Link>)}{opportunities.error ? <p role="alert" className="text-sm text-red-800">Search opportunity data লোড করা যায়নি।</p> : !opportunities.data?.length && <p className="text-sm text-[#748074]">এখনো search signal নেই।</p>}</div>
       </section>
 
       <section className="mt-5 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5"><div><h2 className="text-lg font-black text-[#173b2d]">AGRIVA Jobs moderation</h2><p className="mt-1 text-xs text-[#748074] sm:text-sm">কৃষি চাকরির পোস্ট যাচাই ও প্রকাশের জন্য</p></div><Link href="/admin/jobs" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">চাকরি যাচাই করুন ↗</Link></section>

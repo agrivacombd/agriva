@@ -86,6 +86,8 @@ jobs:
         run: npm run test:checkout-error-safety
       - name: API role and error disclosure regression test
         run: npm run test:api-role-hardening
+      - name: Order notifications and admin click-through regression test
+        run: node scripts/smoke-admin-order-notifications.mjs
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
       - name: Sell My Harvest immediate publication regression test

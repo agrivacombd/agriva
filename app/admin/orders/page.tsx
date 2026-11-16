@@ -69,6 +69,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     .from("marketplace_orders")
     .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
     .limit(100);
 
   const checkoutIds = Array.from(new Set((orders ?? []).map((order) => order.checkout_id).filter(Boolean)));
@@ -126,9 +127,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
           const status = o.status;
           const checkout = o.checkout_id ? checkoutMap.get(o.checkout_id) : null;
           const firstCheckoutOrder = !o.checkout_id || (orders ?? []).find((candidate) => candidate.checkout_id === o.checkout_id)?.id === o.id;
-          return <article key={o.id} className="min-w-0 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5">
+          return <article id={`order-${o.id}`} key={o.id} className="min-w-0 scroll-mt-28 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm target:border-emerald-600 target:ring-2 target:ring-emerald-500 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div><p className="text-xs font-extrabold uppercase tracking-wider text-[#9a7625]">Order #{o.id.slice(0, 8)}</p><h2 className="mt-1 text-lg font-black">{buyerName}</h2><p className="mt-1 text-xs text-[#748074]">{new Date(o.created_at).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p></div>
+              <Link href={`/admin/orders#order-${o.id}`} className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"><p className="text-xs font-extrabold uppercase tracking-wider text-[#9a7625]">Order #{o.id.slice(0, 8)}</p><h2 className="mt-1 text-lg font-black text-emerald-950 hover:underline">{buyerName}</h2><p className="mt-1 text-xs text-[#748074]">{new Date(o.created_at).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })}</p><p className="mt-1 text-xs font-bold text-emerald-800">অর্ডারে যান ↗</p></Link>
               <span className="rounded-full bg-[#edf4e9] px-3 py-1.5 text-xs font-extrabold">{statusLabel[status] ?? status}</span>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[1.2fr_1fr_.8fr]">
