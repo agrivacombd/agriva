@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
+const page=read("app/learn/plant-disease/page.tsx"),layout=read("app/learn/plant-disease/layout.tsx");
+const selected=page.indexOf('id="selected-disease-details"');
+const cards=page.indexOf('filtered.map(c=><button');
+const steps=page.indexOf('🧭 ধাপে ধাপে রোগ পর্যবেক্ষণ');
+assert.ok(selected>0&&cards>selected&&steps>cards,"Selected case details must appear above the results list and steps");
+assert.match(page,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
+assert.match(page,/detailsRef\.current\?\.focus/);
+assert.match(page,/aria-expanded=\{active\?\.crop===c.crop/);
+assert.match(page,/key=\{c.crop \+ "-" \+ c.disease\}/);
+assert.match(page,/aria-label="রোগ বা লক্ষণ খুঁজুন"/);
+assert.match(page,/role="region" aria-label="নির্বাচিত রোগের বিস্তারিত"/);
+assert.match(page,/case|নির্বাচিত রোগের তথ্য/);
+assert.match(layout,/canonical:"\/learn\/plant-disease"/);
+assert.match(layout,/Plant Disease Learning Lab/);
+console.log("Plant disease selected case is prominent, accessible and scrolls into view.");
