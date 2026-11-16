@@ -65,7 +65,7 @@ for (const fragment of [
 ]) {
   assert.ok(checkout.includes(fragment), "Responsive checkout must preserve cart controls and safe values: " + fragment);
 }
-assert.ok(checkout.includes("order-2 space-y-5") && checkout.includes("order-1 min-w-0"),
+assert.ok(checkout.includes("order-2 min-w-0 space-y-5") && checkout.includes("order-1 min-w-0"),
   "Mobile should show item summary before the delivery address form");
 assert.ok(checkout.includes('select("id,product_id,quantity,unit_price")'),
   "Checkout must operate on actual cart item IDs");
