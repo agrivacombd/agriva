@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "যোগাযোগ করুন | AGRIVA",
+  title: "যোগাযোগ করুন",
   description: "AGRIVA-র সেবা, কৃষিপণ্য বা ওয়েবসাইট ব্যবহার নিয়ে প্রশ্ন থাকলে ফোন, WhatsApp বা ইমেইলে যোগাযোগ করুন।",
   alternates: { canonical: "/contact-us" },
 };
