@@ -98,7 +98,7 @@ export default function ArticleQueueClient({items}:{items:ArticleQueueEntry[]}){
             </span>
           </div>
           <h3 className="mt-2 break-words text-base font-black leading-7">
-            <Link href={"/admin/content-drafts?draft="+encodeURIComponent(item.id)} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{item.title}</Link>
+            <Link href={!isTrashed(item)&&item.status==="published"&&item.slug?"/blog/"+encodeURIComponent(item.slug):"/admin/content-drafts?draft="+encodeURIComponent(item.id)} target={!isTrashed(item)&&item.status==="published"&&item.slug?"_blank":undefined} rel={!isTrashed(item)&&item.status==="published"&&item.slug?"noopener noreferrer":undefined} className="hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{item.title}</Link>
           </h3>
           <p className="mt-1 break-words text-xs text-slate-600">Keyword: <strong>{item.keyword||"—"}</strong></p>
           <p className="mt-1 break-all text-[11px] text-slate-500">/blog/{item.slug}</p>
