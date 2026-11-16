@@ -137,6 +137,8 @@ jobs:
         run: npm run test:plant-science-seo-aeo
       - name: Official AGRIVA logo and PWA icon SEO regression test
         run: npm run test:brand-assets
+      - name: Admin AI product SEO security regression test
+        run: node scripts/smoke-admin-ai-product-seo.mjs
       - name: Production build
         run: npm run build
         env:
