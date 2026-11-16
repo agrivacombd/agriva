@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest) {
   const { supabase, user } = access;
   const { data: current, error: readError } = await supabase
     .from("content_drafts")
-    .select("id,status,title,slug,body_markdown")
+    .select("id,status,title,slug,body_markdown,content_type,meta_title,meta_description")
     .eq("id", body.id.trim())
     .maybeSingle();
 
@@ -71,6 +71,15 @@ export async function PATCH(request: NextRequest) {
     }
   }
 
+  if (action === "published") {
+    if (current.content_type !== "article") return NextResponse.json({error:"Only SEO articles can be published as blog posts. Product briefs need a separate product workflow."},{status:409});
+    if (title !== current.title || slug !== current.slug ||
+        markdown !== (current.body_markdown?.trim() || "") ||
+        (body.meta_title !== undefined && (body.meta_title || "").trim() !== (current.meta_title || "").trim()) ||
+        (body.meta_description !== undefined && (body.meta_description || "").trim() !== (current.meta_description || "").trim())) {
+      return NextResponse.json({error:"Approved draft has unsaved changes. Save, review, approve again, then publish."},{status:409});
+    }
+  }
   const update = await supabase.from("content_drafts").update({
     status: action,
     reviewed_by: user.id,
