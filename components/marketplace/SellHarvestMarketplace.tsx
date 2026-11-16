@@ -38,6 +38,53 @@ const districtLocations = BANGLADESH_DISTRICTS.map(({ name, upazilas }) => ({
 })).sort((a, b) => a.name.localeCompare(b.name, "bn"));
 const districts = districtLocations.map(({ name }) => name);
 const districtFilterOptions = [...districts, "অন্যান্য"];
+const MAX_HARVEST_IMAGES = 4;
+// The harvest-images bucket currently accepts at most 5 MiB per stored object.
+// Larger original photos are compressed in the browser, so sellers need not resize them.
+const MAX_STORED_HARVEST_IMAGE_BYTES = 5 * 1024 * 1024;
+
+async function optimizeHarvestImageForUpload(file: File): Promise<File> {
+  if (file.size <= MAX_STORED_HARVEST_IMAGE_BYTES) return file;
+
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    throw new Error("ছবিটি খোলা যায়নি। অন্য JPG, PNG বা WEBP ছবি দিন।");
+  }
+
+  try {
+    const canvas = document.createElement("canvas");
+    const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
+    let width = Math.max(1, Math.round(bitmap.width * scale));
+    let height = Math.max(1, Math.round(bitmap.height * scale));
+
+    for (let attempt = 0; attempt < 7; attempt += 1) {
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d", { alpha: false });
+      if (!context) throw new Error("এই ডিভাইসে ছবি অপ্টিমাইজ করা যাচ্ছে না।");
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, width, height);
+      context.drawImage(bitmap, 0, 0, width, height);
+
+      const jpeg = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, "image/jpeg", Math.max(0.5, 0.88 - attempt * 0.06));
+      });
+      if (!jpeg) throw new Error("ছবি অপ্টিমাইজ করা যায়নি। আবার চেষ্টা করুন।");
+      if (jpeg.size <= MAX_STORED_HARVEST_IMAGE_BYTES) {
+        const baseName = file.name.replace(/\.[^.]+$/, "") || "harvest";
+        return new File([jpeg], baseName + ".jpg", { type: "image/jpeg", lastModified: file.lastModified });
+      }
+      width = Math.max(1, Math.round(width * 0.82));
+      height = Math.max(1, Math.round(height * 0.82));
+    }
+    throw new Error("ছবিটি অপ্টিমাইজ করা যায়নি। অন্য ছবি দিয়ে চেষ্টা করুন।");
+  } finally {
+    bitmap.close();
+  }
+}
+
 const bn = (n: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(n);
 const unitLabel = (unit: HarvestListing["unit"]) => units.find((u) => u.value === unit)?.label ?? unit;
 const readyLabel = (ready: HarvestListing["harvest_ready"]) => ready === "ready_now" ? "এখনই প্রস্তুত" : ready === "within_7_days" ? "৭ দিনের মধ্যে" : "পরে প্রস্তুত হবে";
@@ -97,11 +144,19 @@ export default function SellHarvestMarketplace() {
     return !needle || [item.crop_name, item.variety, item.district, item.upazila, item.description].some((v) => v?.toLocaleLowerCase().includes(needle));
   }), [listings, mineOnly, userId, cropFilter, districtFilter, search]);
 
-  async function handleFiles(event: ChangeEvent<HTMLInputElement>) {
+  function handleFiles(event: ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(event.target.files ?? []);
-    if (picked.length > 5) { setNotice("সর্বোচ্চ ৫টি ছবি বাছুন।"); event.target.value = ""; return; }
-    if (picked.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024)) {
-      setNotice("শুধু JPG, PNG বা WEBP ছবি দিন; প্রতিটি ছবি সর্বোচ্চ ৫ MB হতে পারবে।"); event.target.value = ""; return;
+    if (picked.length > MAX_HARVEST_IMAGES) {
+      setFiles([]);
+      setNotice("সর্বোচ্চ ৪টি ছবি বাছুন।");
+      event.target.value = "";
+      return;
+    }
+    if (picked.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+      setFiles([]);
+      setNotice("শুধু JPG, PNG বা WEBP ছবি বাছুন।");
+      event.target.value = "";
+      return;
     }
     setFiles(picked);
     setNotice("");
@@ -114,30 +169,45 @@ export default function SellHarvestMarketplace() {
     if (!user) { window.location.href = "/login?next=%2Fsell-harvest"; return; }
     if (!districtLocations.some((item) => item.name === district) || (upazila && !availableUpazilas.includes(upazila))) { setNotice("সঠিক জেলা ও তার অন্তর্ভুক্ত উপজেলা নির্বাচন করুন।"); return; }
     if (!files.length) { setNotice("ফসলের অন্তত ১টি ছবি যোগ করুন।"); return; }
+    if (files.length > MAX_HARVEST_IMAGES) { setNotice("সর্বোচ্চ ৪টি ছবি যোগ করুন।"); return; }
     if (!phonePublic || !phone.trim()) { setNotice("ক্রেতার সঙ্গে সরাসরি যোগাযোগের জন্য ফোন নম্বর দিন এবং নম্বর প্রকাশের সম্মতিতে টিক দিন।"); return; }
     setBusy(true);
+    const uploadedPaths: string[] = [];
     const imageUrls: string[] = [];
-    for (const file of files) {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const path = `${user.id}/${crypto.randomUUID()}-${safeName}`;
-      const { error: uploadError } = await supabase.storage.from("harvest-images").upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) { setNotice("ছবি আপলোড করা যায়নি। আবার চেষ্টা করুন।"); setBusy(false); return; }
-      const { data } = supabase.storage.from("harvest-images").getPublicUrl(path);
-      imageUrls.push(data.publicUrl);
+    try {
+      // Prepare all photos before uploading so an unreadable image doesn't leave orphan uploads.
+      const preparedFiles: File[] = [];
+      for (const file of files) {
+        preparedFiles.push(await optimizeHarvestImageForUpload(file));
+      }
+      for (const file of preparedFiles) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+        const path = `${user.id}/${crypto.randomUUID()}-${safeName}`;
+        const { error: uploadError } = await supabase.storage.from("harvest-images").upload(path, file, { contentType: file.type, upsert: false });
+        if (uploadError) throw new Error("ছবি আপলোড করা যায়নি। আবার চেষ্টা করুন।");
+        uploadedPaths.push(path);
+        const { data } = supabase.storage.from("harvest-images").getPublicUrl(path);
+        imageUrls.push(data.publicUrl);
+      }
+      const { error } = await supabase.from("harvest_listings").insert({
+        owner_id: user.id, seller_name: sellerName.trim(), crop_name: cropName.trim(), variety: variety.trim() || null,
+        quantity: Number(quantity), unit, price_per_unit: Number(price), district, upazila: upazila.trim() || null,
+        quality, harvest_ready: ready, minimum_order: minimumOrder ? Number(minimumOrder) : null,
+        negotiable, transport_available: transport, contact_phone: phonePublic ? phone.trim() : null,
+        contact_phone_public: phonePublic, pickup_details: pickup.trim() || null, description: description.trim(),
+        image_urls: imageUrls, status: "available",
+      });
+      if (error) throw new Error(error.message.includes("row-level security") ? "পোস্ট দিতে লগইন করা প্রয়োজন।" : "পোস্ট জমা হয়নি। প্রয়োজনীয় তথ্য ও ছবি যাচাই করে আবার চেষ্টা করুন।");
+    } catch (error) {
+      if (uploadedPaths.length) await supabase.storage.from("harvest-images").remove(uploadedPaths);
+      setNotice(error instanceof Error ? error.message : "পোস্ট জমা দেওয়া যায়নি। আবার চেষ্টা করুন।");
+      setBusy(false);
+      return;
     }
-    const { error } = await supabase.from("harvest_listings").insert({
-      owner_id: user.id, seller_name: sellerName.trim(), crop_name: cropName.trim(), variety: variety.trim() || null,
-      quantity: Number(quantity), unit, price_per_unit: Number(price), district, upazila: upazila.trim() || null,
-      quality, harvest_ready: ready, minimum_order: minimumOrder ? Number(minimumOrder) : null,
-      negotiable, transport_available: transport, contact_phone: phonePublic ? phone.trim() : null,
-      contact_phone_public: phonePublic, pickup_details: pickup.trim() || null, description: description.trim(),
-      image_urls: imageUrls, status: "available",
-    });
     setBusy(false);
-    if (error) { setNotice(error.message.includes("row-level security") ? "পোস্ট দিতে লগইন করা প্রয়োজন।" : "পোস্ট জমা হয়নি। প্রয়োজনীয় তথ্য ও ছবি যাচাই করে আবার চেষ্টা করুন।"); return; }
     setNotice("পোস্ট প্রকাশিত হয়েছে! এখনই ক্রেতারা এটি দেখতে পারবেন।");
     setShowForm(false); setMineOnly(true); setFiles([]);
-    setSellerName(""); setCropName("ধান"); setVariety(""); setQuantity(""); setPrice(""); setDescription(""); setDistrict(""); setUpazila("");
+    setSellerName(""); setCropName("ধান"); setVariety(""); setQuantity(""); setPrice(""); setDescription(""); setPickup(""); setDistrict(""); setUpazila("");
     await loadListings();
   }
 
@@ -156,8 +226,8 @@ export default function SellHarvestMarketplace() {
       <label className="text-sm font-bold">পরিমাণ *<input required type="number" min="0.01" step="0.01" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="যেমন: 1000"/></label><label className="text-sm font-bold">পরিমাপের একক *<select value={unit} onChange={(e) => setUnit(e.target.value as HarvestListing["unit"])} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal">{units.map((u) => <option key={u.value} value={u.value}>{u.label}</option>)}</select></label><label className="text-sm font-bold">প্রতি এককের দাম (টাকা) *<input required type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="যেমন: 35"/></label><label className="text-sm font-bold">সর্বনিম্ন অর্ডার (ঐচ্ছিক)<input type="number" min="0.01" step="0.01" value={minimumOrder} onChange={(e) => setMinimumOrder(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="যেমন: 100 কেজি"/></label>
       <label className="text-sm font-bold">জেলা *<select required value={district} onChange={(e) => { setDistrict(e.target.value); setUpazila(""); }} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal"><option value="">জেলা নির্বাচন করুন</option>{districts.map((d) => <option key={d} value={d}>{d}</option>)}</select></label><label className="text-sm font-bold">উপজেলা (ঐচ্ছিক)<select value={upazila} disabled={!district} onChange={(e) => setUpazila(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"><option value="">{district ? "উপজেলা নির্বাচন করুন" : "আগে জেলা নির্বাচন করুন"}</option>{availableUpazilas.map((name) => <option key={name} value={name}>{name}</option>)}</select></label><label className="text-sm font-bold">বিক্রির জন্য প্রস্তুতি<select value={ready} onChange={(e) => setReady(e.target.value as HarvestListing["harvest_ready"])} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal"><option value="ready_now">এখনই প্রস্তুত</option><option value="within_7_days">৭ দিনের মধ্যে</option><option value="later">পরে প্রস্তুত হবে</option></select></label><label className="text-sm font-bold">যোগাযোগের ফোন নম্বর<input type="tel" required maxLength={25} value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="01XXXXXXXXX"/></label></div>
       <div className="grid gap-3 rounded-2xl bg-emerald-50/70 p-4 sm:grid-cols-2"><label className="flex items-start gap-3 text-sm"><input type="checkbox" required checked={phonePublic} onChange={(e) => setPhonePublic(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700"/><span><strong>আমি সম্মতি দিচ্ছি—আমার ফোন নম্বর প্রকাশিত পোস্টে দেখানো হবে *</strong><span className="mt-1 block text-xs leading-5 text-slate-600">ক্রেতারা সরাসরি যোগাযোগ করতে পারবেন। সম্মতি না দিলে এই সরাসরি-যোগাযোগ পোস্ট জমা দেওয়া যাবে না।</span></span></label><label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={negotiable} onChange={(e) => setNegotiable(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700"/><span><strong>দাম আলোচনা সাপেক্ষে</strong><span className="mt-1 block text-xs text-slate-600">ক্রেতার সঙ্গে দরদাম করা যাবে।</span></span></label><label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={transport} onChange={(e) => setTransport(e.target.checked)} className="mt-1 h-4 w-4 accent-emerald-700"/><span><strong>পরিবহনের ব্যবস্থা আছে</strong></span></label></div>
-      <label className="block text-sm font-bold">ফসলের ছবি * (১–৫টি, JPG/PNG/WEBP; প্রতিটি সর্বোচ্চ ৫ MB)<input type="file" accept="image/jpeg,image/png,image/webp" multiple required onChange={handleFiles} className="mt-2 block w-full rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 p-4 text-sm font-normal file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-800 file:px-3 file:py-2 file:font-bold file:text-white"/>{files.length > 0 && <span className="mt-2 block text-xs text-emerald-800">{files.length}টি ছবি বাছাই করা হয়েছে</span>}</label>
-      <label className="block text-sm font-bold">ফসল সংগ্রহ / ডেলিভারির তথ্য<textarea maxLength={500} value={pickup} onChange={(e) => setPickup(e.target.value)} rows={2} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="যেমন: খামার থেকে সংগ্রহ; পরিবহনের খরচ আলাদা"/></label><label className="block text-sm font-bold">অতিরিক্ত বিবরণ<textarea maxLength={3000} value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="ফসলের অবস্থা, কাটার তারিখ, আর্দ্রতা, প্যাকেজিং বা অন্য প্রয়োজনীয় তথ্য"/></label>
+      <label className="block text-sm font-bold">ফসলের ছবি * (১–৪টি, JPG/PNG/WEBP; বড় ছবি স্বয়ংক্রিয়ভাবে অপ্টিমাইজ হবে)<input type="file" accept="image/jpeg,image/png,image/webp" multiple required onChange={handleFiles} className="mt-2 block w-full rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 p-4 text-sm font-normal file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-800 file:px-3 file:py-2 file:font-bold file:text-white"/>{files.length > 0 && <span className="mt-2 block text-xs text-emerald-800">{files.length}টি ছবি বাছাই করা হয়েছে</span>}</label>
+      <label className="block text-sm font-bold">ফসল সংগ্রহ / ডেলিভারির তথ্য (ঐচ্ছিক)<textarea maxLength={500} value={pickup} onChange={(e) => setPickup(e.target.value)} rows={2} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="যেমন: খামার থেকে সংগ্রহ; পরিবহনের খরচ আলাদা"/></label><label className="block text-sm font-bold">অতিরিক্ত বিবরণ (ঐচ্ছিক)<textarea maxLength={3000} value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-3 font-normal" placeholder="ফসলের অবস্থা, কাটার তারিখ, আর্দ্রতা, প্যাকেজিং বা অন্য প্রয়োজনীয় তথ্য"/></label>
       {quantity && price && Number(quantity) > 0 && Number(price) >= 0 && <div className="rounded-xl bg-amber-50 p-4 text-sm"><span className="text-amber-900">আনুমানিক মোট মূল্য: </span><strong className="text-lg text-amber-950">৳{bn(Number(quantity) * Number(price))}</strong><span className="ml-2 text-amber-800">({bn(Number(quantity))} {unitLabel(unit)} × ৳{bn(Number(price))})</span></div>}
       {notice && <p role="status" className="rounded-xl bg-slate-50 p-3 text-sm font-semibold text-slate-700">{notice}</p>}<div className="flex flex-wrap gap-3"><button disabled={busy} type="submit" className="rounded-xl bg-emerald-800 px-6 py-3 font-extrabold text-white disabled:opacity-60">{busy ? "পোস্ট জমা হচ্ছে…" : "পোস্ট প্রকাশ করুন"}</button><button type="button" onClick={() => setShowForm(false)} className="rounded-xl border px-6 py-3 font-bold">বাতিল</button></div></form></section>}
 
