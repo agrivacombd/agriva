@@ -109,29 +109,42 @@ export default async function Home() {
           <div className="absolute -right-32 -top-20 h-96 w-96 rounded-full bg-[#d8e8b6]/60 blur-3xl" />
           <div className="absolute -left-36 top-32 h-80 w-80 rounded-full bg-[#c4e0cf]/45 blur-3xl" />
         </div>
-        <div className="mx-auto grid max-w-7xl min-w-0 items-start gap-5 px-3 pb-7 pt-5 min-[380px]:px-4 sm:items-center sm:gap-10 sm:px-6 sm:pb-14 sm:pt-12 md:pb-20 md:pt-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pt-24">
-          <div>
+        <div className="mx-auto grid w-full max-w-7xl min-w-0 grid-cols-1 items-start gap-5 px-4 pb-8 pt-6 sm:px-6 sm:pb-12 sm:pt-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)] lg:items-center lg:gap-10 lg:px-8 lg:pb-20 lg:pt-20">
+          <div className="min-w-0">
             <div className="mb-3 inline-flex max-w-full items-center gap-2 rounded-full border border-[#d6e5cf] bg-white/90 px-3 py-1.5 text-[10px] font-bold leading-5 sm:mb-6 sm:px-3.5 sm:py-2 sm:text-xs text-[#176346] shadow-sm"><span className="h-2 w-2 rounded-full bg-[#c29a43]" /> বাংলাদেশের কৃষির জন্য এক স্মার্ট প্ল্যাটফর্ম</div>
-            <h1 className="max-w-2xl break-words text-[clamp(1.65rem,7.4vw,2.2rem)] font-black leading-[1.25] sm:leading-[1.15] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.15rem]"><span className="bg-gradient-to-r from-[#0b6b4f] to-[#5d8b36] bg-clip-text text-transparent">{homepageHeroTitle}</span></h1>
-            <p className="mt-3 max-w-xl break-words text-sm leading-6 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">{homepageHeroSubtitle}</p>
-            <form action="/search" method="get" role="search" className="mt-4 flex w-full min-w-0 max-w-xl items-center gap-1 rounded-xl border border-[#dce5d8] bg-white p-1.5 sm:mt-8 sm:gap-2 sm:rounded-2xl sm:p-2 shadow-xl shadow-emerald-950/5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
+            <h1 className="max-w-2xl break-words text-[clamp(1.75rem,7.5vw,2.35rem)] font-black leading-[1.22] tracking-tight sm:text-5xl sm:leading-[1.18] lg:text-[clamp(3rem,4.7vw,4.15rem)]"><span className="bg-gradient-to-r from-[#0b6b4f] to-[#5d8b36] bg-clip-text text-transparent">{homepageHeroTitle}</span></h1>
+            <p className="mt-3 max-w-xl break-words text-[15px] leading-7 text-slate-700 sm:mt-5 sm:text-lg sm:leading-8">{homepageHeroSubtitle}</p>
+            <form action="/search" method="get" role="search" className="mt-5 flex w-full min-w-0 max-w-xl items-center gap-1 rounded-2xl border border-[#dce5d8] bg-white p-1.5 shadow-lg shadow-emerald-950/5 sm:mt-7 sm:gap-2 sm:p-2 shadow-emerald-950/5 transition focus-within:border-emerald-500 focus-within:ring-4 focus-within:ring-emerald-500/10">
               <Search className="ml-1 h-[18px] w-[18px] shrink-0 text-slate-400 sm:ml-2 sm:h-[21px] sm:w-[21px]" aria-hidden="true" />
               <input name="q" type="search" maxLength={160} className="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-base outline-none placeholder:text-slate-400 sm:px-2 sm:py-3" placeholder="বীজ বা কৃষি পণ্য খুঁজুন..." aria-label="AGRIVA-তে খুঁজুন" />
               <VisualSearchButton />
               <button type="submit" className="min-h-11 shrink-0 rounded-xl bg-[#0b6b4f] px-3 py-2.5 text-xs font-bold sm:px-5 sm:py-3 sm:text-sm text-white transition hover:bg-[#07543e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transition-none sm:px-5">খুঁজুন</button>
             </form>
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-[11px] sm:mt-3 sm:gap-2 sm:text-xs">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
               <span className="mr-1 font-semibold text-slate-500">জনপ্রিয়:</span>
-              {[{ label: "ফসলের রোগ", href: "/crop-disease" }, { label: "কৃষি বাজার", href: "/marketplace" }, { label: "কৃষি চাকরি", href: "/jobs" }].map(({ label, href }) => <Link key={label} href={href} className="inline-flex min-h-9 items-center rounded-full border border-[#dce5d8] bg-white/80 px-2.5 py-1.5 font-semibold sm:min-h-11 sm:px-3 sm:py-2 text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transition-none">{label}</Link>)}
+              {[{ label: "ফসলের রোগ", href: "/crop-disease" }, { label: "কৃষি বাজার", href: "/marketplace" }, { label: "কৃষি চাকরি", href: "/jobs" }].map(({ label, href }) => <Link key={label} href={href} className="inline-flex min-h-10 items-center rounded-full border border-[#dce5d8] bg-white/80 px-3 py-2 font-semibold sm:min-h-11 text-[#42634f] transition hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transition-none">{label}</Link>)}
             </div>
             <div className="mt-5 hidden flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500 sm:flex"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> এক জায়গায় বহু কৃষি সেবা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} className="text-emerald-600" /> মোবাইল ও ডেস্কটপে ব্যবহারযোগ্য</span></div>
-            <div className="mt-4 grid grid-cols-1 gap-2 min-[360px]:grid-cols-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3">
-              <Link href="/marketplace" className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl bg-[#0b6b4f] px-2 py-2.5 text-center text-xs sm:min-h-12 sm:gap-2 sm:px-5 sm:py-3.5 sm:text-sm font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><ShoppingCart size={17} /> বীজ কিনুন <ArrowRight size={17} /></Link>
-              <Link href="#services" className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-center text-xs sm:min-h-12 sm:gap-2 sm:px-5 sm:py-3.5 sm:text-sm font-bold text-[#16382b] transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transition-none">সব সেবা দেখুন <ArrowDownRight size={17} /></Link>
+            <div className="mt-5 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3">
+              <Link href="/marketplace" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-xl bg-[#0b6b4f] px-2 py-2.5 text-center text-[13px] font-extrabold sm:gap-2 sm:px-5 sm:py-3.5 sm:text-sm text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-[#07543e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none"><ShoppingCart size={17} /> বীজ কিনুন <ArrowRight size={17} /></Link>
+              <Link href="#services" className="inline-flex min-h-12 min-w-0 items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-center text-[13px] font-bold sm:gap-2 sm:px-5 sm:py-3.5 sm:text-sm text-[#16382b] transition hover:border-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transition-none">সব সেবা দেখুন <ArrowDownRight size={17} /></Link>
             </div>
+            <nav aria-label="দ্রুত কৃষি সেবা" className="mt-5 grid grid-cols-2 gap-2 sm:mt-7 sm:grid-cols-4 lg:hidden">
+              {[
+                { href: "/crop-disease", icon: Leaf, label: "ফসলের রোগ", detail: "সহায়তা নিন", tone: "bg-rose-50 text-rose-700" },
+                { href: "/weather", icon: CloudSun, label: "আবহাওয়া", detail: "পূর্বাভাস দেখুন", tone: "bg-sky-50 text-sky-800" },
+                { href: "/marketplace", icon: ShoppingBasket, label: "কৃষি বাজার", detail: "বীজ ও উপকরণ", tone: "bg-lime-50 text-lime-800" },
+                { href: "/agriculture-calculators", icon: Zap, label: "কৃষি হিসাব", detail: "খরচ ও লাভ", tone: "bg-orange-50 text-orange-700" },
+              ].map(({ href, icon: Icon, label, detail, tone }) => (
+                <Link key={href} href={href} className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-emerald-950/10 bg-white p-3 shadow-sm transition hover:border-emerald-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                  <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${tone}`}><Icon size={21} aria-hidden="true" /></span>
+                  <span className="min-w-0"><span className="block text-[13px] font-extrabold leading-5 text-emerald-950 sm:text-sm">{label}</span><span className="block text-[11px] leading-4 text-slate-600 sm:text-xs">{detail}</span></span>
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          <div className="relative mx-auto w-full min-w-0 max-w-xl">
+          <div className="relative mx-auto hidden w-full min-w-0 max-w-xl lg:block">
             <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-emerald-200/60 via-lime-100/30 to-amber-100/60 blur-xl" />
             <div className="relative overflow-hidden rounded-2xl border border-white/90 bg-white/95 p-3 sm:rounded-[2rem] sm:p-4 shadow-2xl shadow-emerald-950/15 ring-1 ring-emerald-950/5 backdrop-blur sm:p-6">
               <div className="relative mb-4 hidden h-32 overflow-hidden rounded-2xl bg-gradient-to-br sm:block from-[#174c35] via-[#668c49] to-[#d7dfac]">
@@ -165,6 +178,16 @@ export default async function Home() {
         </div>
       </section>
 
+      <section id="services" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 pb-10 pt-9 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-2 break-words text-[clamp(1.35rem,5.5vw,1.75rem)] font-black leading-snug tracking-tight sm:text-3xl lg:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
+          <Link href="/agriculture-calculators" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-2 min-[380px]:gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
+          {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-w-0 min-h-[148px] flex-col rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:min-h-52 sm:rounded-3xl sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-3 break-words text-[13px] font-extrabold leading-5 sm:mt-5 sm:text-lg sm:leading-normal">{title}</h3><p className="mt-1 text-[11px] font-bold leading-4 text-emerald-800 sm:text-sm sm:leading-normal">{subtitle}</p><p className="mt-2 hidden text-sm leading-6 text-slate-500 sm:block">{detail}</p></Link>)}
+        </div>
+      </section>
+
       <section id="green-living" aria-labelledby="green-living-title" className="border-y border-emerald-100 bg-gradient-to-br from-[#eff7e9] via-white to-[#f4f8e9] py-9 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-center lg:gap-12">
@@ -194,16 +217,6 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section id="services" className="mx-auto max-w-7xl scroll-mt-24 px-3 py-9 min-[380px]:px-4 sm:px-6 sm:py-14 lg:px-8 lg:py-20">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div><p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">আপনার দরকারি সবকিছু</p><h2 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">এক প্ল্যাটফর্মে কৃষির সব সেবা</h2><p className="mt-3 max-w-2xl leading-7 text-slate-600">যে কাজটি করতে চান, সেটি বেছে নিন—সরাসরি সংশ্লিষ্ট পেজে গিয়ে ব্যবহার করুন।</p></div>
-          <Link href="/agriculture-calculators" className="inline-flex shrink-0 items-center gap-2 text-sm font-extrabold text-emerald-800 hover:gap-3">সব টুলস দেখুন <ArrowRight size={16} /></Link>
-        </div>
-        <div className="mt-5 grid grid-cols-2 gap-2 min-[380px]:gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-          {services.map(({ icon: Icon, title, subtitle, detail, href, tone }) => <Link key={href} href={href} className="group flex min-w-0 min-h-[152px] flex-col rounded-2xl border border-slate-200/80 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-950/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none sm:min-h-52 sm:rounded-3xl sm:p-6"><div className="flex items-start justify-between"><span className={`grid h-12 w-12 place-items-center rounded-2xl ${tone}`}><Icon size={24} /></span><ArrowRight size={18} className="text-slate-300 transition group-hover:translate-x-1 group-hover:text-emerald-700" /></div><h3 className="mt-3 break-words text-[13px] font-extrabold leading-5 sm:mt-5 sm:text-lg sm:leading-normal">{title}</h3><p className="mt-1 text-[11px] font-bold leading-4 text-emerald-800 sm:text-sm sm:leading-normal">{subtitle}</p><p className="mt-2 hidden text-sm leading-6 text-slate-500 sm:block">{detail}</p></Link>)}
         </div>
       </section>
 
@@ -329,7 +342,7 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto max-w-7xl px-3 pb-10 min-[380px]:px-4 sm:px-6 sm:pb-16 lg:px-8 lg:pb-20">
-        <div className="flex flex-col items-start justify-between gap-5 rounded-[2rem] border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-lime-50 p-7 sm:p-10 md:flex-row md:items-center">
+        <div className="flex min-w-0 flex-col items-start justify-between gap-4 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-lime-50 p-4 sm:gap-5 sm:rounded-[2rem] sm:p-10 md:flex-row md:items-center">
           <div><p className="text-xs font-black uppercase tracking-[0.2em] text-emerald-700">শুরু করুন আজই</p><h2 className="mt-2 text-2xl font-black sm:text-3xl">আপনার কৃষিকাজকে আরও পরিকল্পিত করুন</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">কৃষি জিজ্ঞাসা দিয়ে শুরু করুন, অথবা খামার, বাজারদর ও টুলস ঘুরে দেখুন।</p></div>
           <Link href="/ai" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#0b6b4f] px-5 py-3.5 text-sm font-extrabold text-white shadow-md transition hover:bg-[#07543e]">AGRIVA ব্যবহার করুন <ArrowRight size={17} /></Link>
         </div>

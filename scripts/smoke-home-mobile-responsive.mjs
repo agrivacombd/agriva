@@ -1,20 +1,21 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-const home = readFileSync(new URL("../app/page.tsx", import.meta.url), "utf8");
-const chrome = readFileSync(new URL("../components/site/SiteChrome.tsx", import.meta.url), "utf8");
-for (const snippet of [
-  'relative isolate overflow-hidden bg-gradient-to-b',
-  'min-w-0 max-w-xl items-center gap-1 rounded-xl',
-  'min-w-0 flex-1 bg-transparent px-1 py-2.5 text-base',
-  'min-[360px]:grid-cols-2',
-  'mt-5 grid grid-cols-2 gap-2',
-  'min-w-0 min-h-[152px]',
-  'mt-2 hidden text-sm leading-6 text-slate-500 sm:block',
-  'min-[380px]:grid-cols-2 sm:gap-4',
-  'pb-[max(0.5rem,env(safe-area-inset-bottom))]',
-]) assert.ok(home.includes(snippet), "Mobile home design missing: " + snippet);
-assert.ok(chrome.includes('pathname !== "/" && ('), "Home should not duplicate the full-width mobile header search");
-for (const route of ["/marketplace", "/crop-disease", "/weather", "/jobs", "/agriculture-calculators"]) {
-  assert.ok(home.includes('href="' + route + '"') || home.includes('href: "' + route + '"'), route + " should remain linked");
+const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
+const home = read("app/page.tsx"), chrome = read("components/site/SiteChrome.tsx"), layout = read("app/layout.tsx");
+assert.match(layout, /width: "device-width"/);
+assert.match(layout, /initialScale: 1/);
+assert.doesNotMatch(layout, /userScalable: false|maximumScale: 1/, "Pinch zoom must remain available");
+assert.match(home, /aria-label="দ্রুত কৃষি সেবা"/);
+assert.match(home, /sm:grid-cols-4 lg:hidden/);
+assert.match(home, /relative mx-auto hidden w-full min-w-0 max-w-xl lg:block/);
+assert.ok(home.indexOf('<section id="services"') < home.indexOf('<section id="green-living"'), "Services before secondary content");
+assert.match(home, /sm:grid-cols-3 sm:gap-4 xl:grid-cols-4/);
+assert.match(home, /minmax\(0,1\.05fr\)_minmax\(0,\.95fr\)/);
+assert.match(home, /min-w-0 flex-1 bg-transparent px-1 py-2\.5 text-base/);
+assert.match(home, /pb-\[max\(0\.5rem,env\(safe-area-inset-bottom\)\)\]/);
+assert.match(chrome, /min-h-16 max-w-7xl min-w-0/);
+assert.ok(chrome.includes('pathname !== "/" && ('), "Avoid duplicate homepage search");
+for(const route of ["/marketplace","/crop-disease","/weather","/jobs","/agriculture-calculators"]) {
+  assert.ok(home.includes('href="' + route + '"') || home.includes('href: "' + route + '"'), route + " accessible");
 }
-console.log("AGRIVA homepage mobile layout source tests passed.");
+console.log("AGRIVA mobile/tablet/desktop homepage responsiveness contracts passed.");

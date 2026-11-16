@@ -212,9 +212,9 @@ export default function SiteChrome() {
     <>
       <div aria-hidden="true" className="fixed left-0 top-0 z-[80] h-1 bg-emerald-600 transition-[width] duration-100" style={{ width: progress + "%" }} />
       <header className="sticky top-0 z-[70] border-b border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90">
-        <div className="mx-auto flex min-h-[68px] max-w-7xl items-center gap-1.5 px-2 min-[380px]:gap-2 min-[380px]:px-3 sm:gap-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-16 max-w-7xl min-w-0 items-center gap-1.5 px-3 min-[380px]:gap-2 min-[380px]:px-4 sm:min-h-[68px] sm:gap-5 sm:px-6 lg:px-8">
           <Link href={english ? "/en" : "/"} className="flex shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" aria-label="AGRIVA home">
-            <Image src="/branding/agriva-agriculture-brand-logo.svg" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-8 w-[7.5rem] object-contain object-left min-[380px]:h-9 min-[380px]:w-36 sm:h-10 sm:w-48" />
+            <Image src="/branding/agriva-agriculture-brand-logo.svg" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-10 w-32 object-contain object-left min-[380px]:w-36 sm:w-48" />
           </Link>
 
           <div className="hidden min-w-0 flex-1 xl:block xl:max-w-xl xl:mx-5">
