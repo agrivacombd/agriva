@@ -1,26 +1,15 @@
 "use client";
 import { useMemo, useRef, useState } from "react";
-import {ArticleMarkdown,parseArticleMarkdown} from "@/lib/content/article-markdown";
+import {ArticleMarkdown} from "@/lib/content/article-markdown";
+import {getEditorialChecks, normalizeEditorialMarkdown} from "@/lib/content/article-quality";
 type Props={value:string;onChange:(value:string)=>void;primaryKeyword:string;title:string;metaTitle:string;metaDescription:string;disabled?:boolean};
 type Tool="h2"|"h3"|"bold"|"italic"|"list"|"number"|"link"|"faq"|"sources";
 const tools:{key:Tool;label:string}[]=[{key:"h2",label:"H2"},{key:"h3",label:"H3"},{key:"bold",label:"Bold"},{key:"italic",label:"Italic"},{key:"list",label:"• List"},{key:"number",label:"1. List"},{key:"link",label:"Link"},{key:"faq",label:"FAQ"},{key:"sources",label:"Sources"}];
 export default function MarkdownArticleEditor({value,onChange,primaryKeyword,title,metaTitle,metaDescription,disabled=false}:Props){
   const field=useRef<HTMLTextAreaElement>(null);
   const [mode,setMode]=useState<"both"|"edit"|"preview">("both");
-  const blocks=useMemo(()=>parseArticleMarkdown(value),[value]);
   const words=value.trim()?value.trim().split(/\s+/u).length:0;
-  const keyword=primaryKeyword.trim().toLocaleLowerCase();
-  const checks=[
-    {label:"কমপক্ষে ৩টি H2 section",ok:blocks.filter(x=>x.kind==="h2").length>=3},
-    {label:"প্রথম অনুচ্ছেদে Focus keyword",ok:!keyword||(blocks.find(x=>x.kind==="p")?.lines[0]||"").toLocaleLowerCase().includes(keyword)},
-    {label:"পূর্ণাঙ্গ লেখা (৩৫০+ শব্দ)",ok:words>=350},
-    {label:"AGRIVA internal link",ok:/\]\((\/(?:blog|plant-market|marketplace|learn|tools)|https:\/\/(?:www\.)?agriva\.com\.bd\/)/i.test(value)},
-    {label:"FAQ section",ok:blocks.some(x=>x.kind==="h2"&&/FAQ|প্রশ্ন|জিজ্ঞাসা/i.test(x.lines[0]))},
-    {label:"তথ্যসূত্র section",ok:blocks.some(x=>x.kind==="h2"&&/তথ্যসূত্র|সূত্র|sources|references/i.test(x.lines[0]))},
-    {label:"Meta title ২৫–৬৫ অক্ষর",ok:metaTitle.trim().length>=25&&metaTitle.trim().length<=65},
-    {label:"Meta description ১০০–১৮০ অক্ষর",ok:metaDescription.trim().length>=100&&metaDescription.trim().length<=180},
-    {label:"Article title",ok:!!title.trim()&&title.trim().length<=160}
-  ];
+  const checks=useMemo(()=>getEditorialChecks({title,metaTitle,metaDescription,keyword:primaryKeyword,body:value}),[title,metaTitle,metaDescription,primaryKeyword,value]);
   function format(which:Tool){
     if(disabled)return;
     const el=field.current,start=el?.selectionStart??value.length,end=el?.selectionEnd??value.length;
@@ -31,7 +20,7 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
   }
   function cleanEscapes(){
     if(disabled||!value.includes("\\"))return;
-    if(window.confirm("Markdown-এর অপ্রয়োজনীয় escape চিহ্ন সরাবেন? Preview যাচাই করুন।"))onChange(value.replace(/\\([#*\[\]().-])/g,"$1"));
+    if(window.confirm("Markdown-এর অপ্রয়োজনীয় escape চিহ্ন সরাবেন? Preview যাচাই করুন।"))onChange(normalizeEditorialMarkdown(value));
   }
   return <section className="mt-6 min-w-0">
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -49,9 +38,9 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
       </div>
     </div>
     <section className="mt-4 rounded-2xl border border-emerald-100 bg-[#f8faf7] p-4">
-      <div className="flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold">SEO Content Checklist</h4><span className="text-xs font-bold text-emerald-800">{checks.filter(x=>x.ok).length}/{checks.length}</span></div>
-      <p className="mt-1 text-xs text-slate-600">এটি লেখা সাজানোর নির্দেশক; তথ্যের সত্যতা বা SEO ranking-এর নিশ্চয়তা নয়।</p>
-      <ul className="mt-3 grid gap-2 sm:grid-cols-2">{checks.map(x=><li key={x.label} className="flex items-start gap-2 text-xs leading-5"><span className={x.ok?"text-emerald-700":"text-amber-700"} aria-hidden="true">{x.ok?"✓":"!"}</span>{x.label}</li>)}</ul>
+      <div className="flex items-center justify-between gap-2"><h4 className="text-sm font-extrabold">SEO Content Checklist</h4><span className="text-xs font-bold text-emerald-800">{checks.filter(x=>x.passed).length}/{checks.length}</span></div>
+      <p className="mt-1 text-xs text-slate-600">ড্রাফট প্রকাশের আগে গঠনগত যাচাই। তথ্যসূত্রের সত্যতা ও originality সম্পাদককে আলাদাভাবে নিশ্চিত করতে হবে।</p>
+      <ul className="mt-3 grid gap-2 sm:grid-cols-2">{checks.map(x=><li key={x.label} className="flex items-start gap-2 text-xs leading-5"><span className={x.passed?"text-emerald-700":"text-amber-700"} aria-hidden="true">{x.passed?"✓":"!"}</span><span>{x.label}{!x.passed&&<span className="mt-1 block text-[11px] font-normal text-amber-800">{x.guidance}</span>}</span></li>)}</ul>
     </section>
   </section>;
 }

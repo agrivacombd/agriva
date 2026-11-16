@@ -38,6 +38,8 @@ jobs:
         run: node --check scripts/smoke-smart-search.mjs
       - name: Marketplace personalized recommendations regression test
         run: node scripts/smoke-marketplace-personalization.mjs
+      - name: SEO article quality preflight regression
+        run: node scripts/smoke-article-quality.mjs
       - name: Safe Markdown editor and publication integrity regression
         run: node scripts/smoke-article-markdown-editor.mjs
       - name: Editorial SEO workflow and navigation regression test

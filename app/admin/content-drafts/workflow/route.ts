@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/admin/authz";
+import {getEditorialChecks} from "@/lib/content/article-quality";
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const transitions: Record<string, string[]> = {
@@ -23,7 +24,7 @@ export async function PATCH(request: NextRequest) {
   const { supabase, user } = access;
   const { data: current, error: readError } = await supabase
     .from("content_drafts")
-    .select("id,status,title,slug,body_markdown,content_type,meta_title,meta_description")
+    .select("id,status,title,slug,body_markdown,content_type,primary_keyword,meta_title,meta_description")
     .eq("id", body.id.trim())
     .maybeSingle();
 
@@ -67,7 +68,22 @@ export async function PATCH(request: NextRequest) {
   const markdown = typeof body.body_markdown === "string" ? body.body_markdown.trim().slice(0, 50000) : current.body_markdown?.trim();
   if (action === "approved" || action === "published") {
     if (!title || title.length > 160 || !slugPattern.test(slug) || !markdown) {
-      return NextResponse.json({ error: "A valid title, slug and completed article body are required." }, { status: 409 });
+      return NextResponse.json({ error: "A valid title, slug and completed article body are required." }, { status: 409  if (current.content_type === "article" && ["review","approved","published"].includes(action)) {
+    const content = {
+      title,
+      metaTitle: typeof body.meta_title === "string" ? body.meta_title : current.meta_title,
+      metaDescription: typeof body.meta_description === "string" ? body.meta_description : current.meta_description,
+      keyword: current.primary_keyword || "",
+      body: markdown || "",
+    };
+    const missing = getEditorialChecks(content).filter(check => !check.passed);
+    if (missing.length) {
+      return NextResponse.json({error: "SEO quality review incomplete: " + missing.map(check => check.label).join(" · "),
+        checks:missing}, {status:409});
+    }
+  }
+
+ });
     }
   }
 

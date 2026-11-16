@@ -3,6 +3,7 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {createBrowserClient} from "@supabase/ssr";
 import MarkdownArticleEditor from "./MarkdownArticleEditor";
+import {getEditorialChecks} from "@/lib/content/article-quality";
 
 type Revision={id:string;changed_at:string;changed_by:string|null;status_before:string;status_after:string;snapshot:Record<string,unknown>};
 type Draft={id:string;opportunity_id:string;content_type:string;title:string;slug:string;meta_title:string|null;meta_description:string|null;primary_keyword:string;secondary_keywords:string[];search_intent:string;outline:unknown[];faq:unknown[];internal_link_suggestions:unknown[];competitor_analysis:unknown[];body_markdown:string|null;status:string;reviewed_at:string|null;created_at:string};
@@ -82,7 +83,10 @@ export default function ContentDraftsClient(){
     if(!selected||busy)return;
     const title=selected.title.trim(),slug=selected.slug.trim(),body=selected.body_markdown?.trim()||"";
     if(!title||title.length>160||!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)||slug.length>180){setError("Valid title ও lowercase hyphenated slug প্রয়োজন।");return;}
-    if((action==="approved"||action==="published")&&!body){setError("Approve বা Publish করতে পূর্ণ Article body লিখুন।");return;}
+    if(selected.content_type==="article"&&["review","approved","published"].includes(action)){
+      const problems=getEditorialChecks({title,metaTitle:selected.meta_title,metaDescription:selected.meta_description,keyword:selected.primary_keyword,body}).filter(c=>!c.passed);
+      if(problems.length){setError("SEO সম্পূর্ণ নয়: "+problems.map(x=>x.label).join(" · "));return;}
+    }
     if(action==="published"){
       if(selected.content_type!=="article"){setError("Product/Tool SEO brief সরাসরি Blog article হিসেবে প্রকাশ করা যায় না।");return;}
       if(!window.confirm("আপনি কি যাচাই করা Approved article এখন AGRIVA Blog-এ প্রকাশ করতে চান?"))return;
