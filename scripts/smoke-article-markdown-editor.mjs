@@ -4,7 +4,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const markdown=read("lib/content/article-markdown.tsx"),editor=read("app/admin/content-drafts/MarkdownArticleEditor.tsx"),blog=read("app/blog/[slug]/page.tsx"),api=read("app/admin/content-drafts/workflow/route.ts");
 assert.match(markdown,/parseArticleMarkdown/);assert.match(markdown,/noopener noreferrer/);
 assert.doesNotMatch(markdown,/dangerouslySetInnerHTML|execCommand/);
-assert.match(editor,/ArticleMarkdown body=/);assert.match(editor,/SEO Content Checklist/);assert.match(read("app/admin/content-drafts/ContentDraftsClient.tsx"),/MarkdownArticleEditor/);assert.match(read("app/admin/content-drafts/ContentDraftsClient.tsx"),/content-drafts\?draft=/);
+assert.match(editor,/ArticleMarkdown body=/);assert.match(editor,/SEO Content Checklist/);assert.match(read("app/admin/content-drafts/ContentDraftsClient.tsx"),/MarkdownArticleEditor/);assert.match(read("app/admin/content-drafts/ContentDraftsClient.tsx"),/params.get\("draft"\)/);
 assert.match(blog,/ArticleMarkdown body=/);assert.doesNotMatch(blog,/CmsMarkdown/);
 assert.match(api,/current.content_type !== "article"/);assert.match(api,/Approved draft has unsaved changes/);
 console.log("Markdown editor, safe article output, and publishing guards verified.");
