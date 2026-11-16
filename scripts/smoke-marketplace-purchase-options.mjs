@@ -25,6 +25,10 @@ for (const fragment of [
   "aria-pressed={quantity === value && !customQuantitySelected && !customQuantityOpen}",
   "const [customQuantityOpen, setCustomQuantityOpen] = useState(false)",
   "const [customQuantityInput, setCustomQuantityInput] = useState(\"1\")",
+  "normalizeQuantityDigits(customQuantityInput)",
+  "void addToCart(requested)",
+  "প্রয়োগ করে কার্টে যোগ করুন",
+  'type="text" inputMode="numeric"',
   "Custom{customQuantitySelected",
   "inputMode=\"numeric\"",
   "requested > maxQuantity",
@@ -44,6 +48,9 @@ for (const src of [cart, checkout]) {
   assert.ok(src.includes('import { createSupabaseBrowserClient } from "@/lib/supabase/browser"'), "Cart and checkout must use the cookie-based auth client");
   assert.ok(!src.includes('from "@/lib/supabase/client"'), "Legacy localStorage auth must not be used in checkout");
 }
+assert.ok(purchase.includes("const requested = /^[0-9]{1,3}$/.test(input) ? Number(input) : 0;"), "Custom quantity accepts only integral limits after digit normalization");
+assert.ok(purchase.includes(".replace(/[০-৯]/g, digit =>"), "Bangla numeral keyboard input must be normalized");
+assert.ok(purchase.includes("void addToCart(requested);"), "Custom apply must add the selected quantity without stale React state");
 assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Detail purchase must use the shared guest-safe cart auth helper");
 for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "maxLength={250}"]) {
   assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
