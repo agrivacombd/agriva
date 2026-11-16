@@ -12,6 +12,8 @@ assert.ok(page.indexOf("<RelatedProductUpsell") > page.indexOf('id="product-desc
 assert.ok(page.indexOf("<RelatedProductUpsell") < page.indexOf('id="product-faq-heading"'), "Related products appear before FAQs");
 assert.ok(page.includes('lg:grid-cols-[minmax(0,1.03fr)_minmax(0,.97fr)]'), "Responsive gallery and purchase use two columns at desktop widths");
 assert.ok(page.includes('<ProductShareCard'), "Product details must include a canonical share card");
+assert.ok(page.includes('aria-label="পণ্যের তথ্য দ্রুত দেখুন"') && page.includes('href="#product-description"'), "Product details should offer mobile-friendly quick navigation");
+assert.ok(page.includes('id="related-marketplace-products"') && page.includes('href="#related-marketplace-products"'), "Quick navigation must reach the related products section");
 assert.ok(page.includes('<ProductDescription html={description} />'), "Full product description must remain server-rendered");
 assert.ok(page.includes('href="#product-description"'), "Short summary must link to complete description");
 assert.ok(page.includes('pb-20 text-[#17351f] sm:pb-0'), "Mobile sticky purchase bar must not obscure page content");

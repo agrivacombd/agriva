@@ -312,8 +312,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </section>
 
-        <div className="mt-5 min-w-0 space-y-5 sm:mt-6 sm:space-y-6">
-          <section id="product-details" aria-labelledby="product-details-heading" className="scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+        <nav aria-label="পণ্যের তথ্য দ্রুত দেখুন" className="mt-4 flex min-w-0 items-center gap-2 overflow-x-auto pb-1 text-xs font-bold sm:mt-5 sm:text-sm">
+          <a href="#product-details" className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-emerald-200 bg-white px-4 text-emerald-900 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">পণ্যের তথ্য</a>
+          {description && <a href="#product-description" className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-emerald-200 bg-white px-4 text-emerald-900 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পূর্ণ বিবরণ</a>}
+          {relatedProducts.length > 0 && <a href="#related-marketplace-products" className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-emerald-200 bg-white px-4 text-emerald-900 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সম্পর্কিত পণ্য</a>}
+          <a href="#product-faq-heading" className="inline-flex min-h-10 shrink-0 items-center rounded-full border border-emerald-200 bg-white px-4 text-emerald-900 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">সাধারণ প্রশ্ন</a>
+        </nav>
+
+        <div className="mt-4 min-w-0 space-y-5 sm:mt-6 sm:space-y-6">
+          <section id="product-details" aria-labelledby="product-details-heading" className="scroll-mt-28 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
             <div className="flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-3">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Product information</p>
@@ -346,7 +353,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             )}
 
-            <div id="product-description" className="mt-5 scroll-mt-20 border-t border-slate-100 pt-5">
+            <div id="product-description" className="mt-5 scroll-mt-28 border-t border-slate-100 pt-5">
               {description ? <ProductDescription html={description} /> : (
                 <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">পণ্যের বিস্তারিত বিবরণ এখনো যুক্ত হয়নি। অর্ডারের আগে বিক্রেতার কাছ থেকে specification নিশ্চিত করুন।</p>
               )}
@@ -362,15 +369,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {seedInformation && <SeedProductInformation sections={seedInformation.sections} details={seedInformation.details} />}
 
           {relatedProducts.length > 0 && (
+            <div id="related-marketplace-products" className="scroll-mt-28">
             <RelatedProductUpsell
               products={relatedProducts}
               heading={product.category_slug === "seeds" ? "আপনার প্রয়োজন হতে পারে এমন আরও বীজ" : "সম্পর্কিত আরও পণ্য"}
               subtitle="একই ধরনের আরও পণ্য দেখুন। প্রয়োজন অনুযায়ী একই কার্টে যোগ করতে পারবেন।"
               categoryHref={category ? "/marketplace/category/" + category.slug : "/marketplace"}
             />
+            </div>
           )}
 
-          <section aria-labelledby="product-faq-heading" className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+          <section aria-labelledby="product-faq-heading" className="scroll-mt-28 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-8">
             <h2 id="product-faq-heading" className="text-xl font-extrabold text-slate-950 sm:text-2xl">সাধারণ জিজ্ঞাসা</h2>
             <div className="mt-3 divide-y divide-slate-100">
               {faqs.map(faq => (

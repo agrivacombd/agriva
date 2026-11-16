@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, CheckCircle2, X } from "lucide-react";
+import { ShoppingCart, CheckCircle2, Heart, X } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
@@ -143,6 +143,25 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const alreadySeen = useRef(new Set<string>());
   const [page, setPage] = useState(1);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [wishlistOnly, setWishlistOnly] = useState(false);
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const wishlistStorageKey = isPlantMarket ? "agriva:plant-market:saved:v1" : "agriva:marketplace:saved:v1";
+
+  useEffect(() => {
+    try {
+      const saved: unknown = JSON.parse(window.localStorage.getItem(wishlistStorageKey) || "[]");
+      const eligible = new Set(products.map(product => product.id));
+      setWishlist(Array.isArray(saved) ? [...new Set(saved.filter((id): id is string => typeof id === "string" && eligible.has(id)))].slice(0, 200) : []);
+    } catch {
+      setWishlist([]);
+    }
+  }, [wishlistStorageKey, products]);
+
+  function toggleWishlist(productId: string) {
+    const next = wishlist.includes(productId) ? wishlist.filter(id => id !== productId) : [...wishlist, productId].slice(-200);
+    setWishlist(next);
+    try { window.localStorage.setItem(wishlistStorageKey, JSON.stringify(next)); } catch { /* Local saving is optional in private browser modes. */ }
+  }
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const addRequestInFlightRef = useRef(false);
@@ -254,7 +273,9 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     const filtered = products.filter((product) => {
       const matchesSearch = !search || [product.name, product.category, product.description, product.unit]
         .some((value) => normalize(value).includes(search));
-      return matchesSearch && productMatchesCategory(product, category);
+      return matchesSearch && productMatchesCategory(product, category)
+        && (!inStockOnly || Number(product.stock || 0) > 0)
+        && (!wishlistOnly || wishlist.includes(product.id));
     });
 
     return filtered.sort((a, b) => {
@@ -269,9 +290,9 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       // The API supplies relevance order; modern JS sort is stable.
       return 0;
     });
-  }, [products, query, category, sort]);
+  }, [products, query, category, sort, inStockOnly, wishlistOnly, wishlist]);
 
-  useEffect(() => setPage(1), [query, category, sort]);
+  useEffect(() => setPage(1), [query, category, sort, inStockOnly, wishlistOnly]);
   const paginated = visible.slice(0, page * PAGE_SIZE);
   const visibleProductIds = paginated.map((product) => product.id).join(",");
   useEffect(() => {
@@ -294,7 +315,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     return () => observer.disconnect();
   }, [visibleProductIds, productHrefPrefix]);
   const selectedCategory = MARKETPLACE_CATEGORIES.find((item) => item.slug === category);
-  const hasActiveFilters = Boolean(query.trim()) || category !== "all";
+  const hasActiveFilters = Boolean(query.trim()) || category !== "all" || inStockOnly || wishlistOnly;
 
   return (
     <div ref={catalogueRef} className={"mt-6 lg:mt-8 " + (showStickyCart ? "pb-32 sm:pb-24" : "")}>
@@ -311,12 +332,23 @@ export default function MarketplaceCore({ products, showCategories = true, avail
               <span className="text-[11px] font-bold text-slate-500">জনপ্রিয়:</span>
               {(isPlantMarket ? ["ইনডোর গাছ", "ফলের চারা", "ফুলের চারা"] : ["ধানের বীজ", "জৈব সার", "কৃষি যন্ত্রপাতি"]).map((term) => <button key={term} type="button" onClick={() => setQuery(term)} className="rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-800 transition hover:bg-emerald-100">{term}</button>)}
             </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2" aria-label="দ্রুত পণ্য ফিল্টার">
+              <button type="button" aria-pressed={inStockOnly} onClick={() => setInStockOnly(value => !value)}
+                className={"inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (inStockOnly ? "border-emerald-800 bg-emerald-800 text-white" : "border-slate-200 bg-white text-emerald-900 hover:bg-emerald-50")}>
+                <CheckCircle2 size={15} aria-hidden="true" /> শুধু স্টকে আছে
+              </button>
+              <button type="button" aria-pressed={wishlistOnly} onClick={() => setWishlistOnly(value => !value)}
+                className={"inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3 py-2 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 " + (wishlistOnly ? "border-emerald-800 bg-emerald-800 text-white" : "border-slate-200 bg-white text-emerald-900 hover:bg-emerald-50")}>
+                <Heart size={15} aria-hidden="true" /> সংরক্ষিত পণ্য ({new Intl.NumberFormat("bn-BD").format(wishlist.length)})
+              </button>
+              {wishlistOnly && <span className="text-[11px] leading-5 text-slate-500">এই ব্রাউজারে সংরক্ষিত</span>}
+            </div>
 
           </div>
           <label className="flex min-h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 sm:w-56">
             <span className="shrink-0">সাজান</span>
             <select value={sort} onChange={(event) => setSort(event.target.value as SortOption)} className="min-w-0 flex-1 bg-transparent text-sm font-bold text-slate-800 outline-none">
-              <option value="recommended">জনপ্রিয় ও সর্বাধিক বিক্রিত</option>
+              <option value="recommended">প্রাসঙ্গিক পণ্য</option>
                <option value="newest">নতুন পণ্য</option>
               <option value="price-low">দাম: কম থেকে বেশি</option>
               <option value="price-high">দাম: বেশি থেকে কম</option>
@@ -380,17 +412,17 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           )}
           {paginated.length ? <>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} onWish={() => setWishlist((current) => current.includes(product.id) ? current.filter((id) => id !== product.id) : [...current, product.id])} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
+              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
             </div>
             {paginated.length < visible.length && <div className="mt-7 flex justify-center">
               <button type="button" onClick={() => setPage((current) => current + 1)} className="min-h-11 rounded-xl border border-emerald-800 bg-white px-6 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">আরও পণ্য দেখুন ({new Intl.NumberFormat("bn-BD").format(visible.length - paginated.length)}টি বাকি)</button>
             </div>}
           </> : <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center sm:px-8">
             <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden="true">⌕</span>
-            <p className="mt-4 font-extrabold text-slate-900">{emptyCatalogMessage ? "Marketplace ক্যাটালগ এখন খালি" : "এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি"}</p>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || (isPlantMarket ? "গাছ বা চারার অন্য নাম দিয়ে খুঁজে দেখুন। গাছ বিনিময়ের বোর্ডেও নতুন পোস্ট পেতে পারেন।" : "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।")}</p>
+            <p className="mt-4 font-extrabold text-slate-900">{emptyCatalogMessage ? "Marketplace ক্যাটালগ এখন খালি" : wishlistOnly ? "সংরক্ষিত কোনো পণ্য পাওয়া যায়নি" : "এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি"}</p>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || (wishlistOnly ? "পণ্যের হৃদয় আইকনে চাপ দিয়ে সংরক্ষণ করুন, অথবা ফিল্টার বন্ধ করে সব পণ্য দেখুন।" : isPlantMarket ? "গাছ বা চারার অন্য নাম দিয়ে খুঁজে দেখুন। গাছ বিনিময়ের বোর্ডেও নতুন পোস্ট পেতে পারেন।" : "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।")}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {!emptyCatalogMessage && hasActiveFilters && <button type="button" onClick={() => { setQuery(""); setCategory("all"); }} className="min-h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50">সার্চ ও ক্যাটাগরি মুছুন</button>}
+              {!emptyCatalogMessage && hasActiveFilters && <button type="button" onClick={() => { setQuery(""); setCategory("all"); setInStockOnly(false); setWishlistOnly(false); }} className="min-h-10 rounded-xl border border-slate-200 px-4 text-xs font-bold text-slate-700 hover:bg-slate-50">সব ফিল্টার মুছুন</button>}
               {!emptyCatalogMessage && (isPlantMarket ? <Link href="/green-exchange/board" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">গাছ বিনিময় দেখুন</Link> : <Link href="/buyer-demands" className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">চাহিদা জানান</Link>)}
             </div>
           </div>}
