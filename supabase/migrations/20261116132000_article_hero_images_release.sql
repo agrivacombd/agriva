@@ -2,17 +2,17 @@
 alter table public.content_drafts add column if not exists editorial_version bigint not null default 0;
 
 create or replace function public.bump_content_draft_editorial_version()
-returns trigger language plpgsql set search_path to 'pg_catalog','public','pg_temp' as $
+returns trigger language plpgsql set search_path to 'pg_catalog','public','pg_temp' as $$
 begin
  new.editorial_version := old.editorial_version + 1;
  return new;
-end; $;
+end; $$;
 
-do $ begin
+do $$ begin
  if not exists (select 1 from pg_trigger where tgrelid='public.content_drafts'::regclass and tgname='content_draft_editorial_version_bump') then
   create trigger content_draft_editorial_version_bump before update on public.content_drafts for each row execute function public.bump_content_draft_editorial_version();
  end if;
-end $;
+end $$;
 
 alter table public.content_drafts
   add column if not exists hero_image_url text,
