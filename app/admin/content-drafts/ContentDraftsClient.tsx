@@ -107,7 +107,12 @@ export default function ContentDraftsClient(){
         draft:"Draft-এ ফেরত নেওয়া হয়েছে।",
       };
       setNotice(noticeText[action]);
-      setSelected(null);await load();
+      if(action==="save"){
+        const nextStatus=selected.status==="approved"?"review":
+          selected.status==="review"||selected.status==="rejected"?"draft":selected.status;
+        setSelected(prev=>prev?{...prev,status:nextStatus}:prev);
+      }else setSelected(null);
+      await load();
     }catch(e){setError(e instanceof Error?e.message:"Could not update draft.");}
     finally{setBusy(false);}
   }
@@ -160,7 +165,7 @@ export default function ContentDraftsClient(){
           <label className="text-sm font-bold">Meta description<textarea value={selected.meta_description||""} disabled={selected.status==="published"} maxLength={320} onChange={e=>setSelected({...selected,meta_description:e.target.value})} rows={2} className="mt-1 block w-full rounded-xl border border-slate-200 p-3 font-normal disabled:bg-slate-50"/></label>
           <Info label="Primary keyword" value={selected.primary_keyword}/><Info label="Search intent" value={selected.search_intent}/>
         </div>
-        <MarkdownArticleEditor value={selected.body_markdown||""} onChange={value=>setSelected(prev=>prev?{...prev,body_markdown:value}:prev)} primaryKeyword={selected.primary_keyword} title={selected.title} metaTitle={selected.meta_title||""} metaDescription={selected.meta_description||""} disabled={selected.status==="published"}/>
+        <MarkdownArticleEditor value={selected.body_markdown||""} onChange={value=>setSelected(prev=>prev?{...prev,body_markdown:value}:prev)} primaryKeyword={selected.primary_keyword} title={selected.title} slug={selected.slug} metaTitle={selected.meta_title||""} metaDescription={selected.meta_description||""} disabled={selected.status==="published"}/>
         <details className="mt-5 rounded-2xl border border-emerald-100 bg-[#f8faf7] p-4"><summary className="cursor-pointer font-extrabold">SEO outline, FAQ ও Internal Link Suggestions</summary>
           <div className="mt-3 grid gap-3 md:grid-cols-2">{([["Outline",selected.outline],["FAQ",selected.faq],["Internal links",selected.internal_link_suggestions],["Competitor notes",selected.competitor_analysis]] as const).map(([label,data])=><div key={label} className="min-w-0 rounded-xl bg-white p-3"><h3 className="text-sm font-bold">{label}</h3><pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words text-xs leading-6">{JSON.stringify(data,null,2)}</pre></div>)}</div>
         </details>
