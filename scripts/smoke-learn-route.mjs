@@ -7,6 +7,6 @@ assert.match(lesson,/params: Promise<\{ slug: string \}>/);
 assert.match(lesson,/const \{slug\} = await params/g);
 assert.match(lesson,/generateStaticParams/);
 assert.doesNotMatch(lesson,/getLesson\(params\.slug\)/);
-assert.match(hub,/href=\{\`\/learn\/\$\{lesson\.slug\}\`\}/);
-assert.match(hub,/canonical: "\/learn"/);
+assert.match(hub,/href:"\/learn\/".*lesson\.slug/);
+assert.match(hub,/alternates:\{canonical\}/);
 console.log("Learn guides await Next.js 16 params; metadata and links remain indexable.");
