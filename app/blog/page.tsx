@@ -27,7 +27,7 @@ export default async function BlogPage() {
     const supabase = createClient(url, key);
     const { data, error } = await supabase.from("content_drafts")
       .select("slug,title,meta_description,primary_keyword,created_at")
-      .eq("status", "published").eq("content_type", "article")
+      .eq("status", "published").eq("content_type", "article").is("deleted_at",null)
       .order("created_at", { ascending: false }).limit(100);
     if (!error) cmsArticles = (data || []).filter(item => item.slug).map(item => ({
       slug: item.slug, href: `/blog/${item.slug}`, source: "blog" as const,

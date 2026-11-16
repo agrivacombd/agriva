@@ -9,7 +9,7 @@ export default async function AdminArticlesPage(){
   const {supabase}=await requireAdminPage("content.read");
   // Production editorial source of truth. The retired article_drafts table is absent.
   const {data,error}=await supabase.from("content_drafts")
-    .select("id,title,primary_keyword,status,created_at,updated_at,slug,meta_title,meta_description")
+    .select("id,title,primary_keyword,status,created_at,updated_at,slug,meta_title,meta_description,deleted_at,deleted_from_status")
     .eq("content_type","article").order("updated_at",{ascending:false}).limit(150);
   const items=(data||[]).map(row=>({
     id:row.id,
@@ -21,6 +21,8 @@ export default async function AdminArticlesPage(){
     updated_at:row.updated_at||row.created_at,
     meta_title:row.meta_title||"",
     meta_description:row.meta_description||"",
+    deleted_at:row.deleted_at||null,
+    deleted_from_status:row.deleted_from_status||null,
   }));
   return <main className="min-h-screen bg-[#f5f7f2] px-4 py-7 text-[#17351f] sm:px-6 sm:py-11">
     <div className="mx-auto w-full max-w-6xl">

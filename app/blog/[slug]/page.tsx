@@ -13,7 +13,7 @@ async function getCmsArticle(slug:string):Promise<CmsArticle|null>{
   const supabase=createClient(url,key);
   const {data,error}=await supabase.from("content_drafts")
     .select("title,slug,meta_title,meta_description,primary_keyword,body_markdown,hero_image_url,hero_image_alt,created_at,updated_at")
-    .eq("slug",slug).eq("status","published").eq("content_type","article").maybeSingle();
+    .eq("slug",slug).eq("status","published").eq("content_type","article").is("deleted_at",null).maybeSingle();
   return error||!data?null:data as CmsArticle;
 }
 export const dynamic = "force-dynamic";

@@ -81,7 +81,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         supabase.from("seo_landing_pages").select("slug,updated_at").eq("status", "published").eq("noindex", false).order("slug", { ascending: true }).range(from, to),
       ),
       fetchAllSitemapRows<SitemapArticle>(async (from, to) =>
-        supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").order("slug", { ascending: true }).range(from, to),
+        supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").is("deleted_at",null).order("slug", { ascending: true }).range(from, to),
       ),
     ]);
     plantProducts = plantProductRows.filter((product) => isValidSlug(product.slug));

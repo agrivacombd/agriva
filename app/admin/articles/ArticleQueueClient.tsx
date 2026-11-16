@@ -2,14 +2,16 @@
 import Link from "next/link";
 import {useMemo,useState} from "react";
 import {Search,CheckCircle2,AlertCircle} from "lucide-react";
+import ContentRemovalActions from "@/app/admin/content-drafts/ContentRemovalActions";
 
 export type ArticleQueueEntry={
   id:string;title:string;keyword:string;status:string;slug:string;
   created_at:string;updated_at:string;meta_title:string;meta_description:string;
+  deleted_at:string|null;deleted_from_status:string|null;
 };
 const statusLabels:Record<string,string>={
   draft:"Draft",review:"Review pending",approved:"Approved · Not published",
-  published:"Published",rejected:"Needs revision",
+  published:"Published",rejected:"Needs revision",trash:"Trash",
 };
 const statusHints:Record<string,string>={
   draft:"সম্পাদনা সম্পন্ন হলে Review-তে পাঠান।",
@@ -18,7 +20,8 @@ const statusHints:Record<string,string>={
   published:"প্রকাশিত Blog পেজ ও metadata পরীক্ষা করুন।",
   rejected:"সংশোধন করে নতুন করে Review-তে পাঠান।",
 };
-const statuses=["all","draft","review","approved","published","rejected"] as const;
+const statuses=["all","draft","review","approved","published","rejected","trash"] as const;
+const isTrashed=(item:ArticleQueueEntry)=>Boolean(item.deleted_at);
 const normalize=(s:string)=>s.toLocaleLowerCase().normalize("NFKC").trim();
 const validMeta=(entry:ArticleQueueEntry)=>
   entry.meta_title.trim().length>=25&&entry.meta_title.trim().length<=65&&
@@ -29,12 +32,12 @@ export default function ArticleQueueClient({items}:{items:ArticleQueueEntry[]}){
   const [status,setStatus]=useState<string>("all");
   const [onlyIssues,setOnlyIssues]=useState(false);
   const counts=useMemo(()=>Object.fromEntries(statuses.map(key=>[
-    key,key==="all"?items.length:items.filter(item=>item.status===key).length,
+    key,key==="all"?items.filter(item=>!isTrashed(item)).length:items.filter(item=>key==="trash"?isTrashed(item):!isTrashed(item)&&item.status===key).length,
   ])),[items]);
-  const pending=items.find(item=>item.status==="review")||items.find(item=>item.status==="draft");
+  const pending=items.find(item=>!isTrashed(item)&&item.status==="review")||items.find(item=>!isTrashed(item)&&item.status==="draft");
   const filtered=useMemo(()=>{
     const needle=normalize(query);
-    return items.filter(item=>(status==="all"||item.status===status)&&
+    return items.filter(item=>(status==="trash"?isTrashed(item):!isTrashed(item)&&(status==="all"||item.status===status))&&
       (!onlyIssues||!validMeta(item))&&
       (!needle||[item.title,item.keyword,item.slug,item.meta_title].some(s=>normalize(s).includes(needle))));
   },[items,query,status,onlyIssues]);
@@ -59,7 +62,7 @@ export default function ArticleQueueClient({items}:{items:ArticleQueueEntry[]}){
         className="inline-flex min-h-10 items-center rounded-xl border border-emerald-200 px-4 text-xs font-extrabold text-emerald-900 hover:bg-emerald-50">Open Editor ↗</Link>
     </div>}
     <section aria-label="Article filters" className="mt-5 rounded-2xl border border-emerald-100 bg-white p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-black">নিবন্ধ খুঁজুন</h2><span className="text-xs text-slate-500">{filtered.length}/{items.length}টি</span></div>
+      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-black">নিবন্ধ খুঁজুন</h2><span className="text-xs text-slate-500">{filtered.length}/{counts.all||0} সক্রিয় · {counts.trash||0} Trash</span></div>
       <label className="relative mt-3 block">
         <span className="sr-only">Title, keyword বা slug দিয়ে খুঁজুন</span>
         <Search size={18} aria-hidden="true" className="pointer-events-none absolute left-4 top-3.5 text-slate-500"/>
@@ -87,7 +90,7 @@ export default function ArticleQueueClient({items}:{items:ArticleQueueEntry[]}){
             <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-800">SEO ARTICLE</span>
             <span className={"rounded-full px-2.5 py-1 text-[11px] font-bold "+
               (item.status==="approved"?"bg-sky-50 text-sky-900":item.status==="review"?"bg-amber-50 text-amber-900":"bg-slate-100 text-slate-700")}>
-              {statusLabels[item.status]||item.status}
+              {isTrashed(item)?"Trash":statusLabels[item.status]||item.status}
             </span>
             <span className={"inline-flex items-center gap-1 text-[11px] font-bold "+(validMeta(item)?"text-emerald-800":"text-amber-800")}>
               {validMeta(item)?<CheckCircle2 size={13}/>:<AlertCircle size={13}/>}
@@ -99,15 +102,16 @@ export default function ArticleQueueClient({items}:{items:ArticleQueueEntry[]}){
           </h3>
           <p className="mt-1 break-words text-xs text-slate-600">Keyword: <strong>{item.keyword||"—"}</strong></p>
           <p className="mt-1 break-all text-[11px] text-slate-500">/blog/{item.slug}</p>
-          <p className="mt-2 text-xs leading-6 text-slate-600">{statusHints[item.status]||"Editor-এ status যাচাই করুন।"}</p>
+          <p className="mt-2 text-xs leading-6 text-slate-600">{isTrashed(item)?"Trash থেকে Restore করলে Draft হবে; Permanently Delete করলে post ও revisions মুছে যাবে।":statusHints[item.status]||"Editor-এ status যাচাই করুন।"}</p>
           <p className="mt-1 text-[11px] text-slate-500">সর্বশেষ সম্পাদনা: {Number.isFinite(Date.parse(item.updated_at))?
             new Date(item.updated_at).toLocaleString("bn-BD",{timeZone:"Asia/Dhaka",dateStyle:"medium",timeStyle:"short"}):"—"}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          {item.status==="published"&&item.slug&&<Link href={"/blog/"+encodeURIComponent(item.slug)} target="_blank" rel="noopener noreferrer"
+          {!isTrashed(item)&&item.status==="published"&&item.slug&&<Link href={"/blog/"+encodeURIComponent(item.slug)} target="_blank" rel="noopener noreferrer"
             className="inline-flex min-h-10 items-center rounded-xl border border-emerald-200 px-4 text-xs font-bold text-emerald-900 hover:bg-emerald-50">Live</Link>}
-          <Link href={"/admin/content-drafts?draft="+encodeURIComponent(item.id)}
-            className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">Open SEO Editor</Link>
+          {!isTrashed(item)&&<Link href={"/admin/content-drafts?draft="+encodeURIComponent(item.id)}
+            className="inline-flex min-h-10 items-center rounded-xl bg-emerald-900 px-4 text-xs font-bold text-white hover:bg-emerald-800">Edit Post</Link>}
+          <ContentRemovalActions compact id={item.id} slug={item.slug} title={item.title} trashed={isTrashed(item)}/>
         </div>
       </article>)}
       {!filtered.length&&<div className="p-6 text-center text-sm text-slate-600">

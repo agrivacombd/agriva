@@ -26,6 +26,7 @@ export async function PATCH(request: NextRequest) {
     .from("content_drafts")
     .select("id,status,title,slug,body_markdown,content_type,primary_keyword,meta_title,meta_description")
     .eq("id", body.id.trim())
+    .is("deleted_at",null)
     .maybeSingle();
 
   if (readError || !current) {
@@ -47,7 +48,7 @@ export async function PATCH(request: NextRequest) {
       meta_title: typeof body.meta_title === "string" ? body.meta_title.slice(0, 160) : null,
       meta_description: typeof body.meta_description === "string" ? body.meta_description.slice(0, 320) : null,
       ...(current.status === "approved" ? { status: "review", reviewed_at: null } : current.status === "review" || current.status === "rejected" ? { status: "draft", reviewed_at: null } : {}),
-    }).eq("id", current.id).eq("status", current.status).select("id").maybeSingle();
+    }).eq("id", current.id).eq("status", current.status).is("deleted_at",null).select("id").maybeSingle();
     if (error) return NextResponse.json({ error: "Could not save draft." }, { status: 500 });
     if (!data) return NextResponse.json({ error: "Draft changed; reload and try again." }, { status: 409 });
     return NextResponse.json({ ok: true });
@@ -103,7 +104,7 @@ export async function PATCH(request: NextRequest) {
     ...(body.body_markdown !== undefined ? { body_markdown: markdown } : {}),
     ...(body.meta_title !== undefined ? { meta_title: typeof body.meta_title === "string" ? body.meta_title.trim().slice(0, 160) : null } : {}),
     ...(body.meta_description !== undefined ? { meta_description: typeof body.meta_description === "string" ? body.meta_description.trim().slice(0, 320) : null } : {}),
-  }).eq("id", current.id).eq("status", current.status).select("id,slug").maybeSingle();
+  }).eq("id", current.id).eq("status", current.status).is("deleted_at",null).select("id,slug").maybeSingle();
 
   if (update.error) return NextResponse.json({ error: "Workflow update failed." }, { status: 500 });
   if (!update.data) return NextResponse.json({ error: "Draft changed; reload and try again." }, { status: 409 });

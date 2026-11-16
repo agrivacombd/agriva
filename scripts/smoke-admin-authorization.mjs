@@ -160,8 +160,7 @@ assert.ok(articleGenerator.includes('replace(/\\s+/g, "-")'), "article slug gene
 assert.ok(/### \$\{keyword\} কী\?\n\n/.test(articleGenerator), "article markdown must contain real line breaks rather than literal backslash-n sequences");
 
 const articleReview = read("app/admin/articles/[id]/page.tsx");
-assert.ok(articleReview.includes("supabase.auth.getUser()"), "article review page must verify the session");
-assert.ok(articleReview.includes('profileError || profile?.role !== "admin"'), "article review page must fail closed for non-admin users");
+assert.ok(articleReview.includes('requireAdminPage("content.read")'), "article review page must use the central admin session guard");
 
 const sharedGuardPages = [
   ["app/admin/page.tsx", "dashboard.read"],
