@@ -3,8 +3,8 @@ import { useMemo, useRef, useState } from "react";
 import {ArticleMarkdown} from "@/lib/content/article-markdown";
 import {getEditorialChecks, normalizeEditorialMarkdown} from "@/lib/content/article-quality";
 type Props={value:string;onChange:(value:string)=>void;primaryKeyword:string;title:string;slug?:string;metaTitle:string;metaDescription:string;disabled?:boolean};
-type Tool="h2"|"h3"|"bold"|"italic"|"list"|"number"|"link"|"faq"|"sources";
-const tools:{key:Tool;label:string}[]=[{key:"h2",label:"H2"},{key:"h3",label:"H3"},{key:"bold",label:"Bold"},{key:"italic",label:"Italic"},{key:"list",label:"• List"},{key:"number",label:"1. List"},{key:"link",label:"Link"},{key:"faq",label:"FAQ"},{key:"sources",label:"Sources"}];
+type Tool="h2"|"h3"|"bold"|"italic"|"list"|"number"|"link"|"table"|"image"|"quote"|"faq"|"sources";
+const tools:{key:Tool;label:string}[]=[{key:"h2",label:"H2"},{key:"h3",label:"H3"},{key:"bold",label:"Bold"},{key:"italic",label:"Italic"},{key:"list",label:"• List"},{key:"number",label:"1. List"},{key:"link",label:"Link"},{key:"table",label:"Table"},{key:"image",label:"Image"},{key:"quote",label:"Quote"},{key:"faq",label:"FAQ"},{key:"sources",label:"Sources"}];
 export default function MarkdownArticleEditor({value,onChange,primaryKeyword,title,slug="",metaTitle,metaDescription,disabled=false}:Props){
   const field=useRef<HTMLTextAreaElement>(null);
   const [mode,setMode]=useState<"both"|"edit"|"preview">("both");
@@ -25,11 +25,35 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
       const label=selectedText||window.prompt("পাঠকের জন্য লিংকের অর্থবহ নাম দিন:","")?.trim();
       if(!label)return;
       inserted="["+label.replace(/[\[\]]/g,"")+"]("+trimmed+")";
+    }else if(which==="image"){
+      const imageSrc=window.prompt("ছবির HTTPS বা AGRIVA /storage/... URL দিন:","");
+      if(!imageSrc)return;
+      const src=imageSrc.trim();
+      if(!/^https:\/\/[^\s()]+$/i.test(src)&&!/^\/(?!\/)[^\s()\\]+$/.test(src)){
+        window.alert("ছবির জন্য HTTPS অথবা / দিয়ে শুরু হওয়া নিরাপদ URL প্রয়োজন।");return;
+      }
+      const alt=window.prompt("ছবিতে আসলে কী দেখা যাচ্ছে? ২ অক্ষরের বেশি বর্ণনামূলক Alt Text দিন:",selectedText||"");
+      if(!alt||alt.trim().length<3||alt.includes("]")){window.alert("ছবির স্পষ্ট Alt Text দিন।");return;}
+      inserted="\n\n!["+alt.trim()+"]("+src+")\n\n";
+    }else if(which==="table"){
+      const headersInput=window.prompt("টেবিলের কলাম নামগুলো | দিয়ে আলাদা করুন (২–৬টি):","");
+      if(!headersInput)return;
+      const columns=headersInput.split("|").map(x=>x.trim()).filter(Boolean);
+      if(columns.length<2||columns.length>6||columns.some(x=>x.includes("\n"))){
+        window.alert("সঠিকভাবে ২–৬টি কলামের নাম লিখুন।");return;
+      }
+      const valuesInput=window.prompt("প্রথম সারির তথ্য একই ক্রমে | দিয়ে আলাদা করুন:","");
+      if(!valuesInput)return;
+      const values=valuesInput.split("|").map(x=>x.trim());
+      if(values.length!==columns.length||values.some(x=>!x||x.includes("\n"))){
+        window.alert("প্রথম সারির তথ্য কলামের সংখ্যার সঙ্গে মিলতে হবে।");return;
+      }
+      inserted="\n\n| "+columns.join(" | ")+" |\n| "+columns.map(()=>"---").join(" | ")+" |\n| "+values.join(" | ")+" |\n\n";
     }else{
       const sample=selectedText||({
         h2:"বিভাগের বিষয়",h3:"উপবিভাগের বিষয়",bold:"গুরুত্বপূর্ণ তথ্য",
         italic:"বৈজ্ঞানিক নাম",list:"তালিকার বিষয়",number:"একটি ধাপ",
-        link:"",faq:"",sources:"",
+        link:"",table:"",image:"",quote:"",faq:"",sources:"",
       }[which]);
       inserted=which==="h2"?"\n\n## "+sample+"\n\n":
         which==="h3"?"\n\n### "+sample+"\n\n":
@@ -37,6 +61,7 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
         which==="italic"?"*"+sample+"*":
         which==="list"?"\n- "+sample:
         which==="number"?"\n1. "+sample:
+        which==="quote"?"\n\n> "+sample+"\n\n":
         which==="faq"?"\n\n## সাধারণ প্রশ্ন (FAQ)\n\n":
         "\n\n## তথ্যসূত্র\n\n";
     }
@@ -54,7 +79,7 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
   }
   return <section className="mt-6 min-w-0">
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <div><h3 className="font-extrabold">Article body (Markdown)</h3><p className="mt-1 text-xs text-slate-600">Heading, bold, list, link, FAQ, তথ্যসূত্র ও live preview</p></div>
+      <div><h3 className="font-extrabold">Article body (Markdown)</h3><p className="mt-1 text-xs text-slate-600">Heading, table, image, link, quote, FAQ, তথ্যসূত্র ও live preview</p></div>
       <p className="text-xs font-semibold text-slate-500">{words.toLocaleString("bn-BD")} শব্দ · {value.length}/50000 অক্ষর</p>
     </div>
     <section aria-label="Search result preview" className="mt-4 min-w-0 rounded-xl border border-sky-100 bg-white p-4">
@@ -66,6 +91,7 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
     </section>
     <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
       <div className="flex flex-wrap gap-1.5 border-b bg-slate-50 p-2">{tools.map(x=><button key={x.key} type="button" disabled={disabled} title={x.label} onMouseDown={e=>e.preventDefault()} onClick={()=>format(x.key)} className="min-h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-bold text-emerald-950 disabled:opacity-50">{x.label}</button>)}<button type="button" disabled={disabled} onClick={cleanEscapes} className="min-h-9 rounded-lg border border-amber-200 bg-amber-50 px-2.5 text-xs font-bold text-amber-950 disabled:opacity-50">Fix pasted escapes</button></div>
+      <p className="border-b bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-900">Table: কলাম ও প্রথম সারির তথ্য দিয়ে তৈরি করুন, পরে Markdown-এ আরও সারি যোগ করুন। Image: অনুমতিপ্রাপ্ত HTTPS ছবি ও অর্থবহ Alt Text দিন।</p>
       <div className="flex flex-wrap gap-2 border-b px-3 py-2" role="group" aria-label="Editor view">
         {(["both","edit","preview"] as const).map(x=><button key={x} type="button" aria-pressed={mode===x} onClick={()=>setMode(x)} className={"min-h-9 rounded-lg px-3 text-xs font-bold "+(mode===x?"bg-emerald-800 text-white":"bg-slate-100 text-emerald-900")}>{x==="both"?"Edit + Preview":x==="edit"?"Edit":"Preview"}</button>)}
       </div>
