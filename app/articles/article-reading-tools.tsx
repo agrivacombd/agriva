@@ -26,12 +26,16 @@ export function ReadingProgress() {
   );
 }
 
-export function ShareArticle({ title, url }: { title: string; url: string }) {
+export function ShareArticle({ title, url }: { title: string; url?: string }) {
+  const [fallbackUrl, setFallbackUrl] = useState("");
+  useEffect(() => {
+    if (!url) setFallbackUrl(window.location.origin + window.location.pathname);
+  }, [url]);
   const [message, setMessage] = useState("");
   const [showAll, setShowAll] = useState(false);
   // The server supplies a single canonical, query-free URL. Never share the
   // current browser location (which may include campaign or tracking params).
-  const shareUrl = url;
+  const shareUrl = url || fallbackUrl;
   const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const platforms = [
