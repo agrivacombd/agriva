@@ -25,6 +25,12 @@ type Props = {
 
 const CHOICES = [1, 2, 3, 5, 10];
 const numberBN = (value: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(value);
+// Numeric keyboards in Bangladesh can output Bengali digits; normalize before
+// validating, while keeping the server's integer-only cart contract unchanged.
+const normalizeQuantityDigits = (value: string) => value
+  .replace(/[০-৯]/g, digit => String(digit.charCodeAt(0) - 0x09e6))
+  .replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 0x0660))
+  .trim();
 
 export default function CheckoutButton({
   productId, productSlug, productName, unitPrice, stock, unitLabel, shippingClass, shippingWeightGrams, disabled = false,
@@ -128,16 +134,19 @@ export default function CheckoutButton({
   }
 
   function applyCustomQuantity() {
-    const input = customQuantityInput.trim();
+    const input = normalizeQuantityDigits(customQuantityInput);
     const requested = /^[0-9]{1,3}$/.test(input) ? Number(input) : 0;
     if (!Number.isSafeInteger(requested) || requested < 1 || requested > maxQuantity) {
       setMessage("১ থেকে " + numberBN(maxQuantity) + " " + unitLabel + " এর মধ্যে সম্পূর্ণ সংখ্যা লিখুন (স্টক ও অর্ডার সীমা অনুযায়ী)।");
       return;
     }
     setQuantity(requested);
+    setCustomQuantityInput(String(requested));
     setCustomQuantitySelected(true);
     setCustomQuantityOpen(false);
-    setMessage("");
+    // Applying a custom quantity should also honour the buyer's cart intent.
+    // Pass the validated number explicitly: React state updates are async.
+    void addToCart(requested);
   }
 
   async function addToCart(requestedQuantity = quantity) {
@@ -276,8 +285,8 @@ export default function CheckoutButton({
               আপনার প্রয়োজনীয় পরিমাণ লিখুন
             </label>
             <div className="mt-2 flex flex-wrap items-stretch gap-2">
-              <input id="agriva-custom-quantity-input" type="number" inputMode="numeric"
-                min={1} max={maxQuantity} step={1} value={customQuantityInput}
+              <input id="agriva-custom-quantity-input" type="text" inputMode="numeric"
+                autoComplete="off" pattern="[0-9০-৯٠-٩]*" maxLength={3} value={customQuantityInput}
                 onChange={event => setCustomQuantityInput(event.target.value)}
                 onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); applyCustomQuantity(); } }}
                 disabled={unavailable || loading || addingToCart || Boolean(orderId)}
@@ -286,11 +295,11 @@ export default function CheckoutButton({
               <button type="button" onClick={applyCustomQuantity}
                 disabled={unavailable || loading || addingToCart || Boolean(orderId)}
                 className="min-h-11 rounded-xl bg-emerald-800 px-4 py-2 text-sm font-black text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50">
-                প্রয়োগ করুন
+                প্রয়োগ করে কার্টে যোগ করুন
               </button>
             </div>
             <p id="agriva-custom-quantity-hint" className="mt-2 text-xs leading-5 text-slate-600">
-              সর্বনিম্ন ১, সর্বোচ্চ {numberBN(maxQuantity)} {unitLabel}। সংখ্যাটি প্রয়োগ করলে নিচের মূল্য ও ডেলিভারি হিসাব আপডেট হবে।
+              সর্বনিম্ন ১, সর্বোচ্চ {numberBN(maxQuantity)} {unitLabel}। প্রয়োগ করলে এই পরিমাণ কার্টে যোগ হবে এবং মূল্য ও ডেলিভারি হিসাব আপডেট হবে।
             </p>
           </div>
         )}
