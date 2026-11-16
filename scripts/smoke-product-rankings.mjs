@@ -59,7 +59,7 @@ for (const [label,source,func] of [
   ["category",category,"get_ranked_marketplace_products"],
   ["subcategory",subcategory,"get_ranked_marketplace_products"],
 ]) assert.ok(source.includes(func),label+" must query ranked listings");
-assert.match(marketDetail,/ProductClickTracker market="marketplace" productId=\{product\.id\}/);
+assert.match(marketDetail,/ProductClickTracker market="marketplace" productId=\{product\.id\} categorySlug=\{product\.category_slug\}/);
 assert.match(plantDetail,/ProductClickTracker market="plant-market" productId=\{product\.id\}/);
 console.log("Product behaviour ranking and anti-abuse source checks passed.");
 

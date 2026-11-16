@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
+import { INTEREST_CHANGED, INTEREST_KEY, clearInterest, personalizationAllowed, readInterest,
+  recordInterest, suggestForBrowser, unsaveInterest, type Interest
+} from "@/lib/marketplace/personalization";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, CheckCircle2, Heart, X } from "lucide-react";
@@ -61,7 +64,10 @@ function ProductCard({
   const hasPrice = product.price !== null && product.price !== undefined && String(product.price).trim() !== "";
   const hasStock = product.stock !== null && product.stock !== undefined;
   const inStock = Number(product.stock || 0) > 0;
-  const recordListingClick = () => trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "listing_click", [product.id]);
+  const recordListingClick = () => {
+    trackProductRankEvents(productHrefPrefix === "/plant-market" ? "plant-market" : "marketplace", "listing_click", [product.id]);
+    if (productHrefPrefix === "/marketplace") recordInterest(product,"click");
+  };
 
   const detailHref = productHrefPrefix + "/" + product.slug;
   const unitLabels: Record<string, string> = { pack: "প্যাকেট", kg: "কেজি", g: "গ্রাম", piece: "পিস", liter: "লিটার", bag: "বস্তা" };
@@ -145,6 +151,19 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [wishlistOnly, setWishlistOnly] = useState(false);
   const [inStockOnly, setInStockOnly] = useState(false);
+  const [interests, setInterests] = useState<Interest[]>([]);
+  const [allowPersonal, setAllowPersonal] = useState(false);
+  const [personalSort, setPersonalSort] = useState(true);
+  useEffect(() => {
+    if (isPlantMarket) return;
+    setAllowPersonal(personalizationAllowed());
+    const sync=()=>setInterests(readInterest());
+    sync();
+    const storage=(event:StorageEvent)=>{if(event.key===INTEREST_KEY)sync();};
+    window.addEventListener(INTEREST_CHANGED,sync);
+    window.addEventListener("storage",storage);
+    return ()=>{window.removeEventListener(INTEREST_CHANGED,sync);window.removeEventListener("storage",storage);};
+  },[isPlantMarket]);
   const wishlistStorageKey = isPlantMarket ? "agriva:plant-market:saved:v1" : "agriva:marketplace:saved:v1";
 
   useEffect(() => {
@@ -160,6 +179,11 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   function toggleWishlist(productId: string) {
     const next = wishlist.includes(productId) ? wishlist.filter(id => id !== productId) : [...wishlist, productId].slice(-200);
     setWishlist(next);
+    if (!isPlantMarket) {
+      const item=products.find(p=>p.id===productId);
+      if (item && next.includes(productId)) recordInterest(item,"save");
+      else unsaveInterest(productId);
+    }
     try { window.localStorage.setItem(wishlistStorageKey, JSON.stringify(next)); } catch { /* Local saving is optional in private browser modes. */ }
   }
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
@@ -238,6 +262,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         quantity: 1,
         value: Number(product.price),
       });
+      recordInterest(product,"cart");
       setCartConfirmed(true);
       setCartBarDismissed(false);
       window.dispatchEvent(new Event(CART_UPDATED_EVENT));
@@ -278,6 +303,8 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         && (!wishlistOnly || wishlist.includes(product.id));
     });
 
+    if (sort === "recommended" && !isPlantMarket && allowPersonal && personalSort)
+      return suggestForBrowser(filtered,interests,wishlist).ordered;
     return filtered.sort((a, b) => {
       if (sort === "price-low" || sort === "price-high") {
         const aMissing = a.price === null || a.price === undefined || String(a.price).trim() === "";
@@ -290,7 +317,11 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       // The API supplies relevance order; modern JS sort is stable.
       return 0;
     });
-  }, [products, query, category, sort, inStockOnly, wishlistOnly, wishlist]);
+  }, [products, query, category, sort, inStockOnly, wishlistOnly, wishlist, isPlantMarket, allowPersonal, personalSort, interests]);
+  const suggestions=useMemo(()=>{
+    if(isPlantMarket || !allowPersonal || !personalSort || sort!=="recommended" || query.trim() || wishlistOnly)return [];
+    return suggestForBrowser(visible,interests,wishlist).suggested;
+  },[isPlantMarket,allowPersonal,personalSort,sort,query,wishlistOnly,visible,interests,wishlist]);
 
   useEffect(() => setPage(1), [query, category, sort, inStockOnly, wishlistOnly]);
   const paginated = visible.slice(0, page * PAGE_SIZE);
@@ -409,6 +440,33 @@ export default function MarketplaceCore({ products, showCategories = true, avail
               {cartNeedsLogin && <Link href={"/login?next=" + encodeURIComponent("/marketplace")} className="rounded-lg bg-emerald-900 px-4 py-2 text-xs font-bold text-white">লগইন করুন</Link>}
               {!cartNeedsLogin && <Link href="/cart" className="text-xs font-bold underline underline-offset-2">কার্ট দেখুন</Link>}
             </div>
+          )}
+          {!isPlantMarket && allowPersonal && (interests.length>0 || wishlist.length>0) && (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-white p-3">
+              <p className="text-xs leading-5 text-slate-600">আপনার আগ্রহ অনুযায়ী পণ্য <span className="text-slate-400">· এই ব্রাউজারে</span></p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" aria-pressed={personalSort} onClick={()=>setPersonalSort(v=>!v)}
+                  className="min-h-9 rounded-lg border border-emerald-200 px-3 text-xs font-bold text-emerald-900 hover:bg-emerald-50">{personalSort?"ব্যক্তিগত সাজানো বন্ধ":"ব্যক্তিগত সাজানো চালু"}</button>
+                <button type="button" onClick={clearInterest} className="min-h-9 px-2 text-xs font-semibold text-slate-500 underline underline-offset-2">দেখার ইতিহাস মুছুন</button>
+              </div>
+            </div>
+          )}
+          {suggestions.length>0 && (
+            <section aria-labelledby="for-you-products-title" className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3 sm:p-5">
+              <h3 id="for-you-products-title" className="text-base font-black text-emerald-950 sm:text-lg">আপনার আগ্রহ অনুযায়ী পণ্য</h3>
+              <p className="mt-1 text-xs leading-5 text-slate-600">দেখা, সংরক্ষণ ও কার্টে যোগ করার ভিত্তিতে সাজানো ব্যক্তিগত পরামর্শ।</p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+                {suggestions.map(item=><Link key={item.id} href={productHrefPrefix+"/"+item.slug}
+                  onClick={()=>{trackProductRankEvents("marketplace","listing_click",[item.id]);recordInterest(item,"click");}}
+                  className="group flex min-w-0 flex-col rounded-xl border border-emerald-100 bg-white p-2.5 hover:border-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                  <div className="relative aspect-[5/4] overflow-hidden rounded-lg bg-slate-50">
+                    {item.image_url?<Image src={item.image_url} alt={item.name} fill unoptimized sizes="(max-width: 640px) 45vw, 200px" className="object-contain p-1.5" />:<span className="grid h-full place-items-center text-3xl" aria-hidden="true">🌱</span>}
+                  </div>
+                  <span className="mt-2 line-clamp-2 min-h-10 break-words text-xs font-bold leading-5 text-slate-900 sm:text-sm">{item.name}</span>
+                  <span className="mt-auto pt-1 text-sm font-black text-emerald-900">৳{money(item.price as number | string)}</span>
+                </Link>)}
+              </div>
+            </section>
           )}
           {paginated.length ? <>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
