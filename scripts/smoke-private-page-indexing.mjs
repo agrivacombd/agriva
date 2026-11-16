@@ -21,4 +21,6 @@ for (const path of ["app/about-us/page.tsx", "app/contact-us/page.tsx", "app/mar
   assert.doesNotMatch(title, /AGRIVA/i,
     `${path} should inherit AGRIVA once via the root title template`);
 }
+assert.match(read("app/orders/page.tsx"), /title:"My Orders"/,
+  "Orders route should not repeat the AGRIVA title template");
 console.log("Public SEO title and private route indexing regression checks passed.");
