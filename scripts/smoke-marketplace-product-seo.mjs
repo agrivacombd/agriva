@@ -47,6 +47,14 @@ assert.doesNotMatch(share, /setInterval\s*\(|setTimeout\s*\(|window\.open\s*\(|u
 assert.doesNotMatch(page, /aggregateRating|reviewRating|ratingValue/,
   "Do not fabricate reviews or SEO ratings");
 
+assert.match(page, /\\.eq\\("slug", normalized\\)[^\\n]*\\.is\\("deleted_at", null\\)/,
+  "Public product detail slug lookup must exclude soft-deleted records");
+assert.match(page, /\\.eq\\("id", normalized\\)[^\\n]*\\.is\\("deleted_at", null\\)/,
+  "Public product detail UUID lookup must exclude soft-deleted records");
+assert.match(page, /\\.eq\\("marketplace_channel", "marketplace"\\)\\s*\\.is\\("deleted_at", null\\)/,
+  "Related product cards must exclude soft-deleted records");
+assert.match(sitemap, /\\.from\\("products"\\)[\\s\\S]*?\\.is\\("deleted_at", null\\)/,
+  "XML sitemap must exclude soft-deleted marketplace listings");
 assert.match(page, /"@type":\s*"BreadcrumbList"/,
   "BreadcrumbList structured data must be present");
 assert.match(page, /JSON\.stringify\(jsonLd\)\.replace\(\/</,
