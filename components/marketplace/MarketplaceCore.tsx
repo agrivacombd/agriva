@@ -96,31 +96,32 @@ function ProductCard({
           <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
         <div className="mt-auto border-t border-slate-100 pt-3">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">PRICE</p>
+          <p className="text-[10px] font-semibold text-slate-500">মূল্য</p>
           <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
             <p className="text-lg font-black tracking-tight text-emerald-900 sm:text-xl">
               {hasPrice && Number(product.price) >= 0 ? <>৳{money(product.price as number | string)}{unit && <span className="ml-1 text-[10px] font-semibold text-slate-500">/ {unit}</span>}</> : <span className="text-xs">দাম জানতে যোগাযোগ করুন</span>}
             </p>
           </div>
           {productHrefPrefix === "/marketplace" ? (
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }}
-                disabled={!inStock || !hasPrice || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || cartBusy}
-                aria-label={product.name + " কার্টে যোগ করুন"}
-                className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 rounded-xl border border-emerald-800 bg-white px-2 py-2 text-[11px] font-extrabold leading-5 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-not-allowed disabled:opacity-45 sm:text-xs">
-                <ShoppingCart size={15} className="shrink-0" aria-hidden="true" />
-                {addingToCart ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
-              </button>
+            <div className="mt-3 grid grid-cols-1 gap-2 min-[480px]:grid-cols-2">
               {inStock && hasPrice && Number.isFinite(Number(product.price)) && Number(product.price) >= 0 ? (
                 <Link href={detailHref + "#product-direct-cod"} onClick={recordListingClick}
-                  className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-emerald-800 px-2 py-2 text-[11px] font-black leading-5 text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:text-xs">
-                  এখনই কিনুন
+                  aria-label={product.name + " এখনই কিনুন"}
+                  className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl bg-emerald-800 px-2 py-2 text-xs font-black text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">
+                  Buy Now
                 </Link>
               ) : (
-                <span aria-disabled="true" className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-center text-[11px] font-bold text-slate-500">
+                <span aria-disabled="true" className="inline-flex min-h-11 min-w-0 items-center justify-center rounded-xl bg-slate-100 px-2 py-2 text-center text-xs font-bold text-slate-500">
                   {hasStock && !inStock ? "স্টক শেষ" : "অর্ডার বন্ধ"}
                 </span>
               )}
+              <button type="button" onClick={() => { recordListingClick(); onAddToCart(); }}
+                disabled={!inStock || !hasPrice || !Number.isFinite(Number(product.price)) || Number(product.price) < 0 || cartBusy}
+                aria-label={product.name + " কার্টে যোগ করুন"}
+                className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 border-emerald-800 bg-white px-2 py-2 text-[11px] font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-45 min-[480px]:text-xs">
+                <ShoppingCart size={15} className="shrink-0" aria-hidden="true" />
+                {addingToCart ? "Adding…" : "Add to Cart"}
+              </button>
             </div>
           ) : (
             <Link href={detailHref} onClick={recordListingClick} className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-900">
@@ -401,7 +402,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         <aside role="region" aria-label="কার্ট থেকে COD অর্ডারে এগিয়ে যান"
           className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] z-40 mx-auto max-w-2xl rounded-2xl border border-emerald-700/20 bg-white/95 px-3 pb-3 pt-4 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:px-4">
           <button type="button" onClick={() => setCartBarDismissed(true)} aria-label="কার্টের নিচের বার বন্ধ করুন"
-            className="absolute right-1 top-0 grid h-7 w-7 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+            className="absolute right-1 top-0 grid h-9 w-9 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
             <X size={15} aria-hidden="true" />
           </button>
           <div className="flex flex-wrap items-center gap-2.5 sm:flex-nowrap sm:gap-4">

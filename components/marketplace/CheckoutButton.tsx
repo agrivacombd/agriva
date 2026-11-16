@@ -59,8 +59,19 @@ export default function CheckoutButton({
 
   // Product cards can link directly to the purchase form without skipping quantity selection.
   useEffect(() => {
-    if (window.location.hash === "#product-direct-cod") setFormOpen(true);
     const url = new URL(window.location.href);
+    if (url.hash === "#product-direct-cod") {
+      setFormOpen(true);
+      const rawBuyQuantity = url.searchParams.get("buyQty");
+      if (rawBuyQuantity !== null) {
+        // A related-product Buy Now link should preserve quantity without placing an order.
+        url.searchParams.delete("buyQty");
+        window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+        const desired = /^\d{1,3}$/.test(rawBuyQuantity) ? Number(rawBuyQuantity) : 0;
+        if (desired >= 1 && desired <= maxQuantity) setQuantity(desired);
+        else setMessage("নির্বাচিত পরিমাণ এখন স্টকে নেই। নতুন পরিমাণ বেছে নিন।");
+      }
+    }
     const intendedProductId = url.searchParams.get("addToCart");
     if (intendedProductId !== productId) return;
     const rawQty = url.searchParams.get("qty");
@@ -245,11 +256,11 @@ export default function CheckoutButton({
       <div className="grid grid-cols-2 gap-2">
         <button ref={primaryOrderRef} type="button" disabled={unavailable || loading || Boolean(orderId)} onClick={openDirectOrder}
           className="flex min-h-12 min-w-0 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3 py-3 text-xs font-black text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base">
-          <ShoppingBag size={18} className="shrink-0" aria-hidden="true" /> {unavailable ? "অর্ডার বন্ধ" : "এখনই কিনুন"}
+          <ShoppingBag size={18} className="shrink-0" aria-hidden="true" /> {unavailable ? "অর্ডার বন্ধ" : "Buy Now"}
         </button>
         <button type="button" disabled={unavailable || loading || addingToCart || Boolean(orderId)} onClick={() => void addToCart()}
           className="flex min-h-12 min-w-0 items-center justify-center gap-1.5 rounded-xl border-2 border-emerald-800 bg-white px-2 py-3 text-xs font-black text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 sm:text-base">
-          <ShoppingCart size={18} className="shrink-0" aria-hidden="true" /> {addingToCart ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
+          <ShoppingCart size={18} className="shrink-0" aria-hidden="true" /> {addingToCart ? "Adding…" : "Add to Cart"}
         </button>
       </div>
       <a href="tel:+8801717504028" aria-label={"ফোনে " + productName + " অর্ডার করুন: ০১৭১৭৫০৪০২৮"}
@@ -257,7 +268,7 @@ export default function CheckoutButton({
         <Phone size={16} aria-hidden="true" /> ফোনে অর্ডারের সহায়তা নিন
       </a>
 
-            <div id="product-direct-cod" className="scroll-mt-20 overflow-hidden rounded-xl border border-slate-200 bg-[#fbfcf7]">
+            <div id="product-direct-cod" className="scroll-mt-28 overflow-hidden rounded-xl border border-slate-200 bg-[#fbfcf7]">
         <button type="button" aria-expanded={formOpen} aria-controls="direct-cod-form" onClick={() => setFormOpen(open => !open)}
           className="flex min-h-12 w-full items-center justify-between gap-2 px-4 py-4 text-left text-sm font-black text-[#17351f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:px-5">
           <span>সরাসরি ক্যাশ অন ডেলিভারি অর্ডার</span>
@@ -317,13 +328,14 @@ export default function CheckoutButton({
               <p className="text-[10px] text-slate-500">ডেলিভারি ছাড়া</p>
             </div>
             <button type="button" disabled={loading} onClick={openDirectOrder}
-              className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-emerald-700 px-3 text-sm font-black text-white disabled:opacity-50">
-              <ShoppingBag size={17} aria-hidden="true" /> এখনই অর্ডার
+              className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl bg-emerald-700 px-1.5 text-xs font-black text-white disabled:opacity-50">
+              <ShoppingBag size={16} aria-hidden="true" /> Buy Now
             </button>
             <button type="button" disabled={loading || addingToCart}
               onClick={() => void addToCart()} aria-label={productName + " কার্টে যোগ করুন"}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-emerald-800 bg-white text-emerald-900 disabled:opacity-50">
-              <ShoppingCart size={19} aria-hidden="true" />
+              className="inline-flex min-h-11 min-w-0 flex-1 items-center justify-center gap-1 rounded-xl border-2 border-emerald-800 bg-white px-1.5 text-[11px] font-extrabold text-emerald-900 disabled:opacity-50">
+              <ShoppingCart size={15} className="shrink-0" aria-hidden="true" />
+              {addingToCart ? "Adding…" : "Add to Cart"}
             </button>
           </div>
         </div>

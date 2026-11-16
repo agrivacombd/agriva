@@ -217,19 +217,18 @@ export default function SiteChrome() {
             <Image src="/branding/agriva-agriculture-brand-logo.svg" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-8 w-[7.5rem] object-contain object-left min-[380px]:h-9 min-[380px]:w-36 sm:h-10 sm:w-48" />
           </Link>
 
-          <div className="hidden min-w-0 flex-1 md:block md:max-w-xl lg:mx-5">
+          <div className="hidden min-w-0 flex-1 xl:block xl:max-w-xl xl:mx-5">
             <SearchForm english={english} />
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-            <HeaderCartLink english={english} />
             <Link href={languageTarget} lang={english ? "bn" : "en"} className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-xl border border-emerald-200 bg-white px-2 text-xs font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:gap-1.5 sm:px-3 sm:text-sm" aria-label={english ? "Switch language to Bangla" : "Switch language to English"}>
               <Globe2 size={16} aria-hidden="true" />
-              <span>{english ? "বাংলা" : "English"}</span>
-              <ChevronDown size={13} aria-hidden="true" />
+              <span className="hidden min-[380px]:inline">{english ? "বাংলা" : "English"}</span>
+              <ChevronDown size={13} className="hidden min-[480px]:block" aria-hidden="true" />
             </Link>
 
-            <div className="hidden items-center gap-2 sm:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               {authReady && (signedIn ? (
                 <>
                   <Link href="/dashboard" className="inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
@@ -240,9 +239,11 @@ export default function SiteChrome() {
               ))}
             </div>
 
-            <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 sm:inline-flex">
+            <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 lg:inline-flex">
               <Sprout size={16} aria-hidden="true" />{english ? "Sell your harvest" : "বিক্রি শুরু করুন"}
             </Link>
+
+            <HeaderCartLink english={english} />
 
             <button type="button" onClick={() => setMenuOpen((open) => !open)} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 xl:hidden" aria-label={menuOpen ? (english ? "Close menu" : "মেনু বন্ধ করুন") : (english ? "Open menu" : "মেনু খুলুন")} aria-expanded={menuOpen} aria-controls="agriva-mobile-navigation" aria-haspopup="dialog" ref={menuButtonRef}>
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -261,7 +262,7 @@ export default function SiteChrome() {
           </nav>
         </div>
 
-        <div className="border-t border-slate-100 px-3 py-2 md:hidden">
+        <div className="border-t border-slate-100 px-3 py-2 xl:hidden">
           <SearchForm english={english} />
         </div>
 

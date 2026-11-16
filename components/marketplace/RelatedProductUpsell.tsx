@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2, Minus, Plus, ShoppingCart } from "lucide-react";
+import { CheckCircle2, Minus, Plus, ShoppingCart, X } from "lucide-react";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
@@ -123,7 +123,7 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
 
   return (
     <section id="related-products" aria-labelledby="related-product-heading"
-      className="scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
+      className={"scroll-mt-20 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6 lg:p-7 " + (notice?.kind === "success" ? "pb-36 sm:pb-28" : "")}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="text-[11px] font-black uppercase tracking-[.14em] text-emerald-700">Continue shopping · AGRIVA</p>
@@ -191,14 +191,22 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
                           onClick={() => updateQuantity(product.id, qty + 1, product.stock)}
                           className="grid h-10 w-10 place-items-center hover:bg-emerald-50 disabled:opacity-40"><Plus size={15} /></button>
                       </div>
-                      <button type="button" disabled={busy} onClick={() => {
-                        trackProductRankEvents("marketplace", "listing_click", [product.id]);
-                        void addToCart(product, qty);
-                      }} aria-label={product.name + " কার্টে যোগ করুন"}
-                        className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl bg-emerald-900 px-2 py-2.5 text-[11px] font-black text-white transition hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-wait disabled:opacity-60 sm:text-sm">
-                        <ShoppingCart size={16} aria-hidden="true" />
-                        {busyId === product.id ? "যোগ হচ্ছে…" : "কার্টে যোগ করুন"}
-                      </button>
+                      <div className="grid grid-cols-1 gap-2 min-[480px]:grid-cols-2">
+                        <Link href={detailHref + "?buyQty=" + qty + "#product-direct-cod"}
+                          onClick={() => trackProductRankEvents("marketplace", "listing_click", [product.id])}
+                          aria-label={product.name + " এখনই কিনুন"}
+                          className="inline-flex min-h-11 min-w-0 items-center justify-center whitespace-nowrap rounded-xl bg-emerald-800 px-2 py-2 text-xs font-black text-white transition hover:bg-emerald-900">
+                          Buy Now
+                        </Link>
+                        <button type="button" disabled={busy} onClick={() => {
+                          trackProductRankEvents("marketplace", "listing_click", [product.id]);
+                          void addToCart(product, qty);
+                        }} aria-label={product.name + " কার্টে যোগ করুন"}
+                          className="inline-flex min-h-11 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border-2 border-emerald-800 bg-white px-1.5 py-2 text-[11px] font-black text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 disabled:cursor-wait disabled:opacity-60">
+                          <ShoppingCart size={15} className="shrink-0" aria-hidden="true" />
+                          {busyId === product.id ? "Adding…" : "Add to Cart"}
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <Link href={detailHref} className="flex min-h-11 items-center justify-center rounded-xl border border-emerald-900 px-2 py-2.5 text-center text-xs font-bold text-emerald-900">বিস্তারিত দেখুন</Link>
@@ -209,7 +217,19 @@ export default function RelatedProductUpsell({ products, heading, subtitle, cate
           );
         })}
       </div>
-      {loginReturnTo && <MarketplaceAuthModal returnTo={loginReturnTo} onClose={() => setLoginReturnTo(null)} />}
+      {notice?.kind === "success" && (
+        <aside role="region" aria-label="কার্টে যোগ করার পর COD অর্ডার" className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom)+0.75rem)] z-[60] mx-auto max-w-2xl rounded-2xl border border-emerald-200 bg-white/95 p-3 shadow-[0_16px_50px_rgba(0,35,22,.23)] backdrop-blur-lg sm:inset-x-6 sm:bottom-5 sm:p-4">
+          <button type="button" aria-label="কার্ট বার বন্ধ করুন" onClick={() => setNotice(null)} className="absolute right-1 top-0 grid h-9 w-9 place-items-center rounded-full text-slate-500 hover:bg-slate-100">
+            <X size={15} aria-hidden="true" />
+          </button>
+          <p className="flex items-center gap-2 pr-7 text-sm font-bold text-emerald-950"><CheckCircle2 size={17} className="shrink-0 text-emerald-700" aria-hidden="true" /> পণ্য কার্টে যোগ হয়েছে</p>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <Link href="/cart" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-emerald-800 px-2 text-xs font-bold text-emerald-900">কার্ট দেখুন</Link>
+            <Link href="/checkout" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-2 text-center text-xs font-black text-white">COD অর্ডার করতে যান</Link>
+          </div>
+        </aside>
+      )}
+      {loginReturnTo && <MarketplaceAuthModal returnTo={loginReturnTo} onClose={() => setLoginReturnTo(null)} />
     </section>
   );
 }
