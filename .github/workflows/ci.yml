@@ -36,6 +36,8 @@ jobs:
         run: npm run test:meta-conversions
       - name: Smart Search smoke test syntax
         run: node --check scripts/smoke-smart-search.mjs
+      - name: Homepage mobile layout regression test
+        run: node scripts/smoke-home-mobile-responsive.mjs
       - name: Marketplace and Plant Market behavioural ranking regression test
         run: npm run test:product-rankings
       - name: Photo search privacy and matching regressions

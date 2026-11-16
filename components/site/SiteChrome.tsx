@@ -262,9 +262,11 @@ export default function SiteChrome() {
           </nav>
         </div>
 
-        <div className="border-t border-slate-100 px-3 py-2 xl:hidden">
-          <SearchForm english={english} />
-        </div>
+        {pathname !== "/" && (
+          <div className="border-t border-slate-100 px-3 py-2 xl:hidden">
+            <SearchForm english={english} />
+          </div>
+        )}
 
 
       </header>
