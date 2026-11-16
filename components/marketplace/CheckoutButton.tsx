@@ -129,7 +129,7 @@ export default function CheckoutButton({
 
   function applyCustomQuantity() {
     const input = customQuantityInput.trim();
-    const requested = /^\\d{1,3}$/.test(input) ? Number(input) : 0;
+    const requested = /^[0-9]{1,3}$/.test(input) ? Number(input) : 0;
     if (!Number.isSafeInteger(requested) || requested < 1 || requested > maxQuantity) {
       setMessage("১ থেকে " + numberBN(maxQuantity) + " " + unitLabel + " এর মধ্যে সম্পূর্ণ সংখ্যা লিখুন (স্টক ও অর্ডার সীমা অনুযায়ী)।");
       return;
