@@ -69,17 +69,17 @@ export default function OrderNotificationBell(){
     const value=orders[0]?.created_at||fetchedAt.current||new Date().toISOString();
     cursor.current=value;if(cursorKey.current)setLocal(cursorKey.current,value);setUnread(0);
   };
-  const browserKey=cursorKey.current.replace(":seen:",":browser-alerts:");
+  const getBrowserKey=()=>cursorKey.current.replace(":seen:",":browser-alerts:");
   const enableBrowser=async()=>{
     if(!("Notification" in window))return;
     try{
       const result=await Notification.requestPermission();
       setPermission(result);
-      if(result==="granted"){setLocal(browserKey,"on");setBrowserAlert(true)}
+      if(result==="granted"){setLocal(getBrowserKey(),"on");setBrowserAlert(true)}
     }catch{setError("Browser notification permission দেওয়া যায়নি।")}
   };
   const toggleBrowser=()=>{
-    setLocal(browserKey,browserAlert?"off":"on");setBrowserAlert(v=>!v);
+    setLocal(getBrowserKey(),browserAlert?"off":"on");setBrowserAlert(v=>!v);
   };
   return <div className="relative shrink-0">
     <button type="button" aria-label={unread?unread+" unread orders":"Order notifications"} aria-haspopup="dialog" aria-expanded={open}

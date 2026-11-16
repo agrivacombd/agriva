@@ -2,26 +2,21 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import type { BlogFeedEntry } from "@/lib/learn/blog-feed";
 
-type Article = {
-  slug: string;
-  category: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  readTime: string;
-  emoji: string;
-};
+const feedFilters = ["সব লেখা", "Learn গাইড", "Blog প্রবন্ধ"] as const;
 
-const categories = ["সব লেখা", "ফসল চাষ", "মাটির স্বাস্থ্য", "রোগবালাই", "সবজি"];
-
-export default function ArticlesBrowser({ articles }: { articles: Article[] }) {
+export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[] }) {
   const [activeCategory, setActiveCategory] = useState("সব লেখা");
   const [query, setQuery] = useState("");
+  const categories = useMemo(() => [...feedFilters, ...new Set(articles.map(item => item.category))], [articles]);
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("bn");
     return articles.filter((article) => {
-      const matchesCategory = activeCategory === "সব লেখা" || article.category === activeCategory;
+      const matchesCategory = activeCategory === "সব লেখা" ||
+        (activeCategory === "Learn গাইড" && article.source === "learn") ||
+        (activeCategory === "Blog প্রবন্ধ" && article.source === "blog") ||
+        article.category === activeCategory;
       const searchable = `${article.title} ${article.excerpt} ${article.category}`.toLocaleLowerCase("bn");
       return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
     });
@@ -70,19 +65,20 @@ export default function ArticlesBrowser({ articles }: { articles: Article[] }) {
       {filteredArticles.length ? (
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           {filteredArticles.map((article) => (
-            <article key={article.slug} className="group flex flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg">
-              <div aria-hidden="true" className="flex min-h-36 items-center justify-center bg-gradient-to-br from-emerald-50 via-lime-50 to-emerald-100 text-6xl">{article.emoji}</div>
+            <article key={article.href} className="group flex flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg">
+              <Link href={article.href} aria-label={article.title} className="flex min-h-36 items-center justify-center bg-gradient-to-br from-emerald-50 via-lime-50 to-emerald-100 text-6xl transition group-hover:from-emerald-100">{article.emoji}</Link>
               <div className="flex flex-1 flex-col p-5 sm:p-6">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-emerald-800">
                   <span className="rounded-full bg-emerald-50 px-3 py-1">{article.category}</span>
+                  <span className="rounded-full border border-emerald-200 px-2 py-1 text-[11px]">{article.source === "learn" ? "Learn গাইড" : "Blog প্রবন্ধ"}</span>
                   <span aria-hidden="true" className="text-slate-400">·</span>
-                  <span className="text-slate-500">{article.readTime} পড়া</span>
+                  <span className="text-slate-500">{article.source === "learn" ? article.readTime + " পড়া" : "প্রবন্ধ"}</span>
                 </div>
-                <h3 className="mt-4 text-xl font-black leading-snug text-slate-900">{article.title}</h3>
+                <h3 className="mt-4 text-xl font-black leading-snug text-slate-900"><Link href={article.href} className="hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{article.title}</Link></h3>
                 <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{article.excerpt}</p>
                 <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
                   <span className="text-xs font-medium text-slate-500">{article.date}</span>
-                  <Link href={`/blog/${article.slug}`} className="text-sm font-extrabold text-emerald-800 group-hover:underline">লেখাটি পড়ুন →</Link>
+                  <Link href={article.href} className="text-sm font-extrabold text-emerald-800 group-hover:underline">{article.source === "learn" ? "গাইড পড়ুন →" : "লেখাটি পড়ুন →"}</Link>
                 </div>
               </div>
             </article>

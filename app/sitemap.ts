@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createClient } from "@supabase/supabase-js";
+import { LESSONS } from "@/lib/learn/lessons";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
@@ -137,7 +138,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/en/crop-choice`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${base}/learn`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/learn/plant-science`, changeFrequency: "weekly", priority: 0.85 },
-    ...["boro-rice-season-preparation", "soil-health-basics", "integrated-pest-management", "vegetable-garden-water-management"].map((slug) => ({ url: `${base}/blog/${slug}`, changeFrequency: "monthly" as const, priority: 0.7 })),
+    ...LESSONS.map((lesson) => ({url: `${base}/learn/${lesson.slug}`, changeFrequency: "monthly" as const, priority: 0.7})),
     { url: `${base}/green-living`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/green-exchange`, changeFrequency: "weekly", priority: 0.75 },
     { url: `${base}/impact`, changeFrequency: "weekly", priority: 0.7 },
