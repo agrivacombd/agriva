@@ -31,6 +31,9 @@ export default function CheckoutButton({
 }: Props) {
   const maxQuantity = Math.min(100, Math.max(0, Math.floor(Number(stock) || 0)));
   const [quantity, setQuantity] = useState(1);
+  const [customQuantityOpen, setCustomQuantityOpen] = useState(false);
+  const [customQuantitySelected, setCustomQuantitySelected] = useState(false);
+  const [customQuantityInput, setCustomQuantityInput] = useState("1");
   const delivery = calculateShippingFee([{ shipping_class: shippingClass, shipping_weight_grams: shippingWeightGrams, quantity }]);
   const unavailable = disabled || maxQuantity === 0 || !Number.isFinite(unitPrice) || unitPrice < 0 || !delivery;
   const primaryOrderRef = useRef<HTMLButtonElement>(null);
@@ -112,6 +115,28 @@ export default function CheckoutButton({
   function selectQuantity(value: number) {
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
     setQuantity(Math.min(maxQuantity, Math.max(1, value)));
+    setCustomQuantitySelected(false);
+    setCustomQuantityOpen(false);
+    setMessage("");
+  }
+
+  function toggleCustomQuantity() {
+    if (unavailable || loading || addingToCart || Boolean(orderId)) return;
+    setCustomQuantityInput(String(quantity));
+    setCustomQuantityOpen(open => !open);
+    setMessage("");
+  }
+
+  function applyCustomQuantity() {
+    const input = customQuantityInput.trim();
+    const requested = /^\\d{1,3}$/.test(input) ? Number(input) : 0;
+    if (!Number.isSafeInteger(requested) || requested < 1 || requested > maxQuantity) {
+      setMessage("১ থেকে " + numberBN(maxQuantity) + " " + unitLabel + " এর মধ্যে সম্পূর্ণ সংখ্যা লিখুন (স্টক ও অর্ডার সীমা অনুযায়ী)।");
+      return;
+    }
+    setQuantity(requested);
+    setCustomQuantitySelected(true);
+    setCustomQuantityOpen(false);
     setMessage("");
   }
 
@@ -226,16 +251,49 @@ export default function CheckoutButton({
           <span className="text-xs text-slate-500">সর্বোচ্চ {numberBN(maxQuantity)} {unitLabel} (প্রতি অর্ডার)</span>
         </div>
 
-        <div className="mt-2 hidden flex-wrap gap-1.5 sm:mt-3 sm:flex sm:gap-2" role="group" aria-label="দ্রুত পরিমাণ নির্বাচন">
+        <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="পরিমাণ নির্বাচন">
           {CHOICES.filter(value => value <= maxQuantity).map(value => (
-            <button key={value} type="button" aria-pressed={quantity === value} disabled={unavailable || loading || addingToCart || Boolean(orderId)}
+            <button key={value} type="button" aria-pressed={quantity === value && !customQuantitySelected && !customQuantityOpen}
+              disabled={unavailable || loading || addingToCart || Boolean(orderId)}
               onClick={() => selectQuantity(value)} aria-label={numberBN(value) + " " + unitLabel + " নির্বাচন করুন"}
-              className={"min-h-10 min-w-10 rounded-lg border px-2 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 sm:min-h-11 sm:rounded-xl sm:px-3 " +
-                (quantity === value ? "border-emerald-700 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-400")}>
+              className={"min-h-11 min-w-11 rounded-xl border px-2.5 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 sm:px-3 " +
+                (quantity === value && !customQuantitySelected && !customQuantityOpen ? "border-emerald-700 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-400")}>
               {numberBN(value)}<span className="hidden sm:inline"> {unitLabel}</span>
             </button>
           ))}
+          <button type="button" onClick={toggleCustomQuantity}
+            aria-pressed={customQuantityOpen || customQuantitySelected}
+            aria-expanded={customQuantityOpen} aria-controls="agriva-custom-product-quantity"
+            disabled={unavailable || loading || addingToCart || Boolean(orderId)}
+            className={"min-h-11 rounded-xl border px-3 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50 " +
+              (customQuantityOpen || customQuantitySelected ? "border-emerald-700 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-700" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-400")}>
+            Custom{customQuantitySelected && !customQuantityOpen ? " · " + numberBN(quantity) : ""}
+          </button>
         </div>
+        {customQuantityOpen && (
+          <div id="agriva-custom-product-quantity" className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+            <label htmlFor="agriva-custom-quantity-input" className="block text-xs font-bold text-emerald-950">
+              আপনার প্রয়োজনীয় পরিমাণ লিখুন
+            </label>
+            <div className="mt-2 flex flex-wrap items-stretch gap-2">
+              <input id="agriva-custom-quantity-input" type="number" inputMode="numeric"
+                min={1} max={maxQuantity} step={1} value={customQuantityInput}
+                onChange={event => setCustomQuantityInput(event.target.value)}
+                onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); applyCustomQuantity(); } }}
+                disabled={unavailable || loading || addingToCart || Boolean(orderId)}
+                aria-describedby="agriva-custom-quantity-hint"
+                className="min-h-11 w-28 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-base font-bold text-emerald-950 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/20 sm:max-w-36" />
+              <button type="button" onClick={applyCustomQuantity}
+                disabled={unavailable || loading || addingToCart || Boolean(orderId)}
+                className="min-h-11 rounded-xl bg-emerald-800 px-4 py-2 text-sm font-black text-white transition hover:bg-emerald-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 disabled:opacity-50">
+                প্রয়োগ করুন
+              </button>
+            </div>
+            <p id="agriva-custom-quantity-hint" className="mt-2 text-xs leading-5 text-slate-600">
+              সর্বনিম্ন ১, সর্বোচ্চ {numberBN(maxQuantity)} {unitLabel}। সংখ্যাটি প্রয়োগ করলে নিচের মূল্য ও ডেলিভারি হিসাব আপডেট হবে।
+            </p>
+          </div>
+        )}
 
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 sm:mt-4 sm:gap-3 sm:border-t sm:border-slate-100 sm:pt-4">
           <div className="inline-flex h-11 items-center overflow-hidden rounded-xl border border-slate-200" role="group" aria-label="পরিমাণ বাড়ান বা কমান">
