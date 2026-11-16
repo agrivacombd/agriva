@@ -64,6 +64,8 @@ jobs:
         run: npm run test:marketplace-seo
       - name: Sales-focused Related Products and Cart regression test
         run: node scripts/smoke-related-product-upsell.mjs
+      - name: Private route indexing and buyer demands SEO regression test
+        run: node scripts/smoke-private-page-indexing.mjs
       - name: Marketplace product landing SEO regression test
         run: npm run test:marketplace-product-seo
       - name: Packet and paddy shipping contract regression test

@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 import { requireAdminPage } from "@/lib/admin/authz";
 import AdminShell from "@/components/admin/shell/AdminShell";
 

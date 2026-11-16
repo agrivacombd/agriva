@@ -57,10 +57,10 @@ async function getPublicProduct(slugOrId: string): Promise<ProductRecord | null>
 
   const supabase = await createSupabaseServerClient();
   const columns = "id,slug,name,category,category_slug,subcategory_slug,price,stock,unit,shipping_class,shipping_weight_grams,description,image_url,image_urls,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt";
-  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
+  const { data: bySlug } = await supabase.from("products").select(columns).eq("slug", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").is("deleted_at", null).maybeSingle();
   if (bySlug) return bySlug as ProductRecord;
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(normalized)) return null;
-  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").maybeSingle();
+  const { data: byId } = await supabase.from("products").select(columns).eq("id", normalized).eq("status", "active").eq("marketplace_channel", "marketplace").is("deleted_at", null).maybeSingle();
   return (byId as ProductRecord | null) ?? null;
 }
 
@@ -145,6 +145,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       .select("id,slug,name,price,stock,unit,image_url,subcategory_slug,brand")
       .eq("status", "active")
       .eq("marketplace_channel", "marketplace")
+      .is("deleted_at", null)
       .neq("id", product.id)
       .gt("stock", 0)
       .not("price", "is", null);
