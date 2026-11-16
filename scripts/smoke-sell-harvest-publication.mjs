@@ -11,6 +11,16 @@ const adminPage = readFileSync("app/admin/harvest/page.tsx", "utf8");
 const migration = readFileSync("supabase/migrations/20261030183612_reconcile_harvest_immediate_publication.sql", "utf8");
 
 assert.match(page, /image_urls: imageUrls, status: "available"/, "New harvest listings must be inserted as available");
+assert.match(page, /const MAX_HARVEST_IMAGES = 4;/, "Sellers may select at most four images");
+assert.match(page, /picked.length > MAX_HARVEST_IMAGES/, "Selecting more than four photos must be rejected");
+assert.match(page, /files.length > MAX_HARVEST_IMAGES/, "Submission must guard against more than four photos");
+assert.match(page, /optimizeHarvestImageForUpload\(file\)/, "Large original images must be optimized before upload");
+assert.match(page, /ফসল সংগ্রহ \/ ডেলিভারির তথ্য \(ঐচ্ছিক\)<textarea/, "Pickup instructions must be labeled optional");
+assert.match(page, /অতিরিক্ত বিবরণ \(ঐচ্ছিক\)<textarea/, "Additional description must be labeled optional");
+assert.match(page, /pickup_details: pickup.trim\(\) \|\| null/, "Blank pickup instructions must remain optional");
+assert.match(page, /description: description.trim\(\)/, "Blank additional description must be accepted");
+assert.doesNotMatch(page, /picked.some\([^\n]*file.size/, "Original image size must not be capped at selection time");
+
 assert.doesNotMatch(page, /moderation_status|অ্যাডমিন অনুমোদন|অনুমোদনের অপেক্ষায়|অনুমোদনের জন্য/, "Public Sell My Harvest UI must not depend on admin approval");
 assert.match(page, /পোস্ট প্রকাশিত হয়েছে! এখনই ক্রেতারা এটি দেখতে পারবেন।/, "Seller must be told the listing is immediately public");
 assert.match(page, /if \(!mineOnly && item\.status !== "available"\)/, "Public feed visibility must depend only on seller availability");
