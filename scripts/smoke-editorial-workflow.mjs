@@ -5,10 +5,10 @@ const seo=read("app/admin/seo/page.tsx"),queue=read("app/admin/articles/page.tsx
 assert.match(seo,/requireAdminPage\("content.read"\)/);
 assert.match(seo,/Approved articles/);
 assert.match(seo,/content_drafts/);
-assert.match(queue,/article_drafts/);
+assert.doesNotMatch(queue,/\.from\("article_drafts"\)/);
 assert.match(queue,/content_drafts/);
 assert.match(queue,/content_type","article"/);
-assert.match(queue,/content-drafts\?draft=/);
+assert.match(read("app/admin/articles/ArticleQueueClient.tsx"),/content-drafts\?draft=/);
 assert.match(studio,/Approved SEO Articles/);
 assert.match(op,/content-drafts\?opportunity=/);
 assert.match(read("components/admin/shell/AdminShell.tsx"),/href: "\/admin\/seo"/);

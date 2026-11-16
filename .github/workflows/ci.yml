@@ -42,6 +42,8 @@ jobs:
         run: node scripts/smoke-article-quality.mjs
       - name: Safe Markdown editor and publication integrity regression
         run: node scripts/smoke-article-markdown-editor.mjs
+      - name: Admin Article Queue filters and retired-table regression
+        run: node scripts/smoke-article-review-queue.mjs
       - name: Editorial SEO workflow and navigation regression test
         run: node scripts/smoke-editorial-workflow.mjs
       - name: Homepage mobile layout regression test
