@@ -24,12 +24,12 @@ const bnPrimaryLinks = [
   { href: "/marketplace", label: "মার্কেটপ্লেস" },
   { href: "/sell-harvest", label: "ফসল বিক্রি" },
   { href: "/buyer-demands", label: "চাহিদা বোর্ড" },
-  { href: "/transport", label: "কৃষি পরিবহন" },
   { href: "/tools", label: "কৃষি টুলস" },
   { href: "/farms", label: "খামার ব্যবস্থাপনা" },
   { href: "/plant-market", label: "গাছ ও বাগান" },
-  { href: "/blog", label: "কৃষি ব্লগ" },
   { href: "/jobs", label: "কৃষি কাজ ও চাকরি" },
+  { href: "/transport", label: "কৃষি পরিবহন" },
+  { href: "/blog", label: "কৃষি ব্লগ" },
 ];
 
 const enPrimaryLinks = [

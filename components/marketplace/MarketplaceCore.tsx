@@ -99,7 +99,7 @@ function ProductCard({
         </div>
       </div>
       <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
-        <p className="truncate text-[10px] font-semibold text-emerald-700">{product.category || "কৃষি পণ্য"}</p>
+        <p className="truncate text-[10px] font-semibold text-emerald-700">{getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug)?.category.name || product.category || "কৃষি পণ্য"}</p>
         <h3 className="mt-1.5 min-h-12 break-words text-sm font-black leading-6 text-slate-900 sm:text-base">
           <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
