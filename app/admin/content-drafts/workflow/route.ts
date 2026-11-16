@@ -68,25 +68,23 @@ export async function PATCH(request: NextRequest) {
   const markdown = typeof body.body_markdown === "string" ? body.body_markdown.trim().slice(0, 50000) : current.body_markdown?.trim();
   if (action === "approved" || action === "published") {
     if (!title || title.length > 160 || !slugPattern.test(slug) || !markdown) {
-      return NextResponse.json({ error: "A valid title, slug and completed article body are required." }, { status: 409  if (current.content_type === "article" && ["review","approved","published"].includes(action)) {
-    const content = {
+      return NextResponse.json({ error: "A valid title, slug and completed article body are required." }, { status: 409 });
+    }
+  }
+
+  if (current.content_type === "article" && ["review", "approved", "published"].includes(action)) {
+    const checkBody = {
       title,
       metaTitle: typeof body.meta_title === "string" ? body.meta_title : current.meta_title,
       metaDescription: typeof body.meta_description === "string" ? body.meta_description : current.meta_description,
       keyword: current.primary_keyword || "",
       body: markdown || "",
     };
-    const missing = getEditorialChecks(content).filter(check => !check.passed);
-    if (missing.length) {
-      return NextResponse.json({error: "SEO quality review incomplete: " + missing.map(check => check.label).join(" · "),
-        checks:missing}, {status:409});
-    }
+    const unfinished = getEditorialChecks(checkBody).filter(check => !check.passed);
+    if (unfinished.length) return NextResponse.json({
+      error: "SEO quality review incomplete: " + unfinished.map(check => check.label).join(" · "), checks: unfinished,
+    }, {status:409});
   }
-
- });
-    }
-  }
-
   if (action === "published") {
     if (current.content_type !== "article") return NextResponse.json({error:"Only SEO articles can be published as blog posts. Product briefs need a separate product workflow."},{status:409});
     if (title !== current.title || slug !== current.slug ||
