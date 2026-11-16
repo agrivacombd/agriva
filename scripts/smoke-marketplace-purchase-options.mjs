@@ -27,9 +27,9 @@ for (const fragment of [
   "p_quantity: requestedQuantity",
   "quantity,",
   "paymentMethod: \"cod\"",
-  "ফোনে অর্ডার করুন",
+  "ফোনে অর্ডারের সহায়তা নিন",
   "কার্টে যোগ করুন",
-  "এখনই অর্ডার করুন",
+  "ক্যাশ অন ডেলিভারিতে অর্ডার নিশ্চিত করুন",
   "সরাসরি ক্যাশ অন ডেলিভারি অর্ডার",
 ]) {
   assert.ok(purchase.includes(fragment), "Missing purchase-options contract: " + fragment);
