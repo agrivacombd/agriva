@@ -42,14 +42,14 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
 
   return <main className="min-h-screen overflow-hidden bg-[#f7f9f5] pb-28 text-[#17351f] md:pb-0">
     <section className="relative isolate overflow-hidden bg-[#123f2b] text-white">
-      <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 -z-10 h-96 w-96 rounded-full border-[56px] border-white/[0.06]" />
-      <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 left-[42%] -z-10 h-72 w-72 rounded-full border-[44px] border-lime-200/[0.07]" />
-      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-4 py-9 sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:px-8 lg:py-14">
-        <div className="max-w-3xl">
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.08] px-3 py-1.5 text-[10px] font-extrabold tracking-[.16em] text-lime-200">AGRIVA MARKETPLACE</p>
-          <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight sm:text-5xl lg:text-[3.4rem]">কৃষির প্রয়োজনীয় পণ্য, <span className="text-lime-300">সহজেই খুঁজুন</span></h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base sm:leading-8">বীজ, সার, ফসল সুরক্ষা ও কৃষিযন্ত্রসহ প্রয়োজনীয় কৃষিপণ্য খুঁজে দাম ও প্রাপ্যতার তথ্য দেখুন। পছন্দের পণ্য থেকে সরাসরি বিস্তারিত জেনে বিক্রেতার সঙ্গে যোগাযোগ করুন।</p>
-          <a href="#catalogue" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-lime-300 px-6 py-3 text-sm font-extrabold text-[#17351f] transition hover:bg-lime-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#123f2b]">পণ্য খুঁজুন <span aria-hidden="true">↓</span></a>
+      <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-28 -z-10 hidden h-96 w-96 rounded-full border-[56px] border-white/[0.06] sm:block" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 left-[42%] -z-10 hidden h-72 w-72 rounded-full border-[44px] border-lime-200/[0.07] sm:block" />
+      <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 px-3 py-4 min-[375px]:px-4 min-[375px]:py-5 sm:gap-8 sm:px-6 sm:py-10 lg:flex-row lg:items-center lg:px-8 lg:py-14">
+        <div className="min-w-0 max-w-3xl">
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.08] px-2.5 py-1 text-[9px] font-extrabold tracking-[.12em] text-lime-200 sm:gap-2 sm:px-3 sm:py-1.5 sm:text-[10px] sm:tracking-[.16em]">AGRIVA MARKETPLACE</p>
+          <h1 className="mt-2 text-[clamp(1.35rem,5.5vw,1.75rem)] font-black leading-[1.25] tracking-tight sm:mt-4 sm:text-4xl sm:leading-tight lg:text-[3.4rem]">কৃষির প্রয়োজনীয় পণ্য, <span className="text-lime-300">সহজেই খুঁজুন</span></h1>
+          <p className="mt-2 line-clamp-2 max-w-2xl text-xs leading-5 text-emerald-50/85 sm:mt-4 sm:line-clamp-none sm:text-base sm:leading-8">বীজ, সার, ফসল সুরক্ষা ও কৃষিযন্ত্রসহ প্রয়োজনীয় কৃষিপণ্য খুঁজে দাম ও প্রাপ্যতার তথ্য দেখুন। পছন্দের পণ্য থেকে সরাসরি বিস্তারিত জেনে বিক্রেতার সঙ্গে যোগাযোগ করুন।</p>
+          <a href="#catalogue" className="mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-lime-300 px-4 py-2 text-xs font-extrabold text-[#17351f] transition hover:bg-lime-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#123f2b] sm:mt-6 sm:min-h-12 sm:px-6 sm:py-3 sm:text-sm">পণ্য খুঁজুন <span aria-hidden="true">↓</span></a>
         </div>
         <div className="hidden w-full max-w-xs rounded-3xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur-sm lg:block">
           <p className="text-xs font-bold text-lime-200">কেনাকাটা শুরু করুন</p>
@@ -61,7 +61,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
       </div>
     </section>
 
-    <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
+    <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-36 px-3 py-4 min-[375px]:px-4 sm:scroll-mt-28 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
       <MarketplaceCore products={products} initialQuery={initialQuery} emptyCatalogMessage={catalogueUnavailable ? "এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।" : !products.length ? "এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য (Marketplace) পাওয়া যায়নি। অনুমোদনের পর এখানে দেখা যাবে।" : undefined} />
     </section>
 
