@@ -67,16 +67,17 @@ export default function ContentDraftsClient(){
   async function createDraft(){
     setError("");setNotice("");
     if(!/^[0-9a-f-]{36}$/i.test(opportunity.trim())){setError("একটি সঠিক Opportunity UUID দিন।");return;}
-    const s=client();if(!s)return;
     setBusy(true);
-    const {data,error:rpcError}=await s.rpc("create_content_draft_from_opportunity",{p_opportunity_id:opportunity.trim()});
-    setBusy(false);
-    if(rpcError){setError(rpcError.message);return;}
-    setNotice("SEO draft তৈরি হয়েছে। নিচে Edit করে Review-তে পাঠান।");
-    setOpportunity("");
-    setFilter("all");setTypeFilter("all");setSearch("");
-    await load();
-    if(data&&typeof data==="object"&&"id" in data)setSelected(data as Draft);
+    try{
+      const response=await fetch("/api/admin/content-drafts/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({opportunityId:opportunity.trim()})});
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok){setError(payload.error||"Complete draft generation failed.");return;}
+      setNotice("পূর্ণাঙ্গ SEO Draft তৈরি হয়েছে। তথ্য ও সূত্র যাচাই করে Review-তে পাঠান।");
+      setOpportunity("");setFilter("all");setTypeFilter("all");setSearch("");
+      await load();
+      if(payload.draft?.id)setSelected(payload.draft as Draft);
+    }catch{setError("Draft generation network request failed. কোনো অসম্পূর্ণ draft সেভ হয়নি।");}
+    finally{setBusy(false);}
   }
 
   async function transition(action:Action){
