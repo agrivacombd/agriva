@@ -16,7 +16,7 @@ assert.doesNotMatch(demand, /title:\s*"ক্রেতার চাহিদা 
   "Avoid duplicate brand in the HTML document title");
 for (const path of ["app/about-us/page.tsx", "app/contact-us/page.tsx", "app/market-prices/page.tsx", "app/sell-harvest/page.tsx", "app/sell-on-marketplace/page.tsx", "app/jobs/page.tsx"]) {
   const source = read(path);
-  const title = source.match(/export const metadata[^]*?\\btitle:\\s*"([^"]+)"/)?.[1];
+  const title = source.match(/export const metadata[^]*?\btitle:\s*"([^"]+)"/)?.[1];
   assert.ok(title, `Expected a static page metadata title in ${path}`);
   assert.doesNotMatch(title, /AGRIVA/i,
     `${path} should inherit AGRIVA once via the root title template`);
