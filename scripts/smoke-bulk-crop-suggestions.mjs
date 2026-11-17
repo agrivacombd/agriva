@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import ts from "typescript";
+const source=readFileSync("lib/bulk-rfq/bangladesh-crop-suggestions.ts","utf8");
+const output=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {BD_CROP_SUGGESTIONS,cropSearchKey,suggestCrops}=await import("data:text/javascript;base64,"+Buffer.from(output).toString("base64"));
+assert.ok(BD_CROP_SUGGESTIONS.length>=80,"A comprehensive local crop vocabulary is expected");
+assert.ok(BD_CROP_SUGGESTIONS.filter(x=>x.category==="বীজ").length>=40,"Seed types must be prominent");
+assert.ok(suggestCrops("টমেটো").some(x=>x.name==="টমেটো বীজ"),"Bangla typing should find tomato seeds");
+assert.ok(suggestCrops("Tomato").some(x=>x.name==="টমেটো বীজ"),"English alias should find Bangla name");
+assert.ok(suggestCrops("চিয়া").some(x=>x.name==="চিয়া সিড"),"Chia seed should be supported");
+assert.ok(suggestCrops("BR28").some(x=>x.name==="ব্রি ধান২৮ বীজ"),"BRRI aliases should be searchable");
+assert.equal(cropSearchKey("ধান ২৮"),cropSearchKey("ধান 28"),"Bangla and Latin digits must match");
+assert.deepEqual(suggestCrops("totally-unlisted-crop"),[],"Customers may write a new custom name");
+assert.ok(suggestCrops("ধান").length<=8,"Suggestions should be bounded");
+console.log("AGRIVA crop name autocomplete regression checks passed");
