@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { comparableQuotes } from "@/lib/bulk-rfq/comparison";
+import MultiQuoteComparison from "@/components/bulk-rfq/MultiQuoteComparison";
 export const dynamic="force-dynamic";
 async function acceptQuote(data:FormData){
  "use server";
@@ -24,6 +25,13 @@ export default async function Compare({params,searchParams}:{params:Promise<{id:
  if(!user)redirect("/login?next=%2Faccount%2Fcustom-orders");
  const {data:request}=await db.from("bulk_requests").select("id,buyer_id,product_name,quantity,unit,district,upazila,status").eq("id",id).eq("buyer_id",user.id).maybeSingle();
  if(!request)notFound();
+ const {data:multiItems}=await db.from("bulk_request_items").select("id,product_name,quantity,unit,specification,position").eq("request_id",id).order("position",{ascending:true});
+ if(multiItems?.length)return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-5xl">
+  <Link href="/account/custom-orders" className="text-sm font-bold text-emerald-800 underline">← আমার অর্ডার</Link>
+  <h1 className="mt-4 text-3xl font-black">পণ্যভিত্তিক কোটেশন তুলনা</h1>
+  <p className="mt-2 text-slate-600">{multiItems.length}টি পণ্য · {request.district}</p>
+  <MultiQuoteComparison request={{id:request.id,status:request.status}} items={multiItems} notice={p.notice}/>
+ </div></main>;
  const {data:selection}=await db.from("bulk_selections").select("quote_id,fulfillment_status,updated_at").eq("request_id",id).eq("buyer_id",user.id).maybeSingle();
  const fulfillment:Record<string,string>={pending_confirmation:"অর্ডার নিশ্চিতকরণের অপেক্ষায়",confirmed:"অর্ডার নিশ্চিত",processing:"প্রসেসিং চলছে",shipped:"পণ্য পাঠানো হয়েছে",delivered:"ডেলিভারি সম্পন্ন",completed:"সম্পূর্ণ হয়েছে",cancelled:"বাতিল"};
  const {data}=await db.from("bulk_quotes").select("id,wholesaler_id,unit_price,shipping_fee,extra_fee,lead_days,expires_at,status,details").eq("request_id",id);
