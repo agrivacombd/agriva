@@ -98,6 +98,7 @@ export const BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
 const digitMap:Record<string,string>={"০":"0","১":"1","২":"2","৩":"3","৪":"4","৫":"5","৬":"6","৭":"7","৮":"8","৯":"9"};
 export function cropSearchKey(value:string):string{
  return value.toLocaleLowerCase().replace(/[০-৯]/g,ch=>digitMap[ch]||ch)
+  .replace(/\b(bij|beej|biji)\b/g,"বীজ").replace(/বিজ/g,"বীজ")
   .normalize("NFKC").replace(/[\u200c\u200d]/g,"").replace(/[ _–—-]+/g," ").trim();
 }
 export function suggestCrops(query:string, catalog:readonly CropSuggestion[]=BD_CROP_SUGGESTIONS,limit=8):CropSuggestion[]{
