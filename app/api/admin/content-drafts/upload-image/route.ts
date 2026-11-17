@@ -26,12 +26,16 @@ export async function POST(request: NextRequest) {
   if (lookupError || !draft || draft.content_type !== "article") return NextResponse.json({ error: "Article not found." }, { status: 404 });
   if (draft.status === "published") return NextResponse.json({ error: "Unpublish & Edit before replacing the image." }, { status: 409 });
   let hero: Buffer, social: Buffer;
+  let heroWidth: number, heroHeight: number;
   try {
     const bytes = Buffer.from(await file.arrayBuffer());
     const img = sharp(bytes, { limitInputPixels: 40_000_000, failOn: "error" }).rotate();
     const metadata = await img.metadata();
     if (!["jpeg","png","webp"].includes(metadata.format || "")) throw new Error("format");
-    hero = await img.clone().resize(1536,1024,{ fit:"cover", position:"attention" }).webp({quality:84}).toBuffer();
+    const heroOutput = await img.clone().resize({width:1536,height:1024,fit:"inside",withoutEnlargement:true}).webp({quality:84}).toBuffer({resolveWithObject:true});
+    hero = heroOutput.data;
+    heroWidth = heroOutput.info.width;
+    heroHeight = heroOutput.info.height;
     social = await img.clone().resize(1200,630,{ fit:"cover", position:"attention" }).webp({quality:82}).toBuffer();
   } catch {
     return NextResponse.json({ error: "Image processing failed. Upload a valid JPEG, PNG or WebP photo." }, { status: 400 });
@@ -61,7 +65,7 @@ export async function POST(request: NextRequest) {
   const saved = await supabase.from("content_drafts").update({
     body_markdown: bodyMarkdown,
     hero_image_url:url,hero_image_alt:alt.trim(),
-    hero_image_width:1536,hero_image_height:1024,
+    hero_image_width:heroWidth,hero_image_height:heroHeight,
     hero_image_license:"Admin-uploaded",
     hero_image_rights_note:"Uploader confirmed rights to use this image.",
     hero_image_verified_by:null,hero_image_verified_at:null,
