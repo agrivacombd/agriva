@@ -1,8 +1,9 @@
+import {EXTRA_BD_AGRI_SUGGESTIONS,type ExtraCategory} from "./bangladesh-agri-market-catalog";
 /** Common Bangladesh agricultural products for zero-API-cost typeahead.
  * These are search suggestions, NOT claims that specific varieties are in stock.
  * Keep each label free from pack sizes so customers can enter their own bulk quantity.
  */
-export type CropSuggestion = { name: string; category: "বীজ" | "ধান ও চাল" | "সবজি" | "ফসল" | "ফল ও চারা"; aliases?: string[] };
+export type CropSuggestion = { name: string; category: ExtraCategory; aliases?: string[] };
 export const BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
  {name:"ধানের বীজ",category:"বীজ",aliases:["ধান বীজ","Rice Seed","Paddy Seed"]},
  {name:"ব্রি ধান২৮ বীজ",category:"বীজ",aliases:["BRRI dhan28","BR28","ব্রি-২৮"]},
@@ -93,6 +94,7 @@ export const BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
  {name:"লিচু",category:"ফল ও চারা",aliases:["Lychee"]},
  {name:"আমের চারা",category:"ফল ও চারা",aliases:["Mango Sapling"]},
  {name:"পেঁপের চারা",category:"ফল ও চারা",aliases:["Papaya Seedling"]},
+ ...EXTRA_BD_AGRI_SUGGESTIONS,
 ];
 /** Case-insensitive, space/punctuation tolerant, Bengali digit aware. */
 const digitMap:Record<string,string>={"০":"0","১":"1","২":"2","৩":"3","৪":"4","৫":"5","৬":"6","৭":"7","৮":"8","৯":"9"};
@@ -104,12 +106,22 @@ export function cropSearchKey(value:string):string{
 export function suggestCrops(query:string, catalog:readonly CropSuggestion[]=BD_CROP_SUGGESTIONS,limit=8):CropSuggestion[]{
  const q=cropSearchKey(query);
  if(q.length<1)return [];
- return catalog.map((entry,index)=>{
+ const matches = catalog.map((entry,index)=>{
   const name=cropSearchKey(entry.name);
   const aliases=(entry.aliases||[]).map(cropSearchKey);
   const exact=name===q||aliases.some(a=>a===q);
   const starts=name.startsWith(q)||aliases.some(a=>a.startsWith(q));
   const contains=name.includes(q)||aliases.some(a=>a.includes(q));
   return {entry,index,rank:exact?0:starts?1:contains?2:99};
- }).filter(x=>x.rank<99).sort((a,b)=>a.rank-b.rank||a.index-b.index).slice(0,Math.max(0,limit)).map(x=>x.entry);
+ }).filter(x=>x.rank<99).sort((a,b)=>a.rank-b.rank||a.index-b.index);
+ const unique=new Set<string>();
+ const results:CropSuggestion[]=[];
+ for(const match of matches){
+   const key=cropSearchKey(match.entry.name);
+   if(unique.has(key))continue;
+   unique.add(key);
+   results.push(match.entry);
+   if(results.length>=Math.max(0,limit))break;
+ }
+ return results;
 }
