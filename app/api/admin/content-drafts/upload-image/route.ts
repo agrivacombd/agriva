@@ -47,11 +47,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Social image upload failed." }, {status:500});
   }
   const url = storage.getPublicUrl(path).data.publicUrl;
-  // A single upload persists the hero image and a single inline Markdown image.
-  // Replace a prior auto-inserted hero image rather than piling up duplicates.
+  // Persist the same image in the hero field and once in the article body.
+  // Remove an older hero image Markdown line before replacing it.
   const oldBody = draft.body_markdown || "";
   const oldHero = draft.hero_image_url || "";
-  const oldHeroImage = oldHero ? new RegExp("\\n*?!\\[[^\\]]*\\]\\(" + oldHero.replace(/[.*+?^$\x7b\x7d()|[\]\\]/g, "\\  const saved = await supabase.from("content_drafts").update({") + "\\)\\n*", "g") : null;
+  const cleaned = oldHero ? oldBody.split("\n").filter(line => !line.includes("](" + oldHero + ")")).join("\n") : oldBody;
+  const inlineImage = "\\n\\n![" + alt.trim().replace(/[\\[\\]]/g,"") + "](" + url + ")\\n\\n";
+  const bodyMarkdown = cleaned.trimEnd() + inlineImage;
+  if (bodyMarkdown.length > 50000) {
+    await storage.remove([path,socialPath]);
+    return NextResponse.json({error:"Article body is too long to insert this image."},{status:413});
+  }
+  const saved = await supabase.from("content_drafts").update({") + "\\)\\n*", "g") : null;
   const cleaned = oldHeroImage ? oldBody.replace(oldHeroImage, "\\n\\n") : oldBody;
   const inlineImage = "\\n\\n![" + alt.trim().replace(/[\\[\\]]/g,"") + "](" + url + ")\\n\\n";
   const bodyMarkdown = (cleaned.trimEnd() + inlineImage);
