@@ -9,6 +9,7 @@ assert.ok(BD_CROP_SUGGESTIONS.filter(x=>x.category==="বীজ").length>=40,"Se
 assert.ok(suggestCrops("টমেটো").some(x=>x.name==="টমেটো বীজ"),"Bangla typing should find tomato seeds");
 assert.ok(suggestCrops("Tomato").some(x=>x.name==="টমেটো বীজ"),"English alias should find Bangla name");
 assert.ok(suggestCrops("চিয়া").some(x=>x.name==="চিয়া সিড"),"Chia seed should be supported");
+assert.ok(suggestCrops("bij").some(x=>x.name.includes("বীজ")),"Romanized bij should show seed suggestions");
 assert.ok(suggestCrops("BR28").some(x=>x.name==="ব্রি ধান২৮ বীজ"),"BRRI aliases should be searchable");
 assert.equal(cropSearchKey("ধান ২৮"),cropSearchKey("ধান 28"),"Bangla and Latin digits must match");
 assert.deepEqual(suggestCrops("totally-unlisted-crop"),[],"Customers may write a new custom name");
