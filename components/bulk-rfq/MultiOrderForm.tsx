@@ -18,9 +18,9 @@ export default function MultiOrderForm({initial,action,marketplaceNames=[]}:{ini
   {items.map((it,i)=><fieldset key={i} className="space-y-3 rounded-xl border border-slate-200 p-4">
     <legend className="px-2 font-semibold">পণ্য {i+1}</legend>
     <div className="flex justify-end">{items.length>1&&<button type="button" onClick={()=>setItems(x=>x.filter((_,n)=>n!==i))} className="text-sm font-bold text-red-700">পণ্যটি সরান</button>}</div>
-    <label className="block text-sm font-semibold">পণ্যের নাম
+    <div className="block text-sm font-semibold"><span>পণ্যের নাম</span>
      <ProductNameAutocomplete value={it.name} onChange={name=>update(i,"name",name)} marketplaceNames={marketplaceNames}/>
-    </label>
+    </div>
     <div className="grid grid-cols-2 gap-3">
      <label className="text-sm font-semibold">পরিমাণ<input required type="number" min="0.001" max="1000000" step="0.001" className={css} value={it.quantity} onChange={e=>update(i,"quantity",e.target.value)}/></label>
      <label className="text-sm font-semibold">একক<select className={css} value={it.unit} onChange={e=>update(i,"unit",e.target.value)}>{[["kg","কেজি"],["ton","টন"],["maund","মণ"],["bag","বস্তা"],["packet","প্যাকেট"]].map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></label>
