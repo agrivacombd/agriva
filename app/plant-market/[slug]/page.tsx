@@ -17,7 +17,7 @@ export async function generateMetadata({params}:Props):Promise<Metadata>{
 }
 export default async function PlantMarketProductPage({params}:Props){
   const {slug}=await params;const supabase=await createSupabaseServerClient();
-  const {data:product}=await supabase.from("plant_market_products").select("id,name,slug,scientific_name,category,plant_size,pot_size,plant_age,sunlight,watering,flowering_season,delivery_area,description,price,stock,unit,image_url,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt").eq("slug",slug).eq("status","active").maybeSingle();
+  const {data:product}=await supabase.from("plant_market_products").select("id,name,slug,scientific_name,category,plant_size,pot_size,plant_age,sunlight,watering,flowering_season,delivery_area,description,price,stock,unit,image_url,seo_title,seo_description,focus_keyword,seo_keywords,brand,origin,highlights,usage_instructions,image_alt").eq("slug",lookupSlug).eq("status","active").maybeSingle();
   if(!product)notFound();
   const canonicalSlug=canonicalPlantProductSlug(product.slug);
   if(slug!==canonicalSlug) permanentRedirect(`/plant-market/${encodeURIComponent(canonicalSlug)}`);
