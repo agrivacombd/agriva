@@ -29,6 +29,10 @@ const copy = {
     forgot: "পাসওয়ার্ড ভুলে গেছেন?",
     error: "লগইন করা যায়নি। ইমেইল ও পাসওয়ার্ড যাচাই করে আবার চেষ্টা করুন।",
     failed: "সংযোগে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।",
+    invalidCredentials: "ইমেইল বা পাসওয়ার্ড সঠিক নয়। Google/Facebook দিয়ে অ্যাকাউন্ট তৈরি করে থাকলে সেই মাধ্যম ব্যবহার করুন, অথবা পাসওয়ার্ড রিসেট করুন।",
+    emailNotConfirmed: "আপনার ইমেইল এখনো যাচাই করা হয়নি। ইনবক্সে যাচাইকরণ লিংক দেখুন।",
+    tooManyRequests: "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+    resetPassword: "পাসওয়ার্ড রিসেট করুন",
     show: "পাসওয়ার্ড দেখান",
     hide: "পাসওয়ার্ড লুকান",
     featureTitle: "আপনার কৃষি-জগৎ, এক জায়গায়",
@@ -50,6 +54,10 @@ const copy = {
     forgot: "Forgot password?",
     error: "Sign-in failed. Check your email and password, then try again.",
     failed: "A connection issue occurred. Please try again shortly.",
+    invalidCredentials: "Email or password is incorrect. If you registered with Google or Facebook, use that method or reset your password.",
+    emailNotConfirmed: "Your email is not confirmed yet. Check your inbox for the confirmation link.",
+    tooManyRequests: "Too many attempts. Please try again later.",
+    resetPassword: "Reset password",
     show: "Show password",
     hide: "Hide password",
     featureTitle: "Your agriculture world, connected",
@@ -95,7 +103,17 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) {
-        setMessage(error.message || t.error);
+        const code = error.code || "";
+        const detail = error.message.toLowerCase();
+        if (code === "invalid_credentials" || detail.includes("invalid login credentials")) {
+          setMessage(t.invalidCredentials);
+        } else if (code === "email_not_confirmed" || detail.includes("email not confirmed")) {
+          setMessage(t.emailNotConfirmed);
+        } else if (error.status === 429 || detail.includes("rate limit") || detail.includes("too many requests")) {
+          setMessage(t.tooManyRequests);
+        } else {
+          setMessage(t.error);
+        }
         return;
       }
       router.push(safeNext);
@@ -164,9 +182,9 @@ function LoginForm() {
                   <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? t.hide : t.show} className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-[#126b4f]">{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
                 </span>
               </label>
-              <div className="-mt-2 flex justify-end"><Link href="/forgot-password" className="text-sm font-semibold text-[#167453] underline underline-offset-4">{t.forgot}</Link></div>
+              <div className="-mt-2 flex justify-end"><Link href={email.trim() ? "/forgot-password?email=" + encodeURIComponent(email.trim()) : "/forgot-password"} className="text-sm font-semibold text-[#167453] underline underline-offset-4">{t.forgot}</Link></div>
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">{busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}</button>
-              {message && <p role="status" aria-live="polite" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{message}</p>}
+              {message && <div role="alert" aria-live="polite" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"><p>{message}</p><Link href={email.trim() ? "/forgot-password?email=" + encodeURIComponent(email.trim()) : "/forgot-password"} className="mt-2 inline-block font-bold underline underline-offset-4">{t.resetPassword}</Link></div>}
             </form>}
             <p className="mt-7 text-center text-sm text-slate-600">{t.noAccount}{" "}<Link className="font-bold text-[#167453] underline underline-offset-4" href={requestedNextPath ? "/signup?next=" + encodeURIComponent(safeNext) : "/signup"}>{t.signup}</Link></p>
           </div>
