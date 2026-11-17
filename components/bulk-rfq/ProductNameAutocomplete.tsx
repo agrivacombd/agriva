@@ -29,6 +29,7 @@ export default function ProductNameAutocomplete({
    maxLength={120}
    autoComplete="off"
    role="combobox"
+   aria-label="পণ্যের নাম"
    aria-autocomplete="list"
    aria-haspopup="listbox"
    aria-expanded={visible}
