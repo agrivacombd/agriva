@@ -53,7 +53,7 @@ create table if not exists public.bulk_selections (
  created_at timestamptz not null default now()
 );
 create view public.bulk_public_listings with (security_barrier=true) as
- select id, product_name, specification, quantity, unit, district, upazila, desired_date, quote_deadline, created_at
+ select id, product_name, quantity, unit, district, upazila, desired_date, quote_deadline, created_at
  from public.bulk_requests where status='open' and visibility='public'
  and (quote_deadline is null or quote_deadline>now());
 revoke all on public.bulk_public_listings from public;
