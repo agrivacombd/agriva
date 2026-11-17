@@ -58,14 +58,6 @@ export async function POST(request: NextRequest) {
     await storage.remove([path,socialPath]);
     return NextResponse.json({error:"Article body is too long to insert this image."},{status:413});
   }
-  const saved = await supabase.from("content_drafts").update({") + "\\)\\n*", "g") : null;
-  const cleaned = oldHeroImage ? oldBody.replace(oldHeroImage, "\\n\\n") : oldBody;
-  const inlineImage = "\\n\\n![" + alt.trim().replace(/[\\[\\]]/g,"") + "](" + url + ")\\n\\n";
-  const bodyMarkdown = (cleaned.trimEnd() + inlineImage);
-  if (bodyMarkdown.length > 50000) {
-    await storage.remove([path,socialPath]);
-    return NextResponse.json({error:"Article body is too long to insert this image."},{status:413});
-  }
   const saved = await supabase.from("content_drafts").update({
     body_markdown: bodyMarkdown,
     hero_image_url:url,hero_image_alt:alt.trim(),
