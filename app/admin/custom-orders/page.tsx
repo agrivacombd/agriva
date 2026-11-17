@@ -110,7 +110,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
    <div className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm">
      <p className="font-bold">পাইকারের জন্য নিরাপদ আমন্ত্রণ লিংক</p>
      <p className="mt-1 text-slate-600">প্রথমে যাচাইকৃত পাইকারের অ্যাকাউন্টে আমন্ত্রণ যুক্ত করুন, তারপর নিচের লিংক পাঠান। লগইন ছাড়া লিংকটি অফার জমার অনুমতি দেয় না।</p>
-     <input aria-label="পাইকারের আমন্ত্রণ লিংক" readOnly value="https://agriva.com.bd/wholesaler/requests" className="mt-2 w-full rounded-lg border bg-white px-3 py-2 text-sm"/>
+     <input aria-label="পাইকারের আমন্ত্রণ লিংক" readOnly value={`https://agriva.com.bd/wholesaler/requests?request=${encodeURIComponent(r.id)}`} className="mt-2 w-full rounded-lg border bg-white px-3 py-2 text-sm"/>
     </div>
    <form action={inviteWholesaler} className="mt-5 flex flex-wrap gap-2"><input type="hidden" name="request_id" value={r.id}/><label className="sr-only" htmlFor={`wholesaler-${r.id}`}>পাইকারের অ্যাকাউন্ট ID</label><input id={`wholesaler-${r.id}`} required name="wholesaler_id" list="bulk-wholesaler-accounts" placeholder="যাচাইকৃত পাইকার নির্বাচন করুন" className={field}/><button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white">পাইকারকে আমন্ত্রণ</button></form>
    {selections?.filter(sel=>sel.request_id===r.id).map(sel=><div key={sel.request_id} className="mt-4 rounded-xl border border-emerald-200 p-3">
