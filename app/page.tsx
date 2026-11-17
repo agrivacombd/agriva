@@ -23,6 +23,7 @@ const services = [
   { icon: TrendingUp, title: "ফসল বাছাই ও লাভ তুলনা", subtitle: "চাষের আগে হিসাব মিলান", detail: "নিজের খরচ ও দামের ভিত্তিতে তিনটি ফসলের সম্ভাব্য লাভ তুলনা করুন", href: "/crop-choice", tone: "bg-cyan-50 text-cyan-800" },
   { icon: Wheat, title: "ফসল বিক্রি করুন", subtitle: "ক্রেতার কাছে অফার দিন", detail: "ফসলের পরিমাণ, দাম ও অবস্থান দিয়ে বিক্রির পোস্ট তৈরি করুন", href: "/sell-harvest", tone: "bg-amber-50 text-amber-800" },
   { icon: Users, title: "ক্রেতার চাহিদা", subtitle: "চাহিদা দেখে অফার দিন", detail: "ক্রেতার ফসল, পরিমাণ, এলাকা ও সময়ের চাহিদা দেখুন", href: "/buyer-demands", tone: "bg-emerald-50 text-emerald-800" },
+  { icon: ShoppingCart, title: "বাল্ক ও কাস্টম অর্ডার", subtitle: "পাইকারদের দর তুলনা করুন", detail: "আপনার চাহিদা দিন, যাচাইকৃত পাইকারদের কোটেশন তুলনা করে সিদ্ধান্ত নিন", href: "/custom-order", tone: "bg-emerald-50 text-emerald-800" },
   { icon: Truck, title: "কৃষিপণ্য পরিবহন", subtitle: "পরিবহনের ব্যবস্থা করুন", detail: "ফসল পরিবহনের অনুরোধ দিন ও প্রাপ্ত ভাড়ার অফার তুলনা করুন", href: "/transport", tone: "bg-sky-50 text-sky-800" },
   { icon: BookOpen, title: "কৃষি শেখা ও গাইড", subtitle: "ব্যবহারিক জ্ঞান বাড়ান", detail: "ফসল, মাটি ও সমন্বিত বালাই ব্যবস্থাপনা সম্পর্কে সহজ বাংলায় শিখুন", href: "/learn", tone: "bg-teal-50 text-teal-700" },
 ];
