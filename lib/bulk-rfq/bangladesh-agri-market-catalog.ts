@@ -1,3 +1,4 @@
+import {SIDDIQUE_BAZAR_PUBLIC_VARIETIES} from "./siddique-bazar-public-varieties";
 /** AGRIVA searchable reference vocabulary for Bangladesh agricultural RFQs.
  * Product categories informed by publicly listed Bangladesh seed-market catalogs,
  * including Siddique Bazar seed firms (Century Seed, Jamalpur Seeds, East Bengal Seed)
@@ -14,7 +15,7 @@
  * https://agro.azghantrading.com/shop/
  */
 export type ExtraCategory = "বীজ"|"ধান ও চাল"|"সবজি"|"ফসল"|"ফল ও চারা"|"ফুলের বীজ"|"সার"|"কৃষি উপকরণ"|"মসলা"|"পশুখাদ্য";
-export type ExtraItem = {name:string;category:ExtraCategory;aliases?:string[]};
+export type ExtraItem = {name:string;category:ExtraCategory;aliases?:string[];supplier?:string;source?:string};
 
 function rows(category:ExtraCategory,names:string):ExtraItem[]{
  return names.split("|").map(name=>name.trim()).filter(Boolean).map(name=>({name,category}));
@@ -81,6 +82,6 @@ const verifiedExamples:ExtraItem[]=[
 ];
 
 export const EXTRA_BD_AGRI_SUGGESTIONS:readonly ExtraItem[]=[
- ...verifiedExamples,...vegetables,...cropSeeds,...flowerSeeds,...vegetablesHarvest,...grains,
+ ...SIDDIQUE_BAZAR_PUBLIC_VARIETIES,...verifiedExamples,...vegetables,...cropSeeds,...flowerSeeds,...vegetablesHarvest,...grains,
  ...fruits,...spices,...fertilizers,...equipment,...feeds
 ];
