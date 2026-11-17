@@ -50,6 +50,7 @@ function ProductCard({
   wished,
   onWish,
   onAddToCart,
+  onBuyNow,
   addingToCart,
   cartBusy,
 }: {
@@ -58,6 +59,7 @@ function ProductCard({
   wished: boolean;
   onWish: () => void;
   onAddToCart: () => void;
+  onBuyNow: () => void;
   addingToCart: boolean;
   cartBusy: boolean;
 }) {
@@ -130,9 +132,13 @@ function ProductCard({
               </button>
             </div>
           ) : (
-            <Link href={detailHref} onClick={recordListingClick} className="mt-3 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-900">
-              পণ্যের বিস্তারিত
-            </Link>
+            <div className="mt-3 grid gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" disabled={!inStock || !hasPrice || cartBusy} onClick={() => {recordListingClick();onAddToCart();}} className="flex min-h-11 items-center justify-center gap-1 rounded-xl border-2 border-emerald-800 px-2 text-[11px] font-black text-emerald-900 disabled:opacity-40"><ShoppingCart size={14}/>{addingToCart?"যোগ হচ্ছে…":"Add to Cart"}</button>
+                <button type="button" disabled={!inStock || !hasPrice || cartBusy} onClick={() => {recordListingClick();onBuyNow();}} className="min-h-11 rounded-xl bg-emerald-800 px-2 text-xs font-black text-white disabled:opacity-40">Buy Now</button>
+              </div>
+              <Link href={detailHref} onClick={recordListingClick} className="inline-flex min-h-9 items-center justify-center rounded-xl border border-emerald-200 px-3 py-2 text-xs font-bold text-emerald-900 hover:bg-emerald-50">বিস্তারিত দেখুন</Link>
+            </div>
           )}
         </div>
       </div>
@@ -226,6 +232,34 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       .catch(() => { /* Cart status is optional; adding still works. */ });
     return () => { alive = false; };
   }, [productHrefPrefix, loadCartSummary]);
+
+  async function addPlantProductToCart(product: MarketplaceProduct, buyNow = false) {
+    if (addRequestInFlightRef.current || addingProductId || Number(product.stock || 0) < 1) return;
+    addRequestInFlightRef.current = true;
+    setAddingProductId(product.id);setCartError("");setCartNeedsLogin(false);setCartNotice("");
+    try {
+      const response = await fetch("/api/plant-market/cart", {
+        method: "POST",headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ productId: product.id, quantity: 1 }),
+      });
+      const data = await response.json().catch(()=>({}));
+      if(response.status===401) {
+        setCartNeedsLogin(true);
+        setCartError("কার্টে যোগ করতে লগইন করুন।");return;
+      }
+      if(!response.ok) {setCartError(typeof data.error==="string"?data.error:"স্টক বা সংযোগ যাচাই করুন।");return;}
+      if(buyNow) {
+        // Plant checkout displays every item already in the active cart.
+        window.location.assign("/plant-market/checkout");
+        return;
+      }
+      setCartNotice(product.name + " Plant Market কার্টে যোগ হয়েছে।");
+    } catch {
+      setCartError("কার্টে যোগ করা যায়নি। সংযোগ পরীক্ষা করুন।");
+    } finally {
+      addRequestInFlightRef.current = false;setAddingProductId(null);
+    }
+  }
 
   async function addProductToCart(product: MarketplaceProduct) {
     if (productHrefPrefix !== "/marketplace" || addRequestInFlightRef.current || addingProductId) return;
@@ -434,13 +468,15 @@ export default function MarketplaceCore({ products, showCategories = true, avail
             <p aria-live="polite" className="shrink-0 text-xs font-bold text-slate-500">{new Intl.NumberFormat("bn-BD").format(visible.length)}টি পণ্য</p>
           </div>
 
-          {productHrefPrefix === "/marketplace" && cartError && (
+          {cartError && (
             <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-950">
               <span>{cartError}</span>
-              {cartNeedsLogin && <Link href={"/login?next=" + encodeURIComponent("/marketplace")} className="rounded-lg bg-emerald-900 px-4 py-2 text-xs font-bold text-white">লগইন করুন</Link>}
-              {!cartNeedsLogin && <Link href="/cart" className="text-xs font-bold underline underline-offset-2">কার্ট দেখুন</Link>}
+              {cartNeedsLogin && <Link href={"/login?next=" + encodeURIComponent(isPlantMarket?"/plant-market":"/marketplace")} className="rounded-lg bg-emerald-900 px-4 py-2 text-xs font-bold text-white">লগইন করুন</Link>}
+              {!cartNeedsLogin && <Link href={isPlantMarket?"/plant-market/cart":"/cart"} className="text-xs font-bold underline underline-offset-2">কার্ট দেখুন</Link>}
             </div>
           )}
+          {isPlantMarket && cartNotice && <div role="status" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-950"><span>{cartNotice}</span><Link href="/plant-market/cart" className="font-black underline">Plant Market Cart দেখুন</Link></div>}
+          {isPlantMarket && <p className="mt-2 text-xs text-slate-500">Buy Now পুরো Plant Market Cart-এর Checkout খুলবে। আগে যোগ করা পণ্য থাকলে Order Summary দেখে নিশ্চিত করুন।</p>}
           {!isPlantMarket && allowPersonal && (interests.length>0 || wishlist.length>0) && (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-white p-3">
               <p className="text-xs leading-5 text-slate-600">আপনার আগ্রহ অনুযায়ী পণ্য <span className="text-slate-400">· এই ব্রাউজারে</span></p>
@@ -470,7 +506,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
           )}
           {paginated.length ? <>
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-4">
-              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAddToCart={() => void addProductToCart(product)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
+              {paginated.map((product) => <ProductCard key={product.id} product={product} productHrefPrefix={productHrefPrefix} wished={wishlist.includes(product.id)} onWish={() => toggleWishlist(product.id)} onAddToCart={() => void (isPlantMarket ? addPlantProductToCart(product) : addProductToCart(product))} onBuyNow={() => void addPlantProductToCart(product,true)} addingToCart={addingProductId === product.id} cartBusy={Boolean(addingProductId)} />)}
             </div>
             {paginated.length < visible.length && <div className="mt-7 flex justify-center">
               <button type="button" onClick={() => setPage((current) => current + 1)} className="min-h-11 rounded-xl border border-emerald-800 bg-white px-6 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">আরও পণ্য দেখুন ({new Intl.NumberFormat("bn-BD").format(visible.length - paginated.length)}টি বাকি)</button>
