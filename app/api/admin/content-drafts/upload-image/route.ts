@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
   if (file.size < 100 || file.size > MAX_BYTES) return NextResponse.json({ error: "Image size must be under 6 MB." }, { status: 413 });
   const { supabase } = access;
   const { data: draft, error: lookupError } = await supabase.from("content_drafts")
-    .select("id,status,editorial_version,content_type").eq("id", id).is("deleted_at",null).maybeSingle();
+    .select("id,status,editorial_version,content_type,body_markdown,hero_image_url").eq("id", id).is("deleted_at",null).maybeSingle();
   if (lookupError || !draft || draft.content_type !== "article") return NextResponse.json({ error: "Article not found." }, { status: 404 });
   if (draft.status === "published") return NextResponse.json({ error: "Unpublish & Edit before replacing the image." }, { status: 409 });
   let hero: Buffer, social: Buffer;
@@ -47,7 +47,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Social image upload failed." }, {status:500});
   }
   const url = storage.getPublicUrl(path).data.publicUrl;
+  // Persist the same image in the hero field and once in the article body.
+  // Remove an older hero image Markdown line before replacing it.
+  const oldBody = draft.body_markdown || "";
+  const oldHero = draft.hero_image_url || "";
+  const cleaned = oldHero ? oldBody.split("\n").filter((line: string) => !line.includes("](" + oldHero + ")")).join("\n") : oldBody;
+  const inlineImage = "\n\n![" + alt.trim().replaceAll("[","").replaceAll("]","") + "](" + url + ")\n\n";
+  const bodyMarkdown = cleaned.trimEnd() + inlineImage;
+  if (bodyMarkdown.length > 50000) {
+    await storage.remove([path,socialPath]);
+    return NextResponse.json({error:"Article body is too long to insert this image."},{status:413});
+  }
   const saved = await supabase.from("content_drafts").update({
+    body_markdown: bodyMarkdown,
     hero_image_url:url,hero_image_alt:alt.trim(),
     hero_image_width:1536,hero_image_height:1024,
     hero_image_license:"Admin-uploaded",
@@ -55,10 +67,10 @@ export async function POST(request: NextRequest) {
     hero_image_verified_by:null,hero_image_verified_at:null,
     ...(draft.status === "approved" ? {status:"review",reviewed_at:null}:{})
   }).eq("id",id).eq("status",draft.status).eq("editorial_version",draft.editorial_version)
-    .is("deleted_at",null).select("id,status,hero_image_url,hero_image_alt").maybeSingle();
+    .is("deleted_at",null).select("id,status,hero_image_url,hero_image_alt,body_markdown").maybeSingle();
   if (saved.error || !saved.data) {
     await storage.remove([path,socialPath]);
     return NextResponse.json({ error: "Article changed while uploading. Reload and retry." }, {status:409});
   }
-  return NextResponse.json({ok:true,url,alt:saved.data.hero_image_alt,status:saved.data.status});
+  return NextResponse.json({ok:true,url,alt:saved.data.hero_image_alt,status:saved.data.status,body_markdown:saved.data.body_markdown});
 }
