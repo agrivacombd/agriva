@@ -1,3 +1,4 @@
+import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
@@ -91,7 +92,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
    </form>
   {error?<p role="alert" className="mt-6 rounded-xl bg-red-50 p-4">RFQ তালিকা লোড করা যায়নি; migration বা authorization যাচাই করুন।</p>:<div className="mt-7 grid gap-4">{requests?.map(r=><section key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
    <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs">{r.status}</span></div>
-   <p className="mt-2 text-sm">{r.quantity} {r.unit} · {r.district} · {r.buyer_type} · {r.visibility}</p>
+   <p className="mt-2 text-sm">{r.quantity} {r.unit} · {formatBulkDeliveryArea(r.district)} · {r.buyer_type} · {r.visibility}</p>
    {(multiItems??[]).filter(it=>it.request_id===r.id).length>0&&<div className="mt-4 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
     <p className="mb-3 font-bold">পণ্যের তালিকা</p>
     {(multiItems??[]).filter(it=>it.request_id===r.id).map(it=>{
