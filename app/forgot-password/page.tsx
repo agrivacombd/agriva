@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Mail } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -15,13 +15,25 @@ export default function ForgotPasswordPage() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const bn = language === "bn";
 
+  useEffect(() => {
+    const suggestedEmail = new URLSearchParams(window.location.search).get("email");
+    if (suggestedEmail && suggestedEmail.length <= 254) setEmail(suggestedEmail);
+  }, []);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
-    const redirectTo = new URL("/auth/callback?next=/reset-password", window.location.origin).toString();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
-    setBusy(false);
+    let resetError: { message: string } | null = null;
+    try {
+      const redirectTo = new URL("/auth/callback?next=/reset-password", window.location.origin).toString();
+      const result = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
+      resetError = result.error;
+    } catch {
+      resetError = { message: "Connection error" };
+    } finally {
+      setBusy(false);
+    }
     if (resetError) {
       setError(true);
       setMessage(bn ? "রিকভারি ইমেইল পাঠানো যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।" : "We couldn't send a recovery email. Please try again shortly.");
