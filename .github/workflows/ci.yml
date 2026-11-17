@@ -26,7 +26,9 @@ jobs:
         run: npm run lint -- --no-cache
       - name: TypeScript check
         run: npx tsc --noEmit
-      - name: Bulk order agricultural product autocomplete regression\n        run: node scripts/smoke-bulk-crop-suggestions.mjs\n      - name: Invalid Supabase refresh-token cookie regression test
+      - name: Bulk order agricultural product autocomplete regression
+        run: node scripts/smoke-bulk-crop-suggestions.mjs
+      - name: Invalid Supabase refresh-token cookie regression test
         run: npm run test:auth-refresh-token
       - name: Persisted privacy consent regression test
         run: npm run test:analytics-instrumentation
