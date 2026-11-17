@@ -1,3 +1,4 @@
+import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -36,7 +37,7 @@ export default async function WholesalerOrders(){
     return <article key={a.item_id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
      <div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-bold">{it.product_name}</h2>
       <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold">{statusLabel[a.fulfillment_status]??a.fulfillment_status}</span></div>
-     <p className="mt-2 text-sm">পরিমাণ: {it.quantity} {it.unit} · {r.district}{r.upazila?", "+r.upazila:""}</p>
+     <p className="mt-2 text-sm">পরিমাণ: {it.quantity} {it.unit} · {formatBulkDeliveryArea(r.district,r.upazila)}</p>
      <p className="mt-2 text-sm">আপনার নির্বাচিত অফার: <strong>{money(total)}</strong></p>
      <p className="mt-2 text-xs text-slate-500">ক্রেতার যোগাযোগ ও পূর্ণ ঠিকানা Admin নিশ্চিত করার পরে সরবরাহের জন্য জানাবেন।</p>
     </article>;
@@ -48,7 +49,7 @@ export default async function WholesalerOrders(){
     return <article key={s.request_id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}</h2>
       <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold">{statusLabel[s.fulfillment_status]??s.fulfillment_status}</span></div>
-      <p className="mt-3 text-sm">পরিমাণ: {r.quantity} {r.unit} · এলাকা: {r.district}{r.upazila?", "+r.upazila:""}</p>
+      <p className="mt-3 text-sm">পরিমাণ: {r.quantity} {r.unit} · এলাকা: {formatBulkDeliveryArea(r.district,r.upazila)}</p>
       <p className="mt-2 text-sm">আপনার কোটেশন: <strong>{money(total)}</strong></p>
       <p className="mt-3 text-xs text-slate-500">নিরাপত্তার জন্য ক্রেতার ফোন ও সম্পূর্ণ ঠিকানা এখানে প্রকাশ করা হয় না। AGRIVA Admin নিশ্চিতকরণের পরে পরবর্তী নির্দেশনা দেবেন।</p>
     </article>;
