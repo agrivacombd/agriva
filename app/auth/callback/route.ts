@@ -1,32 +1,59 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { safeAuthNextPath } from "@/lib/auth/safe-next";
 import { fillMissingSocialProfileName } from "@/lib/auth/social-profile";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const providerError = url.searchParams.get("error");
+  if (providerError) {
+    return NextResponse.redirect(new URL("/login?error=provider_denied", url.origin));
+  }
   if (!code) return NextResponse.redirect(new URL("/login?error=missing_code", url.origin));
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: (cookiesToSet) => cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) } }
-  );
+  // Persist PKCE session cookies on the redirect response itself. This ensures
+  // the browser receives the session before it requests the protected dashboard.
+  const next = safeAuthNextPath(url.searchParams.get("next"));
+  const response = NextResponse.redirect(new URL(next, url.origin));
+  response.headers.set("Cache-Control", "private, no-store");
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) {
+    return NextResponse.redirect(new URL("/login?error=auth_unavailable", url.origin));
+  }
 
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  if (!error && data.user) {
+  const supabase = createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll: () => {
+        const cookieHeader = request.headers.get("cookie") || "";
+        return cookieHeader.split(";").map((part) => {
+          const index = part.indexOf("=");
+          return index < 0 ? null : { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim() };
+        }).filter((cookie): cookie is { name: string; value: string } => cookie !== null);
+      },
+      setAll: (cookiesToSet) => {
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
+    },
+  });
+
+  try {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error || !data.user || !data.session) {
+      console.error("OAuth code exchange failed:", error?.code || "missing_session");
+      return NextResponse.redirect(new URL("/login?error=auth_callback", url.origin));
+    }
     try {
-      // A new social user gets their Google/Facebook display name. Do not
-      // overwrite names AGRIVA users already entered themselves.
       await fillMissingSocialProfileName(supabase, data.user);
     } catch (cause) {
-      // Profile enrichment is optional; don't block a valid OAuth login.
       console.error("Social profile name sync failed:", cause instanceof Error ? cause.name : "unknown");
     }
+    return response;
+  } catch (cause) {
+    console.error("OAuth callback exception:", cause instanceof Error ? cause.name : "unknown");
+    return NextResponse.redirect(new URL("/login?error=auth_callback", url.origin));
   }
-  const next = safeAuthNextPath(url.searchParams.get("next"));
-  return NextResponse.redirect(new URL(error ? "/login?error=auth_callback" : next, url.origin));
 }
