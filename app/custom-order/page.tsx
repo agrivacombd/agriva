@@ -39,6 +39,12 @@ export default async function CustomOrder({searchParams}:{searchParams:Promise<{
   const p=await searchParams;
   const db=await createSupabaseServerClient();
   const {data:{user}}=await db.auth.getUser();
+  if(!user) return <main className="min-h-screen bg-[#f7f9f5] text-[#17351f]"><div className="bg-[#123f2b] px-4 py-16 text-center text-white">
+   <p className="font-bold text-lime-300">AGRIVA • B2B & B2C</p><h1 className="mt-3 text-3xl font-black">Bulk ও Custom Order</h1>
+   <p className="mx-auto mt-3 max-w-xl">আপনার প্রয়োজন অনুযায়ী পাইকারদের অফার তুলনা করুন এবং আগের অর্ডার থেকে নতুন অর্ডার তৈরি করুন।</p>
+   <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/login?next=%2Fcustom-order" className="rounded-xl bg-lime-300 px-5 py-3 font-bold text-[#17351f]">লগইন করে অর্ডার শুরু করুন</Link>
+   <Link href="/signup" className="rounded-xl border border-white/50 px-5 py-3 font-bold">নতুন অ্যাকাউন্ট তৈরি করুন</Link></div>
+  </div><div className="mx-auto max-w-3xl px-4 py-10 text-center"><Link href="/bulk-orders" className="font-bold text-emerald-700 underline">প্রকাশিত পাইকারি চাহিদা দেখুন</Link></div></main>;
   let saved: Saved | null=null;
   // Ownership check is BOTH explicit here and enforced by Supabase RLS.
   if(user && p.repeat && /^[0-9a-f-]{36}$/i.test(p.repeat)){
