@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { productDescriptionToText } from "@/lib/marketplace/product-description";
+import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
 
 type Product = {
   id:string;seller_id:string;name:string;slug:string;scientific_name:string|null;category:string;category_slug:string;
@@ -103,7 +104,7 @@ export default function PlantMarketProductReview() {
             <label className="text-xs font-bold">মূল্য (৳)<input name="price" type="number" min="0.01" step="0.01" required defaultValue={product.price} className="mt-1 block min-h-11 w-full rounded-xl border px-3"/></label>
             <label className="text-xs font-bold">স্টক<input name="stock" type="number" min="0" step="1" required defaultValue={product.stock} className="mt-1 block min-h-11 w-full rounded-xl border px-3"/></label>
           </div>
-          <label className="block text-xs font-bold">পণ্যের বিস্তারিত HTML বিবরণ<textarea name="description" rows={10} maxLength={5000} defaultValue={product.description||""} className="mt-1 w-full rounded-xl border p-3 font-mono text-xs"/></label>
+          <AdminProductDescriptionEditor key={product.id} value={product.description||""} productName={product.name} variant="plant" focusKeyword={product.focus_keyword||""} previewPath={"/plant-market/"+encodeURIComponent(product.slug)} maxHtmlLength={5000}/>
           <label className="block text-xs font-bold">পরিচর্যার নির্দেশনা<textarea name="usage_instructions" rows={4} maxLength={2000} defaultValue={product.usage_instructions||""} className="mt-1 w-full rounded-xl border p-3 text-sm"/></label>
           <button disabled={busy} className="rounded-xl bg-emerald-900 px-6 py-3 text-sm font-bold text-white disabled:opacity-50">Save Changes</button>
         </form>
