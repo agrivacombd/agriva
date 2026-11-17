@@ -61,6 +61,11 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
    <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs">{r.status}</span></div>
    <p className="mt-2 text-sm">{r.quantity} {r.unit} · {r.district} · {r.buyer_type} · {r.visibility}</p>
    <div className="mt-4 flex flex-wrap gap-2">{(["open","closed","cancelled"] as const).map(status=><form key={status} action={changeRequest}><input type="hidden" name="id" value={r.id}/><input type="hidden" name="status" value={status}/><button disabled={r.status===status||r.status==="selected"} className="rounded-xl border border-emerald-700 px-3 py-2 text-sm font-bold disabled:opacity-40">{status==="open"?"অনুমোদন / Open":status==="closed"?"বন্ধ করুন":"বাতিল করুন"}</button></form>)}</div>
+   <div className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm">
+     <p className="font-bold">পাইকারের জন্য নিরাপদ আমন্ত্রণ লিংক</p>
+     <p className="mt-1 text-slate-600">প্রথমে যাচাইকৃত পাইকারের অ্যাকাউন্টে আমন্ত্রণ যুক্ত করুন, তারপর নিচের লিংক পাঠান। লগইন ছাড়া লিংকটি অফার জমার অনুমতি দেয় না।</p>
+     <input aria-label="পাইকারের আমন্ত্রণ লিংক" readOnly value="https://agriva.com.bd/wholesaler/requests" className="mt-2 w-full rounded-lg border bg-white px-3 py-2 text-sm"/>
+    </div>
    <form action={inviteWholesaler} className="mt-5 flex flex-wrap gap-2"><input type="hidden" name="request_id" value={r.id}/><label className="sr-only" htmlFor={`wholesaler-${r.id}`}>পাইকারের অ্যাকাউন্ট ID</label><input id={`wholesaler-${r.id}`} required name="wholesaler_id" placeholder="Wholesaler account UUID" className={field}/><button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white">পাইকারকে আমন্ত্রণ</button></form>
    <div className="mt-5 space-y-2">{quotes?.filter(q=>q.request_id===r.id).map(q=><div key={q.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm">
     <div><strong>পাইকার {q.wholesaler_id.slice(0,8)}…</strong><p>প্রতি একক ৳{q.unit_price} + পরিবহন ৳{q.shipping_fee} + অন্যান্য ৳{q.extra_fee}</p><p className="text-xs text-slate-500">{q.status}</p></div>
