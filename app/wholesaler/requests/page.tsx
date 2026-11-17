@@ -32,6 +32,7 @@ export default async function WholesalerRequests({searchParams}:{searchParams:Pr
  return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-4xl">
   <Link className="text-sm font-bold text-emerald-700 underline" href="/custom-order">← Bulk Order</Link>
   <h1 className="mt-4 text-3xl font-black">পাইকারের Quotation Dashboard</h1>
+  <Link href="/wholesaler/orders" className="mt-4 inline-flex rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">নির্বাচিত অর্ডার দেখুন</Link>
   <p className="mt-2 text-slate-600">আপনার অ্যাকাউন্টে অ্যাডমিনের পাঠানো আমন্ত্রণগুলো এখানে থাকবে। অন্য পাইকারদের দর গোপন থাকবে।</p>
   {p.notice&&<p role="status" className="mt-4 rounded-xl bg-white p-4">{p.notice==="submitted"?"অফার জমা হয়েছে; অ্যাডমিনের অনুমোদনের অপেক্ষায়।":p.notice==="invalid"?"অফারের তথ্য সঠিক নয়।":"অফার জমা দেওয়া যায়নি। একই অনুরোধে আগে অফার দিয়েছেন কি না যাচাই করুন।"}</p>}
   {error?<p role="alert" className="mt-6 rounded-xl bg-red-50 p-4">আমন্ত্রণগুলো লোড করা যায়নি।</p>:!requests?.length?<p className="mt-6 rounded-xl bg-white p-6">এই মুহূর্তে কোনো সক্রিয় আমন্ত্রণ নেই।</p>:<div className="mt-6 grid gap-5">{requests.map(r=><article key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
