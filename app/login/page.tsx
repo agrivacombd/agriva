@@ -124,8 +124,9 @@ function LoginForm() {
         }
         return;
       }
-      router.push(safeNext);
-      router.refresh();
+      // A full navigation avoids a prefetched unauthenticated dashboard response
+      // racing with the session cookie written by Supabase SSR.
+      window.location.assign(safeNext);
     } catch {
       setMessage(t.failed);
     } finally {
@@ -175,8 +176,7 @@ function LoginForm() {
               <div className="mt-6">
                 <PhoneOtpAuth mode="login" onAuthenticated={() => {
                   const target = safeNext;
-                  router.replace(target);
-                  router.refresh();
+                  window.location.assign(target);
                 }} />
               </div>
             ) : <form onSubmit={signIn} className="mt-8 space-y-5">
