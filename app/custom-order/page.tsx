@@ -24,7 +24,7 @@ async function submitRequest(formData: FormData) {
   const quantity = Number(formData.get("quantity"));
   const unit = String(formData.get("unit") ?? "");
   if(product_name.length<2 || product_name.length>120 || specification.length>2000 || district.length<2 || district.length>80 || upazila.length>80 ||
-    !Number.isFinite(quantity) || quantity<=0 || quantity>10000000 ||
+    !Number.isFinite(quantity) || quantity<=0 || quantity>1000000 ||
     !["business","individual"].includes(buyer_type) || !["public","private"].includes(visibility) ||
     !["kg","ton","maund","bag","packet"].includes(unit)) redirect("/custom-order?error=invalid");
   // Never copy quote IDs, selected supplier, moderation state or money from previous orders.
@@ -69,7 +69,7 @@ export default async function CustomOrder({searchParams}:{searchParams:Promise<{
           <input required minLength={2} maxLength={120} name="product_name" defaultValue={saved?.product_name??""} placeholder="যেমন: কালো ধান" className={field}/>
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <label className="block text-sm font-semibold">পরিমাণ<input required type="number" min="0.001" max="10000000" step="0.001" name="quantity" defaultValue={saved?.quantity??""} className={field}/></label>
+          <label className="block text-sm font-semibold">পরিমাণ<input required type="number" min="0.001" max="1000000" step="0.001" name="quantity" defaultValue={saved?.quantity??""} className={field}/></label>
           <label className="block text-sm font-semibold">একক<select name="unit" defaultValue={saved?.unit??"kg"} className={field}>
             <option value="kg">কেজি</option><option value="ton">টন</option><option value="maund">মণ</option><option value="bag">বস্তা</option><option value="packet">প্যাকেট</option></select></label>
         </div>
