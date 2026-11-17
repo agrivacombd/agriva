@@ -40,3 +40,8 @@ jobs:
         run: node scripts/smoke-plant-market-release.mjs
       - name: TypeScript check
         run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
