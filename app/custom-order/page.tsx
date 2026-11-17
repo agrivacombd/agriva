@@ -37,6 +37,11 @@ export default async function CustomOrder({searchParams}:{searchParams:Promise<{
  const p=await searchParams,db=await createSupabaseServerClient();
  const {data:{user}}=await db.auth.getUser();
  if(!user)return <main className="min-h-screen bg-[#f7f9f5] text-[#17351f]"><div className="bg-[#123f2b] px-4 py-16 text-center text-white"><h1 className="text-3xl font-black">Bulk ও Custom Order</h1><p className="mx-auto mt-4 max-w-xl">একসঙ্গে একাধিক কৃষিপণ্যের কোটেশন নিন এবং দাম তুলনা করুন।</p><div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/login?next=%2Fcustom-order" className="rounded-xl bg-lime-300 px-5 py-3 font-bold text-emerald-950">লগইন করে শুরু করুন</Link><Link href="/signup" className="rounded-xl border border-white px-5 py-3 font-bold">অ্যাকাউন্ট তৈরি করুন</Link></div></div></main>;
+ // Load AGRIVA's active public product names once per page, never on every keystroke.
+ // Autocomplete also works from the curated offline Bangladesh crop catalog when unavailable.
+ const {data:existingProducts}=await db.from("products").select("name")
+  .eq("status","active").is("deleted_at",null).order("name",{ascending:true}).limit(250);
+ const marketplaceNames=[...new Set((existingProducts??[]).map(p=>String(p.name??"").trim()).filter(Boolean))];
  let initial:OrderDraft={buyer_type:"business",visibility:"public",district:"",upazila:"",items:[{name:"",quantity:"",unit:"kg",specification:""}]};
  let repeatFound=false;
  if(p.repeat&&/^[0-9a-f-]{36}$/i.test(p.repeat)){
@@ -56,6 +61,6 @@ export default async function CustomOrder({searchParams}:{searchParams:Promise<{
    {repeatFound&&<p role="status" className="mb-4 rounded-xl bg-emerald-100 p-3 text-sm">পূর্বের পণ্যগুলো লোড হয়েছে। পরিবর্তন করে নতুন অনুরোধ জমা দিন; পুরোনো অর্ডার বদলাবে না।</p>}
    {p.repeat&&!repeatFound&&<p role="alert" className="mb-4 rounded-xl bg-amber-100 p-3 text-sm">আগের অর্ডার পাওয়া যায়নি। নতুন অর্ডার শুরু করুন।</p>}
    {p.error&&<p role="alert" className="mb-4 rounded-xl bg-red-50 p-3 text-sm text-red-800">তথ্য যাচাই করুন বা একটু পরে আবার চেষ্টা করুন।</p>}
-   <MultiOrderForm initial={initial} action={submitRequest}/>
+   <MultiOrderForm initial={initial} action={submitRequest} marketplaceNames={marketplaceNames}/>
   </div></main>;
 }
