@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { safeAuthNextPath } from "@/lib/auth/safe-next";
 import { fillMissingSocialProfileName } from "@/lib/auth/social-profile";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const providerError = url.searchParams.get("error");
@@ -27,13 +27,7 @@ export async function GET(request: Request) {
 
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
-      getAll: () => {
-        const cookieHeader = request.headers.get("cookie") || "";
-        return cookieHeader.split(";").map((part) => {
-          const index = part.indexOf("=");
-          return index < 0 ? null : { name: part.slice(0, index).trim(), value: part.slice(index + 1).trim() };
-        }).filter((cookie): cookie is { name: string; value: string } => cookie !== null);
-      },
+      getAll: () => request.cookies.getAll(),
       setAll: (cookiesToSet) => {
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
