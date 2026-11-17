@@ -11,9 +11,12 @@ const extraUrl="data:text/javascript;base64,"+Buffer.from(extraJs).toString("bas
 const source=readFileSync("lib/bulk-rfq/bangladesh-crop-suggestions.ts","utf8");
 const output=ts.transpileModule(source,options).outputText.replace("./bangladesh-agri-market-catalog",extraUrl);
 const {BD_CROP_SUGGESTIONS,cropSearchKey,suggestCrops}=await import("data:text/javascript;base64,"+Buffer.from(output).toString("base64"));
-assert.ok(BD_CROP_SUGGESTIONS.length>=580,"Expanded Bangladesh market catalog should include sourced seed varieties");
+assert.ok(BD_CROP_SUGGESTIONS.length>=500,"Expanded Bangladesh market catalog should include sourced seed varieties after removing duplicates");
 const sourced=BD_CROP_SUGGESTIONS.filter(x=>!!x.supplier&&!!x.source);
 assert.ok(sourced.length>=130,"At least 130 publicly listed merchant varieties should retain provenance");
+assert.equal(new Set(BD_CROP_SUGGESTIONS.map(x=>cropSearchKey(x.name))).size,BD_CROP_SUGGESTIONS.length,
+ "Entire shipped crop catalogue must contain unique normalized product names");
+assert.deepEqual(suggestCrops("ধান",BD_CROP_SUGGESTIONS,0),[],"Zero limit must never return one result");
 assert.ok(sourced.every(x=>x.source.startsWith("https://")&&x.category==="বীজ"),"Sourced merchant entries require valid provenance and seed classification");
 assert.ok(suggestCrops("জনতা").some(x=>x.name.includes("জনতা শসা")&&x.supplier==="East Bengal Seed Co."),"East Bengal Seed variety");
 assert.ok(suggestCrops("Gentleman").some(x=>x.supplier==="Jamalpur Seeds"&&x.name.includes("জেন্টলম্যান")),"Jamalpur English variety alias");

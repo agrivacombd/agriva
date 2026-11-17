@@ -4,7 +4,7 @@ import {EXTRA_BD_AGRI_SUGGESTIONS,type ExtraCategory} from "./bangladesh-agri-ma
  * Keep each label free from pack sizes so customers can enter their own bulk quantity.
  */
 export type CropSuggestion = { name: string; category: ExtraCategory; aliases?: string[]; supplier?: string; source?: string };
-export const BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
+const RAW_BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
  {name:"ধানের বীজ",category:"বীজ",aliases:["ধান বীজ","Rice Seed","Paddy Seed"]},
  {name:"ব্রি ধান২৮ বীজ",category:"বীজ",aliases:["BRRI dhan28","BR28","ব্রি-২৮"]},
  {name:"ব্রি ধান২৯ বীজ",category:"বীজ",aliases:["BRRI dhan29","BR29","ব্রি-২৯"]},
@@ -103,9 +103,25 @@ export function cropSearchKey(value:string):string{
   .replace(/\b(bij|beej|biji)\b/g,"বীজ").replace(/বিজ/g,"বীজ")
   .normalize("NFKC").replace(/[\u200c\u200d]/g,"").replace(/[ _–—-]+/g," ").trim();
 }
+/** De-duplicate the actual shipped catalog, not only the suggestion results.
+ * Preserve published supplier provenance and all useful search aliases.
+ */
+function uniqueCropCatalog(source:readonly CropSuggestion[]):CropSuggestion[]{
+ const deduplicated=new Map<string,CropSuggestion>();
+ for(const item of source){
+  const key=cropSearchKey(item.name);
+  const previous=deduplicated.get(key);
+  if(!previous){deduplicated.set(key,item);continue;}
+  const preferred=item.supplier&&!previous.supplier?item:previous;
+  const aliases=[...new Set([...(previous.aliases||[]),...(item.aliases||[])])];
+  deduplicated.set(key,{...preferred,aliases});
+ }
+ return [...deduplicated.values()];
+}
+export const BD_CROP_SUGGESTIONS:readonly CropSuggestion[]=uniqueCropCatalog(RAW_BD_CROP_SUGGESTIONS);
 export function suggestCrops(query:string, catalog:readonly CropSuggestion[]=BD_CROP_SUGGESTIONS,limit=8):CropSuggestion[]{
  const q=cropSearchKey(query);
- if(q.length<1)return [];
+ if(q.length<1 || !Number.isFinite(limit) || limit<=0)return [];
  const matches = catalog.map((entry,index)=>{
   const name=cropSearchKey(entry.name);
   const aliases=(entry.aliases||[]).map(cropSearchKey);
