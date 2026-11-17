@@ -4,10 +4,11 @@ import Link from "next/link";
 import {createBrowserClient} from "@supabase/ssr";
 import MarkdownArticleEditor from "./MarkdownArticleEditor";
 import ContentRemovalActions from "./ContentRemovalActions";
+import EditorialImageUpload from "./EditorialImageUpload";
 import {getEditorialChecks} from "@/lib/content/article-quality";
 
 type Revision={id:string;changed_at:string;changed_by:string|null;status_before:string;status_after:string;snapshot:Record<string,unknown>};
-type Draft={id:string;opportunity_id:string;content_type:string;title:string;slug:string;meta_title:string|null;meta_description:string|null;primary_keyword:string;secondary_keywords:string[];search_intent:string;outline:unknown[];faq:unknown[];internal_link_suggestions:unknown[];competitor_analysis:unknown[];body_markdown:string|null;status:string;reviewed_at:string|null;created_at:string;deleted_at:string|null;deleted_from_status:string|null};
+type Draft={id:string;opportunity_id:string;content_type:string;title:string;slug:string;meta_title:string|null;meta_description:string|null;primary_keyword:string;secondary_keywords:string[];search_intent:string;outline:unknown[];faq:unknown[];internal_link_suggestions:unknown[];competitor_analysis:unknown[];body_markdown:string|null;status:string;reviewed_at:string|null;created_at:string;deleted_at:string|null;deleted_from_status:string|null;hero_image_url:string|null;hero_image_alt:string|null};
 type Action="save"|"review"|"approved"|"rejected"|"published"|"draft";
 const statuses=["all","draft","review","approved","published","rejected","trash"] as const;
 function client(){
@@ -113,6 +114,9 @@ export default function ContentDraftsClient(){
         const nextStatus=selected.status==="approved"?"review":
           selected.status==="review"||selected.status==="rejected"?"draft":selected.status;
         setSelected(prev=>prev?{...prev,status:nextStatus}:prev);
+      }else if(action==="review"&&selected.status==="published"){
+        setSelected(prev=>prev?{...prev,status:"review",reviewed_at:null}:prev);
+        setNotice("Article এখন Review অবস্থায়; শিরোনাম, লেখা ও ছবি সম্পাদনা করে Save Draft করুন। এরপর আবার Approve এবং Publish করুন।");
       }else setSelected(null);
       await load();
     }catch(e){setError(e instanceof Error?e.message:"Could not update draft.");}
@@ -161,6 +165,7 @@ export default function ContentDraftsClient(){
           <button type="button" onClick={()=>setSelected(null)} aria-label="Close draft editor" className="min-h-10 rounded-xl border border-slate-200 px-4 font-black">Close ×</button>
         </div>
         {selected.deleted_at&&<p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-900">Trash-এ থাকা পোস্ট পরিবর্তন করা যাবে না। Restore করলে Draft হিসেবে আবার Edit করা যাবে।</p>}
+        {selected.status==="published"&&!selected.deleted_at&&<div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><p className="font-extrabold">এই Article এখন Published, তাই Edit locked আছে।</p><p className="mt-1">ছবি বা লেখা পরিবর্তন করতে Unpublish & Edit চাপুন। এতে নিবন্ধ সাময়িকভাবে public Blog থেকে সরবে; আবার Review → Approve → Publish করতে হবে।</p><button type="button" disabled={busy} onClick={()=>void transition("review")} className="mt-3 min-h-11 rounded-xl bg-amber-800 px-4 font-bold text-white disabled:opacity-50">Unpublish & Edit</button></div>}
         <div className="mt-5 grid min-w-0 gap-4 md:grid-cols-2">
           <label className="text-sm font-bold">Article title<input value={selected.title} disabled={selected.status==="published"||Boolean(selected.deleted_at)} maxLength={160} onChange={e=>setSelected({...selected,title:e.target.value})} className="mt-1 block min-h-11 w-full rounded-xl border border-slate-200 px-3 font-normal disabled:bg-slate-50"/></label>
           <label className="text-sm font-bold">URL slug<input value={selected.slug} disabled={selected.status==="published"||Boolean(selected.deleted_at)} maxLength={180} onChange={e=>setSelected({...selected,slug:e.target.value})} className="mt-1 block min-h-11 w-full rounded-xl border border-slate-200 px-3 font-normal disabled:bg-slate-50"/></label>
@@ -168,6 +173,10 @@ export default function ContentDraftsClient(){
           <label className="text-sm font-bold">Meta description<textarea value={selected.meta_description||""} disabled={selected.status==="published"||Boolean(selected.deleted_at)} maxLength={320} onChange={e=>setSelected({...selected,meta_description:e.target.value})} rows={2} className="mt-1 block w-full rounded-xl border border-slate-200 p-3 font-normal disabled:bg-slate-50"/></label>
           <Info label="Primary keyword" value={selected.primary_keyword}/><Info label="Search intent" value={selected.search_intent}/>
         </div>
+        {selected.content_type==="article"&&<EditorialImageUpload key={selected.id} articleId={selected.id} status={selected.deleted_at?"trash":selected.status}
+          initialUrl={selected.hero_image_url||null} initialAlt={selected.hero_image_alt||null}
+          onUploaded={(url,alt,status)=>{setSelected(prev=>prev?{...prev,hero_image_url:url,hero_image_alt:alt,status}:prev);setNotice("Hero Image আপলোড হয়েছে। Article body পরিবর্তন করলে Save Draft দিন।");void load();}}
+          onInsert={(url,alt)=>{const image="\\n\\n!["+alt.replace(/[\\[\\]]/g,"")+"]("+url+")\\n\\n";setSelected(prev=>prev?{...prev,body_markdown:(prev.body_markdown||"")+image}:prev);setNotice("ছবির Markdown নিবন্ধের শেষে যোগ হয়েছে। প্রয়োজনমতো অবস্থান পরিবর্তন করে Save Draft দিন।");}}/>}
         <MarkdownArticleEditor value={selected.body_markdown||""} onChange={value=>setSelected(prev=>prev?{...prev,body_markdown:value}:prev)} primaryKeyword={selected.primary_keyword} title={selected.title} slug={selected.slug} metaTitle={selected.meta_title||""} metaDescription={selected.meta_description||""} disabled={selected.status==="published"||Boolean(selected.deleted_at)}/>
         <details className="mt-5 rounded-2xl border border-emerald-100 bg-[#f8faf7] p-4"><summary className="cursor-pointer font-extrabold">SEO outline, FAQ ও Internal Link Suggestions</summary>
           <div className="mt-3 grid gap-3 md:grid-cols-2">{([["Outline",selected.outline],["FAQ",selected.faq],["Internal links",selected.internal_link_suggestions],["Competitor notes",selected.competitor_analysis]] as const).map(([label,data])=><div key={label} className="min-w-0 rounded-xl bg-white p-3"><h3 className="text-sm font-bold">{label}</h3><pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words text-xs leading-6">{JSON.stringify(data,null,2)}</pre></div>)}</div>
