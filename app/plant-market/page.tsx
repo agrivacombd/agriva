@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createClient } from "@supabase/supabase-js";
+import { canonicalPlantProductSlug } from "@/lib/plant-market/product-slugs";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function PlantMarketPage() {
       loadFailed = true;
       console.error("Plant Market catalogue load failed:", error);
     } else {
-      products = (data ?? []) as MarketplaceProduct[];
+      products = ((data ?? []) as MarketplaceProduct[]).map((product) => ({ ...product, slug: canonicalPlantProductSlug(product.slug) }));
     }
   } catch (error) {
     loadFailed = true;
