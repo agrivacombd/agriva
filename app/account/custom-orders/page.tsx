@@ -13,6 +13,14 @@ export default async function MyBulkOrders({searchParams}:{searchParams:Promise<
  const {data,error,count}=await db.from("bulk_requests")
  .select("id,product_name,quantity,unit,district,upazila,status,visibility,created_at",{count:"exact"})
  .eq("buyer_id",user.id).order("created_at",{ascending:false}).range((page-1)*pageSize,page*pageSize-1);
+ const requestIds=(data??[]).map(r=>r.id);
+ const {data:approved}=requestIds.length
+  ?await db.from("bulk_quotes").select("request_id,expires_at").eq("status","approved").in("request_id",requestIds)
+  :{data:[]};
+ const counts=new Map<string,number>();
+ for(const q of approved??[]){
+  if(Date.parse(q.expires_at)>Date.now()) counts.set(q.request_id,(counts.get(q.request_id)??0)+1);
+ }
  return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-5xl">
   <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-sm font-bold text-emerald-700">AGRIVA • MY BULK ORDERS</p><h1 className="mt-1 text-3xl font-black">আমার কাস্টম অর্ডার</h1><p className="mt-2 text-sm text-slate-600">আগের অনুরোধ থেকে নতুন চাহিদা তৈরি করুন। পুরোনো অফার ও ইতিহাস অপরিবর্তিত থাকবে।</p></div>
   <Link href="/custom-order" className="rounded-xl bg-emerald-800 px-5 py-3 font-semibold text-white">+ নতুন অনুরোধ</Link></div>
