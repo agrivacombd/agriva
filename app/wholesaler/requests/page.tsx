@@ -13,7 +13,7 @@ async function submitQuote(formData: FormData){
  const extra_fee=Number(formData.get("extra_fee"));
  const lead_days=Number(formData.get("lead_days"));
  const details=String(formData.get("details")??"").trim();
- if(!/^[0-9a-f-]{36}$/i.test(request_id)||![unit_price,shipping_fee,extra_fee,lead_days].every(Number.isFinite)||unit_price<=0||shipping_fee<0||extra_fee<0||!Number.isInteger(lead_days)||lead_days<1||lead_days>365||details.length>2000)redirect("/wholesaler/requests?notice=invalid");
+ if(!/^[0-9a-f-]{36}$/i.test(request_id)||![unit_price,shipping_fee,extra_fee,lead_days].every(Number.isFinite)||unit_price<=0||unit_price>1000000||shipping_fee<0||extra_fee<0||!Number.isInteger(lead_days)||lead_days<1||lead_days>365||details.length>2000)redirect("/wholesaler/requests?notice=invalid");
  const expires_at=new Date(Date.now()+7*24*60*60*1000).toISOString();
  const {error}=await db.from("bulk_quotes").insert({request_id,wholesaler_id:user.id,unit_price,shipping_fee,extra_fee,lead_days,details,expires_at,status:"pending"});
  redirect(`/wholesaler/requests?notice=${error?"failed":"submitted"}`);
@@ -40,7 +40,7 @@ export default async function WholesalerRequests({searchParams}:{searchParams:Pr
    <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{r.specification}</p>
    {previouslyQuoted.has(r.id)?<p className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm">এই অনুরোধে আপনার অফার ইতোমধ্যে জমা হয়েছে।</p>:r.status==="open"?<form action={submitQuote} className="mt-5 grid gap-3 sm:grid-cols-2">
     <input type="hidden" name="request_id" value={r.id}/>
-    <label className="grid gap-1 text-sm font-semibold">প্রতি {r.unit} মূল্য (৳)<input required min=".01" step=".01" max="100000000" type="number" name="unit_price" className="rounded-xl border p-3"/></label>
+    <label className="grid gap-1 text-sm font-semibold">প্রতি {r.unit} মূল্য (৳)<input required min=".01" step=".01" max="1000000" type="number" name="unit_price" className="rounded-xl border p-3"/></label>
     <label className="grid gap-1 text-sm font-semibold">ডেলিভারি চার্জ (৳)<input required min="0" step=".01" type="number" name="shipping_fee" defaultValue="0" className="rounded-xl border p-3"/></label>
     <label className="grid gap-1 text-sm font-semibold">অন্যান্য ফি (৳)<input required min="0" step=".01" type="number" name="extra_fee" defaultValue="0" className="rounded-xl border p-3"/></label>
     <label className="grid gap-1 text-sm font-semibold">সরবরাহের সময় (দিন)<input required min="1" max="365" type="number" name="lead_days" className="rounded-xl border p-3"/></label>
