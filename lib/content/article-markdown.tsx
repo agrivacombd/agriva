@@ -100,7 +100,7 @@ export function ArticleMarkdown({body}:{body:string}){
       </div>;
       if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" className="mx-auto h-auto max-h-[620px] w-auto max-w-full object-contain"/>
+        <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" style={{width:"100%",height:"auto",maxHeight:"none",objectFit:"contain"}} className="mx-auto block max-w-full"/>
         <figcaption className="border-t border-slate-100 px-4 py-2 text-center text-xs leading-5 text-slate-600">{block.image.alt}</figcaption>
       </figure>;
       return <p key={i}>{inline(block.lines[0])}</p>;
