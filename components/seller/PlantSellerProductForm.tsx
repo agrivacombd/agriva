@@ -21,6 +21,38 @@ const CATEGORIES = [
   ["gardening-supplies", "বাগানের উপকরণ"],
   ["soil-compost", "মাটি ও কম্পোস্ট"],
 ] as const;
+const BASOR_LOTA_DRAFT = {
+  name: "বাসরলতা ফুলের চারা",
+  scientific_name: "Thunbergia mysorensis",
+  category_slug: "flower-plants",
+  sunlight: "উজ্জ্বল আলো থেকে আংশিক ছায়া",
+  watering: "মাটির আর্দ্রতা বুঝে পানি দিন; জলাবদ্ধতা এড়িয়ে চলুন",
+  flowering_season: "গাছের বয়স, আবহাওয়া ও পরিচর্যার ওপর নির্ভরশীল",
+  seo_title: "বাসরলতা ফুলের চারা | Thunbergia mysorensis | AGRIVA",
+  seo_description: "বাসরলতা ফুলের চারা (Thunbergia mysorensis) সম্পর্কে জানুন। ঝুলন্ত ফুল, রোপণ, আলো, পানি ও পরিচর্যার তথ্যসহ দাম ও স্টক দেখুন AGRIVA Plant Market-এ।",
+  focus_keyword: "বাসরলতা ফুলের চারা",
+  related_keywords: "বাসর লতা গাছ, বাসরলতা ফুল, Basor Lota Plant, Thunbergia mysorensis, Mysore Trumpet Vine",
+  image_alt: "বাসরলতা (Thunbergia mysorensis) ফুলের চারার বাস্তব ছবি",
+  highlights: "হলুদ ও তামাটে-লাল রঙের ঝুলন্ত ফুল\nবহুবর্ষজীবী লতানো শোভাবর্ধক উদ্ভিদ\nমাচা ও পারগোলায় ব্যবহার উপযোগী",
+  usage_instructions: "পানি নিষ্কাশনযোগ্য উর্বর মাটিতে রোপণ করুন। উজ্জ্বল আলো ও শক্ত অবলম্বন দিন। মাটির আর্দ্রতা বুঝে পানি দিন এবং প্রয়োজনমতো ডাল পরিচালনা করুন।",
+  description: [
+    "<h2>বাসরলতা ফুলের চারা — Thunbergia mysorensis</h2>",
+    "<p>বাসরলতা একটি বহুবর্ষজীবী শোভাবর্ধক লতানো গাছ। এর ঝুলন্ত হলুদ ও তামাটে-লাল ফুল মাচা, পারগোলা ও বাগানের প্রবেশপথ সাজাতে আকর্ষণীয়। গাছের বৃদ্ধি ও ফুল ফোটা পরিবেশ ও পরিচর্যার ওপর নির্ভরশীল।</p>",
+    "<h2>বাসরলতা গাছের বৈশিষ্ট্য</h2>",
+    "<ul><li>বৈজ্ঞানিক নাম: Thunbergia mysorensis</li><li>পরিবার: Acanthaceae</li><li>ধরন: বহুবর্ষজীবী ফুলের লতা</li><li>ফুল: ঝুলন্ত মঞ্জরি; হলুদ ও তামাটে-লাল</li></ul>",
+    "<h2>রোপণ ও পরিচর্যা</h2>",
+    "<h3>আলো ও মাটি</h3><p>উজ্জ্বল আলো ও পানি নিষ্কাশনযোগ্য, জৈব পদার্থসমৃদ্ধ মাটি নির্বাচন করুন।</p>",
+    "<h3>পানি ও অবলম্বন</h3><p>মাটি পরীক্ষা করে পানি দিন; অতিরিক্ত পানি জমতে দেবেন না। গাছ বাড়ার সঙ্গে শক্ত মাচা বা পারগোলার ব্যবস্থা করুন।</p>",
+    "<h3>ফুল ফোটা</h3><p>চারার বয়স, স্থানীয় আবহাওয়া ও যত্নের কারণে ফুল আসার সময় পরিবর্তিত হতে পারে। নির্দিষ্ট সময় বা ফুলের নিশ্চয়তা দেওয়া হচ্ছে না।</p>",
+    "<h2>সাধারণ প্রশ্নোত্তর (FAQ)</h2>",
+    "<h3>বাসরলতা কি লতানো ফুলের গাছ?</h3><p>হ্যাঁ, এটি বহুবর্ষজীবী শোভাবর্ধক ফুলের লতা।</p>",
+    "<h3>বাসরলতা কি টবে লাগানো যায়?</h3><p>হ্যাঁ, পর্যাপ্ত আকারের টব, পানি নিষ্কাশন ও শক্ত অবলম্বন থাকলে লাগানো যায়।</p>",
+    "<h3>বাসরলতায় কতদিনে ফুল আসে?</h3><p>নির্দিষ্ট সময় বলা যায় না; বয়স, আলো ও পরিচর্যার ওপর নির্ভর করে।</p>",
+    "<h3>বাসরলতায় কীভাবে পানি দিতে হয়?</h3><p>মাটির আর্দ্রতা অনুযায়ী পানি দিন এবং জলাবদ্ধতা এড়ান।</p>",
+    "<h3>কেনার আগে কী যাচাই করবেন?</h3><p>বাস্তব ছবি, চারার উচ্চতা, বয়স, টবসহ সরবরাহ, দাম, স্টক ও ডেলিভারি এলাকা যাচাই করুন।</p>"
+  ].join(""),
+} as const;
+
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const INITIAL = {
@@ -108,6 +140,17 @@ export default function PlantSellerProductForm() {
 
   function onFiles(event: ChangeEvent<HTMLInputElement>) {
     chooseImage(event.target.files?.[0]);
+  }
+
+  function loadBasorLotaTemplate() {
+    if (form.name.trim() || productDescriptionToText(form.description).trim()) {
+      if (!window.confirm("বর্তমান পণ্যের নাম ও বিবরণ বদলে বাসরলতার খসড়া বসাবেন? মূল্য ও স্টক অপরিবর্তিত থাকবে।")) return;
+    }
+    setForm((current) => ({ ...current, ...BASOR_LOTA_DRAFT }));
+    setSubmitted(false);
+    setSeoGenerated(true);
+    setIsError(false);
+    setMessage("বাসরলতার SEO খসড়া বসানো হয়েছে। বাস্তব চারার আকার, বয়স, ছবি, দাম ও স্টক যোগ করে তথ্য যাচাই করুন।");
   }
 
   function generateSeoDraft() {
@@ -245,6 +288,10 @@ export default function PlantSellerProductForm() {
 
         <section className="rounded-3xl border border-emerald-900/10 bg-white p-5 shadow-sm sm:p-7">
           <SectionTitle id="plant-basic" step="০১" title="পণ্যের পরিচিতি দিন" description="ক্রেতা প্রথমে পণ্যের নাম, ধরন ও বিবরণ দেখবেন। সহজ ও পরিষ্কার ভাষায় লিখুন।" icon={<Leaf size={22} aria-hidden="true" />} />
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <div><p className="text-sm font-black text-emerald-950">বাসরলতা ফুলের চারার SEO খসড়া</p><p className="mt-1 text-xs leading-5 text-slate-600">নাম, পরিচর্যা, FAQ ও SEO তথ্য পূরণ হবে; ছবি, দাম ও স্টক নিজের পণ্য অনুযায়ী দিন।</p></div>
+            <button type="button" onClick={loadBasorLotaTemplate} className="rounded-xl bg-emerald-800 px-4 py-3 text-xs font-black text-white hover:bg-emerald-700">বাসরলতার খসড়া ব্যবহার করুন</button>
+          </div>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <label className="block text-sm font-bold text-slate-800 md:col-span-2">
               পণ্যের নাম <span className="text-rose-600">*</span>
