@@ -64,7 +64,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (url && key) {
     const supabase = createClient(url, key);
-    const [productRows, plantProductRows, jobRows, exchangeRows, landingRows, articleRows] = await Promise.all([
+    // Keep the sitemap accessible when an individual catalogue table is temporarily unavailable.
+    // A failing optional section must not turn /sitemap.xml into an HTTP 500.
+    const results = await Promise.allSettled([
       fetchAllSitemapRows<SitemapProduct>(async (from, to) =>
         supabase.from("products").select("slug,updated_at,category,category_slug,subcategory_slug").eq("status", "active").eq("marketplace_channel", "marketplace").is("deleted_at", null).not("slug", "is", null).order("slug", { ascending: true }).range(from, to),
       ),
@@ -84,6 +86,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         supabase.from("content_drafts").select("slug,updated_at").eq("status", "published").eq("content_type", "article").is("deleted_at",null).order("slug", { ascending: true }).range(from, to),
       ),
     ]);
+    const sitemapSection = <T,>(index: number, name: string): T[] => {
+      const result = results[index];
+      if (result.status === "fulfilled") return result.value as T[];
+      console.error(`Sitemap section ${name} unavailable:`, result.reason);
+      return [];
+    };
+    const productRows = sitemapSection<SitemapProduct>(0, "products");
+    const plantProductRows = sitemapSection<SitemapPlantProduct>(1, "plant_market_products");
+    const jobRows = sitemapSection<SitemapJob>(2, "job_posts");
+    const exchangeRows = sitemapSection<SitemapExchangeListing>(3, "green_exchange_listings");
+    const landingRows = sitemapSection<SitemapLandingPage>(4, "seo_landing_pages");
+    const articleRows = sitemapSection<SitemapArticle>(5, "content_drafts");
     plantProducts = plantProductRows.filter((product) => isValidSlug(product.slug));
     jobs = jobRows.filter((job) => isValidSlug(job.slug));
     exchangeListings = exchangeRows.filter((listing) => isValidSlug(listing.slug));
