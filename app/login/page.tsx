@@ -33,6 +33,9 @@ const copy = {
     emailNotConfirmed: "আপনার ইমেইল এখনো যাচাই করা হয়নি। ইনবক্সে যাচাইকরণ লিংক দেখুন।",
     tooManyRequests: "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
     resetPassword: "পাসওয়ার্ড রিসেট করুন",
+    callbackError: "সোশ্যাল লগইন সম্পূর্ণ হয়নি। আবার চেষ্টা করুন। সমস্যা থাকলে ব্রাউজারের পুরোনো AGRIVA cookies মুছে চেষ্টা করুন।",
+    providerError: "Google/Facebook লগইন সম্পূর্ণ হয়নি বা অনুমতি দেওয়া হয়নি। আবার চেষ্টা করুন।",
+    unavailableError: "লগইন সেবার সেটআপে সাময়িক সমস্যা আছে। পরে চেষ্টা করুন।",
     show: "পাসওয়ার্ড দেখান",
     hide: "পাসওয়ার্ড লুকান",
     featureTitle: "আপনার কৃষি-জগৎ, এক জায়গায়",
@@ -58,6 +61,9 @@ const copy = {
     emailNotConfirmed: "Your email is not confirmed yet. Check your inbox for the confirmation link.",
     tooManyRequests: "Too many attempts. Please try again later.",
     resetPassword: "Reset password",
+    callbackError: "Social sign-in could not finish. Please retry. If it persists, clear old AGRIVA browser cookies.",
+    providerError: "Google/Facebook sign-in was cancelled or denied. Please retry.",
+    unavailableError: "Authentication is temporarily unavailable. Please try again later.",
     show: "Show password",
     hide: "Hide password",
     featureTitle: "Your agriculture world, connected",
@@ -78,6 +84,8 @@ function LoginForm() {
   const t = copy[language];
   const requestedNextPath = searchParams.get("next");
   const safeNext = safeAuthNextPath(requestedNextPath);
+  const callbackError = searchParams.get("error");
+  const callbackMessage = callbackError === "auth_callback" || callbackError === "missing_code" ? t.callbackError : callbackError === "provider_denied" ? t.providerError : callbackError === "auth_unavailable" ? t.unavailableError : "";
 
   useEffect(() => {
     let active = true;
@@ -153,6 +161,7 @@ function LoginForm() {
             <p className="text-sm font-bold text-[#167453]">{t.eyebrow}</p>
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">{t.subtitle}</p>
+            {callbackMessage && <p role="alert" className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">{callbackMessage}</p>}
             <SocialAuthButtons returnTo={safeNext} english={language === "en"} />
             <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="লগইন মাধ্যম">
               <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
