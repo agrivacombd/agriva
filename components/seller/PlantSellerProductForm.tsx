@@ -56,7 +56,7 @@ const BASOR_LOTA_DRAFT = {
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const INITIAL = {
-  name: "", scientific_name: "", category_slug: CATEGORIES[0][0],
+  name: "", scientific_name: "", category_slug: CATEGORIES[0][0] as string,
   plant_size: "", pot_size: "", plant_age: "", sunlight: "", watering: "",
   flowering_season: "", delivery_area: "", description: "", price: "", stock: "",
   unit: "piece", seo_title: "", seo_description: "", focus_keyword: "",
