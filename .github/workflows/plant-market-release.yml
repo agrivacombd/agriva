@@ -1,0 +1,42 @@
+name: Plant Market Release Gate
+on:
+  pull_request:
+    paths:
+      - "app/plant-market/**"
+      - "app/plant-seller/**"
+      - "app/admin/plant-market-products/**"
+      - "app/api/plant-market/**"
+      - "app/api/plant-seller/products/**"
+      - "app/api/admin/plant-market-products/**"
+      - "components/plant-market/**"
+      - "components/marketplace/MarketplaceCore.tsx"
+      - "components/seller/PlantSellerProductForm.tsx"
+      - "components/admin/PlantMarketProductReview.tsx"
+      - "lib/plant-market/**"
+      - "scripts/smoke-plant-market-release.mjs"
+      - ".github/workflows/plant-market-release.yml"
+permissions:
+  contents: read
+concurrency:
+  group: plant-market-release-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Plant Market release contract smoke
+        run: node scripts/smoke-plant-market-release.mjs
+      - name: TypeScript check
+        run: npx tsc --noEmit
