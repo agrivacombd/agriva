@@ -106,14 +106,14 @@ create policy bulk_selection_read on public.bulk_selections for select to authen
  using (buyer_id=auth.uid() or public.bulk_is_admin() or exists(select 1 from public.bulk_quotes q where q.id=quote_id and q.wholesaler_id=auth.uid()));
 
 create or replace function public.bulk_verify_wholesaler(p_user uuid, p_status text)
-returns void language plpgsql security definer set search_path=public,pg_temp as $
+returns void language plpgsql security definer set search_path=public,pg_temp as $$
 begin
  if not public.bulk_is_admin() then raise exception 'Forbidden' using errcode='42501'; end if;
  if p_status not in ('verified','suspended','pending') then raise exception 'Invalid status'; end if;
  insert into public.bulk_wholesalers(user_id,status,verified_at)
  values(p_user,p_status,case when p_status='verified' then now() else null end)
  on conflict(user_id) do update set status=excluded.status,verified_at=excluded.verified_at;
-end $;
+end $$;
 create or replace function public.bulk_moderate_request(p_request uuid, p_status text)
 returns void language plpgsql security definer set search_path=public,pg_temp as $$
 begin
