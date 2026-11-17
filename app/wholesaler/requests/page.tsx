@@ -40,7 +40,7 @@ async function submitQuote(f:FormData){
  unit_price,shipping_fee,extra_fee,lead_days,details,expires_at:new Date(Date.now()+604800000).toISOString(),status:"pending"});
  redirect(`/wholesaler/requests?notice=${error?"failed":"submitted"}`);
 }
-export default async function WholesalerRequests({searchParams}:{searchParams:Promise<{notice?:string}>}){
+export default async function WholesalerRequests({searchParams}:{searchParams:Promise<{notice?:string;request?:string}>}){
  const db=await createSupabaseServerClient();
  const {data:{user}}=await db.auth.getUser();
  if(!user)redirect("/login?next=%2Fwholesaler%2Frequests");
@@ -59,7 +59,7 @@ export default async function WholesalerRequests({searchParams}:{searchParams:Pr
   <p className="mt-3 text-slate-600">প্রতিটি পণ্যের আলাদা দাম দিন। কোনো পণ্য দিতে না পারলে সেটি আনচেক করুন। অন্য পাইকারের দাম আপনার কাছে গোপন থাকবে।</p>
   {p.notice&&<p role="status" className="mt-4 rounded-xl bg-white p-4">{p.notice==="submitted"?"কোটেশন জমা হয়েছে; Admin অনুমোদনের অপেক্ষায়।":p.notice==="invalid"?"দাম বা পণ্যের তথ্য সংশোধন করুন।":"কোটেশন জমা দেওয়া যায়নি। আগে জমা দিয়েছেন কি না যাচাই করুন।"}</p>}
   {error?<p role="alert" className="mt-6 rounded-xl bg-red-50 p-4">আমন্ত্রণ লোড হয়নি।</p>:!requests?.length?<p className="mt-6 rounded-xl bg-white p-6">কোনো সক্রিয় আমন্ত্রণ নেই।</p>:
-  <div className="mt-6 grid gap-5">{requests.map(r=>{
+  <div className="mt-6 grid gap-5">{requests.filter(r=>!p.request||r.id===p.request).map(r=>{
     const list=(items??[]).filter(i=>i.request_id===r.id);
     return <article key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-bold">{r.product_name}{list.length>1?` + আরও ${list.length-1}টি`:""}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs">{r.status==="open"?"অফার চলছে":"বন্ধ"}</span></div>
