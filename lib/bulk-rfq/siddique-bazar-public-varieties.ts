@@ -193,6 +193,20 @@ const centurySeed=supplierSeeds("Century Seed Company",century,`
 শসা|গ্রীন স্টার|Green Star Hybrid Cucumber
 করলা|মনি-১৩১৩|Moni-1313 Hybrid Bitter Gourd
 `);
-export const SIDDIQUE_BAZAR_PUBLIC_VARIETIES:readonly SiddiqueSeedListing[]=[
- ...eastBengal,...jamalpur,...additionalJamalpur,...centurySeed
-];
+/**
+ * Merchant catalogs can repeat the same variety across product/category/news pages.
+ * Keep its first sourced listing, without merging unrelated varieties.
+ */
+function normalizeSeedLabel(value:string):string {
+ return value.normalize("NFKC").toLocaleLowerCase()
+  .replace(/[\u200c\u200d]/g,"").replace(/[\s\u00a0]+/g," ").trim();
+}
+const sourcedRows=[...eastBengal,...jamalpur,...additionalJamalpur,...centurySeed];
+const seenSourceNames=new Set<string>();
+export const SIDDIQUE_BAZAR_PUBLIC_VARIETIES:readonly SiddiqueSeedListing[]=
+ sourcedRows.filter(row=>{
+  const key=normalizeSeedLabel(row.name);
+  if(seenSourceNames.has(key))return false;
+  seenSourceNames.add(key);
+  return true;
+ });
