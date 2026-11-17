@@ -7,11 +7,11 @@ export const metadata: Metadata = {
  description:"AGRIVA-তে প্রকাশিত ধান, চাল, বীজ ও অন্যান্য কৃষিপণ্যের পাইকারি চাহিদা দেখুন।",
  alternates:{canonical:"/bulk-orders"}
 };
-type PublicRFQ={id:string;product_name:string;quantity:number;unit:string;district:string;upazila:string;quote_deadline:string|null;created_at:string};
+type PublicRFQ={item_count:number;id:string;product_name:string;quantity:number;unit:string;district:string;upazila:string;quote_deadline:string|null;created_at:string};
 export default async function BulkOrders(){
  const db=await createSupabaseServerClient();
  // This table only contains admin-approved, sanitized public details (never buyer IDs/phones/bids).
- const {data,error}=await db.from("bulk_public_listings").select("id,product_name,quantity,unit,district,upazila,quote_deadline,created_at")
+ const {data,error}=await db.from("bulk_public_listings").select("id,product_name,quantity,unit,district,upazila,quote_deadline,created_at,item_count")
   .order("created_at",{ascending:false}).limit(60);
  const visible=((data??[]) as PublicRFQ[]).filter(r=>!r.quote_deadline||new Date(r.quote_deadline).getTime()>Date.now());
  return <main className="min-h-screen bg-[#f7f9f5] pb-16 text-[#17351f]">
@@ -29,8 +29,8 @@ export default async function BulkOrders(){
    !visible.length?<p className="rounded-2xl bg-white p-8 text-center">এই মুহূর্তে নতুন প্রকাশিত পাইকারি চাহিদা নেই।</p>:
    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{visible.map(r=><article key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">যাচাইকৃত চাহিদা</span>
-    <h2 className="mt-3 text-lg font-bold">{r.product_name}</h2>
-    <p className="mt-2 text-sm text-slate-700">পরিমাণ: {r.quantity} {r.unit}</p>
+    <h2 className="mt-3 text-lg font-bold">{r.product_name}{r.item_count>1?` + আরও ${r.item_count-1}টি পণ্য`:""}</h2>
+    <p className="mt-2 text-sm text-slate-700">{r.item_count>1?"প্রথম পণ্যের পরিমাণ":"পরিমাণ"}: {r.quantity} {r.unit}</p>
     <p className="mt-1 text-sm text-slate-700">এলাকা: {r.district}{r.upazila?", "+r.upazila:""}</p>
     {r.quote_deadline&&<p className="mt-1 text-sm text-slate-500">অফারের শেষ সময়: {new Date(r.quote_deadline).toLocaleDateString("bn-BD",{timeZone:"Asia/Dhaka"})}</p>}
     <p className="mt-4 text-xs text-slate-500">ক্রেতার পরিচয় ও পাইকারদের দাম গোপন রাখা হয়। আমন্ত্রিত পাইকাররা লগইন করে অফার জমা দিতে পারবেন।</p>

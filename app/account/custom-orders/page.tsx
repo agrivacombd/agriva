@@ -17,6 +17,12 @@ export default async function MyBulkOrders({searchParams}:{searchParams:Promise<
  const {data:approved}=requestIds.length
   ?await db.from("bulk_quotes").select("request_id,expires_at").eq("status","approved").in("request_id",requestIds)
   :{data:[]};
+ const {data:requestItems}=requestIds.length?await db.from("bulk_request_items").select("id,request_id,product_name,quantity,unit,position").in("request_id",requestIds).order("position",{ascending:true}):{data:[]};
+ const itemCounts=new Map<string,number>();
+ for(const it of requestItems??[])itemCounts.set(it.request_id,(itemCounts.get(it.request_id)??0)+1);
+ const {data:itemAwards}=requestIds.length?await db.from("bulk_item_awards").select("request_id").in("request_id",requestIds):{data:[]};
+ const awardedCounts=new Map<string,number>();
+ for(const a of itemAwards??[])awardedCounts.set(a.request_id,(awardedCounts.get(a.request_id)??0)+1);
  const counts=new Map<string,number>();
  for(const q of approved??[]){
   if(Date.parse(q.expires_at)>Date.now()) counts.set(q.request_id,(counts.get(q.request_id)??0)+1);
@@ -28,8 +34,9 @@ export default async function MyBulkOrders({searchParams}:{searchParams:Promise<
   {error?<p role="alert" className="mt-7 rounded-xl bg-red-50 p-4 text-red-800">অর্ডারের তালিকা পাওয়া যায়নি। ডাটাবেস মাইগ্রেশন ও অ্যাক্সেস পরীক্ষা করুন।</p>:
    !data?.length?<div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm"><p>এখনো কোনো Bulk Order Request নেই।</p><Link className="mt-3 inline-block font-bold text-emerald-700 underline" href="/custom-order">প্রথম অনুরোধ তৈরি করুন</Link></div>:
    <div className="mt-7 grid gap-4 sm:grid-cols-2">{data.map(r=><article key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-    <div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">{statusText[r.status]??r.status}</span></div>
-    <p className="mt-2 text-sm text-slate-700">পরিমাণ: <strong>{r.quantity} {r.unit}</strong></p>
+    <div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}{(itemCounts.get(r.id)??1)>1?` + আরও ${(itemCounts.get(r.id)??1)-1}টি`:""}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">{statusText[r.status]??r.status}</span></div>
+    {(itemCounts.get(r.id)??0)>0&&<p className="mt-2 text-sm text-emerald-800">মোট পণ্য: {itemCounts.get(r.id)}টি · নির্বাচিত: {awardedCounts.get(r.id)??0}টি</p>}
+    <p className="mt-2 text-sm text-slate-700">প্রথম পণ্যের পরিমাণ: <strong>{r.quantity} {r.unit}</strong></p>
     <p className="mt-1 text-sm text-slate-700">ডেলিভারি: {r.district}{r.upazila?", "+r.upazila:""}</p>
     <p className="mt-1 text-sm font-semibold text-emerald-800">অনুমোদিত অফার: {counts.get(r.id)??0} টি</p>
     <p className="mt-1 text-sm text-slate-700">প্রাইভেসি: {r.visibility==="public"?"Public":"Private"}</p>
