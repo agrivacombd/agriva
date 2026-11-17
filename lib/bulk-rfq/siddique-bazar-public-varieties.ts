@@ -170,7 +170,7 @@ const jamalpur=supplierSeeds("Jamalpur Seeds",jamal,`
 মেলন|অ্যারোমা সুইট|Aroma Sweet
 মেলন|রিয়া রাউন্ড|Rea Round
 তরমুজ|বেঙ্গল টাইগার প্লাস|Bengal Tiger Plus
-ঢেঁড়স|রকেট প্লাস|Rocket Plus
+মূলা|রকেট প্লাস|Rocket Plus
 চিচিঙ্গা|ব্ল্যাক স্টিক|Black Stick
 ধুন্দল|হোয়াইট ডিলাইট|White Delight
 `);
