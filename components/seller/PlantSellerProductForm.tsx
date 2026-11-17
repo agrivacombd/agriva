@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import ProductSeoEditor from "@/components/seller/ProductSeoEditor";
 import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
 import { productDescriptionToText } from "@/lib/marketplace/product-description";
+import { appendFiveFaq } from "@/lib/plant-market/faq-from-description";
 
 const CATEGORIES = [
   ["indoor-outdoor-plants", "ইনডোর ও আউটডোর গাছ"],
@@ -55,6 +56,7 @@ const BASOR_LOTA_DRAFT = {
   ].join(""),
 } as const;
 
+const LOCAL_DRAFT_KEY = "agriva-plant-seller-new-draft-v1";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const INITIAL = {
@@ -111,6 +113,7 @@ export default function PlantSellerProductForm() {
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [seoGenerated, setSeoGenerated] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const submitting = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -118,6 +121,33 @@ export default function PlantSellerProductForm() {
     setSubmitted(false);
     setForm((current) => ({ ...current, [key]: value }));
   }
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(LOCAL_DRAFT_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const record = parsed as Record<string, unknown>;
+          const restored = Object.fromEntries(
+            Object.keys(INITIAL).filter((key) => typeof record[key] === "string")
+              .map((key) => [key, record[key] as string])
+          );
+          setForm((current) => ({ ...current, ...restored }));
+        }
+      }
+    } catch { /* Local draft storage may be disabled. */ }
+    setDraftLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      if (form.name.trim() || form.description.trim()) {
+        window.localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(form));
+      }
+    } catch { /* Private browsing may disable persistence. */ }
+  }, [form, draftLoaded]);
 
   useEffect(() => {
     if (!preview) return;
@@ -268,6 +298,7 @@ export default function PlantSellerProductForm() {
       uploadedPath = null;
       setSubmitted(true);
       setMessage("পণ্যটি সফলভাবে পর্যালোচনার জন্য জমা হয়েছে। অ্যাডমিন অনুমোদনের আগে প্রকাশিত হবে না।");
+      try { window.localStorage.removeItem(LOCAL_DRAFT_KEY); } catch { /* no storage */ }
       setForm(INITIAL);
       setImage(null);
       setPreview("");
@@ -289,6 +320,7 @@ export default function PlantSellerProductForm() {
   return (
     <form onSubmit={submit} className="lg:grid lg:grid-cols-[minmax(0,1fr)_310px] lg:items-start lg:gap-7" aria-label="নতুন Plant Market পণ্য যোগ করুন">
       <div className="min-w-0 space-y-6">
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-5 text-sky-900">আপনার লেখা এই ব্রাউজারে স্থানীয় খসড়া হিসেবে সংরক্ষিত থাকবে (ছবি ছাড়া)। এটি অ্যাডমিনের কাছে জমা দেওয়া Database Draft নয়। কাজ শেষে নিচের জমা দেওয়ার বাটন ব্যবহার করুন।</div>
         <div className="flex flex-wrap gap-2 text-xs font-bold">
           {[
             ["#plant-basic", "১. পণ্যের পরিচিতি"],
