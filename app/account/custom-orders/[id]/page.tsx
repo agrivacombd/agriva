@@ -28,6 +28,9 @@ export default async function Compare({params,searchParams}:{params:Promise<{id:
  const fulfillment:Record<string,string>={pending_confirmation:"অর্ডার নিশ্চিতকরণের অপেক্ষায়",confirmed:"অর্ডার নিশ্চিত",processing:"প্রসেসিং চলছে",shipped:"পণ্য পাঠানো হয়েছে",delivered:"ডেলিভারি সম্পন্ন",completed:"সম্পূর্ণ হয়েছে",cancelled:"বাতিল"};
  const {data}=await db.from("bulk_quotes").select("id,wholesaler_id,unit_price,shipping_fee,extra_fee,lead_days,expires_at,status,details").eq("request_id",id);
  const approved=(data??[] as Quote[]).filter(q=>q.status==="approved");
+ const supplierIds=[...new Set(approved.map(q=>q.wholesaler_id))];
+ const {data:verifiedSuppliers}=supplierIds.length?await db.from("bulk_wholesalers").select("user_id,display_name,status").in("user_id",supplierIds):{data:[]};
+ const supplierNames=new Map((verifiedSuppliers??[]).filter(w=>w.status==="verified").map(w=>[w.user_id,w.display_name]));
  const sortedIds=comparableQuotes(approved.map(q=>({id:q.id,productSubtotalMinor:Math.round(Number(q.unit_price)*Number(request.quantity)*100),shippingMinor:Math.round(Number(q.shipping_fee)*100),feesMinor:Math.round(Number(q.extra_fee)*100),deliveryDays:q.lead_days,expiresAt:q.expires_at,status:q.status}))).map(q=>q.id);
  const quotes=sortedIds.map(id=>approved.find(q=>q.id===id)!).filter(Boolean);
  const money=(n:number)=>new Intl.NumberFormat("bn-BD",{style:"currency",currency:"BDT",maximumFractionDigits:2}).format(n);
@@ -42,7 +45,7 @@ export default async function Compare({params,searchParams}:{params:Promise<{id:
  <div className="mt-6 grid gap-4 md:grid-cols-2">{quotes.map((q,i)=>{
  const total=Number(q.unit_price)*Number(request.quantity)+Number(q.shipping_fee)+Number(q.extra_fee);
  return <article key={q.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
- <div className="flex justify-between gap-2"><h2 className="font-bold">পাইকারের অফার {i+1}</h2>{i===0&&<span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-bold">সর্বনিম্ন মোট মূল্য</span>}</div>
+ <div className="flex justify-between gap-2"><h2 className="font-bold">{supplierNames.get(q.wholesaler_id)||`যাচাইকৃত পাইকার ${i+1}`}</h2>{i===0&&<span className="rounded-full bg-lime-100 px-3 py-1 text-xs font-bold">সর্বনিম্ন মোট মূল্য</span>}</div>
  <p className="mt-3 text-sm">প্রতি {request.unit}: {money(Number(q.unit_price))}</p>
  <p className="text-sm">পরিবহন: {money(Number(q.shipping_fee))}</p>
  <p className="text-sm">অন্যান্য ফি: {money(Number(q.extra_fee))}</p>
