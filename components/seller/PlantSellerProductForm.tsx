@@ -56,7 +56,7 @@ const BASOR_LOTA_DRAFT = {
   ].join(""),
 } as const;
 
-const LOCAL_DRAFT_KEY = "agriva-plant-seller-new-draft-v1";
+const LOCAL_DRAFT_PREFIX = "agriva-plant-seller-new-draft-v2:";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const INITIAL = {
@@ -114,6 +114,7 @@ export default function PlantSellerProductForm() {
   const [dragging, setDragging] = useState(false);
   const [seoGenerated, setSeoGenerated] = useState(false);
   const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftKey, setDraftKey] = useState("");
   const submitting = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -123,31 +124,42 @@ export default function PlantSellerProductForm() {
   }
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(LOCAL_DRAFT_KEY);
-      if (stored) {
-        const parsed: unknown = JSON.parse(stored);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          const record = parsed as Record<string, unknown>;
-          const restored = Object.fromEntries(
-            Object.keys(INITIAL).filter((key) => typeof record[key] === "string")
-              .map((key) => [key, record[key] as string])
-          );
-          setForm((current) => ({ ...current, ...restored }));
+    let cancelled = false;
+    async function restoreSellerDraft() {
+      try {
+        const { data: { user } } = await createSupabaseBrowserClient().auth.getUser();
+        if (!user || cancelled) return;
+        const key = LOCAL_DRAFT_PREFIX + user.id;
+        const stored = window.localStorage.getItem(key);
+        if (stored) {
+          const parsed: unknown = JSON.parse(stored);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            const record = parsed as Record<string, unknown>;
+            const restored = Object.fromEntries(
+              Object.keys(INITIAL).filter((field) => typeof record[field] === "string")
+                .map((field) => [field, record[field] as string])
+            );
+            if (!cancelled) setForm((current) => ({ ...current, ...restored }));
+          }
         }
-      }
-    } catch { /* Local draft storage may be disabled. */ }
-    setDraftLoaded(true);
+        if (!cancelled) {
+          setDraftKey(key);
+          setDraftLoaded(true);
+        }
+      } catch { /* Optional local draft support must not block the editor. */ }
+    }
+    void restoreSellerDraft();
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    if (!draftLoaded) return;
+    if (!draftLoaded || !draftKey) return;
     try {
       if (form.name.trim() || form.description.trim()) {
-        window.localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(form));
+        window.localStorage.setItem(draftKey, JSON.stringify(form));
       }
     } catch { /* Private browsing may disable persistence. */ }
-  }, [form, draftLoaded]);
+  }, [form, draftLoaded, draftKey]);
 
   useEffect(() => {
     if (!preview) return;
@@ -178,7 +190,7 @@ export default function PlantSellerProductForm() {
     if (form.name.trim() || productDescriptionToText(form.description).trim()) {
       if (!window.confirm("বর্তমান পণ্যের নাম ও বিবরণ বদলে বাসরলতার খসড়া বসাবেন? মূল্য ও স্টক অপরিবর্তিত থাকবে।")) return;
     }
-    setForm((current) => ({ ...current, ...BASOR_LOTA_DRAFT, description: appendFiveFaq(BASOR_LOTA_DRAFT.description, BASOR_LOTA_DRAFT.name), price: current.price || "250", stock: current.stock || "20", plant_size: current.plant_size || "২ ফুট" }));
+    setForm((current) => ({ ...current, ...BASOR_LOTA_DRAFT, description: appendFiveFaq(BASOR_LOTA_DRAFT.description, BASOR_LOTA_DRAFT.name), price: current.price || "250", stock: current.stock || "20", plant_size: current.plant_size || "৫ ইঞ্চি" }));
     setSubmitted(false);
     setSeoGenerated(true);
     setIsError(false);
@@ -298,7 +310,7 @@ export default function PlantSellerProductForm() {
       uploadedPath = null;
       setSubmitted(true);
       setMessage("পণ্যটি সফলভাবে পর্যালোচনার জন্য জমা হয়েছে। অ্যাডমিন অনুমোদনের আগে প্রকাশিত হবে না।");
-      try { window.localStorage.removeItem(LOCAL_DRAFT_KEY); } catch { /* no storage */ }
+      try { window.localStorage.removeItem(draftKey); } catch { /* no storage */ }
       setForm(INITIAL);
       setImage(null);
       setPreview("");
