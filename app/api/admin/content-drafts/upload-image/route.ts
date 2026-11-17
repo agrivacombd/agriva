@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   const oldBody = draft.body_markdown || "";
   const oldHero = draft.hero_image_url || "";
   const cleaned = oldHero ? oldBody.split("\n").filter(line => !line.includes("](" + oldHero + ")")).join("\n") : oldBody;
-  const inlineImage = "\\n\\n![" + alt.trim().replace(/[\\[\\]]/g,"") + "](" + url + ")\\n\\n";
+  const inlineImage = "\n\n![" + alt.trim().replaceAll("[","").replaceAll("]","") + "](" + url + ")\n\n";
   const bodyMarkdown = cleaned.trimEnd() + inlineImage;
   if (bodyMarkdown.length > 50000) {
     await storage.remove([path,socialPath]);
