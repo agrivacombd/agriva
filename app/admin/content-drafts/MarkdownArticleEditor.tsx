@@ -2,10 +2,10 @@
 import { useMemo, useRef, useState } from "react";
 import {ArticleMarkdown} from "@/lib/content/article-markdown";
 import {getEditorialChecks, normalizeEditorialMarkdown} from "@/lib/content/article-quality";
-type Props={value:string;onChange:(value:string)=>void;primaryKeyword:string;title:string;slug?:string;metaTitle:string;metaDescription:string;disabled?:boolean};
+type Props={articleId?:string;value:string;onChange:(value:string)=>void;primaryKeyword:string;title:string;slug?:string;metaTitle:string;metaDescription:string;disabled?:boolean};
 type Tool="h2"|"h3"|"bold"|"italic"|"list"|"number"|"link"|"table"|"image"|"quote"|"faq"|"sources";
 const tools:{key:Tool;label:string}[]=[{key:"h2",label:"H2"},{key:"h3",label:"H3"},{key:"bold",label:"Bold"},{key:"italic",label:"Italic"},{key:"list",label:"• List"},{key:"number",label:"1. List"},{key:"link",label:"Link"},{key:"table",label:"Table"},{key:"image",label:"Image"},{key:"quote",label:"Quote"},{key:"faq",label:"FAQ"},{key:"sources",label:"Sources"}];
-export default function MarkdownArticleEditor({value,onChange,primaryKeyword,title,slug="",metaTitle,metaDescription,disabled=false}:Props){
+export default function MarkdownArticleEditor({articleId,value,onChange,primaryKeyword,title,slug="",metaTitle,metaDescription,disabled=false}:Props){
   const field=useRef<HTMLTextAreaElement>(null);
   const [mode,setMode]=useState<"both"|"edit"|"preview">("both");
   const words=value.trim()?value.trim().split(/\s+/u).length:0;
@@ -90,7 +90,7 @@ export default function MarkdownArticleEditor({value,onChange,primaryKeyword,tit
       <p className="mt-2 text-xs font-semibold text-slate-500">SEO Title: {metaTitle.length}/65 · Description: {metaDescription.length}/180</p>
     </section>
     <div className="mt-3 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="flex flex-wrap gap-1.5 border-b bg-slate-50 p-2">{tools.map(x=><button key={x.key} type="button" disabled={disabled} title={x.label} onMouseDown={e=>e.preventDefault()} onClick={()=>format(x.key)} className="min-h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-bold text-emerald-950 disabled:opacity-50">{x.label}</button>)}<button type="button" disabled={disabled} onClick={cleanEscapes} className="min-h-9 rounded-lg border border-amber-200 bg-amber-50 px-2.5 text-xs font-bold text-amber-950 disabled:opacity-50">Fix pasted escapes</button></div>
+      <div className="flex flex-wrap gap-1.5 border-b bg-slate-50 p-2">{tools.map(x=><button key={x.key} type="button" disabled={disabled} title={x.label} onMouseDown={e=>e.preventDefault()} onClick={()=>format(x.key)} className="min-h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-bold text-emerald-950 disabled:opacity-50">{x.label}</button>)}<button type="button" disabled={disabled||!articleId} onClick={()=>{document.getElementById("article-image-upload")?.scrollIntoView({behavior:"smooth",block:"center"});document.getElementById("article-image-file")?.focus();}} className="min-h-9 rounded-lg bg-emerald-800 px-3 text-xs font-bold text-white disabled:opacity-50">📷 Upload Image (Hero + Post)</button><button type="button" disabled={disabled} onClick={cleanEscapes} className="min-h-9 rounded-lg border border-amber-200 bg-amber-50 px-2.5 text-xs font-bold text-amber-950 disabled:opacity-50">Fix pasted escapes</button></div>
       <p className="border-b bg-emerald-50 px-3 py-2 text-xs leading-5 text-emerald-900">Table: কলাম ও প্রথম সারির তথ্য দিয়ে তৈরি করুন, পরে Markdown-এ আরও সারি যোগ করুন। Image: অনুমতিপ্রাপ্ত HTTPS ছবি ও অর্থবহ Alt Text দিন।</p>
       <div className="flex flex-wrap gap-2 border-b px-3 py-2" role="group" aria-label="Editor view">
         {(["both","edit","preview"] as const).map(x=><button key={x} type="button" aria-pressed={mode===x} onClick={()=>setMode(x)} className={"min-h-9 rounded-lg px-3 text-xs font-bold "+(mode===x?"bg-emerald-800 text-white":"bg-slate-100 text-emerald-900")}>{x==="both"?"Edit + Preview":x==="edit"?"Edit":"Preview"}</button>)}
