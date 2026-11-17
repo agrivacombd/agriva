@@ -14,7 +14,7 @@ create table if not exists public.bulk_requests (
  status text not null default 'pending_review' check(status in ('pending_review','open','closed','selected','cancelled')),
  product_name text not null check(length(trim(product_name)) between 2 and 120),
  specification text not null default '' check(length(specification)<=2000),
- quantity numeric(15,3) not null check(quantity>0 and quantity<=10000000),
+ quantity numeric(15,3) not null check(quantity>0 and quantity<=1000000),
  unit text not null check(unit in ('kg','ton','maund','bag','packet')),
  district text not null check(length(trim(district)) between 2 and 80),
  upazila text not null default '' check(length(upazila)<=80),
@@ -23,6 +23,13 @@ create table if not exists public.bulk_requests (
  created_at timestamptz not null default now()
 );
 create index if not exists bulk_requests_buyer_idx on public.bulk_requests(buyer_id,created_at desc);
+-- Separate verification: the existing AGRIVA profile role enum only has farmer/admin.
+create table if not exists public.bulk_wholesalers (
+ user_id uuid primary key references auth.users(id),
+ status text not null default 'pending' check(status in ('pending','verified','suspended')),
+ verified_at timestamptz,
+ created_at timestamptz not null default now()
+);
 create table if not exists public.bulk_invitations (
  id uuid primary key default gen_random_uuid(),
  request_id uuid not null references public.bulk_requests(id) on delete cascade,
@@ -36,7 +43,7 @@ create table if not exists public.bulk_quotes (
  id uuid primary key default gen_random_uuid(),
  request_id uuid not null references public.bulk_requests(id) on delete cascade,
  wholesaler_id uuid not null references auth.users(id),
- unit_price numeric(15,2) not null check(unit_price>0 and unit_price<=100000000),
+ unit_price numeric(15,2) not null check(unit_price>0 and unit_price<=1000000),
  shipping_fee numeric(15,2) not null default 0 check(shipping_fee>=0),
  extra_fee numeric(15,2) not null default 0 check(extra_fee>=0),
  lead_days integer not null check(lead_days between 1 and 365),
@@ -59,16 +66,22 @@ create view public.bulk_public_listings with (security_barrier=true) as
 revoke all on public.bulk_public_listings from public;
 grant select on public.bulk_public_listings to anon,authenticated;
 
+alter table public.bulk_wholesalers enable row level security;
 alter table public.bulk_requests enable row level security;
 alter table public.bulk_invitations enable row level security;
 alter table public.bulk_quotes enable row level security;
 alter table public.bulk_selections enable row level security;
-revoke all on public.bulk_requests, public.bulk_invitations, public.bulk_quotes, public.bulk_selections from anon;
-revoke all on public.bulk_requests, public.bulk_invitations, public.bulk_quotes, public.bulk_selections from authenticated;
+revoke all on public.bulk_wholesalers, public.bulk_requests, public.bulk_invitations, public.bulk_quotes, public.bulk_selections from anon;
+revoke all on public.bulk_wholesalers, public.bulk_requests, public.bulk_invitations, public.bulk_quotes, public.bulk_selections from authenticated;
+grant select,insert on public.bulk_wholesalers to authenticated;
 grant select,insert on public.bulk_requests to authenticated;
 grant select,insert on public.bulk_invitations to authenticated;
 grant select,insert on public.bulk_quotes to authenticated;
 grant select on public.bulk_selections to authenticated;
+create policy bulk_wholesaler_read on public.bulk_wholesalers for select to authenticated
+ using (user_id=auth.uid() or public.bulk_is_admin());
+create policy bulk_wholesaler_admin_insert on public.bulk_wholesalers for insert to authenticated
+ with check (public.bulk_is_admin());
 -- Admin status changes happen ONLY through the admin RPCs below.
 create policy bulk_request_read on public.bulk_requests for select to authenticated
  using (buyer_id=auth.uid() or public.bulk_is_admin() or
@@ -78,17 +91,29 @@ create policy bulk_request_create on public.bulk_requests for insert to authenti
 create policy bulk_invitation_read on public.bulk_invitations for select to authenticated
  using (wholesaler_id=auth.uid() or public.bulk_is_admin());
 create policy bulk_invitation_admin_create on public.bulk_invitations for insert to authenticated
- with check (public.bulk_is_admin());
+ with check (public.bulk_is_admin() and exists (
+  select 1 from public.bulk_wholesalers w where w.user_id=wholesaler_id and w.status='verified'
+ ));
 create policy bulk_quote_read on public.bulk_quotes for select to authenticated
  using (wholesaler_id=auth.uid() or public.bulk_is_admin() or
  (status='approved' and exists(select 1 from public.bulk_requests r where r.id=request_id and r.buyer_id=auth.uid())));
 create policy bulk_quote_create on public.bulk_quotes for insert to authenticated
  with check (wholesaler_id=auth.uid() and status='pending' and expires_at>now() and
  exists(select 1 from public.bulk_requests r where r.id=request_id and r.status='open' and r.buyer_id<>auth.uid() and (r.quote_deadline is null or r.quote_deadline>now())) and
- exists(select 1 from public.bulk_invitations i where i.request_id=request_id and i.wholesaler_id=auth.uid() and i.revoked_at is null and i.expires_at>now()));
+ exists(select 1 from public.bulk_invitations i where i.request_id=request_id and i.wholesaler_id=auth.uid() and i.revoked_at is null and i.expires_at>now()) and
+ exists(select 1 from public.bulk_wholesalers w where w.user_id=auth.uid() and w.status='verified'));
 create policy bulk_selection_read on public.bulk_selections for select to authenticated
  using (buyer_id=auth.uid() or public.bulk_is_admin() or exists(select 1 from public.bulk_quotes q where q.id=quote_id and q.wholesaler_id=auth.uid()));
 
+create or replace function public.bulk_verify_wholesaler(p_user uuid, p_status text)
+returns void language plpgsql security definer set search_path=public,pg_temp as $
+begin
+ if not public.bulk_is_admin() then raise exception 'Forbidden' using errcode='42501'; end if;
+ if p_status not in ('verified','suspended','pending') then raise exception 'Invalid status'; end if;
+ insert into public.bulk_wholesalers(user_id,status,verified_at)
+ values(p_user,p_status,case when p_status='verified' then now() else null end)
+ on conflict(user_id) do update set status=excluded.status,verified_at=excluded.verified_at;
+end $;
 create or replace function public.bulk_moderate_request(p_request uuid, p_status text)
 returns void language plpgsql security definer set search_path=public,pg_temp as $$
 begin
@@ -124,5 +149,5 @@ begin
  return v_request;
 exception when unique_violation then raise exception 'Request already selected';
 end $$;
-revoke all on function public.bulk_moderate_request(uuid,text),public.bulk_moderate_quote(uuid,text),public.bulk_select_quote(uuid) from public;
-grant execute on function public.bulk_moderate_request(uuid,text),public.bulk_moderate_quote(uuid,text),public.bulk_select_quote(uuid) to authenticated;
+revoke all on function public.bulk_verify_wholesaler(uuid,text),public.bulk_moderate_request(uuid,text),public.bulk_moderate_quote(uuid,text),public.bulk_select_quote(uuid) from public;
+grant execute on function public.bulk_verify_wholesaler(uuid,text),public.bulk_moderate_request(uuid,text),public.bulk_moderate_quote(uuid,text),public.bulk_select_quote(uuid) to authenticated;
