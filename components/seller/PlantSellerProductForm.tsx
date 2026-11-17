@@ -59,7 +59,7 @@ const INITIAL = {
   name: "", scientific_name: "", category_slug: CATEGORIES[0][0] as string,
   plant_size: "", pot_size: "", plant_age: "", sunlight: "", watering: "",
   flowering_season: "", delivery_area: "", description: "", price: "", stock: "",
-  unit: "piece", seo_title: "", seo_description: "", focus_keyword: "",
+  unit: "piece", seo_slug: "", seo_title: "", seo_description: "", focus_keyword: "",
   related_keywords: "", brand: "", origin: "", highlights: "",
   usage_instructions: "", image_alt: "",
 };
@@ -187,7 +187,7 @@ export default function PlantSellerProductForm() {
   const suggestions = suggestSeo(form);
   const effectiveTitle = form.seo_title.trim() || suggestions.seo_title || "আপনার পণ্যের নাম | AGRIVA";
   const effectiveMeta = form.seo_description.trim() || suggestions.seo_description;
-  const slugHint = (form.name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 70) || "your-plant") + "-xxxxxxxx";
+  const slugHint = form.seo_slug.trim() || (form.scientific_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70) || "plant") + "-xxxxxxxx";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -412,6 +412,11 @@ export default function PlantSellerProductForm() {
             <button type="button" onClick={generateSeoDraft} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-700"><Sparkles size={17} aria-hidden="true" /> খালি SEO ঘর পূরণ করুন</button>
           </div>
           {seoGenerated && <p className="mt-3 text-xs font-semibold text-emerald-800"><Check size={14} className="mr-1 inline" /> SEO খসড়া তৈরি হয়েছে—যাচাই করে প্রয়োজনে পরিবর্তন করুন।</p>}
+          <label className="mt-5 block text-sm font-bold text-slate-800">
+            SEO-friendly English URL Slug <span className="text-xs font-normal text-slate-400">(ঐচ্ছিক)</span>
+            <input value={form.seo_slug} maxLength={90} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" onChange={(event) => set("seo_slug", event.target.value.toLowerCase())} className={inputClass} placeholder="যেমন: basor-lota-flower-plant" />
+            <span className="mt-1.5 block text-xs font-normal text-slate-500">ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও হাইফেন ব্যবহার করুন। খালি রাখলে স্বয়ংক্রিয় ইংরেজি slug তৈরি হবে। বিদ্যমান পণ্যের URL সংরক্ষিত থাকবে।</span>
+          </label>
           <div className="mt-5">
             <ProductSeoEditor guided value={form} onChange={set} productName={form.name} description={descriptionText} previewPath={"/plant-market/" + slugHint} />
           </div>
