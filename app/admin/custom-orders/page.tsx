@@ -22,6 +22,15 @@ async function inviteWholesaler(f:FormData){
  const {error}=await supabase.from("bulk_invitations").insert({request_id,wholesaler_id});
  redirect(`/admin/custom-orders?notice=${error?"error":"invited"}`);
 }
+async function transitionFulfillment(f:FormData){
+ "use server";
+ const {supabase}=await requireAdminPage("orders.transition");
+ const request=String(f.get("request_id")??"");
+ const status=String(f.get("status")??"");
+ if(!/^[0-9a-f-]{36}$/i.test(request)||!["confirmed","processing","shipped","delivered","completed","cancelled"].includes(status))redirect("/admin/custom-orders?notice=invalid");
+ const {error}=await supabase.rpc("bulk_transition_fulfillment",{p_request:request,p_status:status});
+ redirect(`/admin/custom-orders?notice=${error?"error":"updated"}`);
+}
 async function verifyWholesaler(f:FormData){
  "use server";
  const {supabase}=await requireAdminPage("identity.review");
@@ -44,6 +53,9 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
  const {data:requests,error}=await supabase.from("bulk_requests")
   .select("id,product_name,quantity,unit,district,visibility,status,buyer_type,created_at")
   .order("created_at",{ascending:false}).limit(100);
+ const {data:selections}=await supabase.from("bulk_selections").select("request_id,fulfillment_status").limit(100);
+ const fulfillmentNext:Record<string,string[]>={pending_confirmation:["confirmed","cancelled"],confirmed:["processing","cancelled"],processing:["shipped","cancelled"],shipped:["delivered"],delivered:["completed"],completed:[],cancelled:[]};
+ const fulfillmentBn:Record<string,string>={pending_confirmation:"নিশ্চিতকরণের অপেক্ষায়",confirmed:"নিশ্চিত",processing:"প্রসেসিং",shipped:"পাঠানো হয়েছে",delivered:"ডেলিভারি সম্পন্ন",completed:"সম্পন্ন",cancelled:"বাতিল"};
  const {data:quotes}=await supabase.from("bulk_quotes").select("id,request_id,wholesaler_id,unit_price,shipping_fee,extra_fee,status,created_at").order("created_at",{ascending:false}).limit(100);
  const {data:profiles}=await supabase.from("profiles").select("id,full_name,role").order("full_name",{ascending:true}).limit(300);
  const p=await searchParams;
@@ -69,6 +81,13 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
      <input aria-label="পাইকারের আমন্ত্রণ লিংক" readOnly value="https://agriva.com.bd/wholesaler/requests" className="mt-2 w-full rounded-lg border bg-white px-3 py-2 text-sm"/>
     </div>
    <form action={inviteWholesaler} className="mt-5 flex flex-wrap gap-2"><input type="hidden" name="request_id" value={r.id}/><label className="sr-only" htmlFor={`wholesaler-${r.id}`}>পাইকারের অ্যাকাউন্ট ID</label><input id={`wholesaler-${r.id}`} required name="wholesaler_id" list="bulk-wholesaler-accounts" placeholder="যাচাইকৃত পাইকার নির্বাচন করুন" className={field}/><button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white">পাইকারকে আমন্ত্রণ</button></form>
+   {selections?.filter(sel=>sel.request_id===r.id).map(sel=><div key={sel.request_id} className="mt-4 rounded-xl border border-emerald-200 p-3">
+     <p className="font-bold">নির্বাচিত অর্ডার: {fulfillmentBn[sel.fulfillment_status]??sel.fulfillment_status}</p>
+     <div className="mt-2 flex flex-wrap gap-2">{(fulfillmentNext[sel.fulfillment_status]??[]).map(status=><form key={status} action={transitionFulfillment}>
+      <input type="hidden" name="request_id" value={r.id}/><input type="hidden" name="status" value={status}/>
+      <button className="rounded-lg border border-emerald-800 px-3 py-2 text-sm font-semibold">{fulfillmentBn[status]??status}</button>
+     </form>)}</div>
+    </div>)}
    <div className="mt-5 space-y-2">{quotes?.filter(q=>q.request_id===r.id).map(q=><div key={q.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm">
     <div><strong>পাইকার {q.wholesaler_id.slice(0,8)}…</strong><p>প্রতি একক ৳{q.unit_price} + পরিবহন ৳{q.shipping_fee} + অন্যান্য ৳{q.extra_fee}</p><p className="text-xs text-slate-500">{q.status}</p></div>
     <div className="flex gap-2">{(["approved","rejected"] as const).map(status=><form key={status} action={moderateQuote}><input type="hidden" name="id" value={q.id}/><input type="hidden" name="status" value={status}/><button disabled={q.status===status} className="rounded-lg border border-emerald-800 px-3 py-2 font-semibold disabled:opacity-40">{status==="approved"?"অনুমোদন":"বাতিল"}</button></form>)}</div>
