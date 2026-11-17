@@ -1,3 +1,4 @@
+import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -37,7 +38,7 @@ export default async function MyBulkOrders({searchParams}:{searchParams:Promise<
     <div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}{(itemCounts.get(r.id)??1)>1?` + আরও ${(itemCounts.get(r.id)??1)-1}টি`:""}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">{statusText[r.status]??r.status}</span></div>
     {(itemCounts.get(r.id)??0)>0&&<p className="mt-2 text-sm text-emerald-800">মোট পণ্য: {itemCounts.get(r.id)}টি · নির্বাচিত: {awardedCounts.get(r.id)??0}টি</p>}
     <p className="mt-2 text-sm text-slate-700">প্রথম পণ্যের পরিমাণ: <strong>{r.quantity} {r.unit}</strong></p>
-    <p className="mt-1 text-sm text-slate-700">ডেলিভারি: {r.district}{r.upazila?", "+r.upazila:""}</p>
+    <p className="mt-1 text-sm text-slate-700">ডেলিভারি: {formatBulkDeliveryArea(r.district,r.upazila)}</p>
     <p className="mt-1 text-sm font-semibold text-emerald-800">অনুমোদিত অফার: {counts.get(r.id)??0} টি</p>
     <p className="mt-1 text-sm text-slate-700">প্রাইভেসি: {r.visibility==="public"?"Public":"Private"}</p>
     <p className="mt-2 text-xs text-slate-500">তৈরি: {new Date(r.created_at).toLocaleDateString("bn-BD",{timeZone:"Asia/Dhaka"})}</p>

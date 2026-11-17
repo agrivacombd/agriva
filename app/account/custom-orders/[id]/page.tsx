@@ -1,3 +1,4 @@
+import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ export default async function Compare({params,searchParams}:{params:Promise<{id:
  if(multiItems?.length)return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-5xl">
   <Link href="/account/custom-orders" className="text-sm font-bold text-emerald-800 underline">← আমার অর্ডার</Link>
   <h1 className="mt-4 text-3xl font-black">পণ্যভিত্তিক কোটেশন তুলনা</h1>
-  <p className="mt-2 text-slate-600">{multiItems.length}টি পণ্য · {request.district}</p>
+  <p className="mt-2 text-slate-600">{multiItems.length}টি পণ্য · {formatBulkDeliveryArea(request.district,request.upazila)}</p>
   <MultiQuoteComparison request={{id:request.id,status:request.status}} items={multiItems} notice={p.notice}/>
  </div></main>;
  const {data:selection}=await db.from("bulk_selections").select("quote_id,fulfillment_status,updated_at").eq("request_id",id).eq("buyer_id",user.id).maybeSingle();
@@ -44,7 +45,7 @@ export default async function Compare({params,searchParams}:{params:Promise<{id:
  const money=(n:number)=>new Intl.NumberFormat("bn-BD",{style:"currency",currency:"BDT",maximumFractionDigits:2}).format(n);
  return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-5xl">
  <Link href="/account/custom-orders" className="text-sm font-bold text-emerald-800 underline">← আমার অর্ডার</Link><h1 className="mt-4 text-3xl font-black">পাইকারদের অফার তুলনা</h1>
- <p className="mt-2 text-slate-600">{request.product_name} · {request.quantity} {request.unit} · {request.district}</p>
+ <p className="mt-2 text-slate-600">{request.product_name} · {request.quantity} {request.unit} · {formatBulkDeliveryArea(request.district,request.upazila)}</p>
  {selection&&<p role="status" className="mt-4 rounded-xl bg-emerald-100 p-4 font-semibold">অর্ডারের অবস্থা: {fulfillment[selection.fulfillment_status]??selection.fulfillment_status}</p>}
  {p.notice==="selected"&&<p role="status" className="mt-5 rounded-xl bg-emerald-100 p-4">পাইকার নির্বাচনের অনুরোধ গ্রহণ করা হয়েছে। অ্যাডমিন সরবরাহ ও পেমেন্টের শর্ত নিশ্চিত করবেন।</p>}
  {p.notice==="failed"&&<p role="alert" className="mt-5 rounded-xl bg-red-50 p-4">অফার নির্বাচন করা যায়নি। অফারটির মেয়াদ বা অর্ডারের অবস্থা পরীক্ষা করুন।</p>}

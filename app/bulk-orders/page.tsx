@@ -1,3 +1,4 @@
+import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -31,7 +32,7 @@ export default async function BulkOrders(){
     <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">যাচাইকৃত চাহিদা</span>
     <h2 className="mt-3 text-lg font-bold">{r.product_name}{r.item_count>1?` + আরও ${r.item_count-1}টি পণ্য`:""}</h2>
     <p className="mt-2 text-sm text-slate-700">{r.item_count>1?"প্রথম পণ্যের পরিমাণ":"পরিমাণ"}: {r.quantity} {r.unit}</p>
-    <p className="mt-1 text-sm text-slate-700">এলাকা: {r.district}{r.upazila?", "+r.upazila:""}</p>
+    <p className="mt-1 text-sm text-slate-700">এলাকা: {formatBulkDeliveryArea(r.district,r.upazila)}</p>
     {r.quote_deadline&&<p className="mt-1 text-sm text-slate-500">অফারের শেষ সময়: {new Date(r.quote_deadline).toLocaleDateString("bn-BD",{timeZone:"Asia/Dhaka"})}</p>}
     <p className="mt-4 text-xs text-slate-500">ক্রেতার পরিচয় ও পাইকারদের দাম গোপন রাখা হয়। আমন্ত্রিত পাইকাররা লগইন করে অফার জমা দিতে পারবেন।</p>
    </article>)}</div>}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import MultiOrderForm,{type OrderDraft} from "@/components/bulk-rfq/MultiOrderForm";
+import {isValidBulkUnit,normalizeBulkUnit} from "@/lib/bulk-rfq/units";
 export const metadata:Metadata={title:"Bulk & Custom Order | AGRIVA",description:"একটি অর্ডারে একাধিক কৃষিপণ্যের পাইকারি কোটেশন নিন।",alternates:{canonical:"/custom-order"}};
 type Item={name:string;quantity:string;unit:string;specification:string};
 async function submitRequest(formData:FormData){
@@ -18,8 +19,8 @@ async function submitRequest(formData:FormData){
   if(!item||typeof item!=="object")redirect("/custom-order?error=invalid");
   const entry=item as Record<string,unknown>;
   const name=String(entry.name??"").trim(),specification=String(entry.specification??"");
-  const unit=String(entry.unit??""),quantity=String(entry.quantity??"");
-  if(name.length<2||name.length>120||specification.length>2000||!["kg","ton","maund","bag","packet"].includes(unit)
+  const unit=normalizeBulkUnit(String(entry.unit??"")),quantity=String(entry.quantity??"");
+  if(name.length<2||name.length>120||specification.length>2000||!isValidBulkUnit(unit)
    ||!/^[0-9]{1,7}(\.[0-9]{1,3})?$/.test(quantity)||Number(quantity)<=0||Number(quantity)>1000000)
    redirect("/custom-order?error=invalid");
   items.push({name,specification,quantity,unit});
@@ -27,7 +28,7 @@ async function submitRequest(formData:FormData){
  const buyer_type=String(formData.get("buyer_type")??""), visibility=String(formData.get("visibility")??"");
  const district=String(formData.get("district")??"").trim(),upazila=String(formData.get("upazila")??"").trim();
  if(!["business","individual"].includes(buyer_type)||!["public","private"].includes(visibility)
- ||district.length<2||district.length>80||upazila.length>80)redirect("/custom-order?error=invalid");
+ ||district.length>80||upazila.length>80)redirect("/custom-order?error=invalid");
  const {error}=await db.rpc("bulk_create_multi_request",{p_buyer_type:buyer_type,p_visibility:visibility,
   p_district:district,p_upazila:upazila,p_items:items});
  if(error)redirect("/custom-order?error=save");
