@@ -36,8 +36,9 @@ async function verifyWholesaler(f:FormData){
  const {supabase}=await requireAdminPage("identity.review");
  const user=String(f.get("user_id")??"").trim();
  const status=String(f.get("status")??"");
- if(!/^[0-9a-f-]{36}$/i.test(user)||!["verified","suspended"].includes(status))redirect("/admin/custom-orders?notice=invalid");
- const {error}=await supabase.rpc("bulk_verify_wholesaler",{p_user:user,p_status:status});
+ const display_name=String(f.get("display_name")??"").trim();
+ if(!/^[0-9a-f-]{36}$/i.test(user)||!["verified","suspended"].includes(status)||display_name.length>120||(status==="verified"&&display_name.length<2))redirect("/admin/custom-orders?notice=invalid");
+ const {error}=await supabase.rpc("bulk_verify_named_wholesaler",{p_user:user,p_status:status,p_display_name:display_name});
  redirect(`/admin/custom-orders?notice=${error?"error":"verified"}`);
 }
 async function moderateQuote(f:FormData){
@@ -68,6 +69,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
   <datalist id="bulk-wholesaler-accounts">{profiles?.map(p=><option key={p.id} value={p.id} label={p.full_name??p.role}/>)}</datalist>
   <form action={verifyWholesaler} className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-emerald-100 bg-white p-5">
     <label className="grid gap-1 text-sm font-semibold">Wholesaler Account UUID<input required name="user_id" list="bulk-wholesaler-accounts" placeholder="অ্যাকাউন্ট খুঁজুন বা ID লিখুন" className={field}/></label>
+    <label className="grid gap-1 text-sm font-semibold">পাইকারের ব্যবসায়িক নাম<input name="display_name" required maxLength={120} placeholder="যেমন: কৃষি ট্রেডার্স" className={field}/></label>
     <label className="grid gap-1 text-sm font-semibold">Verification<select name="status" className={field}><option value="verified">Verify</option><option value="suspended">Suspend</option></select></label>
     <button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">Save Verification</button>
    </form>
