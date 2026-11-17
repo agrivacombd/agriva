@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import ProductSeoEditor from "@/components/seller/ProductSeoEditor";
 import AdminProductDescriptionEditor from "@/components/admin/AdminProductDescriptionEditor";
 import { productDescriptionToText } from "@/lib/marketplace/product-description";
+import { appendFiveFaq } from "@/lib/plant-market/faq-from-description";
 
 const CATEGORIES = [
   ["indoor-outdoor-plants", "ইনডোর ও আউটডোর গাছ"],
@@ -28,7 +29,7 @@ const BASOR_LOTA_DRAFT = {
   sunlight: "উজ্জ্বল আলো থেকে আংশিক ছায়া",
   watering: "মাটির আর্দ্রতা বুঝে পানি দিন; জলাবদ্ধতা এড়িয়ে চলুন",
   flowering_season: "গাছের বয়স, আবহাওয়া ও পরিচর্যার ওপর নির্ভরশীল",
-  seo_title: "বাসরলতা ফুলের চারা | Thunbergia mysorensis | AGRIVA",
+  seo_title: "বাসরলতা ফুলের চারা | Mysore Trumpet Vine | AGRIVA",
   seo_description: "বাসরলতা ফুলের চারা (Thunbergia mysorensis) সম্পর্কে জানুন। ঝুলন্ত ফুল, রোপণ, আলো, পানি ও পরিচর্যার তথ্যসহ দাম ও স্টক দেখুন AGRIVA Plant Market-এ।",
   focus_keyword: "বাসরলতা ফুলের চারা",
   related_keywords: "বাসর লতা গাছ, বাসরলতা ফুল, Basor Lota Plant, Thunbergia mysorensis, Mysore Trumpet Vine",
@@ -37,29 +38,32 @@ const BASOR_LOTA_DRAFT = {
   usage_instructions: "পানি নিষ্কাশনযোগ্য উর্বর মাটিতে রোপণ করুন। উজ্জ্বল আলো ও শক্ত অবলম্বন দিন। মাটির আর্দ্রতা বুঝে পানি দিন এবং প্রয়োজনমতো ডাল পরিচালনা করুন।",
   description: [
     "<h2>বাসরলতা ফুলের চারা — Thunbergia mysorensis</h2>",
-    "<p>বাসরলতা একটি বহুবর্ষজীবী শোভাবর্ধক লতানো গাছ। এর ঝুলন্ত হলুদ ও তামাটে-লাল ফুল মাচা, পারগোলা ও বাগানের প্রবেশপথ সাজাতে আকর্ষণীয়। গাছের বৃদ্ধি ও ফুল ফোটা পরিবেশ ও পরিচর্যার ওপর নির্ভরশীল।</p>",
-    "<h2>বাসরলতা গাছের বৈশিষ্ট্য</h2>",
-    "<ul><li>বৈজ্ঞানিক নাম: Thunbergia mysorensis</li><li>পরিবার: Acanthaceae</li><li>ধরন: বহুবর্ষজীবী ফুলের লতা</li><li>ফুল: ঝুলন্ত মঞ্জরি; হলুদ ও তামাটে-লাল</li></ul>",
-    "<h2>রোপণ ও পরিচর্যা</h2>",
-    "<h3>আলো ও মাটি</h3><p>উজ্জ্বল আলো ও পানি নিষ্কাশনযোগ্য, জৈব পদার্থসমৃদ্ধ মাটি নির্বাচন করুন।</p>",
-    "<h3>পানি ও অবলম্বন</h3><p>মাটি পরীক্ষা করে পানি দিন; অতিরিক্ত পানি জমতে দেবেন না। গাছ বাড়ার সঙ্গে শক্ত মাচা বা পারগোলার ব্যবস্থা করুন।</p>",
-    "<h3>ফুল ফোটা</h3><p>চারার বয়স, স্থানীয় আবহাওয়া ও যত্নের কারণে ফুল আসার সময় পরিবর্তিত হতে পারে। নির্দিষ্ট সময় বা ফুলের নিশ্চয়তা দেওয়া হচ্ছে না।</p>",
-    "<h2>সাধারণ প্রশ্নোত্তর (FAQ)</h2>",
-    "<h3>বাসরলতা কি লতানো ফুলের গাছ?</h3><p>হ্যাঁ, এটি বহুবর্ষজীবী শোভাবর্ধক ফুলের লতা।</p>",
-    "<h3>বাসরলতা কি টবে লাগানো যায়?</h3><p>হ্যাঁ, পর্যাপ্ত আকারের টব, পানি নিষ্কাশন ও শক্ত অবলম্বন থাকলে লাগানো যায়।</p>",
-    "<h3>বাসরলতায় কতদিনে ফুল আসে?</h3><p>নির্দিষ্ট সময় বলা যায় না; বয়স, আলো ও পরিচর্যার ওপর নির্ভর করে।</p>",
-    "<h3>বাসরলতায় কীভাবে পানি দিতে হয়?</h3><p>মাটির আর্দ্রতা অনুযায়ী পানি দিন এবং জলাবদ্ধতা এড়ান।</p>",
-    "<h3>কেনার আগে কী যাচাই করবেন?</h3><p>বাস্তব ছবি, চারার উচ্চতা, বয়স, টবসহ সরবরাহ, দাম, স্টক ও ডেলিভারি এলাকা যাচাই করুন।</p>"
+    "<p>আপনার বাগানের মাচা, পারগোলা বা প্রবেশপথে ঝুলন্ত ফুলের সৌন্দর্য চান? বাসরলতা একটি বহুবর্ষজীবী শোভাবর্ধক আরোহী লতা। এর দীর্ঘ ঝুলন্ত মঞ্জরিতে হলুদ ও তামাটে-লাল ফুল ফোটে। উপযুক্ত পরিবেশে উঁচু কাঠামো বেয়ে বেড়ে ওঠে।</p>",
+    "<h2>বাসরলতার বিশেষ বৈশিষ্ট্য</h2>",
+    "<p>Thunbergia mysorensis উদ্ভিদটি Acanthaceae পরিবারের সদস্য। এর বিশেষ আকর্ষণ হলুদ ও মেরুন-লাল রঙের ঝুলন্ত নলাকার ফুল। সাধারণ একবর্ষজীবী ফুলগাছের পরিবর্তে বহু বছর পরিচর্যার জন্য উপযোগী একটি ফুলের লতা।</p>",
+    "<h2>বাসরলতা কোথায় লাগাবেন</h2>",
+    "<p>বাগানের প্রবেশপথের আর্চ, মাচা, জালি কিংবা পারগোলায় শক্ত অবলম্বন দিয়ে লতাটি পরিচালনা করা যায়। বড় টবে রাখলে শিকড়ের যথেষ্ট জায়গা, পানি নিষ্কাশন এবং লতার সাপোর্ট প্রয়োজন।</p>",
+    "<h2>রোপণের নিয়ম</h2>",
+    "<p>উজ্জ্বল আলো পাওয়া যায় এমন স্থান ও জৈব পদার্থসমৃদ্ধ পানি নিষ্কাশনযোগ্য মাটি নির্বাচন করুন। চারার শিকড়ের মাটি অক্ষত রেখে রোপণ করুন, গোড়ায় পানি দিন এবং ধীরে ধীরে উপযুক্ত অবলম্বনের দিকে লতাটি পরিচালনা করুন।</p>",
+    "<h2>আলো ও সূর্যালোক</h2>",
+    "<p>উজ্জ্বল আলো থেকে আংশিক ছায়া উপযোগী। নতুন চারাকে তীব্র দুপুরের রোদে হঠাৎ না রেখে ধীরে ধীরে অভ্যস্ত করুন। স্থানীয় আবহাওয়া অনুযায়ী অবস্থান ঠিক করুন।</p>",
+    "<h2>পানি ও মাটির পরিচর্যা</h2>",
+    "<p>মাটির উপরিভাগের আর্দ্রতা দেখে পানি দিন। দীর্ঘসময় জলাবদ্ধতা এড়িয়ে চলুন। পানি নিষ্কাশন ভালো থাকা জরুরি; প্রয়োজনমতো পরিমিত জৈব সার ব্যবহার করা যায়।</p>",
+    "<h2>ফুল ফোটার সময় ও ছাঁটাই</h2>",
+    "<p>গাছের বয়স, পরিবেশ, সূর্যালোক ও পরিচর্যা অনুযায়ী ফুল আসার সময় পরিবর্তিত হয়। নির্দিষ্ট সময়ে ফুল আসার নিশ্চয়তা নেই। ক্ষতিগ্রস্ত বা শুকনো ডাল প্রয়োজনমতো ছাঁটাই করুন।</p>",
+    "<h2>কেনার আগে যে তথ্য দেখবেন</h2>",
+    "<p>বিক্রেতার বাস্তব ছবি, বর্তমান চারার উচ্চতা, টবসহ বা টব ছাড়া সরবরাহ, মূল্য, স্টক ও ডেলিভারি এলাকা দেখে সিদ্ধান্ত নিন। ছবির পরিপক্ব ফুলের গাছ আর সরবরাহ করা চারা একই পর্যায়ের নাও হতে পারে।</p>"
   ].join(""),
 } as const;
 
+const LOCAL_DRAFT_PREFIX = "agriva-plant-seller-new-draft-v2:";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const INITIAL = {
   name: "", scientific_name: "", category_slug: CATEGORIES[0][0] as string,
   plant_size: "", pot_size: "", plant_age: "", sunlight: "", watering: "",
   flowering_season: "", delivery_area: "", description: "", price: "", stock: "",
-  unit: "piece", seo_title: "", seo_description: "", focus_keyword: "",
+  unit: "piece", seo_slug: "", seo_title: "", seo_description: "", focus_keyword: "",
   related_keywords: "", brand: "", origin: "", highlights: "",
   usage_instructions: "", image_alt: "",
 };
@@ -109,6 +113,8 @@ export default function PlantSellerProductForm() {
   const [loading, setLoading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [seoGenerated, setSeoGenerated] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [draftKey, setDraftKey] = useState("");
   const submitting = useRef(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -116,6 +122,44 @@ export default function PlantSellerProductForm() {
     setSubmitted(false);
     setForm((current) => ({ ...current, [key]: value }));
   }
+
+  useEffect(() => {
+    let cancelled = false;
+    async function restoreSellerDraft() {
+      try {
+        const { data: { user } } = await createSupabaseBrowserClient().auth.getUser();
+        if (!user || cancelled) return;
+        const key = LOCAL_DRAFT_PREFIX + user.id;
+        const stored = window.localStorage.getItem(key);
+        if (stored) {
+          const parsed: unknown = JSON.parse(stored);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            const record = parsed as Record<string, unknown>;
+            const restored = Object.fromEntries(
+              Object.keys(INITIAL).filter((field) => typeof record[field] === "string")
+                .map((field) => [field, record[field] as string])
+            );
+            if (!cancelled) setForm((current) => ({ ...current, ...restored }));
+          }
+        }
+        if (!cancelled) {
+          setDraftKey(key);
+          setDraftLoaded(true);
+        }
+      } catch { /* Optional local draft support must not block the editor. */ }
+    }
+    void restoreSellerDraft();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded || !draftKey) return;
+    try {
+      if (form.name.trim() || form.description.trim()) {
+        window.localStorage.setItem(draftKey, JSON.stringify(form));
+      }
+    } catch { /* Private browsing may disable persistence. */ }
+  }, [form, draftLoaded, draftKey]);
 
   useEffect(() => {
     if (!preview) return;
@@ -146,11 +190,23 @@ export default function PlantSellerProductForm() {
     if (form.name.trim() || productDescriptionToText(form.description).trim()) {
       if (!window.confirm("বর্তমান পণ্যের নাম ও বিবরণ বদলে বাসরলতার খসড়া বসাবেন? মূল্য ও স্টক অপরিবর্তিত থাকবে।")) return;
     }
-    setForm((current) => ({ ...current, ...BASOR_LOTA_DRAFT }));
+    setForm((current) => ({ ...current, ...BASOR_LOTA_DRAFT, description: appendFiveFaq(BASOR_LOTA_DRAFT.description, BASOR_LOTA_DRAFT.name), price: current.price || "250", stock: current.stock || "20", plant_size: current.plant_size || "৫ ইঞ্চি" }));
     setSubmitted(false);
     setSeoGenerated(true);
     setIsError(false);
-    setMessage("বাসরলতার SEO খসড়া বসানো হয়েছে। বাস্তব চারার আকার, বয়স, ছবি, দাম ও স্টক যোগ করে তথ্য যাচাই করুন।");
+    setMessage("তথ্যসমৃদ্ধ বাসরলতার খসড়া এবং বিবরণ থেকে ৫টি FAQ যোগ হয়েছে। দাম, স্টক ও উচ্চতা যাচাই করুন; এগুলো পরেও আলাদা ফিল্ডে বদলানো যাবে।");
+  }
+
+  function regenerateFaq() {
+    const next = appendFiveFaq(form.description, form.name);
+    if (next === form.description) {
+      setIsError(true);
+      setMessage("৫টি FAQ তৈরির জন্য বিবরণে অন্তত ৫টি তথ্যসমৃদ্ধ শিরোনাম ও অনুচ্ছেদ লিখুন।");
+      return;
+    }
+    set("description", next);
+    setIsError(false);
+    setMessage("পণ্যের বিবরণের তথ্য থেকে ঠিক ৫টি FAQ যোগ করা হয়েছে। প্রকাশের আগে প্রশ্ন ও উত্তর যাচাই করুন।");
   }
 
   function generateSeoDraft() {
@@ -187,7 +243,7 @@ export default function PlantSellerProductForm() {
   const suggestions = suggestSeo(form);
   const effectiveTitle = form.seo_title.trim() || suggestions.seo_title || "আপনার পণ্যের নাম | AGRIVA";
   const effectiveMeta = form.seo_description.trim() || suggestions.seo_description;
-  const slugHint = (form.name.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").slice(0, 70) || "your-plant") + "-xxxxxxxx";
+  const slugHint = form.seo_slug.trim() || (form.scientific_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 70) || "plant") + "-xxxxxxxx";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -254,6 +310,7 @@ export default function PlantSellerProductForm() {
       uploadedPath = null;
       setSubmitted(true);
       setMessage("পণ্যটি সফলভাবে পর্যালোচনার জন্য জমা হয়েছে। অ্যাডমিন অনুমোদনের আগে প্রকাশিত হবে না।");
+      try { window.localStorage.removeItem(draftKey); } catch { /* no storage */ }
       setForm(INITIAL);
       setImage(null);
       setPreview("");
@@ -275,6 +332,7 @@ export default function PlantSellerProductForm() {
   return (
     <form onSubmit={submit} className="lg:grid lg:grid-cols-[minmax(0,1fr)_310px] lg:items-start lg:gap-7" aria-label="নতুন Plant Market পণ্য যোগ করুন">
       <div className="min-w-0 space-y-6">
+        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs leading-5 text-sky-900">আপনার লেখা এই ব্রাউজারে স্থানীয় খসড়া হিসেবে সংরক্ষিত থাকবে (ছবি ছাড়া)। এটি অ্যাডমিনের কাছে জমা দেওয়া Database Draft নয়। কাজ শেষে নিচের জমা দেওয়ার বাটন ব্যবহার করুন।</div>
         <div className="flex flex-wrap gap-2 text-xs font-bold">
           {[
             ["#plant-basic", "১. পণ্যের পরিচিতি"],
@@ -318,6 +376,10 @@ export default function PlantSellerProductForm() {
                 value={form.description}
                 onChange={(html) => set("description", html)}
               />
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                <p className="max-w-md text-xs leading-5 text-emerald-950">লেখার তথ্যভিত্তিক শিরোনাম ও অনুচ্ছেদ থেকে ৫টি FAQ তৈরি হবে। নতুন তথ্য বা প্রতিশ্রুতি বানানো হবে না।</p>
+                <button type="button" onClick={regenerateFaq} className="rounded-lg bg-emerald-800 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">বিবরণ থেকে ৫টি FAQ তৈরি করুন</button>
+              </div>
               <p className="mt-2 text-xs leading-5 text-slate-500">শুধু বাস্তব ও যাচাইযোগ্য তথ্য লিখুন। SEO outline একটি খালি কাঠামো; ভুল বা অপ্রযোজ্য তথ্য মুছে দিন।</p>
             </div>
           </div>
@@ -412,6 +474,11 @@ export default function PlantSellerProductForm() {
             <button type="button" onClick={generateSeoDraft} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white hover:bg-emerald-700"><Sparkles size={17} aria-hidden="true" /> খালি SEO ঘর পূরণ করুন</button>
           </div>
           {seoGenerated && <p className="mt-3 text-xs font-semibold text-emerald-800"><Check size={14} className="mr-1 inline" /> SEO খসড়া তৈরি হয়েছে—যাচাই করে প্রয়োজনে পরিবর্তন করুন।</p>}
+          <label className="mt-5 block text-sm font-bold text-slate-800">
+            SEO-friendly English URL Slug <span className="text-xs font-normal text-slate-400">(ঐচ্ছিক)</span>
+            <input value={form.seo_slug} maxLength={90} pattern="[a-z0-9]+(?:-[a-z0-9]+)*" onChange={(event) => set("seo_slug", event.target.value.toLowerCase())} className={inputClass} placeholder="যেমন: basor-lota-flower-plant" />
+            <span className="mt-1.5 block text-xs font-normal text-slate-500">ইংরেজি ছোট হাতের অক্ষর, সংখ্যা ও হাইফেন ব্যবহার করুন। খালি রাখলে স্বয়ংক্রিয় slug তৈরি হবে।</span>
+          </label>
           <div className="mt-5">
             <ProductSeoEditor guided value={form} onChange={set} productName={form.name} description={descriptionText} previewPath={"/plant-market/" + slugHint} />
           </div>
