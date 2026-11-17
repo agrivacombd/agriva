@@ -3,7 +3,7 @@ import {EXTRA_BD_AGRI_SUGGESTIONS,type ExtraCategory} from "./bangladesh-agri-ma
  * These are search suggestions, NOT claims that specific varieties are in stock.
  * Keep each label free from pack sizes so customers can enter their own bulk quantity.
  */
-export type CropSuggestion = { name: string; category: ExtraCategory; aliases?: string[] };
+export type CropSuggestion = { name: string; category: ExtraCategory; aliases?: string[]; supplier?: string; source?: string };
 export const BD_CROP_SUGGESTIONS: readonly CropSuggestion[] = [
  {name:"ধানের বীজ",category:"বীজ",aliases:["ধান বীজ","Rice Seed","Paddy Seed"]},
  {name:"ব্রি ধান২৮ বীজ",category:"বীজ",aliases:["BRRI dhan28","BR28","ব্রি-২৮"]},

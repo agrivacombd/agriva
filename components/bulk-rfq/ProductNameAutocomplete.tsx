@@ -54,7 +54,7 @@ export default function ProductNameAutocomplete({
     }
    }}
   />
-  <p className="mt-1 text-xs text-slate-500">নাম লিখতে থাকুন—মিল থাকা পণ্য দেখাবে। তালিকায় না থাকলেও নিজের নাম লিখে অর্ডার করা যাবে।</p>
+  <p className="mt-1 text-xs text-slate-500">নাম লিখতে থাকুন—মিল থাকা পণ্য দেখাবে। ক্যাটালগের নাম মানে বর্তমান স্টক নিশ্চিত নয়; তালিকায় না থাকলেও নিজের নাম লিখে অর্ডার করা যাবে।</p>
   {visible&&<div id={`${id}-suggestions`} role="listbox" aria-label="পণ্যের নামের সাজেশন"
     className="absolute left-0 right-0 top-[49px] z-30 max-h-64 overflow-y-auto rounded-xl border border-emerald-200 bg-white py-1 shadow-xl">
     {suggestions.map((s,i)=><button
@@ -66,7 +66,7 @@ export default function ProductNameAutocomplete({
       onMouseDown={e=>e.preventDefault()}
       onClick={()=>pick(s.name)}>
       <span className="min-w-0 break-words font-semibold text-slate-900">{s.name}</span>
-      <span className="shrink-0 text-xs text-emerald-700">{marketplaceNames.includes(s.name)?"AGRIVA":s.category}</span>
+      <span className="shrink-0 text-xs text-emerald-700">{marketplaceNames.includes(s.name)?"AGRIVA":s.supplier?`${s.supplier} · ক্যাটালগ`:s.category}</span>
     </button>)}
   </div>}
  </div>;
