@@ -22,8 +22,12 @@
 - Supabase security advisor: no new ERROR findings. Remaining warnings include authenticated callable guarded SECURITY DEFINER functions and unrelated leaked-password setting.
 - Vercel Git preview compiles on several commits; confirm *head commit* READY before merging.
 
+## Preview isolation
+- Branch-specific Vercel preview overrides were configured for NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to point at agriva-editorial-staging; production variables were not modified. Trigger a new branch build to pick up these overrides.
+- Confirm all server-only integrations and auth providers also use sandbox/staging settings before exercising email, SMS or payments.
+
 ## Mandatory before production
-1. Confirm preview deployment environment uses this **staging** Supabase project, not production.
+1. Verify a **new** preview build picked up the branch-scoped staging override, rather than assuming older deployments have the new variables.
 2. Perform actual signed-in HTTP/browser flow with separate buyer, admin and verified wholesaler users (also a competing wholesaler), including privacy boundaries, rejected quote, expired invite and rate limit.
 3. Validate supplier onboarding with existing AGRIVA module permissions and organizations, including real verified business accounts.
 4. Test mobile responsiveness, screen readers/keyboard, Bangla unit labels, invalid input, 429/rate controls and notifications; add automated Playwright HTTP integration tests.
