@@ -24,11 +24,11 @@ export default function PlantMarketAddToCart({
     setBusy(true);setMessage("");setNeedsLogin(false);
     try {
       if (buyNow) {
-        const current = await fetch("/api/plant-market/cart", {cache:"no-store"});
-        const existing = await current.json().catch(()=>({}));
-        if (current.status === 401) {setNeedsLogin(true);setMessage("লগইন করে অর্ডার করুন।");return;}
-        if (!current.ok) {setMessage("কার্ট যাচাই করা যাচ্ছে না।");return;}
-        if ((existing.items||[]).some((item:{product_id:string})=>item.product_id!==productId)) {setMessage("কার্টে অন্য পণ্য রয়েছে। শুধু এই পণ্য কিনতে অন্য পণ্য সরান অথবা Cart থেকে সব পণ্য একসঙ্গে অর্ডার করুন।");return;}
+        const session = await fetch("/api/plant-market/cart", {cache:"no-store"});
+        if (session.status === 401) {setNeedsLogin(true);setMessage("লগইন করে অর্ডার করুন।");return;}
+        if (!session.ok) {setMessage("লগইন যাচাই করা যাচ্ছে না।");return;}
+        router.push("/plant-market/checkout?buyNowProductId="+encodeURIComponent(productId)+"&buyNowQuantity="+quantity);
+        return;
       }
       const response = await fetch("/api/plant-market/cart", {
         method: "POST",
@@ -42,10 +42,7 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
-      if (buyNow) {
-        // Checkout verifies the selected product and rejects unrelated cart items.
-        router.push("/plant-market/checkout?buyNowProductId="+encodeURIComponent(productId));
-      } else {
+else {
         setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
         router.refresh();
       }
@@ -72,7 +69,7 @@ export default function PlantMarketAddToCart({
         <Zap size={18}/>{disabled || !available ? "স্টক শেষ" : busy ? "প্রসেস হচ্ছে…" : "Buy Now"}
       </button>
     </div>
-    <p className="text-xs leading-5 text-slate-500">Buy Now-তে নির্বাচিত পণ্য কার্টে যোগ হয়ে Checkout খুলবে। কার্টে অন্য পণ্য থাকলে নিরাপত্তার জন্য Buy Now বন্ধ থাকবে; সেক্ষেত্রে Cart থেকে অর্ডার করুন।</p>
+    <p className="text-xs leading-5 text-slate-500">Buy Now-তে শুধু নির্বাচিত পণ্য checkout হবে; আপনার বিদ্যমান কার্ট অপরিবর্তিত থাকবে।</p>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <Link href="/plant-market/cart" className="text-sm font-bold text-emerald-800 underline underline-offset-4">কার্ট দেখুন</Link>
       <span className="text-xs text-slate-500">Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
