@@ -1,5 +1,6 @@
-import { safeAuthNextPath } from "@/lib/auth/safe-next";
 "use client";
+
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
