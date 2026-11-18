@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     hero = heroOutput.data;
     heroWidth = heroOutput.info.width;
     heroHeight = heroOutput.info.height;
-    social = await img.clone().resize(1200,630,{ fit:"cover", position:"attention" }).webp({quality:82}).toBuffer();
+    social = await img.clone().resize(1200,630,{ fit:"contain", background:"#ffffff" }).flatten({background:"#ffffff"}).webp({quality:82}).toBuffer();
   } catch {
     return NextResponse.json({ error: "Image processing failed. Upload a valid JPEG, PNG or WebP photo." }, { status: 400 });
   }
