@@ -84,24 +84,24 @@ export function parseArticleMarkdown(body:string):ArticleBlock[]{
   }
   flush();return blocks;
 }
-export function ArticleMarkdown({body}:{body:string}){
-  return <div className="space-y-5 break-words text-[15px] leading-[1.9] text-slate-700 sm:text-[16px] sm:leading-[1.95]">
+export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLinks?:boolean}){
+  return <div className="min-w-0 space-y-5 break-words [overflow-wrap:anywhere] text-[15px] leading-[1.9] text-slate-700 sm:text-[16px] sm:leading-[1.95]">
     {parseArticleMarkdown(body).map((block,i)=>{
-      if(block.kind==="h2")return <h2 key={i} className="scroll-mt-24 border-b border-slate-100 pb-3 pt-6 text-[1.3rem] font-bold leading-[1.5] text-[#173b2d] sm:text-[1.55rem]">{inline(block.lines[0])}</h2>;
-      if(block.kind==="h3")return <h3 key={i} className="scroll-mt-24 pt-3 text-lg font-bold leading-[1.5] text-[#173b2d]">{inline(block.lines[0])}</h3>;
+      if(block.kind==="h2")return <h2 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 border-b border-slate-100 pb-3 pt-6 text-[1.3rem] font-bold leading-[1.5] text-[#173b2d] sm:text-[1.55rem]">{inline(block.lines[0])}</h2>;
+      if(block.kind==="h3")return <h3 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 pt-3 text-lg font-bold leading-[1.5] text-[#173b2d]">{inline(block.lines[0])}</h3>;
       if(block.kind==="ul")return <ul key={i} className="list-disc space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ul>;
       if(block.kind==="ol")return <ol key={i} className="list-decimal space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ol>;
       if(block.kind==="quote")return <blockquote key={i} className="border-l-4 border-emerald-300 bg-emerald-50 px-4 py-3 italic">{inline(block.lines[0])}</blockquote>;
-      if(block.kind==="table")return <div key={i} className="my-5 w-full max-w-full overflow-x-auto rounded-xl border border-emerald-100" role="region" aria-label="নিবন্ধের তথ্য সারণি" tabIndex={0}>
+      if(block.kind==="table")return <div key={i} className="my-5 w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-emerald-100" role="region" aria-label="নিবন্ধের তথ্য সারণি" tabIndex={0}>
         <table className="w-full min-w-[430px] border-collapse text-left text-sm leading-6">
           <thead className="bg-emerald-50 text-emerald-950"><tr>{(block.headers||[]).map((h,j)=><th key={j} scope="col" className="border-b border-emerald-100 px-4 py-3 font-black">{inline(h)}</th>)}</tr></thead>
           <tbody>{(block.rows||[]).map((row,j)=><tr key={j} className="border-b border-slate-100 last:border-b-0 even:bg-slate-50">{row.map((cell,k)=><td key={k} className="px-4 py-3 align-top">{inline(cell)}</td>)}</tr>)}</tbody>
         </table>
       </div>;
-      if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 rounded-2xl border border-slate-200 bg-white p-2 sm:p-3">
+      if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 min-[380px]:p-2 sm:p-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" style={{width:"100%",height:"auto",maxHeight:"none",objectFit:"contain"}} className="mx-auto block max-w-full"/>
-        <figcaption className="mt-2 border-t border-slate-100 px-4 py-2 text-center text-xs leading-5 text-slate-600">{block.image.alt}</figcaption>
+        <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" style={{width:"100%",height:"auto",maxHeight:"none",objectFit:"contain"}} className="mx-auto block h-auto w-full max-w-full object-contain"/>
+        <figcaption className="mt-2 break-words border-t border-slate-100 px-2 py-2 text-center text-xs leading-5 text-slate-600 sm:px-4">{block.image.alt}</figcaption>
       </figure>;
       return <p key={i} className="leading-[1.9] sm:leading-[1.95]">{inline(block.lines[0])}</p>;
     })}
