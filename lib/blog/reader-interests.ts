@@ -69,3 +69,26 @@ export function recommendationScore(candidate:ReaderCandidate,state:ReaderState)
     return score+(overlap*3+sameCategory)*freshness/(1+index*0.22);
   },0);
 }
+
+/** Article bookmarks are separately and explicitly saved by a button click.
+ * No account sync or external analytics.
+ */
+export const BOOKMARK_KEY = "agriva:blog-bookmarks:v1";
+export function readBookmarks():string[] {
+  if(typeof window==="undefined")return [];
+  try{
+    const parsed:unknown=JSON.parse(window.localStorage.getItem(BOOKMARK_KEY)||"[]");
+    return Array.isArray(parsed)?Array.from(new Set(parsed.filter((entry):entry is string=>typeof entry==="string"&&validHref(entry)))).slice(0,100):[];
+  }catch{return [];}
+}
+export function toggleBookmark(href:string):boolean{
+  if(typeof window==="undefined"||!validHref(href))return false;
+  const previous=readBookmarks();
+  const already=previous.includes(href);
+  const next=already?previous.filter(item=>item!==href):[href,...previous].slice(0,100);
+  try{
+    window.localStorage.setItem(BOOKMARK_KEY,JSON.stringify(next));
+    window.dispatchEvent(new Event(READER_EVENT));
+    return !already;
+  }catch{return already;}
+}
