@@ -35,6 +35,7 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
+      window.dispatchEvent(new Event("agriva:cart-updated"));
       if (buyNow) {
         // Checkout deliberately shows the full existing cart and its total.
         router.push("/plant-market/checkout");
