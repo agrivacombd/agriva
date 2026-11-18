@@ -1,0 +1,73 @@
+name: Guest Checkout Local Database E2E
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "scripts/e2e-guest-checkout-local.mjs"
+      - "lib/marketplace/guest-checkout-session.ts"
+      - ".github/workflows/guest-checkout-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guest-database-e2e:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 350
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.2.0
+      - name: Resolve legacy duplicate migration versions inside disposable CI checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The source repository contains two historical migrations with the
+          # same version. Rename only the ephemeral runner copy, never alter
+          # production migration history or an existing database.
+          mv supabase/migrations/20261105180000_split_plant_market_public_read_policy.sql \
+             supabase/migrations/20261105180001_split_plant_market_public_read_policy.sql
+      - name: Choose unused local ports for isolated Supabase
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, socket
+          path = pathlib.Path("supabase/config.toml")
+          config = path.read_text()
+          # CI runner port bindings may persist from other jobs. Pick free
+          # high-numbered ports independently for this disposable test stack.
+          sockets = []
+          try:
+              for old in (55321, 55322, 55320, 55323, 55327):
+                  sock = socket.socket()
+                  sock.bind(("127.0.0.1", 0))
+                  sockets.append(sock)
+                  port = sock.getsockname()[1]
+                  config = config.replace("= " + str(old) + "\n", "= " + str(port) + "\n")
+              path.write_text(config)
+          finally:
+              for sock in sockets:
+                  sock.close()
+          PY
+      - name: Start isolated local Auth and Postgres, applying repository migrations
+        run: supabase start
+      - name: Capture local-only test credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/agriva-supabase-local.env
+          chmod 600 /tmp/agriva-supabase-local.env
+      - name: Execute guest buyer auth, role, RLS and negative checkout E2E
+        run: node scripts/e2e-guest-checkout-local.mjs
+      - name: Stop local test stack
+        if: always()
+        run: supabase stop || true

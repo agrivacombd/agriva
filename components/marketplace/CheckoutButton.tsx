@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
+import { ensureCheckoutBuyerSession } from "@/lib/marketplace/guest-checkout-session";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Minus, Phone, Plus, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { trackAnalyticsEvent } from "@/lib/analytics";
@@ -161,7 +162,7 @@ export default function CheckoutButton({
       const { supabase, user } = await resolveMarketplaceCartUser();
       if (!user) {
         setAuthPopupOpen(true);
-        setMessage("লগইন করুন অথবা মোবাইল/ইমেইল দিয়ে অ্যাকাউন্ট তৈরি করুন।");
+        setMessage("Guest Checkout চালু করা যায়নি। চাইলে লগইন করুন।");
         return;
       }
       const { error: addError } = await supabase.rpc("add_marketplace_cart_item", {
@@ -209,6 +210,7 @@ export default function CheckoutButton({
     setLoginRequired(false);
     setMessage("");
     try {
+      await ensureCheckoutBuyerSession();
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

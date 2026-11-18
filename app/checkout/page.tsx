@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Minus, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { ensureCheckoutBuyerSession } from "@/lib/marketplace/guest-checkout-session";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 import { trackMetaEvent } from "@/lib/meta-pixel";
@@ -81,13 +82,7 @@ export default function Checkout() {
     if (!silent) setLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        setItems([]);
-        setNeedsLogin(true);
-        setMessage("কার্ট দেখতে ও অর্ডার করতে লগইন করুন।");
-        return;
-      }
+      const { user } = await ensureCheckoutBuyerSession();
       setNeedsLogin(false);
       setIsGuest(Boolean(user.is_anonymous));
 
@@ -248,7 +243,7 @@ export default function Checkout() {
       <div className="mx-auto max-w-7xl">
         <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA CHECKOUT · বাংলাদেশ</p>
         <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-4xl">ডেলিভারি ঠিকানা ও অর্ডার</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">আপনার অর্ডারের পণ্য যাচাই করুন এবং সহজেই ডেলিভারি তথ্য দিন।</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">অ্যাকাউন্ট ছাড়াই অর্ডার করুন, অথবা সুবিধামতো লগইন করুন। আপনার পণ্য ও ডেলিভারি তথ্য যাচাই করুন।</p>
 
         {message && (
           <div role="status" aria-live="polite" className={"mt-5 rounded-xl border px-4 py-3 text-sm font-semibold " +
@@ -270,7 +265,7 @@ export default function Checkout() {
                   <Field label="প্রাপকের সম্পূর্ণ নাম *" value={form.name} onChange={value => setField("name", value)} autoComplete="name" />
                   <Field label="মোবাইল নম্বর *" value={form.phone} onChange={value => setField("phone", value)} placeholder="01XXXXXXXXX" type="tel" autoComplete="tel" />
                 </div>
-                {isGuest && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-xs leading-6 text-emerald-900">Guest Checkout: SMS OTP ছাড়াই অর্ডার করতে পারবেন। সচল মোবাইল নম্বর দিন।</p>}
+                {isGuest && <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-xs leading-6 text-emerald-900">Guest Checkout: অর্ডারের জন্য অ্যাকাউন্ট খোলা বাধ্যতামূলক নয়। সচল মোবাইল নম্বর দিন। চাইলে <Link href="/login?next=%2Fcheckout" className="font-bold underline">লগইন করুন</Link>।</p>}
               </section>
 
               <section aria-labelledby="delivery-address-heading" className="border-t border-slate-100 pt-5">

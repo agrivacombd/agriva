@@ -1,12 +1,26 @@
 -- Support up to four Marketplace product photos and remove the bucket-specific 5 MiB cap.
 alter table public.products
+  add column if not exists image_url text,
   add column if not exists image_urls text[] not null default '{}'::text[];
 
-update public.products
-set image_urls = array[image_url]
-where image_url is not null
-  and btrim(image_url) <> ''
-  and coalesce(cardinality(image_urls), 0) = 0;
+-- Legacy image_url may not exist in databases replayed from the earliest schema.
+-- Backfill only when the old source column is present.
+do $backfill$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'products' and column_name = 'image_url'
+  ) then
+    execute $sql$
+      update public.products
+      set image_urls = array[image_url]
+      where image_url is not null
+        and btrim(image_url) <> ''
+        and coalesce(cardinality(image_urls), 0) = 0
+    $sql$;
+  end if;
+end;
+$backfill$;
 
 do $$
 begin

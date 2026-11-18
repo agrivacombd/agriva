@@ -4,6 +4,9 @@
 
 begin;
 
+-- Earlier fresh installs may lack the soft-delete compatibility column.
+alter table public.products add column if not exists deleted_at timestamptz;
+
 create table if not exists public.product_rank_events (
   market text not null check (market in ('marketplace', 'plant-market')),
   product_id uuid not null,
@@ -116,6 +119,7 @@ as $$
   left join sales s on s.product_id = p.id
   where p.status = 'active' and p.marketplace_channel = 'marketplace'
     and p.deleted_at is null
+   
     and (p_category_slug is null or p.category_slug = p_category_slug
          or p.category_slug is null)
     and (p_subcategory_slug is null or p.subcategory_slug = p_subcategory_slug

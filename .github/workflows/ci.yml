@@ -43,6 +43,10 @@ jobs:
         run: node scripts/smoke-bulk-crop-suggestions.mjs
       - name: Invalid Supabase refresh-token cookie regression test
         run: npm run test:auth-refresh-token
+      - name: Guest checkout buyer identity and RLS contract regression
+        run: node scripts/smoke-guest-checkout-security.mjs
+      - name: Guest session concurrency and retry behavior
+        run: node scripts/test-guest-checkout-session.mjs
       - name: Persisted privacy consent regression test
         run: npm run test:analytics-instrumentation
       - name: Direct COD shipping and ad landing readiness regression

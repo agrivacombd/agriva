@@ -23,6 +23,8 @@ GRANT USAGE ON SCHEMA auth TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION auth.uid() TO PUBLIC;
 
 CREATE TABLE public.profiles (id uuid PRIMARY KEY, role text NOT NULL);
+-- Test fixture grants only; this entire integration suite rolls back.
+GRANT SELECT ON public.profiles TO authenticated;
 CREATE TABLE public.products (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,

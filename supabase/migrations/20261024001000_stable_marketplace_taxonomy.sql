@@ -49,6 +49,7 @@ on conflict (category_slug, slug) do update set
   updated_at = now();
 
 alter table public.products
+  add column if not exists category text,
   add column if not exists category_slug text,
   add column if not exists subcategory_slug text;
 
