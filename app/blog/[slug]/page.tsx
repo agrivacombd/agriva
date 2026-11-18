@@ -111,18 +111,18 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const modifiedDate = article.updated_at && article.updated_at !== article.created_at
     ? new Date(article.updated_at).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" }) : null;
   const jsonLd = {
-    "@context": "https://schema.org", "@type": "Article", headline: article.title,
+    "@context": "https://schema.org", "@type":"Article", headline: article.title,
     description: article.meta_description || undefined, url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     author: { "@id": `${siteUrl}/#organization` },
     publisher: { "@id": `${siteUrl}/#organization` },
-    datePublished: article.created_at, dateModified: article.updated_at || article.created_at,
+    datePublished:article.created_at, dateModified:article.updated_at||article.created_at,
     ...(article.hero_image_url ? { image: article.hero_image_url } : {}),
     inLanguage: "bn-BD", isAccessibleForFree: true,
     isPartOf: { "@id": `${siteUrl}/#website` },
   };
   const breadcrumbJsonLd = {
-    "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+    "@context": "https://schema.org", "@type":"BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "হোম", item: siteUrl },
       { "@type": "ListItem", position: 2, name: "AGRIVA Blog", item: `${siteUrl}/blog` },
       { "@type": "ListItem", position: 3, name: article.title, item: url },
