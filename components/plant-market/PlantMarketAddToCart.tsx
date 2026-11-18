@@ -23,6 +23,13 @@ export default function PlantMarketAddToCart({
     if (busy || disabled || available < 1) return;
     setBusy(true);setMessage("");setNeedsLogin(false);
     try {
+      if (buyNow) {
+        const current = await fetch("/api/plant-market/cart", {cache:"no-store"});
+        const existing = await current.json().catch(()=>({}));
+        if (current.status === 401) {setNeedsLogin(true);setMessage("লগইন করে অর্ডার করুন।");return;}
+        if (!current.ok) {setMessage("কার্ট যাচাই করা যাচ্ছে না।");return;}
+        if ((existing.items||[]).some((item:{product_id:string})=>item.product_id!==productId)) {setMessage("কার্টে অন্য পণ্য রয়েছে। শুধু এই পণ্য কিনতে অন্য পণ্য সরান অথবা Cart থেকে সব পণ্য একসঙ্গে অর্ডার করুন।");return;}
+      }
       const response = await fetch("/api/plant-market/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -36,8 +43,8 @@ export default function PlantMarketAddToCart({
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
       if (buyNow) {
-        // Checkout deliberately shows the full existing cart and its total.
-        router.push("/plant-market/checkout");
+        // Checkout verifies the selected product and rejects unrelated cart items.
+        router.push("/plant-market/checkout?buyNowProductId="+encodeURIComponent(productId));
       } else {
         setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
         router.refresh();
