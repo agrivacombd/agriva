@@ -32,7 +32,9 @@ export async function POST(request: NextRequest) {
     const img = sharp(bytes, { limitInputPixels: 40_000_000, failOn: "error" }).rotate();
     const metadata = await img.metadata();
     if (!["jpeg","png","webp"].includes(metadata.format || "")) throw new Error("format");
-    const heroOutput = await img.clone().resize({width:1536,height:1024,fit:"inside",withoutEnlargement:true}).webp({quality:84}).toBuffer({resolveWithObject:true});
+    // Preserve the original aspect ratio and dimensions for typical blog artwork.
+    // Only downscale unusually large uploads; never crop or upscale the hero.
+    const heroOutput = await img.clone().resize({width:2400,height:2400,fit:"inside",withoutEnlargement:true}).webp({quality:84}).toBuffer({resolveWithObject:true});
     hero = heroOutput.data;
     heroWidth = heroOutput.info.width;
     heroHeight = heroOutput.info.height;
