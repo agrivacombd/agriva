@@ -322,17 +322,19 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
-  const categoryCounts = useMemo(() => MARKETPLACE_CATEGORIES.map((item) => ({
+  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:"🌿"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:"🪴"}))], [products]);
+  const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
+  const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
-    count: products.filter((product) => productMatchesCategory(product, item.slug)).length,
-  })).filter((item) => !availableCategoriesOnly || item.count > 0), [products, availableCategoriesOnly]);
+    count: products.filter((product) => isPlantMarket ? (item.slug === "all" || product.category?.trim() === item.slug) : productMatchesCategory(product, item.slug)).length,
+  })).filter((item) => !availableCategoriesOnly || item.count > 0), [products, availableCategoriesOnly, catalogueCategories, isPlantMarket]);
 
   const visible = useMemo(() => {
     const search = normalize(query);
     const filtered = products.filter((product) => {
       const matchesSearch = !search || [product.name, product.category, product.description, product.unit]
         .some((value) => normalize(value).includes(search));
-      return matchesSearch && productMatchesCategory(product, category)
+      return matchesSearch && (isPlantMarket ? (category === "all" || product.category?.trim() === category) : productMatchesCategory(product, category))
         && (!inStockOnly || Number(product.stock || 0) > 0)
         && (!wishlistOnly || wishlist.includes(product.id));
     });
@@ -379,7 +381,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     root.querySelectorAll("[data-rank-product-id]").forEach((node) => observer.observe(node));
     return () => observer.disconnect();
   }, [visibleProductIds, productHrefPrefix]);
-  const selectedCategory = MARKETPLACE_CATEGORIES.find((item) => item.slug === category);
+  const selectedCategory = catalogueCategories.find((item) => item.slug === category);
   const hasActiveFilters = Boolean(query.trim()) || category !== "all" || inStockOnly || wishlistOnly;
 
   return (
