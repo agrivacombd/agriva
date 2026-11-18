@@ -119,7 +119,7 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
               <h4 className="mt-3 text-2xl font-black leading-[1.45] text-slate-950 sm:text-3xl"><Link href={featured.href} className="hover:text-emerald-800">{featured.title}</Link></h4>
               <p className="mt-4 line-clamp-4 text-base leading-8 text-slate-600">{featured.excerpt}</p>
               <p className="mt-4 text-xs font-medium text-slate-500">{featured.source === "learn" ? featured.readTime + " পড়া" : featured.date}</p>
-              <Link href={featured.href} className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">পুরো লেখাটি পড়ুন <span aria-hidden="true" className="ml-2">→</span></Link>
+              <div className="mt-6 flex flex-wrap items-center gap-3"><Link href={featured.href} className="inline-flex min-h-11 items-center rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-emerald-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">পুরো লেখাটি পড়ুন <span aria-hidden="true" className="ml-2">→</span></Link><button type="button" aria-pressed={savedSet.has(featured.href)} onClick={()=>onSave(featured.href)} className="inline-flex min-h-11 items-center rounded-xl border border-emerald-300 px-4 py-2.5 text-sm font-bold text-emerald-900 hover:bg-emerald-50">{savedSet.has(featured.href)?"✓ সংরক্ষিত":"☆ পরে পড়ব"}</button></div>
             </div>
           </article>
         </section>
