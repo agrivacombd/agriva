@@ -71,7 +71,7 @@ assert.match(adminPermissionList,/user_module_grants/,"admin lists independent m
 assert.match(adminPermissionUi,/এই মার্কেটের Permission বাতিল/,"admin UI revokes one market at a time");
 assert.match(moderationApi,/plant_market_products/,"Plant Market has its own product moderation endpoint");
 assert.match(moderationApi,/user_module_grants/,"Plant Market moderation verifies the seller's active create grant");
-assert.match(moderationUi,/অনুমোদন ও প্রকাশ/,"Plant Market products have a separate approval queue");
+assert.match(moderationUi,/Approve \/ Publish/,"Plant Market products retain a separate approval action in the management dashboard");
 assert.match(plantDashboard,/checkModuleAccess/,"Plant Seller dashboard checks Plant Market grant");
 assert.match(plantDashboard,/plant_market_products/,"Plant Seller dashboard reads only Plant Market products");
 assert.match(plantForm,/plant-product-images/,"Plant Seller uploads to its own image bucket");

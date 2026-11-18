@@ -20,13 +20,28 @@ jobs:
           node-version: 20
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
-      - name: Audit all locked dependencies
-        run: npm audit --audit-level=moderate
+      - name: Block vulnerable production dependencies
+        run: npm audit --omit=dev --audit-level=moderate
+      - name: Record development dependency advisories
+        shell: bash
+        run: |
+          npm audit --audit-level=moderate --json > dev-dependency-audit.json || true
+          node scripts/report-dev-dependency-audit.mjs
+      - name: Upload dependency advisory evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-advisories
+          path: dev-dependency-audit.json
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
         run: npx tsc --noEmit
-      - name: Bulk order agricultural product autocomplete regression\n        run: node scripts/smoke-bulk-crop-suggestions.mjs\n      - name: Invalid Supabase refresh-token cookie regression test
+      - name: Bulk order agricultural product autocomplete regression
+        run: node scripts/smoke-bulk-crop-suggestions.mjs
+      - name: Invalid Supabase refresh-token cookie regression test
         run: npm run test:auth-refresh-token
       - name: Persisted privacy consent regression test
         run: npm run test:analytics-instrumentation

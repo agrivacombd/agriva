@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { canonicalPlantProductSlug } from "@/lib/plant-market/product-slugs";
 import { createClient } from "@supabase/supabase-js";
 import { LESSONS } from "@/lib/learn/lessons";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
@@ -184,7 +185,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })),
     ...plantProducts.map((product) => ({
-      url: `${base}/plant-market/${product.slug}`,
+      url: `${base}/plant-market/${canonicalPlantProductSlug(product.slug)}`,
       ...(product.updated_at ? { lastModified: new Date(product.updated_at) } : {}),
       changeFrequency: "weekly" as const,
       priority: 0.7,
