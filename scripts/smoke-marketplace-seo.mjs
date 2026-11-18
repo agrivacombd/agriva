@@ -90,7 +90,7 @@ assert.match(cmsBlogArticle, /"@type":\s*"Article"/, "CMS blog detail must publi
 assert.match(cmsBlogArticle, /"@type":\s*"BreadcrumbList"/, "CMS blog detail must publish BreadcrumbList structured data");
 assert.match(cmsBlogArticle, /datePublished:\s*article\.created_at/, "CMS article publication date must use the actual created_at value");
 assert.match(cmsBlogArticle, /dateModified:\s*article\.updated_at\s*\|\|\s*article\.created_at/, "CMS article modification date must use the actual updated_at value with a created_at fallback");
-assert.match(cmsBlogArticle, /JSON\.stringify\(breadcrumbJsonLd\)/, "CMS breadcrumb data must be emitted as JSON-LD");
+assert.match(cmsBlogArticle, /encodeJson\(breadcrumbJsonLd\)/, "CMS breadcrumb data must be emitted as JSON-LD");
 assert.match(staticBlogArticle, /"@type": "Article"/, "Static blog detail must retain Article structured data");
 assert.match(staticBlogArticle, /"@type": "BreadcrumbList"/, "Static blog detail must retain BreadcrumbList structured data");
 assert.match(jobSeo, /"@type": "JobPosting"/, "Job detail schema helper must retain JobPosting structured data");
