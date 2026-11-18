@@ -42,7 +42,7 @@ export default async function PlantMarketPage() {
       loadFailed = true;
       console.error("Plant Market catalogue load failed:", error);
     } else {
-      products = ((data ?? []) as MarketplaceProduct[]).map((product) => ({ ...product, slug: canonicalPlantProductSlug(product.slug) }));
+      products = ((data ?? []) as MarketplaceProduct[]).map((product) => ({ ...product, unit: "piece", slug: canonicalPlantProductSlug(product.slug) }));
     }
   } catch (error) {
     loadFailed = true;
