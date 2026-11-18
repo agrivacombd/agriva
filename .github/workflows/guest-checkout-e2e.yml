@@ -26,7 +26,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.2.0
       - name: Start isolated local Auth and Postgres, applying repository migrations
         run: supabase start
       - name: Capture local-only test credentials
