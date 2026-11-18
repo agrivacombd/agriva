@@ -39,7 +39,9 @@ check(adminApi.includes('requireAdminApi("catalog.read")') && adminApi.includes(
 check(adminApi.includes("verification_status") && adminApi.includes("user_module_grants"), "Publish checks verified seller and active grant");
 check(adminApi.includes("!note"), "Rejection and suspension require moderation reason");
 check(adminPanel.includes("Search / Filter") && adminPanel.includes("Save Changes"), "Admin supports search and editing");
-check(productActions.includes('"/api/plant-market/cart"') && productActions.includes('"/plant-market/checkout"'), "Single product Buy Now uses Plant Market cart and checkout");
+check(productActions.includes('"/api/plant-market/cart"') && productActions.includes('"/plant-market/checkout?buyNowProductId="') && productActions.includes("item.product_id!==productId"), "Single product Buy Now checks cart isolation and passes product to checkout");
+check(marketCards.includes('"/plant-market/checkout?buyNowProductId="') && marketCards.includes("item.product_id!==product.id"), "Catalog Buy Now guards unrelated cart items");
+check(checkoutApi.includes("items?.length!==1") && checkoutApi.includes("items[0].product_id!==buyNowProductId"), "Checkout API rejects unrelated cart products");
 check(marketCards.includes('fetch("/api/plant-market/cart"'), "Plant catalog cards use independent Plant Market cart");
 check(cartApi.includes('plant_market_add_to_cart') && checkoutApi.includes('plant_market_finalize_checkout'), "Cart and checkout retain separate stock-checked RPCs");
 console.log("Plant Market release contract checks passed.");

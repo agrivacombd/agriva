@@ -99,7 +99,7 @@ function ProductCard({
         </div>
       </div>
       <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
-        <p className="truncate text-[10px] font-semibold text-emerald-700">{getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug)?.category.name || product.category || "কৃষি পণ্য"}</p>
+        <p className="truncate text-[10px] font-semibold text-emerald-700">{(productHrefPrefix === "/plant-market" ? product.category : getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug)?.category.name) || product.category || (productHrefPrefix === "/plant-market" ? "গাছ ও চারা" : "কৃষি পণ্য")}</p>
         <h3 className="mt-1.5 min-h-12 break-words text-sm font-black leading-6 text-slate-900 sm:text-base">
           <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
@@ -238,6 +238,13 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     addRequestInFlightRef.current = true;
     setAddingProductId(product.id);setCartError("");setCartNeedsLogin(false);setCartNotice("");
     try {
+      if (buyNow) {
+        const current = await fetch("/api/plant-market/cart", {cache:"no-store"});
+        const existing = await current.json().catch(()=>({}));
+        if (current.status === 401) {setCartNeedsLogin(true);setCartError("লগইন করে অর্ডার করুন।");return;}
+        if (!current.ok) {setCartError("কার্ট যাচাই করা যাচ্ছে না।");return;}
+        if ((existing.items||[]).some((item:{product_id:string})=>item.product_id!==product.id)) {setCartError("কার্টে অন্য পণ্য রয়েছে। শুধু এই পণ্য কিনতে অন্য পণ্য সরান অথবা Cart থেকে সব পণ্য একসঙ্গে অর্ডার করুন।");return;}
+      }
       const response = await fetch("/api/plant-market/cart", {
         method: "POST",headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ productId: product.id, quantity: 1 }),
@@ -250,7 +257,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       if(!response.ok) {setCartError(typeof data.error==="string"?data.error:"স্টক বা সংযোগ যাচাই করুন।");return;}
       if(buyNow) {
         // Plant checkout displays every item already in the active cart.
-        window.location.assign("/plant-market/checkout");
+        window.location.assign("/plant-market/checkout?buyNowProductId="+encodeURIComponent(product.id));
         return;
       }
       setCartNotice(product.name + " Plant Market কার্টে যোগ হয়েছে।");
@@ -326,7 +333,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
   const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
-    count: products.filter((product) => isPlantMarket ? (item.slug === "all" || product.category?.trim() === item.slug) : productMatchesCategory(product, item.slug)).length,
+    count: products.filter((product) => isPlantMarket ? (item.slug === "all" || normalize(product.category) === normalize(item.slug)) : productMatchesCategory(product, item.slug)).length,
   })).filter((item) => !availableCategoriesOnly || item.count > 0), [products, availableCategoriesOnly, catalogueCategories, isPlantMarket]);
 
   const visible = useMemo(() => {
@@ -334,7 +341,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     const filtered = products.filter((product) => {
       const matchesSearch = !search || [product.name, product.category, product.description, product.unit]
         .some((value) => normalize(value).includes(search));
-      return matchesSearch && (isPlantMarket ? (category === "all" || product.category?.trim() === category) : productMatchesCategory(product, category))
+      return matchesSearch && (isPlantMarket ? (category === "all" || normalize(product.category) === normalize(category)) : productMatchesCategory(product, category))
         && (!inStockOnly || Number(product.stock || 0) > 0)
         && (!wishlistOnly || wishlist.includes(product.id));
     });

@@ -23,6 +23,13 @@ export default function PlantMarketAddToCart({
     if (busy || disabled || available < 1) return;
     setBusy(true);setMessage("");setNeedsLogin(false);
     try {
+      if (buyNow) {
+        const session = await fetch("/api/plant-market/cart", {cache:"no-store"});
+        if (session.status === 401) {setNeedsLogin(true);setMessage("লগইন করে অর্ডার করুন।");return;}
+        if (!session.ok) {setMessage("লগইন যাচাই করা যাচ্ছে না।");return;}
+        router.push("/plant-market/checkout?buyNowProductId="+encodeURIComponent(productId)+"&buyNowQuantity="+quantity);
+        return;
+      }
       const response = await fetch("/api/plant-market/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -35,13 +42,8 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
-      if (buyNow) {
-        // Checkout deliberately shows the full existing cart and its total.
-        router.push("/plant-market/checkout");
-      } else {
-        setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
-        router.refresh();
-      }
+setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
+      router.refresh();
     } catch {
       setMessage("সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {setBusy(false);}
@@ -65,7 +67,7 @@ export default function PlantMarketAddToCart({
         <Zap size={18}/>{disabled || !available ? "স্টক শেষ" : busy ? "প্রসেস হচ্ছে…" : "Buy Now"}
       </button>
     </div>
-    <p className="text-xs leading-5 text-slate-500">Buy Now চাপলে পণ্য কার্টে যোগ হয়ে Checkout খুলবে। কার্টে আগে অন্য পণ্য থাকলে সেগুলোও Order Summary-তে থাকবে—নিশ্চিত করার আগে দেখে নিন।</p>
+    <p className="text-xs leading-5 text-slate-500">Buy Now-তে শুধু নির্বাচিত পণ্য checkout হবে; আপনার বিদ্যমান কার্ট অপরিবর্তিত থাকবে।</p>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <Link href="/plant-market/cart" className="text-sm font-bold text-emerald-800 underline underline-offset-4">কার্ট দেখুন</Link>
       <span className="text-xs text-slate-500">Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
