@@ -6,6 +6,7 @@ import { ArticleMarkdown, parseArticleMarkdown } from "@/lib/content/article-mar
 import { LEGACY_BLOG_LEARN_REDIRECTS } from "@/lib/learn/blog-feed";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
 import { ReadingPreferences } from "./reading-preferences";
+import ReadingInterestTracker from "../reading-interest-tracker";
 
 type CmsArticle = {
   title: string;
@@ -133,6 +134,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   return (
     <main className="min-h-screen min-w-0 overflow-x-clip bg-[#f8faf7] text-slate-900">
       <ReadingProgress />
+      <ReadingInterestTracker slug={article.slug} title={article.title} category={article.primary_keyword || "কৃষি প্রবন্ধ"} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(breadcrumbJsonLd) }} />
       {related.items.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson({
