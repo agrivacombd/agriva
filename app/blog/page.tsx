@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "কৃষি ব্লগ, চাষাবাদ গাইড ও Learn ফিড",
   description: "AGRIVA Blog-এ কৃষি প্রবন্ধের সঙ্গে Learn বিভাগের ধান চাষ, সবজি, মাটির স্বাস্থ্য ও বালাই ব্যবস্থাপনার ব্যবহারিক গাইড দেখুন।",
-  alternates: { canonical: "/blog" },
+  alternates: { canonical: "/blog", languages: { "bn-BD": "/blog", en: "/en/blog", "x-default": "/blog" } },
   openGraph: {
     siteName: "AGRIVA",
     title: "AGRIVA Blog | কৃষি প্রবন্ধ ও শেখার গাইড",
@@ -68,6 +68,7 @@ export default async function BlogPage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#articles" className="inline-flex min-h-12 items-center rounded-xl bg-white px-5 py-3 text-sm font-extrabold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">প্রবন্ধ ঘুরে দেখুন <span aria-hidden="true" className="ml-2">↓</span></a>
             <Link href="/learn" className="inline-flex min-h-12 items-center rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">শেখার কেন্দ্র</Link>
+            <Link href="/en/blog" hrefLang="en" lang="en" className="inline-flex min-h-12 items-center rounded-xl border border-white/40 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">Read in English →</Link>
           </div>
         </div>
       </header>

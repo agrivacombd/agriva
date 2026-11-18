@@ -84,7 +84,7 @@ export function parseArticleMarkdown(body:string):ArticleBlock[]{
   }
   flush();return blocks;
 }
-export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLinks?:boolean}){
+export function ArticleMarkdown({body,headingLinks=false,locale="bn"}:{body:string;headingLinks?:boolean;locale?:"bn"|"en"}){
   return <div className="min-w-0 space-y-5 break-words [overflow-wrap:anywhere] text-[15px] leading-[1.9] text-slate-700 sm:text-[16px] sm:leading-[1.95]">
     {parseArticleMarkdown(body).map((block,i)=>{
       if(block.kind==="h2")return <h2 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 border-b border-slate-100 pb-3 pt-6 text-[1.3rem] font-bold leading-[1.5] text-[#173b2d] sm:text-[1.55rem]">{inline(block.lines[0])}</h2>;
@@ -99,15 +99,15 @@ export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLi
         const hintId=`article-table-hint-${i}`;
         return <figure key={i} className="my-7 min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <figcaption className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:px-5">
-            <span className="text-sm font-extrabold text-slate-800">তথ্য সারণি</span>
-            {!compact&&<span id={hintId} className="text-xs leading-5 text-slate-600 sm:text-sm">সব কলাম পড়তে টেবিলটি ডানে-বামে সরান <span aria-hidden="true">↔</span></span>}
+            <span className="text-sm font-extrabold text-slate-800">{locale==="en"?"Data table":"তথ্য সারণি"}</span>
+            {!compact&&<span id={hintId} className="text-xs leading-5 text-slate-600 sm:text-sm">{locale==="en"?"Scroll sideways to see all columns":"সব কলাম পড়তে টেবিলটি ডানে-বামে সরান"} <span aria-hidden="true">↔</span></span>}
           </figcaption>
           {/* One semantic data table on every device. A two-column table fits the
               available width; only wider tables get an internal scroll area.
               Sticky columns begin on large screens, where they cannot obscure the data. */}
           <div
             className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-700 [scrollbar-color:#94a3b8_#f1f5f9] [scrollbar-width:thin]"
-            role="region" aria-label="নিবন্ধের তথ্য সারণি" aria-describedby={!compact?hintId:undefined} tabIndex={0}>
+            role="region" aria-label={locale==="en"?"Article data table":"নিবন্ধের তথ্য সারণি"} aria-describedby={!compact?hintId:undefined} tabIndex={0}>
             <table
               className={`w-full border-separate border-spacing-0 text-left text-[14px] leading-[1.65] sm:text-[15px] lg:text-base 2xl:text-lg 2xl:leading-[1.8] ${compact?"table-fixed":"table-auto"}`}
               style={{minWidth:compact?"100%":`${headers.length*150}px`}}>
@@ -120,7 +120,7 @@ export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLi
               </tr>)}</tbody>
             </table>
           </div>
-          {!compact&&<p className="border-t border-slate-100 px-3 py-2 text-xs leading-5 text-slate-500 sm:hidden">টিপস: আঙুল দিয়ে টেবিলের ভেতর ডানে-বামে সোয়াইপ করুন।</p>}
+          {!compact&&<p className="border-t border-slate-100 px-3 py-2 text-xs leading-5 text-slate-500 sm:hidden">{locale==="en"?"Tip: swipe left or right inside the table.":"টিপস: আঙুল দিয়ে টেবিলের ভেতর ডানে-বামে সোয়াইপ করুন।"}</p>}
         </figure>;
       }
       if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 min-[380px]:p-2 sm:p-3">

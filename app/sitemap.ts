@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { canonicalPlantProductSlug } from "@/lib/plant-market/product-slugs";
 import { createClient } from "@supabase/supabase-js";
 import { LESSONS } from "@/lib/learn/lessons";
+import { ENGLISH_BLOG_ARTICLES } from "@/lib/content/english-blog";
 import { MARKETPLACE_CATEGORIES, matchesProductCategory, matchesSubcategory } from "@/lib/marketplace/taxonomy";
 
 type SitemapProduct = { slug: string; updated_at?: string | null; category?: string | null; category_slug?: string | null; subcategory_slug?: string | null };
@@ -166,6 +167,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/buyer-demands`, changeFrequency: "daily", priority: 0.75 },
     { url: `${base}/transport`, changeFrequency: "weekly", priority: 0.65 },
     { url: `${base}/blog`, changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/en/blog`, changeFrequency: "weekly", priority: 0.75, alternates: { languages: { "bn-BD": `${base}/blog`, en: `${base}/en/blog` } } },
     { url: `${base}/crop-disease`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/about-us`, changeFrequency: "monthly", priority: 0.4 },
     { url: `${base}/contact-us`, changeFrequency: "monthly", priority: 0.4 },
@@ -202,6 +204,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
+    ...ENGLISH_BLOG_ARTICLES.map((article) => ({ url: `${base}/en/blog/${article.slug}`, lastModified: new Date(article.publishedAt), changeFrequency: "monthly" as const, priority: 0.65 })),
     ...cmsArticles.map((article) => ({
       url: `${base}/blog/${article.slug}`,
       ...(article.updated_at ? { lastModified: new Date(article.updated_at) } : {}),
