@@ -7,6 +7,15 @@ export async function POST(request:NextRequest){
  const body=await request.json().catch(()=>null);
  if(!body||typeof body!=="object")return NextResponse.json({error:"Checkout তথ্য সঠিক নয়।"},{status:400});
  const key=clean(body.idempotencyKey,100);
+ const buyNowProductId=clean(body.buyNowProductId,60);
+ if (buyNowProductId) {
+  if (!/^[0-9a-f-]{36}$/i.test(buyNowProductId)) return NextResponse.json({error:"Buy Now পণ্য সঠিক নয়।"},{status:400});
+  const {data:cart,error:cartError}=await supabase.from("plant_market_carts").select("id").eq("buyer_id",user.id).eq("status","active").maybeSingle();
+  if(cartError||!cart)return NextResponse.json({error:"Buy Now কার্ট যাচাই করা যায়নি।"},{status:409});
+  const {data:items,error:itemsError}=await supabase.from("plant_market_cart_items").select("product_id").eq("cart_id",cart.id);
+  if(itemsError||items?.length!==1||items[0].product_id!==buyNowProductId)return NextResponse.json({error:"Buy Now-তে শুধু নির্বাচিত পণ্য থাকতে হবে। অন্য পণ্য থাকলে Cart থেকে অর্ডার করুন।"},{status:409});
+ }
+ 
  if(!/^[A-Za-z0-9_-]{16,100}$/.test(key))return NextResponse.json({error:"Checkout key সঠিক নয়। আবার চেষ্টা করুন।"},{status:400});
  const {data:settings,error:settingsError}=await supabase.rpc("get_public_site_settings");
  if(settingsError)return NextResponse.json({error:"Checkout settings যাচাই করা যাচ্ছে না।"},{status:503});
