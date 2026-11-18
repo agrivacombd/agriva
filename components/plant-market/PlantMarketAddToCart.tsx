@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ensureCheckoutBuyerSession } from "@/lib/marketplace/guest-checkout-session";
 import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 
 export default function PlantMarketAddToCart({
@@ -23,6 +24,7 @@ export default function PlantMarketAddToCart({
     if (busy || disabled || available < 1) return;
     setBusy(true);setMessage("");setNeedsLogin(false);
     try {
+      await ensureCheckoutBuyerSession();
       const response = await fetch("/api/plant-market/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,7 +32,7 @@ export default function PlantMarketAddToCart({
       });
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
-        setNeedsLogin(true);setMessage("কার্ট ও Checkout ব্যবহার করতে লগইন করুন।");return;
+        setNeedsLogin(true);setMessage("অতিথি সেশন পাওয়া যায়নি। লগইন করে আবার চেষ্টা করুন।");return;
       }
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
@@ -68,7 +70,7 @@ export default function PlantMarketAddToCart({
     <p className="text-xs leading-5 text-slate-500">Buy Now চাপলে পণ্য কার্টে যোগ হয়ে Checkout খুলবে। কার্টে আগে অন্য পণ্য থাকলে সেগুলোও Order Summary-তে থাকবে—নিশ্চিত করার আগে দেখে নিন।</p>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <Link href="/plant-market/cart" className="text-sm font-bold text-emerald-800 underline underline-offset-4">কার্ট দেখুন</Link>
-      <span className="text-xs text-slate-500">Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
+      <span className="text-xs text-slate-500">অ্যাকাউন্ট ছাড়াই Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
     </div>
     {message && <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
       <span>{message}</span>
