@@ -9,14 +9,8 @@ export async function POST(request:NextRequest){
  const key=clean(body.idempotencyKey,100);
  if(!/^[A-Za-z0-9_-]{16,100}$/.test(key))return NextResponse.json({error:"Checkout key সঠিক নয়। আবার চেষ্টা করুন।"},{status:400});
  const buyNowProductId=clean(body.buyNowProductId,60);
- if (buyNowProductId) {
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(buyNowProductId)) return NextResponse.json({error:"Buy Now পণ্য সঠিক নয়।"},{status:400});
-  const {data:cart,error:cartError}=await supabase.from("plant_market_carts").select("id").eq("buyer_id",user.id).eq("status","active").maybeSingle();
-  if(cartError||!cart)return NextResponse.json({error:"Buy Now কার্ট যাচাই করা যায়নি।"},{status:409});
-  const {data:items,error:itemsError}=await supabase.from("plant_market_cart_items").select("product_id").eq("cart_id",cart.id);
-  if(itemsError||items?.length!==1||items[0].product_id!==buyNowProductId)return NextResponse.json({error:"Buy Now-তে শুধু নির্বাচিত পণ্য থাকতে হবে। অন্য পণ্য থাকলে Cart থেকে অর্ডার করুন।"},{status:409});
- }
- 
+ const buyNowQuantity=body.buyNowQuantity;
+ if(buyNowProductId && (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(buyNowProductId) || !Number.isInteger(buyNowQuantity) || buyNowQuantity<1 || buyNowQuantity>100))return NextResponse.json({error:"Buy Now পণ্য বা পরিমাণ সঠিক নয়।"},{status:400});
  const {data:settings,error:settingsError}=await supabase.rpc("get_public_site_settings");
  if(settingsError)return NextResponse.json({error:"Checkout settings যাচাই করা যাচ্ছে না।"},{status:503});
  const cod=(settings??[]).find((x:{key:string;value:string})=>x.key==="cod_enabled");
@@ -28,7 +22,9 @@ export async function POST(request:NextRequest){
  const normalized=phone.startsWith("+")?phone:phone.startsWith("880")?"+"+phone:phone.startsWith("01")?"+88"+phone:phone.startsWith("1")?"+880"+phone:"";
  if(!/^\+8801[3-9]\d{8}$/.test(normalized))return NextResponse.json({error:"সঠিক বাংলাদেশি মোবাইল নম্বর দিন।"},{status:400});
  const shippingAddress={...address,phone:normalized,address:[address.upazila,address.unionOrArea,address.villageRoadHouse].filter(Boolean).join(", ")};
- const {data,error}=await supabase.rpc("plant_market_finalize_checkout",{p_shipping_address:shippingAddress,p_idempotency_key:key});
+ const {data,error}=buyNowProductId
+  ? await supabase.rpc("plant_market_buy_now_checkout",{p_product_id:buyNowProductId,p_quantity:buyNowQuantity,p_shipping_address:shippingAddress,p_idempotency_key:key})
+  : await supabase.rpc("plant_market_finalize_checkout",{p_shipping_address:shippingAddress,p_idempotency_key:key});
  if(error){console.error("Plant Market checkout failed",{code:error.code||"unknown"});return NextResponse.json({error:"Plant Market checkout সম্পন্ন হয়নি। কার্ট ও স্টক যাচাই করে আবার চেষ্টা করুন।"},{status:409});}
  return NextResponse.json({checkoutId:data.checkoutId,orderIds:data.orderIds,total:Number(data.total),replayed:Boolean(data.replayed)});
 }
