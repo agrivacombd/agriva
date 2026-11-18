@@ -52,7 +52,7 @@ jobs:
                   sock.bind(("127.0.0.1", 0))
                   sockets.append(sock)
                   port = sock.getsockname()[1]
-                  config = re.sub(r"(?m)(= )" + str(old) + r"$", r"\\g<1>" + str(port), config)
+                  config = config.replace("= " + str(old) + "\n", "= " + str(port) + "\n")
               path.write_text(config)
           finally:
               for sock in sockets:
