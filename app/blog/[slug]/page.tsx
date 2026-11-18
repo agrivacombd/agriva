@@ -115,23 +115,23 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
   const encodeJson = (value: object) => JSON.stringify(value).replace(/</g, "\\u003c");
 
   return (
-    <main className="min-h-screen bg-[#f8faf7] text-slate-900">
+    <main className="min-h-screen min-w-0 overflow-x-clip bg-[#f8faf7] text-slate-900">
       <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(breadcrumbJsonLd) }} />
-      <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 sm:pt-12 lg:px-8">
-        <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm font-semibold text-emerald-800">
+      <div className="mx-auto w-full min-w-0 max-w-7xl px-3 pb-12 pt-6 min-[380px]:px-4 sm:px-6 sm:pb-16 sm:pt-12 lg:px-8">
+        <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-emerald-800 sm:text-sm">
           <Link href="/" className="hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">হোম</Link>
           <span aria-hidden="true" className="text-slate-400">/</span>
           <Link href="/blog" className="hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">ব্লগ</Link>
           <span aria-hidden="true" className="text-slate-400">/</span>
-          <span aria-current="page" className="max-w-[18rem] truncate text-slate-500 sm:max-w-lg">{article.title}</span>
+          <span aria-current="page" className="min-w-0 max-w-[min(65vw,18rem)] truncate text-slate-500 sm:max-w-lg">{article.title}</span>
         </nav>
         <article>
-          <header className="mx-auto mt-9 max-w-4xl text-center sm:mt-12">
-            <p className="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">{article.primary_keyword || "কৃষি প্রবন্ধ"} · AGRIVA JOURNAL</p>
-            <h1 className="mx-auto mt-4 max-w-4xl text-[1.85rem] font-black leading-[1.45] tracking-tight text-slate-950 sm:text-[2.6rem] lg:text-[3.2rem]">{article.title}</h1>
-            {article.meta_description && <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-slate-600 sm:text-lg sm:leading-9">{article.meta_description}</p>}
+          <header className="mx-auto mt-8 min-w-0 max-w-4xl text-center sm:mt-12">
+            <p className="break-words text-xs font-extrabold uppercase tracking-[.08em] text-emerald-700 sm:tracking-[.18em]">{article.primary_keyword || "কৃষি প্রবন্ধ"} · AGRIVA JOURNAL</p>
+            <h1 className="mx-auto mt-4 max-w-4xl break-words text-[clamp(1.55rem,6vw,2.2rem)] font-black leading-[1.48] tracking-tight text-slate-950 sm:text-[2.6rem] lg:text-[3.2rem]">{article.title}</h1>
+            {article.meta_description && <p className="mx-auto mt-5 max-w-3xl break-words text-[15px] leading-7 text-slate-600 sm:text-lg sm:leading-9">{article.meta_description}</p>}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-slate-500">
               <span className="font-extrabold text-emerald-800">AGRIVA সম্পাদকীয়</span>
               <span aria-hidden="true">·</span><time dateTime={article.created_at}>{publishedDate}</time>
@@ -141,34 +141,34 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </header>
 
           {article.hero_image_url && (
-            <figure className="mx-auto mt-9 w-full max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white p-2 shadow-sm sm:p-4">
+            <figure className="mx-auto mt-7 w-full min-w-0 max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-sm min-[380px]:p-2 sm:mt-9 sm:rounded-3xl sm:p-4">
               {/* Preserve the original full hero artwork, including text and logo near the edges. */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={article.hero_image_url} alt={article.hero_image_alt || article.title} loading="eager" decoding="async" className="mx-auto block h-auto max-h-[760px] w-full max-w-full object-contain" />
+              <img src={article.hero_image_url} alt={article.hero_image_alt || article.title} loading="eager" decoding="async" className="mx-auto block h-auto w-full max-w-full object-contain" />
               {article.hero_image_alt && <figcaption className="px-3 pb-1 pt-3 text-center text-xs leading-6 text-slate-500">{article.hero_image_alt}</figcaption>}
             </figure>
           )}
 
-          <div className="mx-auto mt-10 grid max-w-6xl items-start gap-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
+          <div className="mx-auto mt-7 grid w-full min-w-0 max-w-6xl grid-cols-1 items-start gap-6 sm:mt-10 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
             <div className="min-w-0">
               {toc.length > 0 && (
-                <details className="mb-6 rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm lg:hidden">
+                <details className="mb-5 min-w-0 overflow-hidden rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-5 lg:hidden">
                   <summary className="cursor-pointer text-base font-extrabold text-emerald-900">এই লেখায় যা আছে</summary>
                   <nav aria-label="লেখার সূচিপত্র" className="mt-4">
-                    <ol className="space-y-3">{toc.map(item => <li key={item.id} className={item.level === "h3" ? "pl-4" : ""}><a className="text-sm leading-6 text-slate-700 underline-offset-4 hover:text-emerald-800 hover:underline" href={`#${item.id}`}>{item.text}</a></li>)}</ol>
+                    <ol className="min-w-0 space-y-3">{toc.map(item => <li key={item.id} className={item.level === "h3" ? "pl-4" : ""}><a className="block break-words py-1 text-sm leading-6 text-slate-700 underline-offset-4 hover:text-emerald-800 hover:underline" href={`#${item.id}`}>{item.text}</a></li>)}</ol>
                   </nav>
                 </details>
               )}
               <ReadingPreferences>
-                <section aria-label="প্রবন্ধের মূল লেখা" className="rounded-3xl border border-slate-200/80 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-10 lg:px-10">
+                <section aria-label="প্রবন্ধের মূল লেখা" className="min-w-0 overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-3 py-6 shadow-sm min-[380px]:px-4 sm:rounded-3xl sm:px-8 sm:py-10 lg:px-10">
                   <ArticleMarkdown body={body} headingLinks />
                 </section>
               </ReadingPreferences>
-              <div className="mt-7 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="mt-7 flex min-w-0 flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-5">
                 <ShareArticle title={article.title} />
                 <Link href="/blog" className="inline-flex min-h-11 items-center text-sm font-extrabold text-emerald-800 hover:underline">← আরও প্রবন্ধ পড়ুন</Link>
               </div>
-              <aside className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-7 text-amber-950">
+              <aside className="mt-6 break-words rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-950 sm:px-5">
                 কৃষি পরামর্শ মাটি, জাত, মৌসুম ও স্থানীয় আবহাওয়ার ওপর নির্ভর করে। মাঠে প্রয়োগের আগে স্থানীয় কৃষি কর্মকর্তার পরামর্শ নিন।
               </aside>
             </div>
