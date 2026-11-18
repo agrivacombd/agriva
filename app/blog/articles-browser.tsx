@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { BlogFeedEntry } from "@/lib/learn/blog-feed";
-import {clearReader,enableReader,readReaderState,recommendationScore,READER_EVENT,READER_KEY,type ReaderState} from "@/lib/blog/reader-interests";
+import {BOOKMARK_KEY,clearReader,enableReader,readBookmarks,readReaderState,recommendationScore,READER_EVENT,READER_KEY,toggleBookmark,type ReaderState} from "@/lib/blog/reader-interests";
 
 const PAGE_SIZE = 9;
 const sourceFilters = [
@@ -26,7 +26,7 @@ function ArticleArtwork({ article, priority = false }: { article: BlogFeedEntry;
   );
 }
 
-function ArticleCard({ article, read = false }: { article: BlogFeedEntry; read?: boolean }) {
+function ArticleCard({ article, read = false, saved = false, onSave }: { article: BlogFeedEntry; read?: boolean; saved?:boolean; onSave:()=>void }) {
   return (
     <article className="group flex h-full min-w-0 flex-col rounded-[1.5rem] border border-slate-200/80 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-lg focus-within:ring-2 focus-within:ring-emerald-600">
       <Link href={article.href} aria-label={article.title} className="block rounded-2xl focus-visible:outline-none">
@@ -46,6 +46,7 @@ function ArticleCard({ article, read = false }: { article: BlogFeedEntry; read?:
           <span>{article.source === "learn" ? article.readTime + " পড়া" : article.date}</span>
           <Link href={article.href} className="rounded-sm text-sm font-bold text-emerald-800 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">পড়ুন <span aria-hidden="true">→</span></Link>
         </div>
+        <button type="button" aria-pressed={saved} onClick={onSave} className="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3 text-xs font-bold text-emerald-800 hover:border-emerald-400 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700">{saved?"✓ পড়ার তালিকায় আছে":"☆ পরে পড়ার জন্য রাখুন"}</button>
       </div>
     </article>
   );
@@ -58,11 +59,15 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
   const [sort, setSort] = useState<"latest" | "title" | "for-you">("latest");
   const [reader, setReader] = useState<ReaderState>({enabled:false,visits:[]});
   const [hideRead, setHideRead] = useState(false);
+  const [savedOnly,setSavedOnly]=useState(false);
+  const [savedHrefs,setSavedHrefs]=useState<string[]>([]);
+  const savedSet=useMemo(()=>new Set(savedHrefs),[savedHrefs]);
+  const onSave=(href:string)=>{toggleBookmark(href);};
   useEffect(()=>{
-    const refresh=()=>setReader(readReaderState());
+    const refresh=()=>{setReader(readReaderState());setSavedHrefs(readBookmarks());};
     refresh();
     window.addEventListener(READER_EVENT,refresh);
-    const onStorage=(event:StorageEvent)=>{if(event.key===READER_KEY || event.key===null)refresh();};
+    const onStorage=(event:StorageEvent)=>{if(event.key===READER_KEY || event.key===BOOKMARK_KEY || event.key===null)refresh();};
     window.addEventListener("storage",onStorage);
     return ()=>{window.removeEventListener(READER_EVENT,refresh);window.removeEventListener("storage",onStorage);};
   },[]);
@@ -77,7 +82,7 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
       const sourceMatch = source === "all" || article.source === source;
       const categoryMatch = category === "all" || article.category === category;
       const text = `${article.title} ${article.excerpt} ${article.category}`.toLocaleLowerCase();
-      return sourceMatch && categoryMatch && (!search || text.includes(search)) && !(reader.enabled && hideRead && readHrefs.has(article.href));
+      return sourceMatch && categoryMatch && (!search || text.includes(search)) && !(reader.enabled && hideRead && readHrefs.has(article.href)) && (!savedOnly || savedSet.has(article.href));
     });
     if(sort==="title")return [...matching].sort((a,b)=>a.title.localeCompare(b.title,"bn"));
     if(sort==="for-you" && reader.enabled && reader.visits.length){
@@ -85,10 +90,10 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
         .sort((a,b)=>b.score-a.score || a.index-b.index).map(item=>item.article);
     }
     return matching;
-  }, [articles, source, category, query, sort, reader, hideRead, readHrefs]);
+  }, [articles, source, category, query, sort, reader, hideRead, readHrefs, savedOnly, savedSet]);
 
   const resetPage = () => setVisibleCount(PAGE_SIZE);
-  const isDefaultView = !query.trim() && source === "all" && category === "all" && (sort === "latest" || sort === "for-you");
+  const isDefaultView = !query.trim() && source === "all" && category === "all" && !savedOnly && (sort === "latest" || sort === "for-you");
   const featured = (sort==="for-you" && reader.enabled && reader.visits.length) || (reader.enabled && hideRead)
     ? filteredArticles[0]
     : featuredDefault;
@@ -163,6 +168,10 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
               {reader.visits.length>0 && <button type="button" onClick={()=>{clearReader();enableReader();setHideRead(false);resetPage();}} className="min-h-10 text-xs font-bold text-emerald-900 underline underline-offset-4">শুধু পড়ার ইতিহাস মুছুন</button>}
             </div>}
           </section>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button type="button" aria-pressed={savedOnly} onClick={()=>{setSavedOnly(value=>!value);resetPage();}} className={"min-h-11 rounded-xl px-4 py-2 text-sm font-extrabold focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-700 "+(savedOnly?"bg-emerald-800 text-white":"border border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-50")}>☆ আমার পড়ার তালিকা ({savedHrefs.length.toLocaleString("bn-BD")})</button>
+            <span className="text-xs text-slate-500">সংরক্ষিত লেখাগুলো শুধু এই ব্রাউজারেই থাকবে।</span>
+          </div>
           <div aria-label="লেখার ধরন" className="mt-5 flex flex-wrap gap-2">
             {sourceFilters.map(option => <button key={option.value} type="button" aria-pressed={source === option.value} onClick={() => { setSource(option.value); resetPage(); }} className={`min-h-11 rounded-full px-4 py-2 text-sm font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 ${source === option.value ? "bg-emerald-800 text-white" : "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}>{option.label}</button>)}
           </div>
@@ -177,7 +186,7 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
         <p className="mt-5 text-sm text-slate-500" role="status" aria-live="polite">{filteredArticles.length.toLocaleString("bn-BD")}টি লেখা পাওয়া গেছে</p>
         {filteredArticles.length ? (
           <>
-            {visibleArticles.length > 0 && <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{visibleArticles.map(article => <ArticleCard article={article} read={reader.enabled && readHrefs.has(article.href)} key={article.href} />)}</div>}
+            {visibleArticles.length > 0 && <div className="mt-4 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{visibleArticles.map(article => <ArticleCard article={article} read={reader.enabled && readHrefs.has(article.href)} saved={savedSet.has(article.href)} onSave={()=>onSave(article.href)} key={article.href} />)}</div>}
             {visibleCount < listArticles.length && <div className="mt-9 text-center"><button type="button" onClick={() => setVisibleCount(count => count + PAGE_SIZE)} className="min-h-12 rounded-xl border border-emerald-700 bg-white px-6 py-3 text-sm font-extrabold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">আরও লেখা দেখুন</button></div>}
           </>
         ) : (
