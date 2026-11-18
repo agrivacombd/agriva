@@ -7,6 +7,7 @@ import { LEGACY_BLOG_LEARN_REDIRECTS } from "@/lib/learn/blog-feed";
 import { ReadingProgress, ShareArticle } from "../../articles/article-reading-tools";
 import { ReadingPreferences } from "./reading-preferences";
 import ReadingInterestTracker from "../reading-interest-tracker";
+import SaveArticleButton from "../save-article-button";
 
 type CmsArticle = {
   title: string;
@@ -188,6 +189,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
               </ReadingPreferences>
               <div className="mt-7 flex min-w-0 flex-col items-start gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:p-5">
                 <ShareArticle title={article.title} />
+                <SaveArticleButton href={`/blog/${article.slug}`} />
                 <Link href="/blog" className="inline-flex min-h-11 items-center text-sm font-extrabold text-emerald-800 hover:underline">← আরও প্রবন্ধ পড়ুন</Link>
               </div>
               <aside className="mt-6 break-words rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm leading-7 text-amber-950 sm:px-5">
