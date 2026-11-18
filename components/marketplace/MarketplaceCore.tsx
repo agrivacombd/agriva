@@ -322,7 +322,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
-  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name}))], [products]);
+  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:"🌿"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:"🪴"}))], [products]);
   const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
   const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
