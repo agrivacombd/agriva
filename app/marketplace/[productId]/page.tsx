@@ -230,7 +230,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f7f9f7] pb-20 text-[#17351f] sm:pb-0"><ProductClickTracker market="marketplace" productId={product.id} categorySlug={product.category_slug} subcategorySlug={product.subcategory_slug} />
+    <main className="min-h-screen bg-[#f7f9f7] pb-20 text-[#17351f] sm:pb-0"><ProductClickTracker market="marketplace" productId={product.id} categorySlug={product.category_slug} subcategorySlug={product.subcategory_slug} productPrice={hasRealPrice ? Number(product.price) : null} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }} />
 
