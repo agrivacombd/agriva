@@ -35,16 +35,31 @@ async function getCmsArticle(slug: string): Promise<CmsArticle | null> {
   return error || !data ? null : data as CmsArticle;
 }
 
-async function getRelatedArticles(article: CmsArticle) {
-  const supabase = publicClient();
-  if (!supabase) return [];
-  let query = supabase.from("content_drafts")
-    .select("slug,title,meta_description,hero_image_url")
-    .eq("status", "published").eq("content_type", "article").is("deleted_at", null)
-    .neq("slug", article.slug).order("created_at", { ascending: false }).limit(3);
-  if (article.primary_keyword) query = query.eq("primary_keyword", article.primary_keyword);
-  const { data, error } = await query;
-  return error ? [] : (data || []).filter(item => item.slug);
+type RecommendedArticle = {slug:string;title:string;meta_description:string|null;hero_image_url:string|null;primary_keyword:string|null;created_at:string};
+const STOP_WORDS = new Set(["এবং","কিভাবে","কীভাবে","করে","করার","একটি","জন্য","থেকে","সঙ্গে","সম্পূর্ণ","বাংলাদেশ","বাংলাদেশে","গাইড","guide","bangladesh","the","and","with","for","কৃষি","চাষ","পরিচর্যা","ব্যবস্থাপনা"]);
+function articleTopicWords(value: string): Set<string> {
+  return new Set((value.toLocaleLowerCase().match(/[\\p{L}\\p{N}]+/gu)||[])
+    .filter(word=>word.length>=3&&!STOP_WORDS.has(word)));
+}
+async function getRelatedArticles(article:CmsArticle):Promise<{items:RecommendedArticle[];related:boolean}> {
+  const supabase=publicClient();
+  if(!supabase)return {items:[],related:false};
+  const {data,error}=await supabase.from("content_drafts")
+    .select("slug,title,meta_description,hero_image_url,primary_keyword,created_at")
+    .eq("status","published").eq("content_type","article").is("deleted_at",null)
+    .neq("slug",article.slug).order("created_at",{ascending:false}).limit(100);
+  if(error||!data)return {items:[],related:false};
+  const entries=(data as RecommendedArticle[]).filter(item=>item.slug&&item.title);
+  const titleWords=articleTopicWords(article.title),keywordWords=articleTopicWords(article.primary_keyword||"");
+  const matches=entries.map((item,index)=>{
+    const candidate=articleTopicWords(item.title+" "+(item.primary_keyword||""));
+    const overlaps=[...titleWords].filter(word=>candidate.has(word)).length;
+    const keywordOverlaps=[...keywordWords].filter(word=>candidate.has(word)).length;
+    const exact=!!(article.primary_keyword&&item.primary_keyword&&article.primary_keyword.trim().toLocaleLowerCase()===item.primary_keyword.trim().toLocaleLowerCase());
+    return {item,index,score:overlaps*3+keywordOverlaps*4+(exact?10:0)};
+  }).filter(entry=>entry.score>0)
+    .sort((a,b)=>b.score-a.score||a.index-b.index).slice(0,6).map(entry=>entry.item);
+  return matches.length?{items:matches,related:true}:{items:entries.slice(0,6),related:false};
 }
 
 export const dynamic = "force-dynamic";
@@ -190,14 +205,14 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           </div>
         </article>
 
-        {related.length > 0 && (
+        {related.items.length > 0 && (
           <section aria-labelledby="related-articles" className="mx-auto mt-16 max-w-6xl">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-              <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">KEEP READING</p><h2 id="related-articles" className="mt-2 text-2xl font-black sm:text-3xl">আরও পড়তে পারেন</h2></div>
+              <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">KEEP READING</p><h2 id="related-articles" className="mt-2 text-2xl font-black sm:text-3xl">{related.related ? "একই বিষয়ে আরও পড়ুন" : "সম্প্রতি প্রকাশিত আরও প্রবন্ধ"}</h2></div>
               <Link href="/blog" className="text-sm font-bold text-emerald-800 hover:underline">সব প্রবন্ধ →</Link>
             </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map(item => (
+            <div className="grid min-w-0 grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {related.items.map(item => (
                 <article key={item.slug} className="group flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md">
                   <Link href={`/blog/${item.slug}`} aria-label={item.title} className="flex aspect-[16/10] items-center justify-center overflow-hidden rounded-xl bg-emerald-50">
                     {item.hero_image_url ? (
