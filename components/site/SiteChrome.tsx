@@ -233,9 +233,9 @@ export default function SiteChrome() {
     <>
       <div aria-hidden="true" className="fixed left-0 top-0 z-[80] h-1 bg-emerald-600 transition-[width] duration-100" style={{ width: progress + "%" }} />
       <header className="sticky top-0 z-[70] border-b border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90">
-        <div className="mx-auto flex min-h-16 max-w-7xl min-w-0 items-center gap-1.5 px-3 min-[380px]:gap-2 min-[380px]:px-4 sm:min-h-[68px] sm:gap-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex min-h-16 max-w-7xl min-w-0 items-center gap-1 px-2.5 min-[380px]:gap-2 min-[380px]:px-4 sm:min-h-[68px] sm:gap-3 sm:px-6 lg:px-8">
           <Link href={english ? "/en" : "/"} className="flex shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" aria-label="AGRIVA home">
-            <Image src="/branding/agriva-agriculture-brand-logo.svg" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-10 w-32 object-contain object-left min-[380px]:w-36 sm:w-48" />
+            <Image src="/branding/agriva-agriculture-brand-logo.svg" alt="AGRIVA — কৃষি পণ্য, বীজ ও কৃষি তথ্যের ডিজিটাল প্ল্যাটফর্ম" width={640} height={158} priority sizes="(max-width: 640px) 152px, 192px" className="h-10 w-28 object-contain object-left min-[360px]:w-32 min-[420px]:w-36 sm:w-44 xl:w-48" />
           </Link>
 
           <div className="hidden min-w-0 flex-1 xl:block xl:max-w-xl xl:mx-5">
@@ -249,7 +249,7 @@ export default function SiteChrome() {
               <ChevronDown size={13} className="hidden min-[480px]:block" aria-hidden="true" />
             </Link>
 
-            <div className="hidden items-center gap-2 lg:flex">
+            <div className="hidden items-center gap-2 xl:flex">
               {authReady && (signedIn ? (
                 <div className="relative" ref={accountRef}>
                   <button type="button" onClick={() => setAccountOpen((open) => !open)} aria-expanded={accountOpen} aria-haspopup="menu" aria-controls="agriva-account-menu" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 px-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
@@ -271,11 +271,11 @@ export default function SiteChrome() {
               ))}
             </div>
 
-            <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 lg:inline-flex">
+            <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 xl:inline-flex">
               <Sprout size={16} aria-hidden="true" />{english ? "Sell your harvest" : "বিক্রি শুরু করুন"}
             </Link>
 
-            {authReady && <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden" aria-label={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা অ্যাকাউন্ট খুলুন")} title={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা নিবন্ধন")}><UserRound size={19} aria-hidden="true" /></Link>}
+            {authReady && <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 xl:hidden" aria-label={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা অ্যাকাউন্ট খুলুন")} title={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা নিবন্ধন")}><UserRound size={19} aria-hidden="true" /></Link>}
 
             <HeaderCartLink english={english} />
 
@@ -330,16 +330,16 @@ export default function SiteChrome() {
               </div>
             </div>
 
-            <div className="border-t border-slate-100 bg-slate-50 p-4">
-              <div className="flex items-center justify-between gap-3">
+            <div className="border-t border-slate-100 bg-slate-50 p-3 sm:p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Link href={languageTarget} lang={english ? "bn" : "en"} onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 text-sm font-bold text-emerald-900"><Globe2 size={16} />{english ? "বাংলা" : "English"}</Link>
                 {authReady && (signedIn ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
                     <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
                     <button type="button" onClick={signOut} className="min-h-10 rounded-xl px-2 text-sm font-semibold text-slate-600 hover:bg-white">{english ? "Log out" : "লগআউট"}</button>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-end gap-1 sm:gap-2">
                     <Link href="/login" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center gap-1 rounded-xl px-2 text-sm font-bold text-emerald-800"><LogIn size={16} />{english ? "Log in" : "লগইন"}</Link>
                     <Link href="/signup" onClick={() => setMenuOpen(false)} className="inline-flex min-h-10 items-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white">{english ? "Sign up" : "নিবন্ধন"}</Link>
                   </div>
