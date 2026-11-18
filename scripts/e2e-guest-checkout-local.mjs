@@ -130,7 +130,7 @@ const marketCheckout=await a.rpc("finalize_marketplace_cart_checkout",{
   p_shipping_address:marketShipping,p_idempotency_key:marketKey,
 });
 assert.ifError(marketCheckout.error);
-assert.equal(Number(marketCheckout.data.total),200);
+assert.equal(Number(marketCheckout.data.total),270,"Packet-only Marketplace COD includes the ৳70 delivery fee");
 assert.equal(marketCheckout.data.idempotentReplay,false);
 const marketRepeat=await a.rpc("finalize_marketplace_cart_checkout",{
   p_shipping_address:marketShipping,p_idempotency_key:marketKey,
