@@ -98,10 +98,10 @@ export function ArticleMarkdown({body}:{body:string}){
           <tbody>{(block.rows||[]).map((row,j)=><tr key={j} className="border-b border-slate-100 last:border-b-0 even:bg-slate-50">{row.map((cell,k)=><td key={k} className="px-4 py-3 align-top">{inline(cell)}</td>)}</tr>)}</tbody>
         </table>
       </div>;
-      if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 rounded-2xl border border-slate-200 bg-white p-2 sm:p-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" style={{width:"100%",height:"auto",maxHeight:"none",objectFit:"contain"}} className="mx-auto block max-w-full"/>
-        <figcaption className="border-t border-slate-100 px-4 py-2 text-center text-xs leading-5 text-slate-600">{block.image.alt}</figcaption>
+        <figcaption className="mt-2 border-t border-slate-100 px-4 py-2 text-center text-xs leading-5 text-slate-600">{block.image.alt}</figcaption>
       </figure>;
       return <p key={i}>{inline(block.lines[0])}</p>;
     })}
