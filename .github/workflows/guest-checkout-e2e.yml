@@ -27,6 +27,15 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 3.2.0
+      - name: Resolve legacy duplicate migration versions inside disposable CI checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The source repository contains two historical migrations with the
+          # same version. Rename only the ephemeral runner copy, never alter
+          # production migration history or an existing database.
+          mv supabase/migrations/20261105180000_split_plant_market_public_read_policy.sql \
+             supabase/migrations/20261105180001_split_plant_market_public_read_policy.sql
       - name: Start isolated local Auth and Postgres, applying repository migrations
         run: supabase start
       - name: Capture local-only test credentials
