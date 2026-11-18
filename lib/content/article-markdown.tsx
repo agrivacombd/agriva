@@ -84,11 +84,11 @@ export function parseArticleMarkdown(body:string):ArticleBlock[]{
   }
   flush();return blocks;
 }
-export function ArticleMarkdown({body}:{body:string}){
+export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLinks?:boolean}){
   return <div className="space-y-5 break-words text-[15px] leading-[1.9] text-slate-700 sm:text-[16px] sm:leading-[1.95]">
     {parseArticleMarkdown(body).map((block,i)=>{
-      if(block.kind==="h2")return <h2 key={i} className="scroll-mt-24 border-b border-slate-100 pb-3 pt-6 text-[1.3rem] font-bold leading-[1.5] text-[#173b2d] sm:text-[1.55rem]">{inline(block.lines[0])}</h2>;
-      if(block.kind==="h3")return <h3 key={i} className="scroll-mt-24 pt-3 text-lg font-bold leading-[1.5] text-[#173b2d]">{inline(block.lines[0])}</h3>;
+      if(block.kind==="h2")return <h2 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 border-b border-slate-100 pb-3 pt-6 text-[1.3rem] font-bold leading-[1.5] text-[#173b2d] sm:text-[1.55rem]">{inline(block.lines[0])}</h2>;
+      if(block.kind==="h3")return <h3 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 pt-3 text-lg font-bold leading-[1.5] text-[#173b2d]">{inline(block.lines[0])}</h3>;
       if(block.kind==="ul")return <ul key={i} className="list-disc space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ul>;
       if(block.kind==="ol")return <ol key={i} className="list-decimal space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ol>;
       if(block.kind==="quote")return <blockquote key={i} className="border-l-4 border-emerald-300 bg-emerald-50 px-4 py-3 italic">{inline(block.lines[0])}</blockquote>;
