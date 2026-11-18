@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Globe2,
   LogIn,
+  UserRound,
   Menu,
   Search,
   Sprout,
@@ -106,6 +107,8 @@ export default function SiteChrome() {
   const [progress, setProgress] = useState(0);
   const [signedIn, setSignedIn] = useState(false);
   const [authReady, setAuthReady] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
 
@@ -143,6 +146,7 @@ export default function SiteChrome() {
       if (error) return;
       setSignedIn(false);
       setMenuOpen(false);
+      setAccountOpen(false);
       router.push(english ? "/en" : "/");
       router.refresh();
     } catch {
@@ -153,6 +157,7 @@ export default function SiteChrome() {
   useEffect(() => {
     document.documentElement.lang = english ? "en" : "bn";
     setMenuOpen(false);
+    setAccountOpen(false);
   }, [english, pathname]);
 
   useEffect(() => {
@@ -204,6 +209,22 @@ export default function SiteChrome() {
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (!accountOpen) return;
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!accountRef.current?.contains(event.target as Node)) setAccountOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setAccountOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [accountOpen]);
+
   if (privateRoute) return null;
 
   const languageTarget = english ? (enToBn[pathname] || "/") : (bnToEn[pathname] || "/en");
@@ -230,18 +251,31 @@ export default function SiteChrome() {
 
             <div className="hidden items-center gap-2 lg:flex">
               {authReady && (signedIn ? (
-                <>
-                  <Link href="/dashboard" className="inline-flex min-h-10 items-center rounded-xl px-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
-                  <button type="button" onClick={signOut} className="min-h-10 rounded-xl px-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100">{english ? "Log out" : "লগআউট"}</button>
-                </>
+                <div className="relative" ref={accountRef}>
+                  <button type="button" onClick={() => setAccountOpen((open) => !open)} aria-expanded={accountOpen} aria-haspopup="menu" aria-controls="agriva-account-menu" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 px-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                    <UserRound size={18} aria-hidden="true" />{english ? "My account" : "আমার অ্যাকাউন্ট"}<ChevronDown size={14} aria-hidden="true" />
+                  </button>
+                  {accountOpen && <div id="agriva-account-menu" className="absolute right-0 top-full z-[80] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
+                    <Link href="/dashboard" onClick={() => setAccountOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{english ? "Dashboard" : "ড্যাশবোর্ড"}</Link>
+                    <Link href="/profile" onClick={() => setAccountOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{english ? "Profile" : "প্রোফাইল"}</Link>
+                    <Link href="/orders" onClick={() => setAccountOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-800 hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{english ? "My orders" : "আমার অর্ডার"}</Link>
+                    <div className="my-1 border-t border-slate-100" />
+                    <button type="button" onClick={() => { setAccountOpen(false); void signOut(); }} className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">{english ? "Log out" : "লগআউট"}</button>
+                  </div>}
+                </div>
               ) : (
-                <Link href="/login" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50"><LogIn size={16} />{english ? "Log in" : "লগইন"}</Link>
+                <>
+                  <Link href="/login" className="inline-flex min-h-10 items-center gap-1 rounded-xl px-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"><LogIn size={16} aria-hidden="true" />{english ? "Log in" : "লগইন"}</Link>
+                  <Link href="/signup" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-emerald-800 px-3 text-sm font-bold text-white transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2">{english ? "Sign up" : "অ্যাকাউন্ট খুলুন"}</Link>
+                </>
               ))}
             </div>
 
             <Link href="/sell-harvest" className="hidden min-h-10 items-center justify-center gap-1.5 rounded-xl bg-emerald-800 px-3.5 py-2.5 text-sm font-extrabold text-white shadow-sm transition hover:bg-emerald-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2 lg:inline-flex">
               <Sprout size={16} aria-hidden="true" />{english ? "Sell your harvest" : "বিক্রি শুরু করুন"}
             </Link>
+
+            {authReady && <Link href={signedIn ? "/dashboard" : "/login"} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-emerald-200 text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden" aria-label={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা অ্যাকাউন্ট খুলুন")} title={signedIn ? (english ? "My account" : "আমার অ্যাকাউন্ট") : (english ? "Log in or sign up" : "লগইন বা নিবন্ধন")}><UserRound size={19} aria-hidden="true" /></Link>}
 
             <HeaderCartLink english={english} />
 
