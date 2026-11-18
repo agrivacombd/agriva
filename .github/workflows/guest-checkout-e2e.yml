@@ -1,0 +1,42 @@
+name: Guest Checkout Local Database E2E
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - "scripts/e2e-guest-checkout-local.mjs"
+      - "lib/marketplace/guest-checkout-session.ts"
+      - ".github/workflows/guest-checkout-e2e.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guest-database-e2e:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.number == 350
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start isolated local Auth and Postgres, applying repository migrations
+        run: supabase start
+      - name: Capture local-only test credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase status -o env > /tmp/agriva-supabase-local.env
+          chmod 600 /tmp/agriva-supabase-local.env
+      - name: Execute guest buyer auth, role, RLS and negative checkout E2E
+        run: node scripts/e2e-guest-checkout-local.mjs
+      - name: Stop local test stack
+        if: always()
+        run: supabase stop || true
