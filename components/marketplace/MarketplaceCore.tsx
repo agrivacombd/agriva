@@ -99,7 +99,7 @@ function ProductCard({
         </div>
       </div>
       <div className="flex flex-1 flex-col px-3 pb-3 pt-4 sm:px-4 sm:pb-4">
-        <p className="truncate text-[10px] font-semibold text-emerald-700">{getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug)?.category.name || product.category || "কৃষি পণ্য"}</p>
+        <p className="truncate text-[10px] font-semibold text-emerald-700">{(productHrefPrefix === "/plant-market" ? product.category : getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug)?.category.name) || product.category || (productHrefPrefix === "/plant-market" ? "গাছ ও চারা" : "কৃষি পণ্য")}</p>
         <h3 className="mt-1.5 min-h-12 break-words text-sm font-black leading-6 text-slate-900 sm:text-base">
           <Link href={detailHref} onClick={recordListingClick} className="line-clamp-2 hover:text-emerald-800 focus-visible:outline-none focus-visible:underline">{product.name}</Link>
         </h3>
@@ -326,7 +326,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
   const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
   const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
-    count: products.filter((product) => isPlantMarket ? (item.slug === "all" || product.category?.trim() === item.slug) : productMatchesCategory(product, item.slug)).length,
+    count: products.filter((product) => isPlantMarket ? (item.slug === "all" || normalize(product.category) === normalize(item.slug)) : productMatchesCategory(product, item.slug)).length,
   })).filter((item) => !availableCategoriesOnly || item.count > 0), [products, availableCategoriesOnly, catalogueCategories, isPlantMarket]);
 
   const visible = useMemo(() => {
@@ -334,7 +334,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
     const filtered = products.filter((product) => {
       const matchesSearch = !search || [product.name, product.category, product.description, product.unit]
         .some((value) => normalize(value).includes(search));
-      return matchesSearch && (isPlantMarket ? (category === "all" || product.category?.trim() === category) : productMatchesCategory(product, category))
+      return matchesSearch && (isPlantMarket ? (category === "all" || normalize(product.category) === normalize(category)) : productMatchesCategory(product, category))
         && (!inStockOnly || Number(product.stock || 0) > 0)
         && (!wishlistOnly || wishlist.includes(product.id));
     });
