@@ -92,26 +92,30 @@ export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLi
       if(block.kind==="ul")return <ul key={i} className="list-disc space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ul>;
       if(block.kind==="ol")return <ol key={i} className="list-decimal space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ol>;
       if(block.kind==="quote")return <blockquote key={i} className="border-l-4 border-emerald-300 bg-emerald-50 px-4 py-3 italic">{inline(block.lines[0])}</blockquote>;
-      if(block.kind==="table")return <div key={i} className="my-6 w-full min-w-0 max-w-full">
-        {/* On narrow phones, a fixed-minimum-width table hides important columns.
-            Present every row as a labelled, vertically stacked record instead. */}
-        <div className="space-y-3 sm:hidden" role="group" aria-label="নিবন্ধের তথ্য সারণি">
-          {(block.rows||[]).map((row,j)=><dl key={j} className="min-w-0 overflow-hidden rounded-xl border border-emerald-100 bg-white shadow-sm">
-            <div className="border-b border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-900">সারি {(j+1).toLocaleString("bn-BD")}</div>
-            {row.map((cell,k)=><div key={k} className="grid min-w-0 gap-1 border-b border-slate-100 px-3 py-3 last:border-b-0">
-              <dt className="break-words text-xs font-extrabold leading-5 text-emerald-900">{inline((block.headers||[])[k]||"তথ্য")}</dt>
-              <dd className="min-w-0 break-words text-sm leading-7 text-slate-700 [overflow-wrap:anywhere]">{inline(cell)}</dd>
-            </div>)}
-          </dl>)}
-        </div>
-        {/* Preserve the real semantic table on tablet/desktop; very wide tables may scroll within the table region. */}
-        <div className="hidden w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain rounded-xl border border-emerald-100 sm:block" role="region" aria-label="নিবন্ধের তথ্য সারণি" tabIndex={0}>
-          <table className="w-full min-w-[430px] border-collapse text-left text-sm leading-6">
-            <thead className="bg-emerald-50 text-emerald-950"><tr>{(block.headers||[]).map((h,j)=><th key={j} scope="col" className="border-b border-emerald-100 px-4 py-3 font-black">{inline(h)}</th>)}</tr></thead>
-            <tbody>{(block.rows||[]).map((row,j)=><tr key={j} className="border-b border-slate-100 last:border-b-0 even:bg-slate-50">{row.map((cell,k)=><td key={k} className="break-words px-4 py-3 align-top [overflow-wrap:anywhere]">{inline(cell)}</td>)}</tr>)}</tbody>
-          </table>
-        </div>
-      </div>;
+      if(block.kind==="table"){
+        const headers=block.headers||[];
+        const rows=block.rows||[];
+        const minWidth=Math.max(320,headers.length*164);
+        const hintId=`article-table-hint-${i}`;
+        return <figure key={i} className="my-7 min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <figcaption className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:px-5">
+            <span className="text-sm font-extrabold text-slate-800">তথ্য সারণি</span>
+            <span id={hintId} className="text-xs leading-5 text-slate-600">আরও কলাম দেখতে ডানে-বামে সরান ↔</span>
+          </figcaption>
+          {/* A single semantic table at every breakpoint: scrolling is isolated to this region.
+              Keep the first column visible while wide tables are scrolled on small screens. */}
+          <div className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain scroll-smooth focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-700" role="region" aria-label="নিবন্ধের তথ্য সারণি" aria-describedby={hintId} tabIndex={0}>
+            <table className="w-full border-separate border-spacing-0 text-left text-[14px] leading-6 sm:text-[15px] lg:text-base 2xl:text-lg 2xl:leading-8" style={{minWidth}}>
+              <thead className="bg-emerald-50 text-emerald-950">
+                <tr>{headers.map((h,j)=><th key={j} scope="col" className={`min-w-[138px] max-w-[280px] break-words border-b border-r border-emerald-100 px-3 py-3 align-top font-extrabold last:border-r-0 sm:min-w-[164px] sm:px-4 sm:py-4 2xl:px-5 ${j===0?"sticky left-0 z-20 bg-emerald-50 shadow-[2px_0_4px_-3px_rgba(15,23,42,0.45)]":""}`}>{inline(h)}</th>)}</tr>
+              </thead>
+              <tbody>{rows.map((row,j)=><tr key={j}>
+                {headers.map((_,k)=><td key={k} className={`min-w-[138px] max-w-[360px] break-words border-b border-r border-slate-100 px-3 py-3 align-top text-slate-700 [overflow-wrap:anywhere] last:border-r-0 sm:min-w-[164px] sm:px-4 sm:py-4 2xl:px-5 ${j===rows.length-1?"border-b-0 ":""}${k===0?`sticky left-0 z-10 font-semibold shadow-[2px_0_4px_-3px_rgba(15,23,42,0.45)] ${j%2===0?"bg-white":"bg-slate-50"}`:j%2===0?"bg-white":"bg-slate-50"}`}>{inline(row[k]||"—")}</td>)}
+              </tr>)}</tbody>
+            </table>
+          </div>
+        </figure>;
+      }
       if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 min-[380px]:p-2 sm:p-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={block.image.src} alt={block.image.alt} loading="lazy" decoding="async" style={{width:"100%",height:"auto",maxHeight:"none",objectFit:"contain"}} className="mx-auto block h-auto w-full max-w-full object-contain"/>
