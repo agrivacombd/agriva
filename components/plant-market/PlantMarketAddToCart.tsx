@@ -72,7 +72,7 @@ export default function PlantMarketAddToCart({
         <Zap size={18}/>{disabled || !available ? "স্টক শেষ" : busy ? "প্রসেস হচ্ছে…" : "Buy Now"}
       </button>
     </div>
-    <p className="text-xs leading-5 text-slate-500">Buy Now চাপলে পণ্য কার্টে যোগ হয়ে Checkout খুলবে। কার্টে আগে অন্য পণ্য থাকলে সেগুলোও Order Summary-তে থাকবে—নিশ্চিত করার আগে দেখে নিন।</p>
+    <p className="text-xs leading-5 text-slate-500">Buy Now-তে নির্বাচিত পণ্য কার্টে যোগ হয়ে Checkout খুলবে। কার্টে অন্য পণ্য থাকলে নিরাপত্তার জন্য Buy Now বন্ধ থাকবে; সেক্ষেত্রে Cart থেকে অর্ডার করুন।</p>
     <div className="flex flex-wrap items-center justify-between gap-2">
       <Link href="/plant-market/cart" className="text-sm font-bold text-emerald-800 underline underline-offset-4">কার্ট দেখুন</Link>
       <span className="text-xs text-slate-500">Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
