@@ -115,4 +115,40 @@ assert.ifError(productAfter.error);
 assert.equal(Number(productAfter.data.stock),3,"One order only should reduce stock from 5 to 3");
 console.log("PASS: local Plant Market guest COD success, order visibility, idempotent replay, stock decrement and seller verification");
 
-console.log("LIMITATION: Marketplace successful purchase and browser/UI E2E are separate release gates.");
+
+const marketplaceProduct=await service.from("products").insert({
+  farmer_id:seller.id,name:"CI Marketplace guest seed packet",price:100,
+  stock:4,status:"active",marketplace_channel:"marketplace",shipping_class:"packet",
+}).select("id").single();
+assert.ifError(marketplaceProduct.error);
+const marketProductId=marketplaceProduct.data.id;
+const marketAdded=await a.rpc("add_marketplace_cart_item",{p_product_id:marketProductId,p_quantity:2});
+assert.ifError(marketAdded.error);
+const marketShipping={...shipping,address:"Test Road, Ward, Dhanmondi, Dhaka"};
+const marketKey="marketplace-guest-order-0001";
+const marketCheckout=await a.rpc("finalize_marketplace_cart_checkout",{
+  p_shipping_address:marketShipping,p_idempotency_key:marketKey,
+});
+assert.ifError(marketCheckout.error);
+assert.equal(Number(marketCheckout.data.total),200);
+assert.equal(marketCheckout.data.idempotentReplay,false);
+const marketRepeat=await a.rpc("finalize_marketplace_cart_checkout",{
+  p_shipping_address:marketShipping,p_idempotency_key:marketKey,
+});
+assert.ifError(marketRepeat.error);
+assert.equal(marketRepeat.data.idempotentReplay,true);
+assert.equal(marketRepeat.data.checkoutId,marketCheckout.data.checkoutId);
+const marketOrders=await a.from("marketplace_orders").select("id,buyer_id,checkout_id")
+  .eq("checkout_id",marketCheckout.data.checkoutId);
+assert.ifError(marketOrders.error);
+assert.equal(marketOrders.data.length,1);
+const otherMarketOrders=await b.from("marketplace_orders").select("id")
+  .eq("checkout_id",marketCheckout.data.checkoutId);
+assert.ifError(otherMarketOrders.error);
+assert.equal(otherMarketOrders.data.length,0,"Guest B must not read Guest A's Marketplace order");
+const marketStock=await service.from("products").select("stock").eq("id",marketProductId).single();
+assert.ifError(marketStock.error);
+assert.equal(Number(marketStock.data.stock),2,"Marketplace order should decrement stock exactly once");
+console.log("PASS: local Marketplace guest COD checkout, idempotent replay, stock and buyer order isolation");
+
+console.log("LIMITATION: real browser/UI and production Auth configuration are separate release gates.");
