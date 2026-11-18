@@ -252,7 +252,7 @@ export default function SiteChrome() {
             <div className="hidden items-center gap-2 xl:flex">
               {authReady && (signedIn ? (
                 <div className="relative" ref={accountRef}>
-                  <button type="button" onClick={() => setAccountOpen((open) => !open)} aria-expanded={accountOpen} aria-haspopup="menu" aria-controls="agriva-account-menu" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 px-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                  <button type="button" onClick={() => setAccountOpen((open) => !open)} aria-expanded={accountOpen} aria-controls="agriva-account-menu" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-emerald-200 px-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
                     <UserRound size={18} aria-hidden="true" />{english ? "My account" : "আমার অ্যাকাউন্ট"}<ChevronDown size={14} aria-hidden="true" />
                   </button>
                   {accountOpen && <div id="agriva-account-menu" className="absolute right-0 top-full z-[80] mt-2 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
