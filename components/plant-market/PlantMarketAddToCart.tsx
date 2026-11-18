@@ -42,10 +42,8 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
-else {
-        setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
-        router.refresh();
-      }
+setMessage(`${quantity}টি পণ্য Plant Market কার্টে যোগ হয়েছে।`);
+      router.refresh();
     } catch {
       setMessage("সংযোগে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
     } finally {setBusy(false);}
