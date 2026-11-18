@@ -53,7 +53,7 @@ begin
   where (p_market = 'marketplace' and exists (
       select 1 from public.products p
       where p.id = event.product_id and p.status = 'active'
-        and p.marketplace_channel = 'marketplace' and p.deleted_at is null
+        and p.marketplace_channel = 'marketplace'
     ))
     or (p_market = 'plant-market' and exists (
       select 1 from public.plant_market_products p
@@ -115,7 +115,7 @@ as $$
   left join engagement e on e.product_id = p.id
   left join sales s on s.product_id = p.id
   where p.status = 'active' and p.marketplace_channel = 'marketplace'
-    and p.deleted_at is null
+   
     and (p_category_slug is null or p.category_slug = p_category_slug
          or p.category_slug is null)
     and (p_subcategory_slug is null or p.subcategory_slug = p_subcategory_slug
