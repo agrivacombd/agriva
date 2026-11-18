@@ -95,25 +95,32 @@ export function ArticleMarkdown({body,headingLinks=false}:{body:string;headingLi
       if(block.kind==="table"){
         const headers=block.headers||[];
         const rows=block.rows||[];
-        const minWidth=Math.max(320,headers.length*164);
+        const compact=headers.length<=2;
         const hintId=`article-table-hint-${i}`;
         return <figure key={i} className="my-7 min-w-0 max-w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <figcaption className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-slate-200 bg-slate-50 px-3 py-3 sm:px-5">
             <span className="text-sm font-extrabold text-slate-800">তথ্য সারণি</span>
-            <span id={hintId} className="text-xs leading-5 text-slate-600">আরও কলাম দেখতে ডানে-বামে সরান ↔</span>
+            {!compact&&<span id={hintId} className="text-xs leading-5 text-slate-600 sm:text-sm">সব কলাম পড়তে টেবিলটি ডানে-বামে সরান <span aria-hidden="true">↔</span></span>}
           </figcaption>
-          {/* A single semantic table at every breakpoint: scrolling is isolated to this region.
-              Keep the first column visible while wide tables are scrolled on small screens. */}
-          <div className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain scroll-smooth focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-700" role="region" aria-label="নিবন্ধের তথ্য সারণি" aria-describedby={hintId} tabIndex={0}>
-            <table className="w-full border-separate border-spacing-0 text-left text-[14px] leading-6 sm:text-[15px] lg:text-base 2xl:text-lg 2xl:leading-8" style={{minWidth}}>
-              <thead className="bg-emerald-50 text-emerald-950">
-                <tr>{headers.map((h,j)=><th key={j} scope="col" className={`min-w-[138px] max-w-[280px] break-words border-b border-r border-emerald-100 px-3 py-3 align-top font-extrabold last:border-r-0 sm:min-w-[164px] sm:px-4 sm:py-4 2xl:px-5 ${j===0?"sticky left-0 z-20 bg-emerald-50 shadow-[2px_0_4px_-3px_rgba(15,23,42,0.45)]":""}`}>{inline(h)}</th>)}</tr>
+          {/* One semantic data table on every device. A two-column table fits the
+              available width; only wider tables get an internal scroll area.
+              Sticky columns begin on large screens, where they cannot obscure the data. */}
+          <div
+            className="w-full min-w-0 max-w-full overflow-x-auto overscroll-x-contain focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-700 [scrollbar-color:#94a3b8_#f1f5f9] [scrollbar-width:thin]"
+            role="region" aria-label="নিবন্ধের তথ্য সারণি" aria-describedby={!compact?hintId:undefined} tabIndex={0}>
+            <table
+              className={`w-full border-separate border-spacing-0 text-left text-[14px] leading-[1.65] sm:text-[15px] lg:text-base 2xl:text-lg 2xl:leading-[1.8] ${compact?"table-fixed":"table-auto"}`}
+              style={{minWidth:compact?"100%":`${headers.length*150}px`}}>
+              <thead>
+                <tr>{headers.map((h,j)=><th key={j} scope="col"
+                  className={`break-words border-b border-r border-emerald-200 bg-emerald-50 px-2.5 py-3 text-left align-top font-extrabold text-emerald-950 [overflow-wrap:anywhere] last:border-r-0 sm:px-4 sm:py-4 2xl:px-5 ${!compact?"min-w-[150px] max-w-[320px]":""} ${j===0&&!compact?"lg:sticky lg:left-0 lg:z-20 lg:shadow-[3px_0_5px_-4px_rgba(15,23,42,0.4)]":""}`}>{inline(h)}</th>)}</tr>
               </thead>
               <tbody>{rows.map((row,j)=><tr key={j}>
-                {headers.map((_,k)=><td key={k} className={`min-w-[138px] max-w-[360px] break-words border-b border-r border-slate-100 px-3 py-3 align-top text-slate-700 [overflow-wrap:anywhere] last:border-r-0 sm:min-w-[164px] sm:px-4 sm:py-4 2xl:px-5 ${j===rows.length-1?"border-b-0 ":""}${k===0?`sticky left-0 z-10 font-semibold shadow-[2px_0_4px_-3px_rgba(15,23,42,0.45)] ${j%2===0?"bg-white":"bg-slate-50"}`:j%2===0?"bg-white":"bg-slate-50"}`}>{inline(row[k]||"—")}</td>)}
+                {headers.map((_,k)=><td key={k} className={`break-words border-b border-r border-slate-100 px-2.5 py-3 align-top text-slate-800 [overflow-wrap:anywhere] last:border-r-0 sm:px-4 sm:py-4 2xl:px-5 ${j===rows.length-1?"border-b-0":""} ${!compact?"min-w-[150px] max-w-[380px]":""} ${j%2===0?"bg-white":"bg-slate-50"} ${k===0?"font-semibold":""} ${k===0&&!compact?"lg:sticky lg:left-0 lg:z-10 lg:shadow-[3px_0_5px_-4px_rgba(15,23,42,0.4)]":""}`}>{inline(row[k]??"—")}</td>)}
               </tr>)}</tbody>
             </table>
           </div>
+          {!compact&&<p className="border-t border-slate-100 px-3 py-2 text-xs leading-5 text-slate-500 sm:hidden">টিপস: আঙুল দিয়ে টেবিলের ভেতর ডানে-বামে সোয়াইপ করুন।</p>}
         </figure>;
       }
       if(block.kind==="image"&&block.image)return <figure key={i} className="my-6 min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 min-[380px]:p-2 sm:p-3">

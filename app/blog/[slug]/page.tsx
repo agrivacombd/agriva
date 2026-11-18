@@ -140,7 +140,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         itemListElement: related.items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.title, url: `${siteUrl}/blog/${item.slug}` })),
       }) }} />}
       <div className="mx-auto w-full min-w-0 max-w-7xl px-3 pb-12 pt-6 min-[380px]:px-4 sm:px-6 sm:pb-16 sm:pt-12 lg:px-8">
-        <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-emerald-800 sm:text-sm">
+        <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center justify-end gap-x-2 gap-y-1 text-right text-xs font-semibold text-emerald-800 sm:text-sm">
           <Link href="/" className="hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">হোম</Link>
           <span aria-hidden="true" className="text-slate-400">/</span>
           <Link href="/blog" className="hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">ব্লগ</Link>
@@ -148,11 +148,11 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <span aria-current="page" className="min-w-0 max-w-[min(65vw,18rem)] truncate text-slate-500 sm:max-w-lg">{article.title}</span>
         </nav>
         <article>
-          <header className="mx-auto mt-8 min-w-0 max-w-4xl text-center sm:mt-12">
+          <header className="mx-auto mt-8 min-w-0 max-w-4xl text-right sm:mt-12">
             <p className="break-words text-xs font-extrabold uppercase tracking-[.08em] text-emerald-700 sm:tracking-[.18em]">{article.primary_keyword || "কৃষি প্রবন্ধ"} · AGRIVA JOURNAL</p>
             <h1 className="mx-auto mt-4 max-w-4xl break-words text-[clamp(1.55rem,6vw,2.2rem)] font-black leading-[1.48] tracking-tight text-slate-950 sm:text-[2.6rem] lg:text-[3.2rem]">{article.title}</h1>
             {article.meta_description && <p className="mx-auto mt-5 max-w-3xl break-words text-[15px] leading-7 text-slate-600 sm:text-lg sm:leading-9">{article.meta_description}</p>}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-slate-500">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-right text-sm text-slate-500">
               <span className="font-extrabold text-emerald-800">AGRIVA সম্পাদকীয়</span>
               <span aria-hidden="true">·</span><time dateTime={article.created_at}>{publishedDate}</time>
               <span aria-hidden="true">·</span><span>প্রায় {readingMinutes.toLocaleString("bn-BD")} মিনিট পড়া</span>
