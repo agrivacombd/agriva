@@ -1,0 +1,5 @@
+# Isolated local Supabase for reproducible CI tests; no production secrets.
+project_id = "agriva-guest-checkout-ci"
+
+[auth]
+enable_anonymous_sign_ins = true
