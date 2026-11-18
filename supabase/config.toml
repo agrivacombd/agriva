@@ -3,3 +3,20 @@ project_id = "agriva-guest-checkout-ci"
 
 [auth]
 enable_anonymous_sign_ins = true
+
+# Dedicated CI ports to avoid collisions with shared runners.
+[api]
+port = 55321
+
+[db]
+port = 55322
+shadow_port = 55320
+
+[studio]
+port = 55323
+
+[inbucket]
+port = 55324
+
+[analytics]
+port = 55327
