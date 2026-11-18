@@ -81,23 +81,23 @@ export default async function PlantMarketPage() {
       <section className="relative isolate overflow-hidden bg-[radial-gradient(ellipse_at_82%_18%,rgba(190,242,100,.22),transparent_34%),linear-gradient(120deg,#0b3021_0%,#145b3c_55%,#246b45_100%)] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full border-[48px] border-white/10" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 right-[4%] hidden h-[27rem] w-[27rem] rounded-full border border-lime-100/20 lg:block" />
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <div className="relative mx-auto max-w-7xl px-3 py-4 min-[375px]:px-4 min-[375px]:py-5 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
           <p className="inline-flex items-center gap-2 rounded-full border border-lime-200/25 bg-lime-100/10 px-4 py-2 text-[11px] font-extrabold tracking-[.18em] text-lime-100 shadow-sm backdrop-blur">🌿 <span>AGRIVA PLANT MARKET</span></p>
-          <h1 className="mt-6 max-w-3xl text-[2.15rem] font-black leading-[1.16] tracking-tight sm:text-5xl sm:leading-[1.12] lg:text-[3.65rem]">আপনার সবুজ জায়গার জন্য <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span></h1>
-          <p className="mt-5 max-w-2xl text-[15px] leading-7 text-emerald-50/90 sm:text-lg sm:leading-8">ঘরের গাছ থেকে ছাদবাগান—গাছ, চারা, বীজ, টব ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন। এখানে শুধু ডেটাবেসে থাকা সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <h1 className="mt-2 max-w-3xl text-[clamp(1.35rem,5.5vw,1.75rem)] font-black leading-[1.25] tracking-tight sm:mt-4 sm:text-4xl sm:leading-tight lg:text-[3.4rem]">আপনার সবুজ জায়গার জন্য <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span></h1>
+          <p className="mt-2 max-w-2xl text-xs leading-5 text-emerald-50/90 sm:mt-4 sm:text-base sm:leading-8">ঘরের গাছ থেকে ছাদবাগান—গাছ, চারা, বীজ, টব ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন। এখানে শুধু ডেটাবেসে থাকা সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
+          <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6">
             {products.length ? (
-              <a href="#plant-catalogue" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl bg-lime-300 px-7 py-3.5 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
+              <a href="#plant-catalogue" className="inline-flex min-h-10 items-center justify-center rounded-xl bg-lime-300 px-4 py-2 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ ও পণ্য দেখুন ↓</a>
             ) : (
               <Link href="/green-exchange/board" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl bg-lime-300 px-7 py-3.5 text-sm font-extrabold text-[#17351f] shadow-lg shadow-black/15 transition hover:-translate-y-0.5 hover:bg-lime-200 focus:outline-none focus:ring-2 focus:ring-white">গাছ বিনিময়ের পোস্ট দেখুন</Link>
             )}
             <Link href="/sell-on-plant-market" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Seller হন</Link><Link href="/plant-seller/products" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Seller Dashboard</Link><Link href="/plant-market/cart" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Cart</Link><Link href="/plant-market/orders" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">আমার অর্ডার</Link><Link href="/green-exchange" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">গাছ বিনিময় করুন</Link>
           </div>
-          <div className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/85 sm:text-sm"><span>✓ বাস্তব পণ্য তালিকা</span><span>✓ অনুমোদিত পণ্য</span><span>✓ মোবাইল-ফ্রেন্ডলি</span></div>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/85 sm:text-sm"><span>✓ বাস্তব পণ্য তালিকা</span><span>✓ অনুমোদিত পণ্য</span><span>✓ মোবাইল-ফ্রেন্ডলি</span></div>
         </div>
       </section>
 
-      <section id="plant-catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+      <section id="plant-catalogue" className="mx-auto max-w-7xl scroll-mt-4 px-3 py-4 min-[375px]:px-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
         <div className="mb-8 border-b border-emerald-900/10 pb-6 sm:mb-9">
           <p className="text-xs font-extrabold uppercase tracking-[.16em] text-emerald-700">Plants & gardening</p>
           <h2 className="mt-2 text-2xl font-black tracking-tight text-[#17351f] sm:text-3xl">{products.length ? "Plant Market-এ খুঁজুন" : "Plant Market-এ নতুন পণ্য আসছে"}</h2>
@@ -108,7 +108,7 @@ export default async function PlantMarketPage() {
             এই মুহূর্তে Plant Market-এর পণ্য লোড করা যাচ্ছে না। পরে আবার চেষ্টা করুন অথবা <Link className="font-bold underline" href="/marketplace">সাধারণ Marketplace</Link> দেখুন।
           </div>
         ) : products.length ? (
-          <MarketplaceCore products={products} showCategories={false} productHrefPrefix="/plant-market" />
+          <MarketplaceCore products={products} showCategories={true} productHrefPrefix="/plant-market" />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
             <div aria-hidden="true" className="text-5xl">🪴</div>
