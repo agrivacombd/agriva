@@ -36,6 +36,28 @@ jobs:
           # production migration history or an existing database.
           mv supabase/migrations/20261105180000_split_plant_market_public_read_policy.sql \
              supabase/migrations/20261105180001_split_plant_market_public_read_policy.sql
+      - name: Choose unused local ports for isolated Supabase
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, socket
+          path = pathlib.Path("supabase/config.toml")
+          config = path.read_text()
+          # CI runner port bindings may persist from other jobs. Pick free
+          # high-numbered ports independently for this disposable test stack.
+          sockets = []
+          try:
+              for old in (55321, 55322, 55320, 55323, 55327):
+                  sock = socket.socket()
+                  sock.bind(("127.0.0.1", 0))
+                  sockets.append(sock)
+                  port = sock.getsockname()[1]
+                  config = re.sub(r"(?m)(= )" + str(old) + r"$", r"\\g<1>" + str(port), config)
+              path.write_text(config)
+          finally:
+              for sock in sockets:
+                  sock.close()
+          PY
       - name: Start isolated local Auth and Postgres, applying repository migrations
         run: supabase start
       - name: Capture local-only test credentials
