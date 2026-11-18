@@ -10,6 +10,8 @@ export type BlogFeedEntry = {
   date: string;
   readTime: string;
   emoji: string;
+  heroImageUrl?: string | null;
+  heroImageAlt?: string | null;
 };
 
 /** A link feed from the authoritative Learn lessons, not a copied Blog post. */

@@ -26,7 +26,7 @@ export default async function BlogPage() {
   if (url && key) {
     const supabase = createClient(url, key);
     const { data, error } = await supabase.from("content_drafts")
-      .select("slug,title,meta_description,primary_keyword,created_at")
+      .select("slug,title,meta_description,primary_keyword,created_at,hero_image_url,hero_image_alt")
       .eq("status", "published").eq("content_type", "article").is("deleted_at",null)
       .order("created_at", { ascending: false }).limit(100);
     if (!error) cmsArticles = (data || []).filter(item => item.slug).map(item => ({
@@ -35,6 +35,8 @@ export default async function BlogPage() {
       excerpt: item.meta_description || "AGRIVA-তে প্রকাশিত কৃষি বিষয়ক লেখা।",
       date: new Date(item.created_at).toLocaleDateString("bn-BD"),
       readTime: "প্রবন্ধ", emoji: "📝",
+      heroImageUrl: item.hero_image_url || null,
+      heroImageAlt: item.hero_image_alt || item.title,
     }));
   }
 

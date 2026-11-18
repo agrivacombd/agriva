@@ -66,7 +66,13 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           {filteredArticles.map((article) => (
             <article key={article.href} className="group flex flex-col overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg">
-              <Link href={article.href} aria-label={article.title} className="flex min-h-36 items-center justify-center bg-gradient-to-br from-emerald-50 via-lime-50 to-emerald-100 text-6xl transition group-hover:from-emerald-100">{article.emoji}</Link>
+              <Link href={article.href} aria-label={article.title} className="flex h-52 items-center justify-center overflow-hidden bg-gradient-to-br from-emerald-50 via-lime-50 to-emerald-100 transition group-hover:from-emerald-100">
+                {article.heroImageUrl ? (
+                  // Preserve the full promotional artwork, including text near the edges.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={article.heroImageUrl} alt={article.heroImageAlt || article.title} loading="lazy" decoding="async" className="block h-full w-full object-contain" />
+                ) : <span aria-hidden="true" className="text-6xl">{article.emoji}</span>}
+              </Link>
               <div className="flex flex-1 flex-col p-5 sm:p-6">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold text-emerald-800">
                   <span className="rounded-full bg-emerald-50 px-3 py-1">{article.category}</span>
