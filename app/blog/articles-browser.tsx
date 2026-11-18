@@ -89,7 +89,9 @@ export default function ArticlesBrowser({ articles }: { articles: BlogFeedEntry[
 
   const resetPage = () => setVisibleCount(PAGE_SIZE);
   const isDefaultView = !query.trim() && source === "all" && category === "all" && (sort === "latest" || sort === "for-you");
-  const featured = sort==="for-you" && reader.enabled && reader.visits.length ? filteredArticles[0] : featuredDefault;
+  const featured = (sort==="for-you" && reader.enabled && reader.visits.length) || (reader.enabled && hideRead)
+    ? filteredArticles[0]
+    : featuredDefault;
   const personalized = sort==="for-you" && reader.enabled && reader.visits.length>0;
   // Featured content is shown once, not repeated immediately in the listing.
   const listArticles = isDefaultView && featured ? filteredArticles.filter(article => article.href !== featured.href) : filteredArticles;
