@@ -30,6 +30,12 @@ export default function MetaPixel() {
     window.fbq("consent", allowed ? "grant" : "revoke");
   }, [allowed, ready]);
 
+  // Notify product detail listeners only after the consent-gated Pixel is ready.
+  useEffect(() => {
+    if (!ready || !allowed) return;
+    window.dispatchEvent(new Event("agriva:meta-pixel-ready"));
+  }, [allowed, ready]);
+
   useEffect(() => {
     if (!ready || !allowed || !pathname) return;
     trackMetaEvent("PageView");
