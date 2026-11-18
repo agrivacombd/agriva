@@ -27,25 +27,29 @@ export async function POST(request: NextRequest) {
   if (draft.status === "published") return NextResponse.json({ error: "Unpublish & Edit before replacing the image." }, { status: 409 });
   let hero: Buffer, social: Buffer;
   let heroWidth: number, heroHeight: number;
+  let heroType: string, heroExtension: string;
   try {
     const bytes = Buffer.from(await file.arrayBuffer());
     const img = sharp(bytes, { limitInputPixels: 40_000_000, failOn: "error" }).rotate();
     const metadata = await img.metadata();
     if (!["jpeg","png","webp"].includes(metadata.format || "")) throw new Error("format");
-    // Preserve the original aspect ratio and dimensions for typical blog artwork.
-    // Only downscale unusually large uploads; never crop or upscale the hero.
-    const heroOutput = await img.clone().resize({width:2400,height:2400,fit:"inside",withoutEnlargement:true}).webp({quality:84}).toBuffer({resolveWithObject:true});
-    hero = heroOutput.data;
-    heroWidth = heroOutput.info.width;
-    heroHeight = heroOutput.info.height;
+    if (!metadata.width || !metadata.height) throw new Error("dimensions");
+    // Keep the uploaded hero bytes untouched: never crop, resize, or re-encode.
+    // Browsers honor the original orientation, and social preview remains separate.
+    hero = bytes;
+    const isRotated = metadata.orientation !== undefined && metadata.orientation >= 5 && metadata.orientation <= 8;
+    heroWidth = isRotated ? metadata.height : metadata.width;
+    heroHeight = isRotated ? metadata.width : metadata.height;
+    heroExtension = metadata.format === "jpeg" ? "jpg" : metadata.format!;
+    heroType = metadata.format === "jpeg" ? "image/jpeg" : `image/${metadata.format}`;
     social = await img.clone().resize(1200,630,{ fit:"contain", background:"#ffffff" }).flatten({background:"#ffffff"}).webp({quality:82}).toBuffer();
   } catch {
     return NextResponse.json({ error: "Image processing failed. Upload a valid JPEG, PNG or WebP photo." }, { status: 400 });
   }
   const folder = "drafts/" + id + "/" + crypto.randomUUID();
-  const path = folder + ".webp", socialPath = folder + "-social.webp";
+  const path = folder + "." + heroExtension, socialPath = folder + "-social.webp";
   const storage = supabase.storage.from("article-hero-images");
-  const uploaded = await storage.upload(path, hero, {contentType:"image/webp",cacheControl:"3600",upsert:false});
+  const uploaded = await storage.upload(path, hero, {contentType:heroType,cacheControl:"3600",upsert:false});
   if (uploaded.error) return NextResponse.json({ error: "Image storage upload failed." }, {status:500});
   const shared = await storage.upload(socialPath,social,{contentType:"image/webp",cacheControl:"3600",upsert:false});
   if (shared.error) {
