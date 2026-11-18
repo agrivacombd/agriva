@@ -13,7 +13,7 @@ assert.match(feed,/href: `\/learn\/\$\{lesson.slug\}`/);
 assert.match(feed,/source: "learn"/);
 assert.match(browser,/href=\{article.href\}/);
 assert.match(browser,/Learn গাইড/);
-assert.match(browser,/Blog প্রবন্ধ/);
+assert.match(browser,/value: "blog", label: "প্রবন্ধ"/, "Blog source filter should be clearly labeled");
 assert.match(page,/getLearnBlogFeed\(\)/);
 assert.doesNotMatch(page,/const articles: Article\[\]/);
 assert.match(page,/\.eq\("status", "published"\)/);
