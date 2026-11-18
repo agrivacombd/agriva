@@ -1,4 +1,18 @@
 -- Green Exchange: user-owned listings and exchange requests.
+-- Bootstrap the trusted admin helper before any Green Exchange RLS policy
+-- refers to it. Later role-authorization migrations may replace the helper.
+CREATE SCHEMA IF NOT EXISTS private;
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp
+AS $admin$
+  SELECT EXISTS (SELECT 1 FROM public.profiles p
+                 WHERE p.id = (SELECT auth.uid()) AND p.role = 'admin')
+$admin$;
+REVOKE ALL ON FUNCTION private.is_admin() FROM PUBLIC, anon;
+GRANT USAGE ON SCHEMA private TO authenticated;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
+
 -- Review and apply through the project's reconciled migration workflow; do not apply manually to production.
 create table if not exists public.green_exchange_listings (
   id uuid primary key default gen_random_uuid(),
@@ -63,7 +77,7 @@ create policy "Owners can read own exchange listings"
 drop policy if exists "Admins can read all exchange listings" on public.green_exchange_listings;
 create policy "Admins can read all exchange listings"
   on public.green_exchange_listings for select to authenticated
-  using (exists (select 1 from public.profiles p where p.id = (select auth.uid()) and p.role = 'admin'));
+  using (private.is_admin());
 
 drop policy if exists "Owners can create exchange listings" on public.green_exchange_listings;
 create policy "Owners can create exchange listings"
