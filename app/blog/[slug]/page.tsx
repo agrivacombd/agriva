@@ -114,11 +114,12 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
     "@context": "https://schema.org", "@type": "Article", headline: article.title,
     description: article.meta_description || undefined, url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    author: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
-    publisher: { "@type": "Organization", name: "AGRIVA", url: siteUrl },
+    author: { "@id": `${siteUrl}/#organization` },
+    publisher: { "@id": `${siteUrl}/#organization` },
     datePublished: article.created_at, dateModified: article.updated_at || article.created_at,
     ...(article.hero_image_url ? { image: article.hero_image_url } : {}),
     inLanguage: "bn-BD", isAccessibleForFree: true,
+    isPartOf: { "@id": `${siteUrl}/#website` },
   };
   const breadcrumbJsonLd = {
     "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
@@ -134,6 +135,10 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
       <ReadingProgress />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson(breadcrumbJsonLd) }} />
+      {related.items.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: encodeJson({
+        "@context": "https://schema.org", "@type": "ItemList", name: related.related ? "Related AGRIVA articles" : "More AGRIVA articles",
+        itemListElement: related.items.map((item, index) => ({ "@type": "ListItem", position: index + 1, name: item.title, url: `${siteUrl}/blog/${item.slug}` })),
+      }) }} />}
       <div className="mx-auto w-full min-w-0 max-w-7xl px-3 pb-12 pt-6 min-[380px]:px-4 sm:px-6 sm:pb-16 sm:pt-12 lg:px-8">
         <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold text-emerald-800 sm:text-sm">
           <Link href="/" className="hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700">হোম</Link>
