@@ -35,8 +35,8 @@ export default function EditorialImageUpload({articleId,status,initialUrl,initia
   }
   return <section id="article-image-upload" aria-label="Article image upload" className="mt-5 rounded-2xl border border-emerald-200 bg-white p-4 sm:p-5">
     <h3 className="text-base font-black">Upload Article Image · Hero + Post</h3>
-    <p className="mt-1 text-xs leading-6 text-slate-600">একবার আপলোড করলেই Hero Image, নিবন্ধের মধ্যে ছবি এবং Social Preview (1200×630) তৈরি হবে। আগে অন্য লেখার পরিবর্তন Save Draft করুন। JPG, PNG, WebP · সর্বোচ্চ ৬ MB।</p>
-    {url&&<div className="mt-3 max-w-xl"><img src={url} alt={alt||"বর্তমান নিবন্ধের ছবি"} className="aspect-[3/2] w-full rounded-xl border object-cover" /><p className="mt-1 text-xs text-emerald-800">Current hero image</p></div>}
+    <p className="mt-1 text-xs leading-6 text-slate-600">একবার আপলোড করলেই Hero Image, নিবন্ধের মধ্যে ছবি এবং Social Preview (1200×630) তৈরি হবে। আগে অন্য লেখার পরিবর্তন Save Draft করুন। JPG, PNG, WebP · সর্বোচ্চ ৬ MB। মূল ছবির সব অংশ রাখার জন্য স্বাভাবিক অনুপাত বজায় থাকবে; ছবিটি আগে থেকেই কাটা থাকলে মূল ফাইলটি আবার দিন।</p>
+    {url&&<div className="mt-3 max-w-xl"><img src={url} alt={alt||"বর্তমান নিবন্ধের ছবি"} className="block h-auto w-full max-w-full rounded-xl border object-contain" /><p className="mt-1 text-xs text-emerald-800">Current hero image · সম্পূর্ণ ছবি (কোনো Crop নয়)</p></div>}
     {locked?<p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm font-bold text-amber-900">Published নিবন্ধে ছবি বদলাতে আগে “Unpublish & Edit” ব্যবহার করুন। এরপর Review এবং Publish করতে হবে।</p>:<>
       <label className="mt-3 block text-sm font-bold">ছবি নির্বাচন
         <input id="article-image-file" type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setFile(e.target.files?.[0]||null)} className="mt-1 block w-full rounded-xl border p-2 text-sm"/>
