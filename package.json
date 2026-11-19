@@ -61,7 +61,8 @@
     "predev": "node scripts/generate-agriva-brand-assets.mjs",
     "prebuild": "node scripts/generate-agriva-brand-assets.mjs",
     "test:brand-assets": "node scripts/generate-agriva-brand-assets.mjs && node scripts/smoke-brand-assets.mjs",
-    "test:meta-conversions": "node scripts/smoke-meta-conversions.mjs"
+    "test:meta-conversions": "node scripts/smoke-meta-conversions.mjs",
+    "test:guest-auth-provisioning": "node scripts/smoke-guest-auth-provisioning.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
