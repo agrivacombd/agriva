@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkModuleAccess, findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
+import { orderStatusMessage, sendAgrivaSms } from "@/lib/sms/one9";
 
 export const metadata = { title: "Seller Orders | AGRIVA", robots: { index: false, follow: false } };
 type SellerOrderStatus = "shipped" | "delivered" | "completed" | "cancelled";
@@ -20,6 +21,13 @@ async function updateSellerOrder(formData: FormData) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) redirect("/login?next=/seller/orders");
   const { error } = await supabase.rpc("set_marketplace_order_status", { p_order_id: orderId, p_status: status });
+  if (!error) {
+    const { data: order } = await supabase.from("marketplace_orders").select("shipping_address").eq("id", orderId).maybeSingle();
+    const address = order?.shipping_address && typeof order.shipping_address === "object" ? order.shipping_address as Record<string, unknown> : {};
+    const phone = addressText(address.phone);
+    const sms = orderStatusMessage(orderId, status);
+    if (phone && sms) await sendAgrivaSms(phone, sms);
+  }
   revalidatePath("/seller/orders");
   revalidatePath("/seller/products");
   redirect(error ? "/seller/orders?notice=error" : "/seller/orders?notice=saved");

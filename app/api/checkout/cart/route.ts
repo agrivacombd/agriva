@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getBangladeshDivisionForDistrict } from "@/lib/bangladesh-division";
+import { orderConfirmationMessage, sendAgrivaSms } from "@/lib/sms/one9";
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -111,6 +112,9 @@ export async function POST(request: NextRequest) {
   }
   if (!checkout?.checkoutId) {
     return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি। আবার চেষ্টা করুন।" }, { status: 400 });
+  }
+  if (!checkout.idempotentReplay) {
+    await sendAgrivaSms(shippingAddress.phone, orderConfirmationMessage(checkout.checkoutId, Number(checkout.total)));
   }
   return NextResponse.json({
     orderId: checkout.checkoutId,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { orderConfirmationMessage, sendAgrivaSms } from "@/lib/sms/one9";
 
 function cleanText(value: unknown, maxLength: number): string {
   return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
@@ -52,5 +53,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "অর্ডার সম্পন্ন করা যায়নি। পণ্য ও স্টকের তথ্য যাচাই করে আবার চেষ্টা করুন।" }, { status: 409 });
   }
   if (!order) return NextResponse.json({ error: "অর্ডার তৈরি করা যায়নি।" }, { status: 400 });
+  await sendAgrivaSms(shippingAddress.phone, orderConfirmationMessage(order.id, Number(order.total_amount)));
   return NextResponse.json({ orderId: order.id, total: Number(order.total_amount), deliveryFee: Number(order.delivery_fee), commission: Number(order.commission_amount), resellerAttributed: Boolean(order.reseller_id), paymentMethod: "cod" });
 }
