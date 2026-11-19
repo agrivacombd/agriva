@@ -1,31 +1,39 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { User } from "@supabase/supabase-js";
 
 /**
- * Identify guests before attempting a network getUser() request.
- * getSession() is used only to choose the UI; the cart RPC still enforces
- * server-side auth, inventory and ownership. Never authorize with getSession().
+ * Ensure a cookie-backed Supabase identity exists for cart ownership.
+ * Visitors receive a buyer-only anonymous auth identity; no signup, password,
+ * social provider or SMS OTP is required. The database still validates auth.uid(),
+ * inventory, cart ownership and guest-only buyer permissions.
  */
-export async function resolveMarketplaceCartUser() {
+export async function resolveMarketplaceCartUser(): Promise<{ supabase: ReturnType<typeof createSupabaseBrowserClient>; user: User }> {
   const supabase = createSupabaseBrowserClient();
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
   if (sessionError && !isMissingSessionError(sessionError)) throw sessionError;
-  if (!sessionData.session?.user || sessionData.session.user.is_anonymous) {
-    return { supabase, user: null };
+
+  if (!sessionData.session?.user || sessionError) {
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+    if (!data.user) throw new Error("Guest checkout session could not be created.");
+    return { supabase, user: data.user };
   }
 
+  // Validate/refresh both regular and anonymous sessions before cart operations.
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError && !isMissingSessionError(userError)) throw userError;
-  return {
-    supabase,
-    user: userData.user && !userData.user.is_anonymous ? userData.user : null,
-  };
+  if (!userData.user) {
+    const { data, error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+    if (!data.user) throw new Error("Guest checkout session could not be created.");
+    return { supabase, user: data.user };
+  }
+
+  return { supabase, user: userData.user };
 }
 
 export function isMissingSessionError(error: { name?: string; code?: string; message?: string } | null) {
-  // A previously signed-in browser can have an expired or revoked refresh token.
-  // These errors mean authentication is no longer usable; invite sign-in again.
-  // Do NOT treat network timeouts, 5xx errors or other authentication failures as guests.
   if (!error) return false;
   return error.name === "AuthSessionMissingError"
     || ["session_not_found", "refresh_token_not_found", "invalid_refresh_token"].includes(error.code || "")

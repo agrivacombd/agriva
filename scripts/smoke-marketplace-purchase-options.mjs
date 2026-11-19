@@ -11,6 +11,7 @@ const storefront = read("../app/marketplace/page.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
+const guestGuardMigration = read("../supabase/migrations/20261119180000_guard_direct_cod_guest_buyer_identity.sql");
 const divisionHelper = read("../lib/bangladesh-division.ts");
 
 for (const required of ["productSlug={product.slug}", "unitPrice={Number(product.price)}", "stock={Number(product.stock ?? 0)}", "shippingClass={product.shipping_class ?? null}"]) {
@@ -115,7 +116,7 @@ const cartAuth = read("../lib/marketplace/cart-auth.ts");
 assert.ok(cartAuth.includes("auth.getSession()") && cartAuth.includes("auth.getUser()"), "Check existing cookie session before verifying the logged-in user");
 assert.ok(cartAuth.indexOf("auth.getSession()") < cartAuth.indexOf("auth.getUser()"), "Guest session check must happen before the remote auth request");
 assert.ok(cartAuth.includes("isMissingSessionError(sessionError)") && cartAuth.includes("isMissingSessionError(userError)"), "Missing session must be classified as a guest");
-assert.ok(cartAuth.includes("user: null"), "No login must reach the login-first popup");
+assert.ok(cartAuth.includes("auth.signInAnonymously()") && cartAuth.includes("return { supabase, user: data.user }"), "Guests must receive a cookie-backed anonymous buyer identity instead of a login-first null user");
 assert.ok(catalogue.includes("if (!user) {") && catalogue.includes("setAuthReturnTo("), "No login must open popup from catalog");
 assert.ok(purchase.includes("if (!user) {") && purchase.includes("setAuthPopupOpen(true)"), "No login must open popup from product details");
 assert.ok(!catalogue.includes("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।"), "No login should not appear as cart network failure");
@@ -198,4 +199,6 @@ assert.ok(!cart.includes("৳ 100") && !cart.includes("৳100") && !cart.include
 assert.ok(route.includes("Number.isSafeInteger(quantity)") && route.includes("quantity > 100"), "API must validate quantity bounds");
 assert.ok(route.includes("p_quantity: quantity"), "API must forward the chosen quantity to the secure RPC");
 assert.ok(migration.includes("next_quantity > least(product_row.stock, 100)"), "Cart RPC must enforce live stock and max quantity");
+assert.ok(guestGuardMigration.includes("before insert on public.marketplace_orders"), "Direct COD order inserts must run the anonymous buyer-only guard");
+assert.ok(guestGuardMigration.includes("execute function public.require_guest_checkout_buyer_identity()"), "Direct COD orders must reuse the database-enforced guest buyer identity guard");
 console.log("Marketplace product purchase-options contracts passed.");
