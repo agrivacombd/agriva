@@ -141,6 +141,8 @@ jobs:
         run: npm run test:public-rpc-input-hardening
       - name: Role-based signup and dashboard regression test
         run: npm run test:role-based-auth
+      - name: Guest Auth provisioning boundary regression test
+        run: npm run test:guest-auth-provisioning
       - name: Module-access architecture regression test
         run: npm run test:module-access
       - name: Identity verification workflow regression test
