@@ -81,13 +81,7 @@ export default function Checkout() {
     if (!silent) setLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        setItems([]);
-        setNeedsLogin(true);
-        setMessage("কার্ট দেখতে ও অর্ডার করতে লগইন করুন।");
-        return;
-      }
+      const { user } = await resolveMarketplaceCartUser();
       setNeedsLogin(false);
       setIsGuest(Boolean(user.is_anonymous));
 
