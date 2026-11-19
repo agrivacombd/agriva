@@ -42,7 +42,7 @@ export default function ForgotPasswordPage() {
         <button disabled={busy} className="w-full rounded-xl bg-[#1c6338] px-5 py-4 font-bold text-white transition hover:bg-[#164f2d] disabled:opacity-60">{busy ? (bn ? "পাঠানো হচ্ছে…" : "Sending…") : (bn ? "রিসেট লিংক পাঠান" : "Send reset link")}</button>
         {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${error ? "bg-red-50 text-red-700" : "bg-[#eef7ec] text-[#245d36]"}`}>{message}</p>}
       </form>
-      <Link href="/login" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#1d6939] hover:underline"><ArrowLeft size={16}/>{bn ? "লগইনে ফিরে যান" : "Back to sign in"}</Link>
+      <div className="mt-5 rounded-xl border border-[#dce8d9] bg-[#f7fbf5] p-4 text-sm leading-6 text-[#45614a]">\n        <p className="font-semibold">{bn ? "মোবাইল নম্বর দিয়ে পাসওয়ার্ড রিসেট করতে চান?" : "Want to reset using your phone number?"}</p>\n        <Link href="/forgot-password/phone" className="mt-2 inline-flex font-bold text-[#1d6939] underline underline-offset-4">{bn ? "SMS OTP দিয়ে রিসেট করুন" : "Reset with SMS OTP"}</Link>\n      </div>\n      <Link href="/login" className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-[#1d6939] hover:underline"><ArrowLeft size={16}/>{bn ? "লগইনে ফিরে যান" : "Back to sign in"}</Link>
     </section>
   </main>;
 }
