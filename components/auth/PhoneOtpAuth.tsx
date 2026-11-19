@@ -73,7 +73,7 @@ export default function PhoneOtpAuth({
           code === "phone_provider_disabled" || code === "signup_disabled" ||
           /unsupported phone provider|phone signups are disabled|sms provider/i.test(detail)
         ) {
-          setError("মোবাইল OTP সেবা বর্তমানে কনফিগার করা নেই। Supabase Phone Auth ও SMS provider সক্রিয় করতে হবে। আপাতত ইমেইল বা Google দিয়ে লগইন করুন।");
+          setError("এই মুহূর্তে OTP পাঠানো যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন অথবা Email/Google দিয়ে লগইন করুন।");
         } else if (code === "over_sms_send_rate_limit" || code === "over_request_rate_limit") {
           setError("OTP অনুরোধের সীমা পূর্ণ হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।");
         } else {
