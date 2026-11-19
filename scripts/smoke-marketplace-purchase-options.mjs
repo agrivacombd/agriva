@@ -154,7 +154,7 @@ assert.ok(!socialProfile.includes("selected_roles") && !socialProfile.includes("
 assert.ok(authModal.includes("window.location.assign(returnTo)"), "Authentication should restore the selected product");
 assert.ok(phoneOtp.includes("signInWithOtp") && phoneOtp.includes("verifyOtp"), "Phone must authenticate with verified SMS OTP");
 assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-in must not create unknown accounts");
-assert.ok(loginPage.includes('method === "phone"') && signupExperience.includes('method === "phone"'), "Full login and signup pages must also offer phone");
+assert.ok(loginPage.includes('method === "phone-password"') && loginPage.includes('method === "phone-otp"') && signupExperience.includes('method === "phone"'), "Full login page must offer phone-password and OTP while signup retains phone OTP");
 assert.ok(signupPage.includes("returnTo"), "Signup must preserve selected product return path");
 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : (legacyArea || upazila)"), "Server should derive legacy area from an actual selected location");
