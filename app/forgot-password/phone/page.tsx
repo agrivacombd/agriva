@@ -38,7 +38,7 @@ export default function PhonePasswordResetPage() {
 
   async function verifyAndUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!/^\\d{6}$/.test(otp)) { setIsError(true); setMessage("৬ সংখ্যার OTP লিখুন।"); return; }
+    if (!/^\d{6}$/.test(otp)) { setIsError(true); setMessage("৬ সংখ্যার OTP লিখুন।"); return; }
     if (password.length < 8) { setIsError(true); setMessage("নতুন পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।"); return; }
     if (password !== confirmPassword) { setIsError(true); setMessage("দুটি পাসওয়ার্ড মিলছে না।"); return; }
     setBusy(true); setMessage("");
