@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import OrderNotificationBell from "./OrderNotificationBell";
+import SignOutButton from "@/components/SignOutButton";
 import {
   Activity, ArrowUpRight, Banknote, BookOpen, Boxes, BriefcaseBusiness,
   ClipboardCheck, FileText, FlaskConical, FolderKanban, Handshake,
@@ -126,6 +127,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
             </div>
             <div className="flex min-w-0 items-center gap-2 sm:gap-3">
               <OrderNotificationBell />
+              <SignOutButton />
               <Link href="/dashboard" className="hidden min-h-10 items-center gap-2 rounded-xl border border-[#e0e8dd] px-3 text-xs font-semibold text-[#365747] hover:bg-[#f4f7f2] sm:inline-flex">User dashboard <ArrowUpRight size={14} /></Link>
               <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f2f6ef] px-2.5 py-2 sm:px-3">
                 <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#dcebd8] text-xs font-black text-[#17452f]">{adminName.trim().charAt(0).toUpperCase() || "A"}</span>
@@ -149,6 +151,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
             <div className="border-t border-white/10 p-4">
               <p className="truncate text-xs font-semibold text-emerald-100/75">{adminName}</p>
               <Link href="/dashboard" onClick={() => setDrawerOpen(false)} className="mt-2 flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-white hover:bg-white/10"><ArrowUpRight size={17} /> User dashboard</Link>
+              <div className="mt-3"><SignOutButton /></div>
             </div>
           </aside>
         </div>

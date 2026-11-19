@@ -28,5 +28,23 @@ export async function GET(request: Request) {
     }
   }
   const next = safeAuthNextPath(url.searchParams.get("next"));
-  return NextResponse.redirect(new URL(error ? "/login?error=auth_callback" : next, url.origin));
+  if (error || !data.user) {
+    return NextResponse.redirect(new URL("/login?error=auth_callback", url.origin));
+  }
+
+  // Resolve the destination from the server-verified profile, never from
+  // user-editable metadata or an untrusted client-side role value.
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error("Post-login role lookup failed:", profileError.code);
+    return NextResponse.redirect(new URL("/login?error=role_lookup", url.origin));
+  }
+
+  const destination = profile?.role === "admin" ? "/admin" : next;
+  return NextResponse.redirect(new URL(destination, url.origin));
 }
