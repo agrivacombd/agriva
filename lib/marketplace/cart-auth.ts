@@ -12,17 +12,14 @@ export async function resolveMarketplaceCartUser() {
 
   if (sessionError && !isMissingSessionError(sessionError)) throw sessionError;
 
-  if (!sessionData.session?.user) {
+  if (!sessionData.session?.user || sessionError) {
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error) throw error;
     if (!data.user) throw new Error("Guest checkout session could not be created.");
     return { supabase, user: data.user };
   }
 
-  if (sessionData.session.user.is_anonymous) {
-    return { supabase, user: sessionData.session.user };
-  }
-
+  // Validate/refresh both regular and anonymous sessions before cart operations.
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError && !isMissingSessionError(userError)) throw userError;
   if (!userData.user) {
@@ -31,6 +28,7 @@ export async function resolveMarketplaceCartUser() {
     if (!data.user) throw new Error("Guest checkout session could not be created.");
     return { supabase, user: data.user };
   }
+
   return { supabase, user: userData.user };
 }
 
