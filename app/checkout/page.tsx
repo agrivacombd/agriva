@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Minus, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 import { trackMetaEvent } from "@/lib/meta-pixel";
