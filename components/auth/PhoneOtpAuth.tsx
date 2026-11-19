@@ -26,6 +26,7 @@ export default function PhoneOtpAuth({
   const [verifiedPhone, setVerifiedPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -40,8 +41,8 @@ export default function PhoneOtpAuth({
     setSignupSuggested(false);
     const normalized = normalizeBangladeshPhone(phone);
     if (!normalized) { setError("সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন। যেমন: 017XXXXXXXX"); return; }
-    if (mode === "signup" && (!acceptedTerms || fullName.trim().length < 2)) {
-      setError("নাম লিখুন এবং শর্তাবলি ও গোপনীয়তা নীতিতে সম্মতি দিন।");
+    if (mode === "signup" && (!acceptedTerms || fullName.trim().length < 2 || password.length < 8)) {
+      setError("নাম, কমপক্ষে ৮ অক্ষরের পাসওয়ার্ড লিখুন এবং শর্তাবলি ও গোপনীয়তা নীতিতে সম্মতি দিন।");
       return;
     }
     if (Date.now() - lastSentAt < 60000) {
@@ -106,6 +107,13 @@ export default function PhoneOtpAuth({
         setError(verifyError?.message || "OTP যাচাই হয়নি। আবার চেষ্টা করুন।");
         return;
       }
+      if (mode === "signup") {
+        const { error: passwordError } = await supabase.auth.updateUser({ password });
+        if (passwordError) {
+          setError("অ্যাকাউন্ট তৈরি হয়েছে, তবে পাসওয়ার্ড সেট করা যায়নি। Forgot Password থেকে OTP যাচাই করে পাসওয়ার্ড সেট করুন।");
+          return;
+        }
+      }
       onAuthenticated();
     } catch {
       setError("OTP যাচাই করা যায়নি। আবার চেষ্টা করুন।");
@@ -138,6 +146,10 @@ export default function PhoneOtpAuth({
             <input required type="tel" inputMode="tel" autoComplete="tel" maxLength={16} value={phone} onChange={event => setPhone(event.target.value)}
               placeholder="017XXXXXXXX" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-700" />
           </label>
+          {mode === "signup" && <label className="block text-sm font-bold text-slate-700">পাসওয়ার্ড
+            <input required minLength={8} type="password" autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)}
+              placeholder="কমপক্ষে ৮ অক্ষর" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-700" />
+          </label>}
           {mode === "signup" && <label className="flex items-start gap-2 text-xs leading-5 text-slate-600">
             <input type="checkbox" required checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)} className="mt-1 accent-emerald-700" />
             <span>আমি AGRIVA-র <Link href="/terms-of-service" className="underline">শর্তাবলি</Link> ও <Link href="/privacy-policy" className="underline">গোপনীয়তা নীতি</Link>-তে সম্মত।</span>
