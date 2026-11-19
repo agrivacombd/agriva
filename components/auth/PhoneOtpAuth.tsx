@@ -168,7 +168,6 @@ export default function PhoneOtpAuth({
       {onSwitchMode && <button type="button" onClick={onSwitchMode} className="text-sm font-bold text-emerald-800 underline underline-offset-2">
         {mode === "login" ? "অ্যাকাউন্ট নেই? মোবাইল নম্বর দিয়ে তৈরি করুন" : "আগে অ্যাকাউন্ট আছে? লগইন করুন"}
       </button>}
-      <p className="text-xs leading-5 text-slate-500">OTP সেবার জন্য Supabase Phone Auth ও SMS delivery provider সক্রিয় থাকতে হবে। SMS চার্জ প্রযোজ্য হতে পারে।</p>
     </div>
   );
 }
