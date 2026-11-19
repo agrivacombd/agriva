@@ -57,6 +57,8 @@ assert.ok(purchase.includes("const requested = /^[0-9]{1,3}$/.test(input) ? Numb
 assert.ok(purchase.includes(".replace(/[০-৯]/g, digit =>"), "Bangla numeral keyboard input must be normalized");
 assert.ok(purchase.includes("void addToCart(requested);"), "Custom apply must add the selected quantity without stale React state");
 assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Detail purchase must use the shared guest-safe cart auth helper");
+assert.ok(purchase.includes("await resolveMarketplaceCartUser();"), "Direct COD checkout must establish a verified anonymous or signed-in session before calling the API");
+assert.ok(purchase.includes("লগইন ছাড়াই অর্ডার করতে পারবেন") && !purchase.includes("পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন। লগইন প্রয়োজন।"), "Direct COD form must clearly allow guest orders");
 for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "maxLength={250}"]) {
   assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
 }
