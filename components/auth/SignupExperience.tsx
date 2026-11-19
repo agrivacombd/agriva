@@ -248,25 +248,26 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
               <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")}
                 className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>ইমেইল</button>
               <button type="button" aria-pressed={method === "phone-password"} onClick={() => setMethod("phone-password")}
-                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>মোবাইল নম্বর</button>
+                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone-password" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>মোবাইল নম্বর</button>
             </div>
           )}
-          {!embedded && method === "phone" ? (
-            <PhoneOtpAuth mode="signup"
-              onAuthenticated={() => {
-                if (onAuthenticated) onAuthenticated();
-                else { router.replace(safeReturnTo || "/dashboard"); router.refresh(); }
-              }} />
-          ) : <form onSubmit={signUp} className="space-y-6">
+          <form onSubmit={signUp} className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.name}
                 <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" autoComplete="name" placeholder={t.namePlaceholder} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
               </label>
-              <label className="block space-y-2 text-sm font-semibold text-slate-700">
-                {t.email}
-                <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="email" autoComplete="email" placeholder={t.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </label>
+              {method === "phone-password" ? (
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  মোবাইল নম্বর
+                  <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="tel" inputMode="tel" autoComplete="tel" maxLength={16} placeholder="017XXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                </label>
+              ) : (
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  {t.email}
+                  <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="email" autoComplete="email" placeholder={t.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </label>
+              )}
             </div>
 
             <label className="block space-y-2 text-sm font-semibold text-slate-700">
