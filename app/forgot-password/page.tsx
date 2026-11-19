@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
-import { Mail } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export default function ForgotPasswordPage() {
   const [language, setLanguage] = useState<"bn" | "en">("bn");
+  const [method, setMethod] = useState<"email" | "phone">("email");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
@@ -34,18 +35,29 @@ export default function ForgotPasswordPage() {
   return <main className="grid min-h-screen place-items-center bg-[#f6f8f3] px-5 py-12 text-[#17351f]">
     <section className="w-full max-w-md rounded-[1.75rem] border border-[#e3e9e0] bg-white p-7 shadow-[0_18px_60px_rgba(26,65,39,0.07)] sm:p-9">
       <div className="flex items-center justify-between"><BrandLogo href="/" imageClassName="h-9 w-36 sm:w-44" /><button type="button" onClick={() => setLanguage(bn ? "en" : "bn")} className="rounded-full border border-[#d8e1d6] px-3 py-2 text-xs font-semibold">{bn ? "English" : "বাংলা"}</button></div>
-      <div className="mt-8 grid h-12 w-12 place-items-center rounded-2xl bg-[#edf6eb] text-[#26723f]"><Mail size={23}/></div>
-      <h1 className="mt-5 text-3xl font-black">{bn ? "পাসওয়ার্ড রিসেট করুন" : "Reset your password"}</h1>
-      <p className="mt-2 text-sm leading-6 text-[#66776a]">{bn ? "আপনার অ্যাকাউন্টের ইমেইল দিন। রিসেট করার নির্দেশনা পাঠিয়ে দেব।" : "Enter the email for your account and we'll send password reset instructions."}</p>
-      <form onSubmit={submit} className="mt-7 space-y-4">
-        <label className="block text-sm font-semibold">{bn ? "ইমেইল ঠিকানা" : "Email address"}<input className="mt-2 w-full rounded-xl border border-[#dce5da] bg-[#fcfdfb] px-4 py-3.5 font-normal outline-none focus:border-[#438253] focus:ring-4 focus:ring-[#438253]/10" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required/></label>
-        <button disabled={busy} className="w-full rounded-xl bg-[#1c6338] px-5 py-4 font-bold text-white transition hover:bg-[#164f2d] disabled:opacity-60">{busy ? (bn ? "পাঠানো হচ্ছে…" : "Sending…") : (bn ? "রিসেট লিংক পাঠান" : "Send reset link")}</button>
-        {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${error ? "bg-red-50 text-red-700" : "bg-[#eef7ec] text-[#245d36]"}`}>{message}</p>}
-      </form>
-      <div className="mt-5 rounded-xl border border-[#dce8d9] bg-[#f7fbf5] p-4 text-sm leading-6 text-[#45614a]">
-        <p className="font-semibold">{bn ? "মোবাইল নম্বর দিয়ে পাসওয়ার্ড রিসেট করতে চান?" : "Want to reset using your phone number?"}</p>
-        <Link href="/forgot-password/phone" className="mt-2 inline-flex font-bold text-[#1d6939] underline underline-offset-4">{bn ? "SMS OTP দিয়ে রিসেট করুন" : "Reset with SMS OTP"}</Link>
+      <h1 className="mt-8 text-3xl font-black">{bn ? "পাসওয়ার্ড রিসেট করুন" : "Reset your password"}</h1>
+      <p className="mt-2 text-sm leading-6 text-[#66776a]">{bn ? "আপনার অ্যাকাউন্টে ব্যবহৃত মাধ্যমটি বেছে নিন।" : "Choose the recovery method linked to your account."}</p>
+      <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label={bn ? "রিসেটের মাধ্যম" : "Recovery method"}>
+        <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"flex min-h-12 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+          <Mail size={17}/> {bn ? "ইমেইল" : "Email"}
+        </button>
+        <button type="button" aria-pressed={method === "phone"} onClick={() => setMethod("phone")} className={"flex min-h-12 items-center justify-center gap-2 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+          <Phone size={17}/> {bn ? "মোবাইল নম্বর" : "Phone"}
+        </button>
       </div>
+      {method === "email" ? <>
+        <p className="mt-5 text-sm leading-6 text-[#66776a]">{bn ? "আপনার অ্যাকাউন্টের ইমেইল দিন। রিসেট করার নির্দেশনা পাঠিয়ে দেব।" : "Enter your account email and we'll send reset instructions."}</p>
+        <form onSubmit={submit} className="mt-5 space-y-4">
+          <label className="block text-sm font-semibold">{bn ? "ইমেইল ঠিকানা" : "Email address"}<input className="mt-2 w-full rounded-xl border border-[#dce5da] bg-[#fcfdfb] px-4 py-3.5 font-normal outline-none focus:border-[#438253] focus:ring-4 focus:ring-[#438253]/10" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required/></label>
+          <button disabled={busy} className="w-full rounded-xl bg-[#1c6338] px-5 py-4 font-bold text-white transition hover:bg-[#164f2d] disabled:opacity-60">{busy ? (bn ? "পাঠানো হচ্ছে…" : "Sending…") : (bn ? "রিসেট লিংক পাঠান" : "Send reset link")}</button>
+          {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${error ? "bg-red-50 text-red-700" : "bg-[#eef7ec] text-[#245d36]"}`}>{message}</p>}
+        </form>
+      </> : <>
+        <div className="mt-5 rounded-xl border border-[#dce8d9] bg-[#f7fbf5] p-4 text-sm leading-6 text-[#45614a]">
+          <p className="font-semibold">{bn ? "মোবাইল নম্বরে SMS OTP নিয়ে পাসওয়ার্ড রিসেট করুন।" : "Reset your password using an SMS OTP sent to your phone."}</p>
+          <Link href="/forgot-password/phone" className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-[#1c6338] px-5 py-3.5 font-bold text-white hover:bg-[#164f2d]">{bn ? "মোবাইল দিয়ে এগিয়ে যান" : "Continue with phone"}</Link>
+        </div>
+      </>}
       <Link href="/login" className="mt-6 inline-flex font-bold text-sm text-[#1d6939] hover:underline">{bn ? "লগইনে ফিরে যান" : "Back to sign in"}</Link>
     </section>
   </main>;
