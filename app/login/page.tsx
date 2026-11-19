@@ -9,6 +9,7 @@ import BrandLogo from "@/components/BrandLogo";
 import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { safeAuthNextPath } from "@/lib/auth/safe-next";
+import { getPostLoginRedirect } from "@/lib/auth/post-login";
 
 type Language = "bn" | "en";
 
@@ -77,9 +78,14 @@ function LoginForm() {
       const supabase = createSupabaseBrowserClient();
       supabase.auth.getUser().then(({ data: { user } }) => {
         if (!active || !user) return;
-        const target = safeNext;
-        router.replace(target);
-        router.refresh();
+        void getPostLoginRedirect(safeNext).then((target) => {
+          if (!active) return;
+          router.replace(target);
+          router.refresh();
+        }).catch(() => {
+          if (!active) return;
+          setMessage(t.failed);
+        });
       }).catch(() => {});
     } catch {
       // Login remains available if auth configuration is temporarily unavailable.
@@ -98,7 +104,8 @@ function LoginForm() {
         setMessage(error.message || t.error);
         return;
       }
-      router.push(safeNext);
+      const target = await getPostLoginRedirect(safeNext);
+      router.replace(target);
       router.refresh();
     } catch {
       setMessage(t.failed);
@@ -147,9 +154,10 @@ function LoginForm() {
             {method === "phone" ? (
               <div className="mt-6">
                 <PhoneOtpAuth mode="login" onAuthenticated={() => {
-                  const target = safeNext;
-                  router.replace(target);
-                  router.refresh();
+                  void getPostLoginRedirect(safeNext).then((target) => {
+                    router.replace(target);
+                    router.refresh();
+                  }).catch(() => setMessage(t.failed));
                 }} />
               </div>
             ) : <form onSubmit={signIn} className="mt-8 space-y-5">
