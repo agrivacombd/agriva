@@ -91,7 +91,7 @@ function LoginForm() {
       // Login remains available if auth configuration is temporarily unavailable.
     }
     return () => { active = false; };
-  }, [safeNext, router]);
+  }, [safeNext, router, t.failed]);
 
   async function signIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
