@@ -1,4 +1,5 @@
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { User } from "@supabase/supabase-js";
 
 /**
  * Ensure a cookie-backed Supabase identity exists for cart ownership.
@@ -6,7 +7,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
  * social provider or SMS OTP is required. The database still validates auth.uid(),
  * inventory, cart ownership and guest-only buyer permissions.
  */
-export async function resolveMarketplaceCartUser() {
+export async function resolveMarketplaceCartUser(): Promise<{ supabase: ReturnType<typeof createSupabaseBrowserClient>; user: User }> {
   const supabase = createSupabaseBrowserClient();
   const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
