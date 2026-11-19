@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
+import { getExistingMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { calculateShippingFee } from "@/lib/marketplace/shipping-fee";
 
@@ -47,7 +47,13 @@ export default function Cart() {
     const supabase = createSupabaseBrowserClient();
     if (!silent) setLoading(true);
     try {
-      const { user } = await resolveMarketplaceCartUser();
+      const { user } = await getExistingMarketplaceCartUser();
+      // Opening an empty cart must not provision an anonymous Auth account.
+      if (!user) {
+        setItems([]);
+        setMessage("");
+        return;
+      }
 
       const { data: cart, error: cartError } = await supabase
         .from("carts").select("id").eq("user_id", user.id).eq("status", "active").maybeSingle();
