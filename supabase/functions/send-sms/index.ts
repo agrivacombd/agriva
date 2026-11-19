@@ -1,3 +1,4 @@
+// @ts-nocheck -- This file runs in the Supabase Deno Edge Runtime, not the Next.js Node.js type environment.
 import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 type SendSmsEvent = {
