@@ -86,11 +86,13 @@ const cmsBlogArticle = readFileSync("app/blog/[slug]/page.tsx", "utf8");
 const staticBlogArticle = readFileSync("app/articles/[slug]/page.tsx", "utf8");
 const jobSeo = readFileSync("lib/jobs/seo.ts", "utf8");
 
+// Keep the CMS schema checks resilient to formatting and local variable names.
 assert.match(cmsBlogArticle, /"@type"\s*:\s*"Article"/, "CMS blog detail must publish Article structured data");
 assert.match(cmsBlogArticle, /"@type"\s*:\s*"BreadcrumbList"/, "CMS blog detail must publish BreadcrumbList structured data");
 assert.match(cmsBlogArticle, /datePublished:\s*[A-Za-z_$][\w$]*\.created_at/, "CMS article publication date must use the actual created_at value");
 assert.match(cmsBlogArticle, /dateModified:\s*([A-Za-z_$][\w$]*)\.updated_at\s*\|\|\s*\1\.created_at/, "CMS article modification date must use the actual updated_at value with a created_at fallback");
 assert.match(cmsBlogArticle, /(?:JSON\.stringify|encodeJson)\(breadcrumbJsonLd\)/, "CMS breadcrumb data must be emitted as JSON-LD");
+assert.match(cmsBlogArticle, /type="application\/ld\+json"/, "CMS blog must emit JSON-LD script elements");
 assert.match(staticBlogArticle, /"@type": "Article"/, "Static blog detail must retain Article structured data");
 assert.match(staticBlogArticle, /"@type": "BreadcrumbList"/, "Static blog detail must retain BreadcrumbList structured data");
 assert.match(jobSeo, /"@type": "JobPosting"/, "Job detail schema helper must retain JobPosting structured data");
