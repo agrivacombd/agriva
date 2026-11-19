@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, CheckCircle2, Minus, Plus, ShoppingBag, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
+import { getExistingMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
 import { BANGLADESH_DISTRICTS } from "@/lib/bangladesh-locations";
 import { trackMetaEvent } from "@/lib/meta-pixel";
@@ -82,8 +82,15 @@ export default function Checkout() {
     if (!silent) setLoading(true);
     try {
       const supabase = createSupabaseBrowserClient();
-      const { user } = await resolveMarketplaceCartUser();
+      const { user } = await getExistingMarketplaceCartUser();
       setNeedsLogin(false);
+      if (!user) {
+        // Visiting /checkout directly with no cart must not create a guest Auth user.
+        setIsGuest(false);
+        setItems([]);
+        setMessage("আপনার কার্ট খালি। আগে পণ্য কার্টে যোগ করুন।");
+        return;
+      }
       setIsGuest(Boolean(user.is_anonymous));
 
       const [{ data: settings, error: settingsError }, { data: cart, error: cartError }] = await Promise.all([
