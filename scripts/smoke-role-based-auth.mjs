@@ -43,7 +43,7 @@ assert.match(login, /safeAuthNextPath/, "login must use the local-only redirect 
 assert.ok(login.includes("getPostLoginRedirect(safeNext)"), "login must resolve role-based destinations through the server");
 assert.ok(postLogin.includes("/api/auth/post-login"), "client helper must call the server role resolver");
 assert.ok(postLoginRoute.includes("supabase.auth.getUser()"), "server resolver must verify the current session");
-assert.ok(postLoginRoute.includes('profile?.role === "admin" ? "/admin"'), "server resolver must redirect admins to /admin");
+assert.match(postLoginRoute, /profile\?\.role\s*===\s*"admin"\s*\?\s*"\/admin"/, "server resolver must redirect admins to /admin");
 assert.ok(adminShell.includes("SignOutButton"), "admin workspace must expose a logout action");
 assert.match(callback, /safeAuthNextPath/, "callback must use the local-only redirect validator");
 assert.ok(callback.includes('.select("role")'), "OAuth callback must read the canonical profile role");
