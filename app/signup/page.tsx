@@ -3,13 +3,12 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import SignupExperience from "@/components/auth/SignupExperience";
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
 function SignupContent() {
   const params = useSearchParams();
   const next = params.get("next");
-  const returnTo = next && next.startsWith("/marketplace/") && !next.startsWith("//") && !next.includes("\\")
-    ? next
-    : undefined;
+  const returnTo = next ? safeAuthNextPath(next) : undefined;
   return <SignupExperience returnTo={returnTo} />;
 }
 
