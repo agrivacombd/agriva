@@ -313,7 +313,7 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
               {busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}
             </button>
             {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${isError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"}`}>{message}</p>}
-          </form>}
+          </form>
 
           <p className="mt-7 text-center text-sm text-slate-600">{t.haveAccount}{" "}
             {onSwitchToLogin ? (
