@@ -10,6 +10,7 @@ const catalogue = read("../components/marketplace/MarketplaceCore.tsx");
 const storefront = read("../app/marketplace/page.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
+const orderTracking = read("../components/orders/OrderTracking.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
 const divisionHelper = read("../lib/bangladesh-division.ts");
 
@@ -123,6 +124,8 @@ assert.ok(!cartAuth.includes("user: null"), "A visitor must not be returned as a
 assert.ok(cart.includes("resolveMarketplaceCartUser"), "Cart page must create a guest session when opened directly");
 assert.ok(checkout.includes("resolveMarketplaceCartUser"), "Checkout page must create a guest session when opened directly");
 assert.ok(checkout.includes("Guest Checkout: SMS OTP ছাড়াই অর্ডার করতে পারবেন"), "Guest checkout must clearly explain OTP is not required");
+assert.ok(orderTracking.includes("resolveMarketplaceCartUser") && orderTracking.includes(".eq(\"buyer_id\", user.id)"), "My Orders must load the current guest or signed-in buyer identity without a login wall");
+assert.ok(!orderTracking.includes("Please sign in to view your orders."), "Guest buyers must not be blocked from viewing orders in the same browser session");
 assert.ok(!catalogue.includes("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।"), "No login should not appear as cart network failure");
 assert.ok(purchase.includes('searchParams.get("addToCart")') && purchase.includes('searchParams.delete("addToCart")'), "Return-to-product cart intent must be one-time");
 assert.ok(authModal.includes('useState<"login" | "signup">("login")'), "Login must be the default popup");
