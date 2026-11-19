@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
-import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import PhoneOtpAuth, { normalizeBangladeshPhone } from "@/components/auth/PhoneOtpAuth";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { safeAuthNextPath } from "@/lib/auth/safe-next";
 
@@ -64,7 +64,12 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
-  const [method, setMethod] = useState<"email" | "phone">("email");
+  const [method, setMethod] = useState<"email" | "phone-password" | "phone-otp">("email");
+  const [phone, setPhone] = useState("");
+  const [phonePassword, setPhonePassword] = useState("");
+  const [showPhonePassword, setShowPhonePassword] = useState(false);
+  const [phoneBusy, setPhoneBusy] = useState(false);
+  const [phoneMessage, setPhoneMessage] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const t = copy[language];
@@ -107,6 +112,35 @@ function LoginForm() {
     }
   }
 
+  async function signInWithPhonePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (phoneBusy) return;
+    setPhoneMessage("");
+    const normalizedPhone = normalizeBangladeshPhone(phone);
+    if (!normalizedPhone) {
+      setPhoneMessage("সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন। যেমন: 017XXXXXXXX");
+      return;
+    }
+    setPhoneBusy(true);
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        phone: normalizedPhone,
+        password: phonePassword,
+      });
+      if (error || !data.session || !data.user) {
+        setPhoneMessage("মোবাইল নম্বর অথবা পাসওয়ার্ড সঠিক নয়। OTP দিয়ে লগইন করতে পারেন।");
+        return;
+      }
+      router.replace(safeNext);
+      router.refresh();
+    } catch {
+      setPhoneMessage(t.failed);
+    } finally {
+      setPhoneBusy(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[#f5f8f2] text-[#173b2d]">
       <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
@@ -136,22 +170,41 @@ function LoginForm() {
             <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{t.title}</h1>
             <p className="mt-3 text-sm leading-6 text-slate-600">{t.subtitle}</p>
             <SocialAuthButtons returnTo={safeNext} english={language === "en"} />
-            <div className="mt-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="লগইন মাধ্যম">
-              <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+            <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl bg-slate-100 p-1" role="group" aria-label="লগইন মাধ্যম">
+              <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")} className={"min-h-11 rounded-lg px-2 text-xs font-bold sm:text-sm " + (method === "email" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
                 {language === "bn" ? "ইমেইল" : "Email"}
               </button>
-              <button type="button" aria-pressed={method === "phone"} onClick={() => setMethod("phone")} className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
-                {language === "bn" ? "মোবাইল নম্বর" : "Phone"}
+              <button type="button" aria-pressed={method === "phone-password"} onClick={() => setMethod("phone-password")} className={"min-h-11 rounded-lg px-2 text-xs font-bold sm:text-sm " + (method === "phone-password" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+                {language === "bn" ? "মোবাইল + পাসওয়ার্ড" : "Phone + Password"}
+              </button>
+              <button type="button" aria-pressed={method === "phone-otp"} onClick={() => setMethod("phone-otp")} className={"min-h-11 rounded-lg px-2 text-xs font-bold sm:text-sm " + (method === "phone-otp" ? "bg-white text-emerald-900 shadow-sm" : "text-slate-600")}>
+                {language === "bn" ? "OTP" : "OTP"}
               </button>
             </div>
-            {method === "phone" ? (
+            {method === "phone-otp" ? (
               <div className="mt-6">
-                <PhoneOtpAuth mode="login" onAuthenticated={() => {
-                  const target = safeNext;
-                  router.replace(target);
+                <PhoneOtpAuth mode="login" allowPasswordSetup onAuthenticated={() => {
+                  router.replace(safeNext);
                   router.refresh();
                 }} />
               </div>
+            ) : method === "phone-password" ? (
+              <form onSubmit={signInWithPhonePassword} className="mt-8 space-y-5">
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  {language === "bn" ? "মোবাইল নম্বর" : "Mobile number"}
+                  <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="tel" inputMode="tel" autoComplete="tel" maxLength={16} placeholder="017XXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                </label>
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  {language === "bn" ? "পাসওয়ার্ড" : "Password"}
+                  <span className="relative block">
+                    <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 pr-12 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type={showPhonePassword ? "text" : "password"} autoComplete="current-password" placeholder={language === "bn" ? "আপনার পাসওয়ার্ড লিখুন" : "Enter your password"} value={phonePassword} onChange={(e) => setPhonePassword(e.target.value)} required />
+                    <button type="button" onClick={() => setShowPhonePassword((value) => !value)} aria-label={showPhonePassword ? t.hide : t.show} className="absolute inset-y-0 right-0 flex items-center px-4 text-slate-500 hover:text-[#126b4f]">{showPhonePassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                  </span>
+                </label>
+                <button type="submit" disabled={phoneBusy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#126b4f] px-5 py-4 font-bold text-white shadow-lg shadow-[#126b4f]/15 transition hover:bg-[#0c573f] focus:outline-none focus:ring-4 focus:ring-[#126b4f]/20 disabled:cursor-not-allowed disabled:opacity-60">{phoneBusy ? t.busy : (language === "bn" ? "মোবাইল নম্বর দিয়ে লগইন" : "Sign in with phone")} {!phoneBusy && <ArrowRight size={18} />}</button>
+                {phoneMessage && <p role="alert" className="break-words rounded-xl bg-red-50 px-4 py-3 text-sm leading-6 text-red-700">{phoneMessage}</p>}
+                <p className="text-xs leading-5 text-slate-500">{language === "bn" ? "আগে শুধু OTP দিয়ে লগইন করতেন? OTP ট্যাবে গিয়ে নম্বর যাচাই করে নতুন পাসওয়ার্ড সেট করতে পারবেন।" : "Previously used OTP only? Verify your number in the OTP tab to set a password."}</p>
+              </form>
             ) : <form onSubmit={signIn} className="mt-8 space-y-5">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.email}

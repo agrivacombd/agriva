@@ -6,7 +6,7 @@ import { FormEvent, useState } from "react";
 import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
-import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import { normalizeBangladeshPhone } from "@/components/auth/PhoneOtpAuth";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
 type RoleId = "farmer" | "buyer" | "transport" | "job_seeker" | "employer" | "student" | "agriculturist" | "rooftop_gardener";
@@ -89,7 +89,8 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
   const router = useRouter();
   const safeReturnTo = returnTo && returnTo.startsWith("/marketplace/") && !returnTo.startsWith("//") && !returnTo.includes("\\") ? returnTo : null;
   const [language, setLanguage] = useState<Language>("bn");
-  const [method, setMethod] = useState<"email" | "phone">("email");
+  const [method, setMethod] = useState<"email" | "phone-password">("email");
+  const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -122,6 +123,36 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
     setBusy(true);
     try {
       const supabase = createSupabaseBrowserClient();
+      if (method === "phone-password") {
+        const normalizedPhone = normalizeBangladeshPhone(phone);
+        if (!normalizedPhone) {
+          setIsError(true);
+          setMessage(language === "bn" ? "সঠিক বাংলাদেশি মোবাইল নম্বর লিখুন। যেমন: 017XXXXXXXX" : "Enter a valid Bangladesh mobile number.");
+          return;
+        }
+        const { data, error } = await supabase.auth.signUp({
+          phone: normalizedPhone,
+          password,
+          options: { data: { full_name: fullName.trim(), selected_roles: selectedRoles } },
+        });
+        if (error) {
+          setIsError(true);
+          setMessage(error.message || t.error);
+          return;
+        }
+        if (data.session && data.user) {
+          setIsError(false);
+          setMessage(language === "bn" ? "অ্যাকাউন্ট তৈরি হয়েছে। আপনাকে ড্যাশবোর্ডে নেওয়া হচ্ছে…" : "Account created. Redirecting…");
+          if (onAuthenticated) onAuthenticated();
+          else { router.replace(safeReturnTo || "/dashboard"); router.refresh(); }
+          return;
+        }
+        setIsError(true);
+        setMessage(language === "bn"
+          ? "Supabase-এ Phone Confirm এখনো চালু আছে, তাই OTP ছাড়া Signup সম্পন্ন হয়নি। Supabase Dashboard → Authentication → Providers → Phone থেকে phone confirmation বন্ধ করতে হবে।"
+          : "Phone confirmation is still enabled in Supabase. Disable phone confirmation under Authentication → Providers → Phone to allow OTP-free signup.");
+        return;
+      }
       const callbackUrl = new URL("/auth/callback", window.location.origin);
       if (safeReturnTo) callbackUrl.searchParams.set("next", safeReturnTo);
       const emailRedirectTo = callbackUrl.toString();
@@ -216,26 +247,27 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
             <div role="group" aria-label="Signup মাধ্যম" className="mb-6 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
               <button type="button" aria-pressed={method === "email"} onClick={() => setMethod("email")}
                 className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "email" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>ইমেইল</button>
-              <button type="button" aria-pressed={method === "phone"} onClick={() => setMethod("phone")}
-                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>মোবাইল নম্বর</button>
+              <button type="button" aria-pressed={method === "phone-password"} onClick={() => setMethod("phone-password")}
+                className={"min-h-11 rounded-lg px-3 text-sm font-bold " + (method === "phone-password" ? "bg-white text-emerald-900 shadow" : "text-slate-600")}>মোবাইল নম্বর</button>
             </div>
           )}
-          {!embedded && method === "phone" ? (
-            <PhoneOtpAuth mode="signup"
-              onAuthenticated={() => {
-                if (onAuthenticated) onAuthenticated();
-                else { router.replace(safeReturnTo || "/dashboard"); router.refresh(); }
-              }} />
-          ) : <form onSubmit={signUp} className="space-y-6">
+          <form onSubmit={signUp} className="space-y-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block space-y-2 text-sm font-semibold text-slate-700">
                 {t.name}
                 <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" autoComplete="name" placeholder={t.namePlaceholder} value={fullName} onChange={(e) => setFullName(e.target.value)} required />
               </label>
-              <label className="block space-y-2 text-sm font-semibold text-slate-700">
-                {t.email}
-                <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="email" autoComplete="email" placeholder={t.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </label>
+              {method === "phone-password" ? (
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  মোবাইল নম্বর
+                  <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="tel" inputMode="tel" autoComplete="tel" maxLength={16} placeholder="017XXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+                </label>
+              ) : (
+                <label className="block space-y-2 text-sm font-semibold text-slate-700">
+                  {t.email}
+                  <input className="w-full rounded-xl border border-slate-200 bg-[#fbfcfa] px-4 py-3.5 outline-none transition placeholder:text-slate-400 focus:border-[#167453] focus:ring-4 focus:ring-[#167453]/10" type="email" autoComplete="email" placeholder={t.emailPlaceholder} value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </label>
+              )}
             </div>
 
             <label className="block space-y-2 text-sm font-semibold text-slate-700">
@@ -281,7 +313,7 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
               {busy ? t.busy : t.submit} {!busy && <ArrowRight size={18} />}
             </button>
             {message && <p role="status" aria-live="polite" className={`rounded-xl px-4 py-3 text-sm leading-6 ${isError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-800"}`}>{message}</p>}
-          </form>}
+          </form>
 
           <p className="mt-7 text-center text-sm text-slate-600">{t.haveAccount}{" "}
             {onSwitchToLogin ? (

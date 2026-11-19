@@ -152,9 +152,10 @@ assert.ok(socialProfile.includes('.eq("id", user.id)') &&
 assert.ok(!socialProfile.includes("selected_roles") && !socialProfile.includes("updateUser("),
   "Social display name autofill must not change account permissions or identity claims");
 assert.ok(authModal.includes("window.location.assign(returnTo)"), "Authentication should restore the selected product");
-assert.ok(phoneOtp.includes("signInWithOtp") && phoneOtp.includes("verifyOtp"), "Phone must authenticate with verified SMS OTP");
-assert.ok(phoneOtp.includes('shouldCreateUser: mode === "signup"'), "Phone sign-in must not create unknown accounts");
-assert.ok(loginPage.includes('method === "phone"') && signupExperience.includes('method === "phone"'), "Full login and signup pages must also offer phone");
+assert.ok(phoneOtp.includes("signInWithOtp") && phoneOtp.includes("verifyOtp"), "The optional phone OTP login flow must remain available");
+assert.ok(loginPage.includes('method === "phone-password"') && loginPage.includes('method === "phone-otp"'), "Full login page must offer phone-password and OTP login");
+assert.ok(signupExperience.includes('method === "phone-password"') && signupExperience.includes("supabase.auth.signUp") && signupExperience.includes("phone: normalizedPhone"), "Signup must create accounts with mobile number and password directly");
+assert.ok(!signupExperience.includes("PhoneOtpAuth mode=\"signup\""), "Signup must not require phone OTP verification");
 assert.ok(signupPage.includes("returnTo"), "Signup must preserve selected product return path");
 
 assert.ok(cartRoute.includes("isSimpleAddress ? upazila : (legacyArea || upazila)"), "Server should derive legacy area from an actual selected location");
