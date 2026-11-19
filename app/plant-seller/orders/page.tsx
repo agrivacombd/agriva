@@ -3,13 +3,16 @@ import {redirect} from "next/navigation";
 import {revalidatePath} from "next/cache";
 import {createSupabaseServerClient} from "@/lib/supabase/server";
 import {checkModuleAccess} from "@/lib/authz/module-access";
+import {orderStatusMessage,sendAgrivaSms} from "@/lib/sms/one9";
 export const metadata={title:"Plant Market Seller Orders | AGRIVA",robots:{index:false,follow:false}};
 async function updateOrder(formData:FormData){
  "use server";
  const id=String(formData.get("orderId")||"");const status=String(formData.get("status")||"");
  if(!/^[0-9a-f-]{36}$/i.test(id)||!["shipped","delivered","completed","cancelled"].includes(status))redirect("/plant-seller/orders?notice=invalid");
  const supabase=await createSupabaseServerClient();const {data:{user}}=await supabase.auth.getUser();if(!user)redirect("/login?next=/plant-seller/orders");
+ const {data:previousOrder}=await supabase.from("plant_market_orders").select("status").eq("id",id).maybeSingle();
  const {error}=await supabase.rpc("plant_market_set_order_status",{p_order_id:id,p_status:status});
+ if(!error&&previousOrder&&previousOrder.status!==status){const {data:order}=await supabase.from("plant_market_orders").select("shipping_address").eq("id",id).maybeSingle();const address=order?.shipping_address&&typeof order.shipping_address==="object"?order.shipping_address as Record<string,unknown>:{};const phone=typeof address.phone==="string"?address.phone:"";const sms=orderStatusMessage(id,status);if(phone&&sms)await sendAgrivaSms(phone,sms);}
  revalidatePath("/plant-seller/orders");revalidatePath("/plant-market/orders");
  redirect(error?"/plant-seller/orders?notice=error":"/plant-seller/orders?notice=saved");
 }

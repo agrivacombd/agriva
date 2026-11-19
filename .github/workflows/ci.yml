@@ -107,6 +107,8 @@ jobs:
         run: npm run test:api-role-hardening
       - name: Order notifications and admin click-through regression test
         run: node scripts/smoke-admin-order-notifications.mjs
+      - name: One9 SMS integration security and flow regression test
+        run: npm run test:one9-sms
       - name: Blog Learn Feed canonical routes and listing regression test
         run: node scripts/smoke-blog-learn-feed.mjs
       - name: Admin authorization regression test

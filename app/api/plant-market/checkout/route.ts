@@ -1,5 +1,6 @@
 import { NextRequest,NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { orderConfirmationMessage, sendAgrivaSms } from "@/lib/sms/one9";
 const clean=(v:unknown,n:number)=>typeof v==="string"?v.trim().slice(0,n):"";
 export async function POST(request:NextRequest){
  const supabase=await createSupabaseServerClient();const {data:{user},error:authError}=await supabase.auth.getUser();
@@ -21,5 +22,6 @@ export async function POST(request:NextRequest){
  const shippingAddress={...address,phone:normalized,address:[address.upazila,address.unionOrArea,address.villageRoadHouse].filter(Boolean).join(", ")};
  const {data,error}=await supabase.rpc("plant_market_finalize_checkout",{p_shipping_address:shippingAddress,p_idempotency_key:key});
  if(error){console.error("Plant Market checkout failed",{code:error.code||"unknown"});return NextResponse.json({error:"Plant Market checkout সম্পন্ন হয়নি। কার্ট ও স্টক যাচাই করে আবার চেষ্টা করুন।"},{status:409});}
+ if(!data.replayed){await sendAgrivaSms(normalized,orderConfirmationMessage(String(data.checkoutId),Number(data.total)));}
  return NextResponse.json({checkoutId:data.checkoutId,orderIds:data.orderIds,total:Number(data.total),replayed:Boolean(data.replayed)});
 }

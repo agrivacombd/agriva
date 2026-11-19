@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+import { orderStatusMessage, sendAgrivaSms } from "@/lib/sms/one9";
 
 type OrderStatus = "processing" | "shipped" | "delivered" | "completed" | "cancelled";
 
@@ -19,10 +20,18 @@ async function updateOrderStatus(formData: FormData) {
     redirect("/admin/orders?notice=invalid");
   }
   const supabase = await requireAdmin("orders.transition");
+  const { data: previousOrder } = await supabase.from("marketplace_orders").select("status").eq("id", orderId).maybeSingle();
   const { error } = await supabase.rpc("set_marketplace_order_status", {
     p_order_id: orderId,
     p_status: status,
   });
+  if (!error && previousOrder && previousOrder.status !== status) {
+    const { data: order } = await supabase.from("marketplace_orders").select("shipping_address").eq("id", orderId).maybeSingle();
+    const address = order?.shipping_address && typeof order.shipping_address === "object" ? order.shipping_address as Record<string, unknown> : {};
+    const phone = typeof address.phone === "string" ? address.phone : "";
+    const sms = orderStatusMessage(orderId, status);
+    if (phone && sms) await sendAgrivaSms(phone, sms);
+  }
   revalidatePath("/admin/orders");
   revalidatePath("/orders");
   redirect(error ? "/admin/orders?notice=error" : "/admin/orders?notice=saved");
