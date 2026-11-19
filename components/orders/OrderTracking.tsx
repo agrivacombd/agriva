@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 
 type Order = {
   id: string;
@@ -21,6 +21,7 @@ export default function OrderTracking() {
   const [selected, setSelected] = useState<Order | null>(null);
   const [notice, setNotice] = useState("");
   const [paymentNotice, setPaymentNotice] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -33,39 +34,49 @@ export default function OrderTracking() {
       setPaymentNotice("আপনি পেমেন্ট প্রক্রিয়া বাতিল করেছেন। অর্ডারের Payment status যাচাই করুন; পেমেন্ট pending থাকলে পরে আবার চেষ্টা করতে পারবেন।");
     }
 
+    let active = true;
     (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setNotice("Please sign in to view your orders.");
-        return;
+      try {
+        // Reuse the browser's guest identity created during checkout, or the
+        // regular signed-in identity. Never create a second identity for a guest.
+        const { supabase, user } = await resolveMarketplaceCartUser();
+        const { data, error } = await supabase
+          .from("marketplace_orders")
+          .select("id,total_amount,status,payment_method,payment_status,created_at,attribution_code,products(name),quantity")
+          .eq("buyer_id", user.id)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        if (!active) return;
+        setOrders((data || []).map((o: any) => ({
+          id: o.id,
+          items: `${o.products?.name || "Farm product"} × ${o.quantity}`,
+          total: Number(o.total_amount),
+          status: o.status,
+          date: new Date(o.created_at).toLocaleString(),
+          reseller: o.attribution_code ? "Referral attributed" : "Direct order",
+          payment: o.payment_method === "cod" ? "Cash on Delivery" : "Online",
+          paymentStatus: String(o.payment_status || "pending"),
+        })));
+      } catch {
+        if (active) setNotice("অর্ডারের তথ্য লোড করা যায়নি। ইন্টারনেট সংযোগ যাচাই করে আবার চেষ্টা করুন।");
+      } finally {
+        if (active) setLoading(false);
       }
-      const { data, error } = await supabase
-        .from("marketplace_orders")
-        .select("id,total_amount,status,payment_method,payment_status,created_at,attribution_code,products(name),quantity")
-        .eq("buyer_id", user.id)
-        .order("created_at", { ascending: false });
-      if (error) {
-        setNotice("অর্ডারের তথ্য লোড করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।");
-        return;
-      }
-      setOrders((data || []).map((o: any) => ({
-        id: o.id,
-        items: `${o.products?.name || "Farm product"} × ${o.quantity}`,
-        total: Number(o.total_amount),
-        status: o.status,
-        date: new Date(o.created_at).toLocaleString(),
-        reseller: o.attribution_code ? "Referral attributed" : "Direct order",
-        payment: o.payment_method === "cod" ? "Cash on Delivery" : "Online",
-        paymentStatus: String(o.payment_status || "pending"),
-      })));
     })();
+    return () => { active = false; };
   }, []);
 
   return (
     <div className="mt-8">
       {paymentNotice && <div role="status" className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-950">{paymentNotice}</div>}
-      {notice && <div className="mb-4 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{notice}</div>}
-      {orders.length === 0 && !notice && <div className="rounded-3xl bg-white p-8 text-[#647468]">No orders yet.</div>}
+      {loading && <div role="status" className="rounded-3xl bg-white p-8 text-[#647468]">অর্ডারের তথ্য লোড হচ্ছে…</div>}
+      {notice && <div role="alert" className="mb-4 rounded-xl bg-[#eef5ed] p-4 text-sm font-semibold">{notice}</div>}
+      {!loading && !notice && orders.length === 0 && (
+        <div className="rounded-3xl bg-white p-8 text-[#647468]">
+          এখনো কোনো অর্ডার পাওয়া যায়নি।
+          <p className="mt-2 text-sm">Guest হিসেবে অর্ডার করলে একই browser ও device ব্যবহার করুন, যাতে আপনার guest order session পাওয়া যায়।</p>
+        </div>
+      )}
       <div className="space-y-4">
         {orders.map((o) => {
           const current = Math.max(0, steps.indexOf(o.status));

@@ -209,6 +209,9 @@ export default function CheckoutButton({
     setLoginRequired(false);
     setMessage("");
     try {
+      // Ensure a verified regular or anonymous Supabase session exists before the server checkout request.
+      // This lets guest buyers place COD orders without creating a permanent account.
+      await resolveMarketplaceCartUser();
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -343,7 +346,7 @@ export default function CheckoutButton({
         </button>
         {formOpen && (
           <form id="direct-cod-form" onSubmit={checkout} className="space-y-4 border-t border-emerald-950/10 px-4 py-5 sm:px-5">
-            <p className="text-sm leading-6 text-slate-600">নির্বাচিত {numberBN(quantity)} {unitLabel} সরাসরি অর্ডার করুন। পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন। লগইন প্রয়োজন।</p>
+            <p className="text-sm leading-6 text-slate-600">নির্বাচিত {numberBN(quantity)} {unitLabel} সরাসরি অর্ডার করুন। লগইন ছাড়াই অর্ডার করতে পারবেন—পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন।</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-bold text-[#17351f]">আপনার নাম *
                 <input value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" maxLength={100} required placeholder="পূর্ণ নাম" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />

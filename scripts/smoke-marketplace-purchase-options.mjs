@@ -10,6 +10,7 @@ const catalogue = read("../components/marketplace/MarketplaceCore.tsx");
 const storefront = read("../app/marketplace/page.tsx");
 const cart = read("../app/cart/page.tsx");
 const checkout = read("../app/checkout/page.tsx");
+const orderTracking = read("../components/orders/OrderTracking.tsx");
 const migration = read("../supabase/migrations/20261102161719_atomic_marketplace_cart_checkout.sql");
 const divisionHelper = read("../lib/bangladesh-division.ts");
 
@@ -57,6 +58,8 @@ assert.ok(purchase.includes("const requested = /^[0-9]{1,3}$/.test(input) ? Numb
 assert.ok(purchase.includes(".replace(/[০-৯]/g, digit =>"), "Bangla numeral keyboard input must be normalized");
 assert.ok(purchase.includes("void addToCart(requested);"), "Custom apply must add the selected quantity without stale React state");
 assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Detail purchase must use the shared guest-safe cart auth helper");
+assert.ok(purchase.includes("await resolveMarketplaceCartUser();"), "Direct COD checkout must establish a verified anonymous or signed-in session before calling the API");
+assert.ok(purchase.includes("লগইন ছাড়াই অর্ডার করতে পারবেন") && !purchase.includes("পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন। লগইন প্রয়োজন।"), "Direct COD form must clearly allow guest orders");
 for (const fragment of ["fullAddress: form.fullAddress.trim()", 'setField("fullAddress"', "maxLength={250}"]) {
   assert.ok(checkout.includes(fragment), "Checkout must expose a single validated address input: " + fragment);
 }
@@ -109,15 +112,20 @@ for (const part of ["<HeaderCartLink english={english} />", 'href="/cart"']) {
   assert.ok(part === 'href="/cart"' ? headerCart.includes(part) : header.includes(part), "Header must expose the cart");
 }
 assert.ok(headerCart.includes("CART_UPDATED_EVENT") && headerCart.includes("cart_items"), "Header cart count should use real cart rows and update on changes");
-assert.ok(catalogue.includes("setAuthReturnTo(") && catalogue.includes("MarketplaceAuthModal"), "Guest card click should open login-first modal");
-assert.ok(purchase.includes("setAuthPopupOpen(true)") && purchase.includes("MarketplaceAuthModal"), "Guest product click should open modal");
+assert.ok(catalogue.includes("resolveMarketplaceCartUser") && catalogue.includes("MarketplaceAuthModal"), "Guest card purchase must create/use an anonymous buyer session");
+assert.ok(purchase.includes("resolveMarketplaceCartUser"), "Guest product purchase must use the anonymous buyer session helper");
 const cartAuth = read("../lib/marketplace/cart-auth.ts");
 assert.ok(cartAuth.includes("auth.getSession()") && cartAuth.includes("auth.getUser()"), "Check existing cookie session before verifying the logged-in user");
 assert.ok(cartAuth.indexOf("auth.getSession()") < cartAuth.indexOf("auth.getUser()"), "Guest session check must happen before the remote auth request");
-assert.ok(cartAuth.includes("isMissingSessionError(sessionError)") && cartAuth.includes("isMissingSessionError(userError)"), "Missing session must be classified as a guest");
-assert.ok(cartAuth.includes("user: null"), "No login must reach the login-first popup");
-assert.ok(catalogue.includes("if (!user) {") && catalogue.includes("setAuthReturnTo("), "No login must open popup from catalog");
-assert.ok(purchase.includes("if (!user) {") && purchase.includes("setAuthPopupOpen(true)"), "No login must open popup from product details");
+assert.ok(cartAuth.includes("auth.signInAnonymously()"), "Visitors must receive a buyer-only anonymous session without a login prompt");
+assert.ok(cartAuth.includes("const { data: userData, error: userError } = await supabase.auth.getUser()") && cartAuth.includes("return { supabase, user: userData.user };"), "Existing anonymous and signed-in sessions must be remotely verified and reused without creating a second identity");
+assert.ok(cartAuth.includes("auth.getUser()"), "Regular authenticated sessions must still be verified remotely");
+assert.ok(!cartAuth.includes("user: null"), "A visitor must not be returned as an unauthenticated cart user");
+assert.ok(cart.includes("resolveMarketplaceCartUser"), "Cart page must create a guest session when opened directly");
+assert.ok(checkout.includes("resolveMarketplaceCartUser"), "Checkout page must create a guest session when opened directly");
+assert.ok(checkout.includes("Guest Checkout: SMS OTP ছাড়াই অর্ডার করতে পারবেন"), "Guest checkout must clearly explain OTP is not required");
+assert.ok(orderTracking.includes("resolveMarketplaceCartUser") && orderTracking.includes(".eq(\"buyer_id\", user.id)"), "My Orders must load the current guest or signed-in buyer identity without a login wall");
+assert.ok(!orderTracking.includes("Please sign in to view your orders."), "Guest buyers must not be blocked from viewing orders in the same browser session");
 assert.ok(!catalogue.includes("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।"), "No login should not appear as cart network failure");
 assert.ok(purchase.includes('searchParams.get("addToCart")') && purchase.includes('searchParams.delete("addToCart")'), "Return-to-product cart intent must be one-time");
 assert.ok(authModal.includes('useState<"login" | "signup">("login")'), "Login must be the default popup");
