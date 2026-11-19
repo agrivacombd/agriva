@@ -20,8 +20,9 @@ async function updateSellerOrder(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) redirect("/login?next=/seller/orders");
+  const { data: previousOrder } = await supabase.from("marketplace_orders").select("status").eq("id", orderId).maybeSingle();
   const { error } = await supabase.rpc("set_marketplace_order_status", { p_order_id: orderId, p_status: status });
-  if (!error) {
+  if (!error && previousOrder && previousOrder.status !== status) {
     const { data: order } = await supabase.from("marketplace_orders").select("shipping_address").eq("id", orderId).maybeSingle();
     const address = order?.shipping_address && typeof order.shipping_address === "object" ? order.shipping_address as Record<string, unknown> : {};
     const phone = addressText(address.phone);
