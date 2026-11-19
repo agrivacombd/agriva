@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import VisualSearchButton from "@/components/search/VisualSearchButton";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { unstable_cache } from "next/cache";
 import {
   ArrowDownRight, ArrowRight, BookOpen, Bot, CalendarDays, CheckCircle2,
   ChevronRight, CloudSun, Leaf, Search,
@@ -64,9 +65,26 @@ export const metadata: Metadata = {
   },
 };
 
+// Cache only public, non-user-specific homepage settings. Keeping this query
+// out of the critical path on most visits reduces mobile response latency.
+const getPublicHomepageSettings = unstable_cache(async () => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return [] as { key: string; value: string }[];
+  const { data, error } = await createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  }).rpc("get_public_site_settings");
+  if (error) throw error; // Never cache a transient error as an empty setting list.
+  return (data ?? []) as { key: string; value: string }[];
+}, ["agriva-public-homepage-settings"], { revalidate: 60 });
+
 export default async function Home() {
-  const supabase = await createSupabaseServerClient();
-  const { data: publicSettings } = await supabase.rpc("get_public_site_settings");
+  let publicSettings: { key: string; value: string }[] = [];
+  try {
+    publicSettings = await getPublicHomepageSettings();
+  } catch (error) {
+    console.error("Public homepage settings unavailable:", error);
+  }
   const settingValue = (key: string, fallback = "") => (publicSettings ?? []).find((setting: { key: string; value: string }) => setting.key === key)?.value?.trim() || fallback;
   const siteName = settingValue("site_name", "AGRIVA");
   const homepageNotice = settingValue("homepage_notice");
