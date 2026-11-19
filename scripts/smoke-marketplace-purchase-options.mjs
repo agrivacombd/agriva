@@ -115,7 +115,7 @@ const cartAuth = read("../lib/marketplace/cart-auth.ts");
 assert.ok(cartAuth.includes("auth.getSession()") && cartAuth.includes("auth.getUser()"), "Check existing cookie session before verifying the logged-in user");
 assert.ok(cartAuth.indexOf("auth.getSession()") < cartAuth.indexOf("auth.getUser()"), "Guest session check must happen before the remote auth request");
 assert.ok(cartAuth.includes("isMissingSessionError(sessionError)") && cartAuth.includes("isMissingSessionError(userError)"), "Missing session must be classified as a guest");
-assert.ok(cartAuth.includes("user: null"), "No login must reach the login-first popup");
+assert.ok(cartAuth.includes("auth.signInAnonymously()") && cartAuth.includes("return { supabase, user: data.user }"), "Guests must receive a cookie-backed anonymous buyer identity instead of a login-first null user");
 assert.ok(catalogue.includes("if (!user) {") && catalogue.includes("setAuthReturnTo("), "No login must open popup from catalog");
 assert.ok(purchase.includes("if (!user) {") && purchase.includes("setAuthPopupOpen(true)"), "No login must open popup from product details");
 assert.ok(!catalogue.includes("কার্টে যোগ করা যায়নি। আপনার লগইন ও ইন্টারনেট সংযোগ যাচাই করুন।"), "No login should not appear as cart network failure");
