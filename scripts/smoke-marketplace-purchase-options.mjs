@@ -115,7 +115,7 @@ const cartAuth = read("../lib/marketplace/cart-auth.ts");
 assert.ok(cartAuth.includes("auth.getSession()") && cartAuth.includes("auth.getUser()"), "Check existing cookie session before verifying the logged-in user");
 assert.ok(cartAuth.indexOf("auth.getSession()") < cartAuth.indexOf("auth.getUser()"), "Guest session check must happen before the remote auth request");
 assert.ok(cartAuth.includes("auth.signInAnonymously()"), "Visitors must receive a buyer-only anonymous session without a login prompt");
-assert.ok(cartAuth.includes("sessionData.session.user.is_anonymous"), "Existing anonymous sessions must be reused");
+assert.ok(cartAuth.includes("const { data: userData, error: userError } = await supabase.auth.getUser()") && cartAuth.includes("return { supabase, user: userData.user };"), "Existing anonymous and signed-in sessions must be remotely verified and reused without creating a second identity");
 assert.ok(cartAuth.includes("auth.getUser()"), "Regular authenticated sessions must still be verified remotely");
 assert.ok(!cartAuth.includes("user: null"), "A visitor must not be returned as an unauthenticated cart user");
 assert.ok(cart.includes("resolveMarketplaceCartUser"), "Cart page must create a guest session when opened directly");
