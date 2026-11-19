@@ -1,64 +1,91 @@
-// @ts-nocheck -- This file runs in the Supabase Deno Edge Runtime, not the Next.js Node.js type environment.
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { Webhook } from "npm:standardwebhooks@1.0.0";
 
-type SendSmsEvent = {
-  user?: { phone?: string };
-  sms?: { otp?: string };
-};
+const json = (body: Record<string, unknown>, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 
-const ONE9_ENDPOINT = "https://sms.one9.one/api/v3/sms/send";
+function requiredEnv(name: string): string {
+  const value = Deno.env.get(name)?.trim();
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+}
 
-function normalizeRecipient(phone: string): string | null {
-  const digits = phone.replace(/[^0-9]/g, "");
-  const recipient = digits.startsWith("00880") ? digits.slice(2)
-    : digits.startsWith("880") ? digits
-    : digits.startsWith("0") ? "88" + digits
-    : digits.startsWith("1") ? "880" + digits
-    : "";
-  return /^8801[3-9]\d{8}$/.test(recipient) ? recipient : null;
+function normalizeBangladeshPhone(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const compact = value.replace(/[\s()-]/g, "");
+  const digits = compact.startsWith("+") ? compact.slice(1) : compact;
+  if (/^8801[3-9]\d{8}$/.test(digits)) return digits;
+  if (/^01[3-9]\d{8}$/.test(digits)) return `88${digits}`;
+  return null;
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
-  const secret = Deno.env.get("SEND_SMS_HOOK_SECRET")?.replace(/^v1,whsec_/, "");
-  const apiKey = Deno.env.get("ONE9_SMS_API_KEY");
-  if (!secret || !apiKey) {
-    console.error("SMS hook configuration missing");
-    return new Response("SMS provider is not configured", { status: 500 });
-  }
-
-  let event: SendSmsEvent;
   try {
     const rawBody = await req.text();
-    const webhook = new Webhook(secret);
-    event = webhook.verify(rawBody, Object.fromEntries(req.headers)) as SendSmsEvent;
-  } catch {
-    return new Response("Invalid webhook signature", { status: 401 });
-  }
+    if (rawBody.length > 32_768) return json({ error: "Payload too large" }, 413);
 
-  const phone = typeof event.user?.phone === "string" ? normalizeRecipient(event.user.phone) : null;
-  const otp = typeof event.sms?.otp === "string" ? event.sms.otp : "";
-  if (!phone || !/^\d{6}$/.test(otp)) {
-    console.error("SMS hook payload rejected");
-    return new Response("Invalid SMS payload", { status: 400 });
-  }
-
-  const message = `Your AGRIVA verification code is ${otp}. Do not share this code with anyone.`;
-  try {
-    const response = await fetch(ONE9_ENDPOINT, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ recipient: phone, sender_id: "AGRIVA", message, type: "plain" }),
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!response.ok) {
-      console.error("One9 SMS delivery failed", { status: response.status });
-      return new Response("SMS delivery failed", { status: 502 });
+    // Supabase generates a v1,whsec_<base64> secret. The Webhook library
+    // expects the base64 portion for its default base64 secret format.
+    const configuredSecret = requiredEnv("SEND_SMS_HOOK_SECRET");
+    const secret = configuredSecret.replace(/^v1,whsec_/, "");
+    if (secret === configuredSecret || !/^[A-Za-z0-9+/]+=*$/.test(secret)) {
+      return json({ error: "Invalid webhook secret configuration" }, 500);
     }
-    return new Response(null, { status: 200 });
-  } catch {
-    console.error("One9 SMS request failed");
-    return new Response("SMS delivery failed", { status: 502 });
+
+    let event: { user?: { phone?: string }; sms?: { otp?: string } };
+    try {
+      const headers = {
+        "webhook-id": req.headers.get("webhook-id") ?? "",
+        "webhook-timestamp": req.headers.get("webhook-timestamp") ?? "",
+        "webhook-signature": req.headers.get("webhook-signature") ?? "",
+      };
+      event = new Webhook(secret).verify(rawBody, headers) as typeof event;
+    } catch {
+      return json({ error: "Invalid webhook signature" }, 401);
+    }
+
+    const phone = normalizeBangladeshPhone(event.user?.phone);
+    const otp = event.sms?.otp;
+    if (!phone || typeof otp !== "string" || !/^\d{4,10}$/.test(otp)) {
+      return json({ error: "Invalid SMS event payload" }, 400);
+    }
+
+    const apiKey = requiredEnv("ONE9_SMS_API_KEY");
+    const senderId = Deno.env.get("ONE9_SENDER_ID")?.trim() || "AGRIVA";
+    const message = `Your AGRIVA verification code is ${otp}. It expires soon. Do not share this code with anyone.`;
+
+    const providerResponse = await fetch("https://sms.one9.one/api/v3/sms/send", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        recipient: phone,
+        sender_id: senderId,
+        message,
+        type: "plain",
+      }),
+      signal: AbortSignal.timeout(12_000),
+    });
+
+    if (!providerResponse.ok) {
+      // Do not log OTP, phone, API key, or provider response body (may contain PII).
+      console.error("One9 SMS provider rejected request", { status: providerResponse.status });
+      return json({ error: "SMS provider request failed" }, 502);
+    }
+
+    return json({});
+  } catch (error) {
+    console.error("Send SMS hook failed", {
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+    return json({ error: "SMS delivery unavailable" }, 500);
   }
 });
