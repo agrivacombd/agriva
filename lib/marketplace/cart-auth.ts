@@ -39,3 +39,22 @@ export function isMissingSessionError(error: { name?: string; code?: string; mes
     || ["session_not_found", "refresh_token_not_found", "invalid_refresh_token"].includes(error.code || "")
     || /^(?:auth session missing|invalid refresh token|refresh token not found)(?::|$)/i.test(error.message || "");
 }
+
+
+/**
+ * Read an existing cart identity without provisioning a new Auth user.
+ * Safe for globally rendered UI such as the header on every public page.
+ */
+export async function getExistingMarketplaceCartUser(): Promise<{ supabase: ReturnType<typeof createSupabaseBrowserClient>; user: User | null }> {
+  const supabase = createSupabaseBrowserClient();
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+
+  if (sessionError && !isMissingSessionError(sessionError)) throw sessionError;
+  if (!sessionData.session?.user || sessionError) return { supabase, user: null };
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError && !isMissingSessionError(userError)) throw userError;
+  if (!userData.user) return { supabase, user: null };
+
+  return { supabase, user: userData.user };
+}

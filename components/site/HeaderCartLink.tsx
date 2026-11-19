@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
-import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
+import { getExistingMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 
 export const CART_UPDATED_EVENT = "agriva:cart-updated";
 
@@ -21,7 +21,8 @@ export default function HeaderCartLink({ english }: { english: boolean }) {
       if (version === reloadVersion.current) setCount(value);
     };
     try {
-      const { supabase, user } = await resolveMarketplaceCartUser();
+      const { supabase, user } = await getExistingMarketplaceCartUser();
+      // Header renders on every public page: never create a guest Auth user just to show a cart badge.
       if (!user) { updateCount(0); return; }
       const { data: cart, error: cartError } = await supabase.from("carts")
         .select("id").eq("user_id", user.id).eq("status", "active").maybeSingle();
