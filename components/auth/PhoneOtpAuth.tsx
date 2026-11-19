@@ -16,11 +16,12 @@ export function normalizeBangladeshPhone(input: string): string | null {
 }
 
 export default function PhoneOtpAuth({
-  mode, onAuthenticated, onSwitchMode,
+  mode, onAuthenticated, onSwitchMode, allowPasswordSetup = false,
 }: {
   mode: PhoneAuthMode;
   onAuthenticated: () => void;
   onSwitchMode?: () => void;
+  allowPasswordSetup?: boolean;
 }) {
   const [phone, setPhone] = useState("");
   const [verifiedPhone, setVerifiedPhone] = useState("");
@@ -32,6 +33,9 @@ export default function PhoneOtpAuth({
   const [signupSuggested, setSignupSuggested] = useState(false);
   const [notice, setNotice] = useState("");
   const [lastSentAt, setLastSentAt] = useState(0);
+  const [passwordSetup, setPasswordSetup] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   async function requestOtp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -106,16 +110,50 @@ export default function PhoneOtpAuth({
         setError(verifyError?.message || "OTP যাচাই হয়নি। আবার চেষ্টা করুন।");
         return;
       }
-      onAuthenticated();
+      if (allowPasswordSetup) setPasswordSetup(true);
+      else onAuthenticated();
     } catch {
       setError("OTP যাচাই করা যায়নি। আবার চেষ্টা করুন।");
+    } finally { setBusy(false); }
+  }
+
+  async function savePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    if (newPassword.length < 8) { setError("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।"); return; }
+    if (newPassword !== confirmPassword) { setError("দুটি পাসওয়ার্ড মিলছে না।"); return; }
+    setBusy(true);
+    setError("");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) { setError(updateError.message || "পাসওয়ার্ড সংরক্ষণ করা যায়নি।"); return; }
+      onAuthenticated();
+    } catch {
+      setError("পাসওয়ার্ড সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।");
     } finally { setBusy(false); }
   }
 
   return (
     <div className="space-y-4">
       {mode === "signup" && <p className="text-sm leading-6 text-slate-600">ইমেইল ছাড়াই মোবাইল নম্বর ও OTP দিয়ে AGRIVA অ্যাকাউন্ট তৈরি করুন।</p>}
-      {verifiedPhone ? (
+      {passwordSetup ? (
+        <form onSubmit={savePassword} className="space-y-4">
+          <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-950">মোবাইল নম্বর যাচাই হয়েছে। পরেরবার OTP ছাড়াই লগইন করতে একটি পাসওয়ার্ড সেট করুন।</p>
+          <label className="block text-sm font-bold text-slate-700">নতুন পাসওয়ার্ড
+            <input type="password" autoComplete="new-password" minLength={8} required value={newPassword} onChange={event => setNewPassword(event.target.value)}
+              placeholder="কমপক্ষে ৮ অক্ষর" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-700" />
+          </label>
+          <label className="block text-sm font-bold text-slate-700">পাসওয়ার্ড নিশ্চিত করুন
+            <input type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)}
+              placeholder="পাসওয়ার্ড আবার লিখুন" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-emerald-700" />
+          </label>
+          <button type="submit" disabled={busy} className="min-h-12 w-full rounded-xl bg-emerald-800 px-4 py-3 text-sm font-black text-white disabled:opacity-50">
+            {busy ? "সংরক্ষণ হচ্ছে…" : "পাসওয়ার্ড সেট করে লগইন"}
+          </button>
+          <button type="button" disabled={busy} onClick={onAuthenticated} className="w-full text-xs font-bold text-emerald-900 underline underline-offset-2">এখন নয়, শুধু OTP দিয়ে লগইন করুন</button>
+        </form>
+      ) : verifiedPhone ? (
         <form onSubmit={verifyOtp} className="space-y-4">
           <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-950">{notice} <strong>{verifiedPhone}</strong></p>
           <label className="block text-sm font-bold text-slate-700">SMS OTP
