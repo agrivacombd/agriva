@@ -12,12 +12,12 @@ declare
   v_admin boolean;
 begin
   if uid is null then raise exception 'Authentication required' using errcode='42501'; end if;
-  v_admin := public.is_admin();
+  v_admin := coalesce(public.is_admin(),false);
   select * into o from public.marketplace_orders where id=p_order_id for update;
   if not found then raise exception 'Order not found' using errcode='P0002'; end if;
 
   if not v_admin then
-    if o.farmer_id<>uid or not exists (
+    if o.farmer_id is distinct from uid or not exists (
       select 1 from public.organizations org
       where org.owner_id=uid and org.status='verified'
         and public.has_module_access('marketplace','manage_orders','organization',org.id)
