@@ -155,7 +155,7 @@ begin
   if not v_admin then
     -- Buyers retain the pre-existing ability to cancel before dispatch.
     v_buyer_cancel := o.buyer_id is not distinct from uid
-      and p_status='cancelled' and o.status in ('pending','processing');
+      and p_status='cancelled' and o.status in ('pending','processing','cancelled');
     if v_buyer_cancel then
       v_allowed := true;
     else
@@ -171,6 +171,7 @@ begin
         raise exception 'Marketplace order-management permission required for this seller organization' using errcode='42501';
       end if;
       v_allowed :=
+        o.status=p_status or
         (o.status='pending' and p_status='processing') or
         (o.status='processing' and p_status in ('shipped','cancelled')) or
         (o.status='shipped' and p_status in ('delivered','cancelled')) or
@@ -178,6 +179,7 @@ begin
     end if;
   else
     v_allowed :=
+      o.status=p_status or
       (o.status='pending' and p_status in ('processing','cancelled')) or
       (o.status='processing' and p_status in ('shipped','cancelled')) or
       (o.status='shipped' and p_status in ('delivered','cancelled')) or
