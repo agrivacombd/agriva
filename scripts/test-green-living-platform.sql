@@ -51,6 +51,19 @@ $$;
 GRANT USAGE ON SCHEMA private TO authenticated;
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated;
 
+-- The Green Exchange migration calls the public admin predicate. Mirror the
+-- production helper in this isolated PostgreSQL fixture.
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $
+  SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
+$;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
 \i supabase/migrations/20261030183610_green_exchange_reconcile.sql
 \i supabase/migrations/20261030183617_green_living_reconcile.sql
 \i supabase/migrations/20261030183622_green_living_fk_indexes.sql
