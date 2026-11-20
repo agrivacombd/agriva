@@ -40,15 +40,19 @@ begin
     end if;
   end if;
 
-  -- Only a pre-shipment cancellation returns stock. A refund is financial,
-  -- not proof that goods were physically returned and made saleable again.
-  if p_status='cancelled' and o.status in ('pending','processing') and o.shipped_at is null then
+  -- Only orders that have not shipped can release the reserved stock.
+  -- A post-shipment refund is financial, not proof of a physical return.
+  if p_status in ('cancelled','refunded')
+     and o.status in ('pending','processing') and o.shipped_at is null then
     update public.products set stock=stock+o.quantity,updated_at=now() where id=o.product_id;
   end if;
 
   if p_status in ('cancelled','refunded') then
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
+  elsif p_status in ('delivered','completed') then
+    update public.reseller_commissions set status='approved',updated_at=now()
+      where order_id=o.id and status='pending';
   end if;
 
   update public.marketplace_orders set status=p_status,updated_at=now(),
