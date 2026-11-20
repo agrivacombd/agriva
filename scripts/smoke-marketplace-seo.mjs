@@ -120,6 +120,9 @@ for (const [label, source, marker] of [
 }
 assert.equal((cvBuilder.match(/<h1\b/g) || []).length, 1, "CV Builder must have one page-level H1; preview name is a subordinate heading");
 assert.match(marketplace, /title: "কৃষি পণ্য, বীজ ও সার"/, "Marketplace page metadata title must not repeat the brand suffix from the root template");
+assert.match(marketplace, /<MarketplaceCore[^>]*availableCategoriesOnly/, "Marketplace category UI must hide categories without active products");
+assert.match(marketplace, /পোস্ট জমা দিলে প্রকাশিত হবে; ক্রেতারা আপনার ফসল দেখে সরাসরি যোগাযোগ করতে পারবেন/, "Harvest selling service copy must reflect immediate publication");
+assert.doesNotMatch(marketplace, /ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন\. অনুমোদনের পর ক্রেতারা আপনার ফসল দেখতে পারবেন/, "Harvest listing copy must not claim an approval delay");
 assert.doesNotMatch(cmsBlogArticle, /সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত/, "Integrated pest management article title must stay concise");
 
 console.log("Marketplace SEO and locale language regression checks passed.");
