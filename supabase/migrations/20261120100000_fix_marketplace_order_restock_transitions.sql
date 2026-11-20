@@ -11,6 +11,7 @@ as $$
 declare
   uid uuid := auth.uid();
   o public.marketplace_orders;
+  v_product_farmer_id uuid;
   v_admin boolean;
   v_allowed boolean := false;
 begin
@@ -25,6 +26,13 @@ begin
   v_admin := public.is_admin();
   select * into o from public.marketplace_orders where id=p_order_id for update;
   if not found then raise exception 'Order not found' using errcode='P0002'; end if;
+
+  -- Defense in depth: the referenced product must still belong to the seller recorded on the order.
+  select farmer_id into v_product_farmer_id
+    from public.products where id=o.product_id for update;
+  if v_product_farmer_id is distinct from o.farmer_id then
+    raise exception 'Order seller does not match product owner' using errcode='23514';
+  end if;
 
   if not v_admin then
     if o.farmer_id is distinct from uid or not exists (
@@ -53,14 +61,15 @@ begin
     raise exception 'Invalid order status transition: % -> %',o.status,p_status using errcode='22023';
   end if;
 
-  -- Inventory is released only for pre-dispatch cancellations. A refund is
-  -- financial; shipped/fulfilled goods must not be automatically returned to stock.
+  -- Inventory is released only for pre-dispatch cancellations. A refund is financial;
+  -- shipped/fulfilled goods must not be automatically returned to stock.
   if p_status='cancelled' and o.status in ('pending','processing') then
     update public.products set stock=stock+o.quantity,updated_at=now()
       where id=o.product_id;
   end if;
 
   if p_status in ('cancelled','refunded') then
+    -- Paid commissions are deliberately retained; any payout recovery needs a ledger/accounting process.
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
   elsif p_status in ('delivered','completed') then
@@ -69,7 +78,9 @@ begin
   end if;
 
   update public.marketplace_orders
-    set status=p_status,updated_at=now(),
+    set status=p_status,
+      payment_status=case when p_status='refunded' and payment_status='paid' then 'refunded' else payment_status end,
+      updated_at=now(),
       shipped_at=case when p_status='shipped' then coalesce(shipped_at,now()) else shipped_at end,
       delivered_at=case when p_status in ('delivered','completed') then coalesce(delivered_at,now()) else delivered_at end
     where id=o.id returning * into o;
