@@ -2,6 +2,54 @@
 -- Legacy products without an explicit organization are intentionally not purchasable until mapped.
 begin;
 
+-- Refunds and paid commissions require external/manual reconciliation. Do not
+-- mark a payment as refunded merely because an admin changed the order status.
+alter table public.marketplace_orders
+  add column if not exists refund_reconciliation_status text not null default 'not_required';
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid='public.marketplace_orders'::regclass
+      and conname='marketplace_orders_refund_reconciliation_status_check'
+  ) then
+    alter table public.marketplace_orders
+      add constraint marketplace_orders_refund_reconciliation_status_check
+      check (refund_reconciliation_status in ('not_required','pending','completed')) not valid;
+  end if;
+end $$;
+alter table public.marketplace_orders
+  validate constraint marketplace_orders_refund_reconciliation_status_check;
+create index if not exists marketplace_orders_refund_reconciliation_pending_idx
+  on public.marketplace_orders (updated_at desc)
+  where refund_reconciliation_status='pending';
+
+alter table public.reseller_commissions
+  add column if not exists reconciliation_status text not null default 'not_required';
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid='public.reseller_commissions'::regclass
+      and conname='reseller_commissions_reconciliation_status_check'
+  ) then
+    alter table public.reseller_commissions
+      add constraint reseller_commissions_reconciliation_status_check
+      check (reconciliation_status in ('not_required','pending','completed')) not valid;
+  end if;
+end $$;
+alter table public.reseller_commissions
+  validate constraint reseller_commissions_reconciliation_status_check;
+create index if not exists reseller_commissions_reconciliation_pending_idx
+  on public.reseller_commissions (updated_at desc)
+  where reconciliation_status='pending';
+
+comment on column public.marketplace_orders.refund_reconciliation_status is
+  'Pending means a paid order was marked refunded in the app and its external/manual payment refund must still be reconciled. This column does not initiate a provider refund.';
+comment on column public.reseller_commissions.reconciliation_status is
+  'Pending means a commission already paid out on a refunded order requires separate accounting reconciliation; paid commission status is never silently reversed.';
+
+
 create or replace function private.snapshot_marketplace_order_seller_organization()
 returns trigger
 language plpgsql
@@ -73,6 +121,7 @@ declare
   o public.marketplace_orders;
   v_product_farmer_id uuid;
   v_admin boolean;
+  v_buyer_cancel boolean := false;
   v_allowed boolean := false;
 begin
   if uid is null then
@@ -94,21 +143,29 @@ begin
   end if;
 
   if not v_admin then
-    if o.farmer_id is distinct from uid
-       or o.seller_organization_id is null
-       or not exists (
-         select 1 from public.organizations org
-         where org.id=o.seller_organization_id
-           and org.owner_id=uid
-           and org.status='verified'
-           and public.has_module_access('marketplace','manage_orders','organization',org.id)
-       ) then
-      raise exception 'Marketplace order-management permission required for this seller organization' using errcode='42501';
+    -- Buyers retain the pre-existing ability to cancel before dispatch.
+    v_buyer_cancel := o.buyer_id is not distinct from uid
+      and p_status='cancelled' and o.status in ('pending','processing');
+    if v_buyer_cancel then
+      v_allowed := true;
+    else
+      if o.farmer_id is distinct from uid
+         or o.seller_organization_id is null
+         or not exists (
+           select 1 from public.organizations org
+           where org.id=o.seller_organization_id
+             and org.owner_id=uid
+             and org.status='verified'
+             and public.has_module_access('marketplace','manage_orders','organization',org.id)
+         ) then
+        raise exception 'Marketplace order-management permission required for this seller organization' using errcode='42501';
+      end if;
+      v_allowed :=
+        (o.status='pending' and p_status='processing') or
+        (o.status='processing' and p_status in ('shipped','cancelled')) or
+        (o.status='shipped' and p_status in ('delivered','cancelled')) or
+        (o.status='delivered' and p_status='completed');
     end if;
-    v_allowed :=
-      (o.status='processing' and p_status in ('shipped','cancelled')) or
-      (o.status='shipped' and p_status in ('delivered','cancelled')) or
-      (o.status='delivered' and p_status='completed');
   else
     v_allowed :=
       (o.status='pending' and p_status in ('processing','cancelled')) or
@@ -131,6 +188,11 @@ begin
   if p_status in ('cancelled','refunded') then
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
+    if p_status='refunded' then
+      update public.reseller_commissions
+        set reconciliation_status='pending',updated_at=now()
+        where order_id=o.id and status='paid' and coalesce(paid_amount,0)>0;
+    end if;
   elsif p_status in ('delivered','completed') then
     update public.reseller_commissions set status='approved',updated_at=now()
       where order_id=o.id and status='pending';
@@ -138,7 +200,12 @@ begin
 
   update public.marketplace_orders
     set status=p_status,
-      payment_status=case when p_status='refunded' and payment_status='paid' then 'refunded' else payment_status end,
+      -- A refund status is not proof of a successful payment-provider refund.
+      payment_status=payment_status,
+      refund_reconciliation_status=case
+        when p_status='refunded' and payment_status='paid' then 'pending'
+        else refund_reconciliation_status
+      end,
       updated_at=now(),
       shipped_at=case when p_status='shipped' then coalesce(shipped_at,now()) else shipped_at end,
       delivered_at=case when p_status in ('delivered','completed') then coalesce(delivered_at,now()) else delivered_at end
