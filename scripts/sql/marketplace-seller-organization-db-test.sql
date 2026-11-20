@@ -58,7 +58,8 @@ as $$ select coalesce(nullif(current_setting('test.manage_orders', true), '')::b
 insert into public.organizations (id, owner_id, status) values
 ('10000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000001','verified'),
 ('10000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000002','verified'),
-('10000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000001','pending');
+('10000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000001','pending'),
+('10000000-0000-0000-0000-000000000004','20000000-0000-0000-0000-000000000001','verified');
 
 -- Product creation rejects organizations owned by another seller or not verified.
 do $$
@@ -104,7 +105,7 @@ begin
   end if;
 
   begin
-    update public.products set seller_organization_id='10000000-0000-0000-0000-000000000002'
+    update public.products set seller_organization_id='10000000-0000-0000-0000-000000000004'
     where id='30000000-0000-0000-0000-000000000010';
     raise exception 'Expected organization reassignment after order to fail';
   exception when check_violation then null;
