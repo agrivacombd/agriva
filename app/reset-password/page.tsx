@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { getPostLoginRedirect } from "@/lib/auth/post-login";
 
 export default function ResetPasswordPage() {
   const [language, setLanguage] = useState<"bn" | "en">("bn");
@@ -36,8 +37,15 @@ export default function ResetPasswordPage() {
       return;
     }
     setError(false);
-    setMessage(bn ? "পাসওয়ার্ড আপডেট হয়েছে। ড্যাশবোর্ডে নেওয়া হচ্ছে…" : "Password updated. Redirecting to your dashboard…");
-    window.setTimeout(() => router.push("/dashboard"), 900);
+    setMessage(bn ? "পাসওয়ার্ড আপডেট হয়েছে। আপনার অ্যাকাউন্টে নেওয়া হচ্ছে…" : "Password updated. Redirecting to your account…");
+    window.setTimeout(() => {
+      void getPostLoginRedirect("/dashboard").then((destination) => {
+        router.replace(destination);
+        router.refresh();
+      }).catch(() => {
+        router.replace("/login");
+      });
+    }, 900);
   }
 
   return <main className="grid min-h-screen place-items-center bg-[#f6f8f3] px-5 py-12 text-[#17351f]"><section className="w-full max-w-md rounded-[1.75rem] border border-[#e3e9e0] bg-white p-7 shadow-[0_18px_60px_rgba(26,65,39,0.07)] sm:p-9">
