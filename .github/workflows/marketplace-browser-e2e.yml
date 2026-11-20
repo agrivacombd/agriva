@@ -64,19 +64,19 @@ jobs:
 
           def set_value(section_name, key, value):
               header = f"[{section_name}]"
-              match = re.search(rf"(?m)^\\[{re.escape(section_name)}\\]\\s*$", config)
+              match = re.search(rf"(?m)^\[{re.escape(section_name)}\]\s*$", config)
               if match:
-                  next_section = re.search(r"(?m)^\\[[^\\]]+\\]\\s*$", config[match.end():])
+                  next_section = re.search(r"(?m)^\[[^\]]+\]\s*$", config[match.end():])
                   end = match.end() + next_section.start() if next_section else len(config)
                   section = config[match.end():end]
-                  setting = re.search(rf"(?m)^\\s*{re.escape(key)}\\s*=.*$", section)
+                  setting = re.search(rf"(?m)^\s*{re.escape(key)}\s*=.*$", section)
                   if setting:
                       section = section[:setting.start()] + f"{key} = {value}" + section[setting.end():]
                   else:
-                      section = f"\\n{key} = {value}" + section
+                      section = f"\n{key} = {value}" + section
                   return config[:match.end()] + section + config[end:]
-              suffix = "" if not config.strip() else "\\n"
-              return config + suffix + header + f"\\n{key} = {value}\\n"
+              suffix = "" if not config.strip() else "\n"
+              return config + suffix + header + f"\n{key} = {value}\n"
 
           for section, key, value in [
               ("db", "port", "54323"),
