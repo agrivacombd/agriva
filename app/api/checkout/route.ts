@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
   const codSetting = (settings ?? []).find((setting: { key: string; value: string }) => setting.key === "cod_enabled");
   if (codSetting?.value !== "true") return NextResponse.json({ error: "Cash on Delivery বর্তমানে বন্ধ আছে।" }, { status: 403 });
 
+  const idempotencyKey = cleanText(body.idempotencyKey, 100);
+  if (!/^[A-Za-z0-9_-]{16,100}$/.test(idempotencyKey)) {
+    return NextResponse.json({ error: "Checkout request key is invalid. আবার চেষ্টা করুন।" }, { status: 400 });
+  }
+
   const raw = body.shippingAddress && typeof body.shippingAddress === "object" && !Array.isArray(body.shippingAddress)
     ? body.shippingAddress as Record<string, unknown> : {};
   const shippingAddress = {
@@ -40,10 +45,11 @@ export async function POST(request: NextRequest) {
   if (!/^(?:\+?88)?01[3-9]\d{8}$/.test(shippingAddress.phone.replace(/[\s()-]/g, ""))) {
     return NextResponse.json({ error: "সঠিক বাংলাদেশি মোবাইল নম্বর দিন।" }, { status: 400 });
   }
-  const { data: order, error } = await supabase.rpc("finalize_marketplace_cod_order_safe", {
+  const { data: order, error } = await supabase.rpc("finalize_marketplace_cod_order_idempotent", {
     p_product_id: productId,
     p_quantity: quantity,
     p_shipping_address: shippingAddress,
+    p_idempotency_key: idempotencyKey,
     p_attribution_code: request.cookies.get("agriva_reseller")?.value ?? null,
     p_visitor_token: request.cookies.get("agriva_visitor")?.value ?? null,
   });
