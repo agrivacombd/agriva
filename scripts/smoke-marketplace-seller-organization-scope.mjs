@@ -22,6 +22,8 @@ has(migration, "Seller organization is not assigned to this product", "Legacy un
 has(migration, "Seller organization cannot change after marketplace orders exist", "Product organization must be immutable after orders exist");
 has(migration, "o.seller_organization_id is null", "Legacy org-less orders must fail closed for sellers");
 has(migration, "o.buyer_id is not distinct from uid", "Buyers retain cancellation before dispatch");
+has(migration, "o.status in ('pending','processing','cancelled')", "Buyer cancellation retries remain idempotent");
+has(migration, "o.status=p_status or", "Authorized seller/admin status retries remain idempotent");
 has(migration, "(o.status='pending' and p_status='processing')", "Sellers retain the pending-to-processing transition");
 has(migration, "refund_reconciliation_status='pending'", "Paid refunds must enter external payment reconciliation");
 assert.ok(!migration.includes("payment_status=case when p_status='refunded'"), "Order status changes must not falsely mark a provider refund as completed");
