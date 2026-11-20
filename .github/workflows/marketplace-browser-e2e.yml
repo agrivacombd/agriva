@@ -62,21 +62,21 @@ jobs:
           path = Path("supabase/config.toml")
           config = path.read_text()
 
-          def set_value(section_name, key, value):
+          def set_value(text, section_name, key, value):
               header = f"[{section_name}]"
-              match = re.search(rf"(?m)^\[{re.escape(section_name)}\]\s*$", config)
-              if match:
-                  next_section = re.search(r"(?m)^\[[^\]]+\]\s*$", config[match.end():])
-                  end = match.end() + next_section.start() if next_section else len(config)
-                  section = config[match.end():end]
-                  setting = re.search(rf"(?m)^\s*{re.escape(key)}\s*=.*$", section)
-                  if setting:
-                      section = section[:setting.start()] + f"{key} = {value}" + section[setting.end():]
-                  else:
-                      section = f"\n{key} = {value}" + section
-                  return config[:match.end()] + section + config[end:]
-              suffix = "" if not config.strip() else "\n"
-              return config + suffix + header + f"\n{key} = {value}\n"
+              section_start = re.search(rf"(?m)^\\[{re.escape(section_name)}\\][ \\t]*$", text)
+              if not section_start:
+                  separator = "" if not text.strip() else "\\n"
+                  return text + separator + header + f"\\n{key} = {value}\\n"
+              following = re.search(r"(?m)^\\[[^\\]]+\\][ \\t]*$", text[section_start.end():])
+              section_end = section_start.end() + following.start() if following else len(text)
+              section_text = text[section_start.start():section_end]
+              setting = re.search(rf"(?m)^[ \\t]*{re.escape(key)}[ \\t]*=.*$", section_text)
+              if setting:
+                  section_text = section_text[:setting.start()] + f"{key} = {value}" + section_text[setting.end():]
+              else:
+                  section_text = section_text.rstrip() + f"\\n{key} = {value}\\n"
+              return text[:section_start.start()] + section_text + text[section_end:]
 
           for section, key, value in [
               ("db", "port", "54323"),
@@ -87,13 +87,12 @@ jobs:
               ("auth.email", "enable_signup", "true"),
               ("auth.email", "enable_confirmations", "false"),
           ]:
-              config = set_value(section, key, value)
-
+              config = set_value(config, section, key, value)
           path.write_text(config)
           print("Configured a disposable local Supabase DB and email/password Auth; email confirmations are disabled only for this runner.")
           PY
       - name: Start isolated Supabase PostgreSQL, Auth and PostgREST
-        run: supabase start -x realtime,imgproxy,mailpit,storage,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase start -x realtime,imgproxy,mailpit,storage-api,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Export disposable local Supabase connection settings
         shell: bash
         run: |
