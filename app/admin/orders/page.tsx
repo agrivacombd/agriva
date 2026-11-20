@@ -67,7 +67,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const supabase = await requireAdmin();
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
-    .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
+    .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,refund_reconciliation_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(100);
@@ -138,6 +138,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                 <p className="mt-2 text-xl font-black">COD: ৳{Number(o.total_amount ?? 0).toLocaleString("bn-BD")}</p>
                 <p className="mt-1 text-xs text-[#647468]">ডেলিভারি চার্জ: ৳{Number(o.delivery_fee ?? 0).toLocaleString("bn-BD")} · পেমেন্ট: Cash on Delivery</p>
                 <p className="mt-2 text-xs font-semibold text-amber-800">আদায়ের অবস্থা: {o.payment_status === "paid" ? "পেইড হিসেবে রেকর্ড আছে" : "এখনো আদায়/পেইড হিসেবে রেকর্ড নেই"}</p>
+                {o.refund_reconciliation_status === "pending" && <p role="status" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs font-bold text-amber-900">রিফান্ড reconciliation বাকি: payment provider বা ম্যানুয়াল refund সম্পন্ন ও যাচাই না হওয়া পর্যন্ত payment status পরিবর্তন করবেন না।</p>}
               </div>
               <div className="rounded-xl border border-[#e4ebe1] p-4">
                 <p className="text-sm font-extrabold">ডেলিভারি তথ্য</p><p className="mt-2 text-sm">{phone || "মোবাইল নম্বর নেই"}</p><p className="mt-1 text-sm font-semibold">{district || "জেলা দেওয়া নেই"}</p><p className="mt-1 whitespace-pre-wrap text-sm text-[#647468]">{fullAddress || "সম্পূর্ণ ঠিকানা দেওয়া নেই"}</p>
