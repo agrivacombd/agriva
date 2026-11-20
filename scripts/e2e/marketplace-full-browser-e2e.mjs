@@ -39,11 +39,6 @@ function trackErrors(page, label) {
   page.on("pageerror", (error) => pageErrors.push(`${label}: ${error.message}`));
 }
 
-async function closePrivacyNotice(page) {
-  const button = page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true });
-  if (await button.count()) await button.click();
-}
-
 async function signIn(page, email, password) {
   await page.goto("/login");
   await page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click({ timeout: 10_000 }).catch(() => {});
