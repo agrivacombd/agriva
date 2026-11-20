@@ -112,7 +112,13 @@ try {
 
   // 2. Place a real COD order against the isolated, seeded product.
   await buyer.page.goto("/marketplace/agriva-e2e-cod-product");
-  await buyer.page.getByRole("heading", { name: "AGRIVA E2E COD Test Product" }).waitFor({ state: "visible" });
+  const productHeading = buyer.page.getByRole("heading", { name: "AGRIVA E2E COD Test Product" });
+  try {
+    await productHeading.waitFor({ state: "visible", timeout: 15_000 });
+  } catch (error) {
+    console.error("Product page diagnostics:", JSON.stringify({ url: buyer.page.url(), title: await buyer.page.title(), headings: await buyer.page.locator("h1,h2,h3").allTextContents(), body: (await buyer.page.locator("body").innerText()).slice(0, 2500) }, null, 2));
+    throw error;
+  }
   await buyer.page.getByRole("button", { name: "Buy Now", exact: true }).first().click();
   const codForm = buyer.page.locator("#direct-cod-form");
   await codForm.waitFor({ state: "visible" });
