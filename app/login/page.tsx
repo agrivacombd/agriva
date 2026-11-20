@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Eye, EyeOff, Globe2, LockKeyhole } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
-import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
+import PhonePasswordAuth from "@/components/auth/PhonePasswordAuth";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 import { safeAuthNextPath } from "@/lib/auth/safe-next";
 import { getPostLoginRedirect } from "@/lib/auth/post-login";
@@ -153,7 +153,7 @@ function LoginForm() {
             </div>
             {method === "phone" ? (
               <div className="mt-6">
-                <PhoneOtpAuth mode="login" onAuthenticated={() => {
+                <PhonePasswordAuth onAuthenticated={() => {
                   void getPostLoginRedirect(safeNext).then((target) => {
                     router.replace(target);
                     router.refresh();

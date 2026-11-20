@@ -45,6 +45,10 @@ export async function GET(request: Request) {
     return NextResponse.redirect(new URL("/login?error=role_lookup", url.origin));
   }
 
-  const destination = profile?.role === "admin" ? "/admin" : next;
+  // Password-recovery links must reach the password form before role routing.
+  // Normal sign-ins still send admins to the admin area.
+  const destination = next === "/reset-password"
+    ? "/reset-password"
+    : profile?.role === "admin" ? "/admin" : next;
   return NextResponse.redirect(new URL(destination, url.origin));
 }
