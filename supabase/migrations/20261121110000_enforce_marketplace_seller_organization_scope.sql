@@ -1,6 +1,99 @@
 -- Bind every newly-created Marketplace order to the seller organization recorded on its product.
--- Legacy products without an explicit organization are intentionally not purchasable until mapped.
+-- Legacy products without an explicit organization are intentionally not purchasable.
 begin;
+
+-- Validate organization ownership whenever a product is assigned to an organization.
+-- Keep NULL assignments available for pre-existing/legacy product workflows; checkout
+-- below fails closed for any product that still has no organization.
+create or replace function public.validate_marketplace_product_seller_organization()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $$
+declare
+  v_organization public.organizations;
+begin
+  if new.seller_organization_id is null then
+    return new;
+  end if;
+
+  select * into v_organization
+    from public.organizations
+    where id = new.seller_organization_id;
+
+  if not found
+     or v_organization.owner_id is distinct from new.farmer_id
+     or v_organization.status is distinct from 'verified' then
+    raise exception 'Seller organization must be verified and owned by the product seller'
+      using errcode = '23514';
+  end if;
+
+  if tg_op = 'UPDATE'
+     and old.seller_organization_id is distinct from new.seller_organization_id
+     and exists (
+       select 1 from public.marketplace_orders
+       where product_id = old.id
+     ) then
+    raise exception 'Seller organization cannot change after marketplace orders exist'
+      using errcode = '23514';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_marketplace_product_seller_organization
+  on public.products;
+create trigger validate_marketplace_product_seller_organization
+  before insert or update of seller_organization_id on public.products
+  for each row
+  execute function public.validate_marketplace_product_seller_organization();
+
+-- Snapshot the product's organization on every new order. Never trust a client- or
+-- checkout-function-supplied organization ID; derive it from the locked product row.
+create or replace function public.snapshot_marketplace_order_seller_organization()
+returns trigger
+language plpgsql
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $$
+declare
+  v_product public.products;
+  v_organization public.organizations;
+begin
+  select * into v_product
+    from public.products
+    where id = new.product_id
+    for key share;
+
+  if not found or v_product.seller_organization_id is null then
+    raise exception 'Seller organization is not assigned to this product'
+      using errcode = '23514';
+  end if;
+
+  select * into v_organization
+    from public.organizations
+    where id = v_product.seller_organization_id;
+
+  if not found
+     or v_organization.owner_id is distinct from v_product.farmer_id
+     or v_organization.status is distinct from 'verified' then
+    raise exception 'Product seller organization is not verified or does not match the seller'
+      using errcode = '23514';
+  end if;
+
+  new.seller_organization_id := v_product.seller_organization_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists snapshot_marketplace_order_seller_organization
+  on public.marketplace_orders;
+create trigger snapshot_marketplace_order_seller_organization
+  before insert on public.marketplace_orders
+  for each row
+  execute function public.snapshot_marketplace_order_seller_organization();
 
 create or replace function public.set_marketplace_order_status(p_order_id uuid,p_status text)
 returns public.marketplace_orders
@@ -96,6 +189,8 @@ begin
 end;
 $$;
 
+revoke all on function public.validate_marketplace_product_seller_organization() from public,anon;
+revoke all on function public.snapshot_marketplace_order_seller_organization() from public,anon;
 revoke all on function public.set_marketplace_order_status(uuid,text) from public,anon;
 grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated;
 
