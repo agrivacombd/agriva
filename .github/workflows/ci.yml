@@ -175,7 +175,7 @@ jobs:
       - name: Cross-linked AGRIVA knowledge hubs regression
         run: node scripts/smoke-knowledge-hub-links.mjs
       - name: Learn hub SEO, answer content, breadcrumbs and schema validation
-        run: node scripts/smoke-learn-seo-aeo.mjs
+        run: npm run test:learn-seo-aeo
       - name: Learn slug navigation and canonical route regression
         run: node scripts/smoke-learn-route.mjs
       - name: Plant disease case details mobile accessibility regression
@@ -225,3 +225,53 @@ jobs:
           PGPASSWORD: postgres
           PGDATABASE: agriva_test
         run: psql -v ON_ERROR_STOP=1 -f scripts/sql/marketplace-seller-organization-db-test.sql
+
+  marketplace-full-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_TELEMETRY_DISABLED: "1"
+      PGHOST: 127.0.0.1
+      PGPORT: 54322
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Initialize an ephemeral local-only Supabase stack
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("supabase/config.toml")
+          config = path.read_text()
+          pattern = re.compile(r"(?ms)^\[db\.migrations\]\s*\n.*?(?=^\[|\Z)")
+          match = pattern.search(config)
+          if match:
+              section = match.group(0)
+              if re.search(r"(?m)^enabled\s*=", section):
+                  section = re.sub(r"(?m)^enabled\s*=.*$", "enabled = false", section, count=1)
+              else:
+                  section += "\nenabled = false\n"
+              config = config[:match.start()] + section + config[match.end():]
+          else:
+              config += "\n[db.migrations]\nenabled = false\n"
+          path.write_text(config)
+          print("Disabled automatic migration execution; CI replays every file explicitly.")
+          PY
+      - name: Start local Supabase Auth and Storage with PostgreSQL
+        run: supabase start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Replay every AGRIVA migration in deterministic filename order
+        run: bash scripts/sql/replay-all-supabase-migrations.sh
+      - name: Run full-schema Marketplace seller-organization runtime tests
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/sql/marketplace-seller-organization-full-schema-test.sql
+      - name: Stop disposable local Supabase stack
+        if: always()
+        run: supabase stop --no-backup || true
