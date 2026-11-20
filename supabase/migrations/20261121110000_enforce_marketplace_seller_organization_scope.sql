@@ -65,7 +65,7 @@ begin
   select * into v_product
     from public.products
     where id = new.product_id
-    for key share;
+    for share;
 
   if not found or v_product.seller_organization_id is null then
     raise exception 'Seller organization is not assigned to this product'
