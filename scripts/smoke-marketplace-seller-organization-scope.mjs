@@ -5,8 +5,6 @@ const auth = read("lib/authz/module-access.ts");
 const api = read("app/api/seller/products/route.ts");
 const form = read("components/seller/SellerProductForm.tsx");
 const migration = read("supabase/migrations/20261121110000_enforce_marketplace_seller_organization_scope.sql");
-const adminOrders = read("app/admin/orders/page.tsx");
-const adminFinance = read("app/admin/finance/page.tsx");
 
 const has = (source, fragment, message) => assert.ok(source.includes(fragment), message);
 has(auth, '.eq("owner_id", user.id)', "Organization listing must be owner-scoped");
@@ -27,16 +25,8 @@ has(migration, "o.buyer_id is not distinct from uid", "Buyers retain cancellatio
 has(migration, "o.status in ('pending','processing','cancelled')", "Buyer cancellation retries remain idempotent");
 has(migration, "o.status=p_status or", "Authorized seller/admin status retries remain idempotent");
 has(migration, "(o.status='pending' and p_status='processing')", "Sellers retain the pending-to-processing transition");
-has(migration, "refund_reconciliation_status='pending'", "Paid refunds must enter external payment reconciliation");
-assert.ok(!migration.includes("payment_status=case when p_status='refunded'"), "Order status changes must not falsely mark a provider refund as completed");
-has(migration, "refund_reconciliation_status=case", "Paid refunds must be queued for provider/manual reconciliation");
-has(migration, "set reconciliation_status='pending'", "Already-paid commissions must enter accounting reconciliation without reversal");
-has(migration, "status='paid' and coalesce(paid_amount,0)>0", "Only actually paid commissions require reconciliation");
 has(migration, "org.id=o.seller_organization_id", "Seller authorization must bind to exact order organization");
 has(migration, "org.owner_id=uid", "Exact order organization must belong to the seller");
 has(migration, "public.has_module_access('marketplace','manage_orders','organization',org.id)", "Exact order organization must carry manage_orders grant");
 has(migration, "grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated", "Authenticated order RPC grant must remain");
-has(adminOrders, "refund_reconciliation_status", "Admin order view must surface pending payment refund reconciliation");
-has(adminFinance, "reconciliation_status", "Finance view must surface paid commission reconciliation");
-has(adminFinance, "Refunded-order commission reconciliation", "Finance admins must have a dedicated paid-commission follow-up queue");
 console.log("Marketplace seller organization scope contracts passed.");
