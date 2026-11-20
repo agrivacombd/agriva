@@ -186,6 +186,8 @@ jobs:
         run: npm run test:brand-assets
       - name: Admin AI product SEO security regression test
         run: node scripts/smoke-admin-ai-product-seo.mjs
+      - name: Marketplace order status/restock safety regression test
+        run: node scripts/smoke-marketplace-order-restock-safety.mjs
       - name: Production build
         run: npm run build
         env:
