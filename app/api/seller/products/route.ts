@@ -37,8 +37,7 @@ export async function POST(request: NextRequest) {
   const seoDescription = String(body.seo_description || "").trim();
   const focusKeyword = String(body.focus_keyword || "").trim();
   const relatedKeywords = String(body.related_keywords || "").split(",").map((value: string) => value.trim()).filter(Boolean).slice(0,10);
-  const highlights = String(body.highlights || "").split(/\r?
-/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
+  const highlights = String(body.highlights || "").split(/\r?\n+/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
   const brand = String(body.brand || "").trim();
   const origin = String(body.origin || "").trim();
   const usageInstructions = String(body.usage_instructions || "").trim();
