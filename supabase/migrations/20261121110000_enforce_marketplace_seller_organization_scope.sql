@@ -20,7 +20,7 @@ begin
     raise exception 'Authentication required' using errcode='42501';
   end if;
   if p_order_id is null or p_status is null
-     or p_status not in ('pending','processing','shipped','delivered','completed','cancelled','refunded') then
+     or p_status not in ('pending','processing','shipped','delivered','completed','cancelled') then
     raise exception 'Invalid order status' using errcode='22023';
   end if;
 
@@ -65,8 +65,7 @@ begin
       (o.status='pending' and p_status in ('processing','cancelled')) or
       (o.status='processing' and p_status in ('shipped','cancelled')) or
       (o.status='shipped' and p_status in ('delivered','cancelled')) or
-      (o.status='delivered' and p_status in ('completed','refunded')) or
-      (o.status='completed' and p_status='refunded');
+      (o.status='delivered' and p_status='completed');
   end if;
 
   if o.status=p_status then return o; end if;
@@ -79,7 +78,7 @@ begin
       where id=o.product_id;
   end if;
 
-  if p_status in ('cancelled','refunded') then
+  if p_status='cancelled' then
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
   elsif p_status in ('delivered','completed') then
@@ -89,7 +88,6 @@ begin
 
   update public.marketplace_orders
     set status=p_status,
-      payment_status=case when p_status='refunded' and payment_status='paid' then 'refunded' else payment_status end,
       updated_at=now(),
       shipped_at=case when p_status='shipped' then coalesce(shipped_at,now()) else shipped_at end,
       delivered_at=case when p_status in ('delivered','completed') then coalesce(delivered_at,now()) else delivered_at end
