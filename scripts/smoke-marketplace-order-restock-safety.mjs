@@ -1,0 +1,20 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = p => readFileSync(new URL("../" + p, import.meta.url), "utf8");
+const migration = read("supabase/migrations/20261120100000_fix_marketplace_order_restock_transitions.sql");
+const sellerPage = read("app/seller/orders/page.tsx");
+const plantLifecycle = read("supabase/migrations/20261102161752_plant_market_checkout_and_order_lifecycle.sql");
+
+assert.match(migration,/o.status='pending' and p_status in \('processing','cancelled'\)/);
+assert.match(migration,/o.status='processing' and p_status in \('shipped','cancelled'\)/);
+assert.match(migration,/o.status='shipped' and p_status in \('delivered','cancelled'\)/);
+assert.match(migration,/o.status='delivered' and p_status in \('completed','refunded'\)/);
+assert.match(migration,/o.status='completed' and p_status='refunded'/);
+assert.match(migration,/if p_status='cancelled' and o.status in \('pending','processing'\) then/);
+assert.doesNotMatch(migration,/if p_status in \('cancelled','refunded'\) then\s+update public\.products set stock/);
+assert.match(migration,/if o.status=p_status then return o;/);
+assert.match(migration,/Marketplace order-management permission required/);
+assert.match(migration,/grant execute on function public\.set_marketplace_order_status\(uuid,text\) to authenticated,service_role/);
+assert.match(sellerPage,/\["processing","shipped"\]\.includes\(order\.status\)/);
+assert.match(plantLifecycle,/if p_status='cancelled' then[\s\S]*?update public\.plant_market_products pm[\s\S]*?where oi\.order_id=o\.id/);
+console.log("Marketplace order status/restock safety contracts passed.");
