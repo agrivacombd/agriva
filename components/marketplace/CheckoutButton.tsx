@@ -48,6 +48,7 @@ export default function CheckoutButton({
   // A synchronous guard prevents duplicate cart RPCs before React paints disabled state.
   const addRequestInFlightRef = useRef(false);
   const directCheckoutInFlightRef = useRef(false);
+  const directCheckoutIdempotencyKeyRef = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
@@ -121,6 +122,7 @@ export default function CheckoutButton({
   function selectQuantity(value: number) {
     if (!Number.isSafeInteger(value) || maxQuantity < 1) return;
     setQuantity(Math.min(maxQuantity, Math.max(1, value)));
+    directCheckoutIdempotencyKeyRef.current = null;
     setCustomQuantitySelected(false);
     setCustomQuantityOpen(false);
     setMessage("");
@@ -212,12 +214,16 @@ export default function CheckoutButton({
       // Ensure a verified regular or anonymous Supabase session exists before the server checkout request.
       // This lets guest buyers place COD orders without creating a permanent account.
       await resolveMarketplaceCartUser();
+      if (!directCheckoutIdempotencyKeyRef.current) {
+        directCheckoutIdempotencyKeyRef.current = globalThis.crypto.randomUUID().replace(/[^A-Za-z0-9_-]/g, "");
+      }
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId,
           quantity,
+          idempotencyKey: directCheckoutIdempotencyKeyRef.current,
           paymentMethod: "cod",
           shippingAddress: {
             fullName: fullName.trim(),
@@ -349,25 +355,25 @@ export default function CheckoutButton({
             <p className="text-sm leading-6 text-slate-600">নির্বাচিত {numberBN(quantity)} {unitLabel} সরাসরি অর্ডার করুন। লগইন ছাড়াই অর্ডার করতে পারবেন—পণ্য হাতে পেয়ে মূল্য পরিশোধ করুন।</p>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="text-sm font-bold text-[#17351f]">আপনার নাম *
-                <input value={fullName} onChange={e => setFullName(e.target.value)} autoComplete="name" maxLength={100} required placeholder="পূর্ণ নাম" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
+                <input value={fullName} onChange={e => { setFullName(e.target.value); directCheckoutIdempotencyKeyRef.current = null; }} autoComplete="name" maxLength={100} required placeholder="পূর্ণ নাম" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
               </label>
               <label className="text-sm font-bold text-[#17351f]">মোবাইল নম্বর *
-                <input value={phone} onChange={e => setPhone(e.target.value)} autoComplete="tel" type="tel" inputMode="tel" maxLength={16} required placeholder="01XXXXXXXXX" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
+                <input value={phone} onChange={e => { setPhone(e.target.value); directCheckoutIdempotencyKeyRef.current = null; }} autoComplete="tel" type="tel" inputMode="tel" maxLength={16} required placeholder="01XXXXXXXXX" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
               </label>
               <label className="text-sm font-bold text-[#17351f] sm:col-span-2">জেলা *
-                <select value={district} onChange={e => { setDistrict(e.target.value); setUpazila(""); }} autoComplete="address-level1" required className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100">
+                <select value={district} onChange={e => { setDistrict(e.target.value); setUpazila(""); directCheckoutIdempotencyKeyRef.current = null; }} autoComplete="address-level1" required className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100">
                   <option value="">জেলা বেছে নিন</option>
                   {BANGLADESH_DISTRICTS.map(item => <option key={item.id} value={item.name}>{item.name}</option>)}
                 </select>
               </label>
               <label className="text-sm font-bold text-[#17351f] sm:col-span-2">উপজেলা / থানা *
-                <select value={upazila} onChange={e => setUpazila(e.target.value)} autoComplete="address-level2" required disabled={!district} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-100">
+                <select value={upazila} onChange={e => { setUpazila(e.target.value); directCheckoutIdempotencyKeyRef.current = null; }} autoComplete="address-level2" required disabled={!district} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-100">
                   <option value="">{district ? "উপজেলা / থানা বেছে নিন" : "আগে জেলা নির্বাচন করুন"}</option>
                   {availableUpazilas.map((name, index) => <option key={district + "-" + index} value={name.trim()}>{name.trim()}</option>)}
                 </select>
               </label>
               <label className="text-sm font-bold text-[#17351f] sm:col-span-2">সম্পূর্ণ ঠিকানা (ঐচ্ছিক)
-                <textarea value={address} onChange={e => setAddress(e.target.value)} autoComplete="street-address" maxLength={500} rows={3} placeholder="গ্রাম/এলাকা, ইউনিয়ন/ওয়ার্ড, বাড়ি/রোড" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
+                <textarea value={address} onChange={e => { setAddress(e.target.value); directCheckoutIdempotencyKeyRef.current = null; }} autoComplete="street-address" maxLength={500} rows={3} placeholder="গ্রাম/এলাকা, ইউনিয়ন/ওয়ার্ড, বাড়ি/রোড" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-3 font-normal outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100" />
               </label>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
