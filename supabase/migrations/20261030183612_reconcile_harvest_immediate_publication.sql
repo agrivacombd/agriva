@@ -11,9 +11,9 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = pg_catalog, public, pg_temp
-AS $
+AS $function$
   SELECT public.is_admin();
-$;
+$function$;
 REVOKE ALL ON FUNCTION private.is_admin() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
 
