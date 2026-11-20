@@ -175,7 +175,7 @@ jobs:
       - name: Cross-linked AGRIVA knowledge hubs regression
         run: node scripts/smoke-knowledge-hub-links.mjs
       - name: Learn hub SEO, answer content, breadcrumbs and schema validation
-        run: npm run test:learn-seo-aeo
+        run: node scripts/smoke-learn-seo-aeo.mjs
       - name: Learn slug navigation and canonical route regression
         run: node scripts/smoke-learn-route.mjs
       - name: Plant disease case details mobile accessibility regression
