@@ -64,18 +64,18 @@ jobs:
 
           def set_value(text, section_name, key, value):
               header = f"[{section_name}]"
-              section_start = re.search(rf"(?m)^\\[{re.escape(section_name)}\\][ \\t]*$", text)
+              section_start = re.search(rf"(?m)^\[{re.escape(section_name)}\][ \t]*$", text)
               if not section_start:
-                  separator = "" if not text.strip() else "\\n"
-                  return text + separator + header + f"\\n{key} = {value}\\n"
-              following = re.search(r"(?m)^\\[[^\\]]+\\][ \\t]*$", text[section_start.end():])
+                  separator = "" if not text.strip() else "\n"
+                  return text + separator + header + f"\n{key} = {value}\n"
+              following = re.search(r"(?m)^\[[^\]]+\][ \t]*$", text[section_start.end():])
               section_end = section_start.end() + following.start() if following else len(text)
               section_text = text[section_start.start():section_end]
-              setting = re.search(rf"(?m)^[ \\t]*{re.escape(key)}[ \\t]*=.*$", section_text)
+              setting = re.search(rf"(?m)^[ \t]*{re.escape(key)}[ \t]*=.*$", section_text)
               if setting:
                   section_text = section_text[:setting.start()] + f"{key} = {value}" + section_text[setting.end():]
               else:
-                  section_text = section_text.rstrip() + f"\\n{key} = {value}\\n"
+                  section_text = section_text.rstrip() + f"\n{key} = {value}\n"
               return text[:section_start.start()] + section_text + text[section_end:]
 
           for section, key, value in [
