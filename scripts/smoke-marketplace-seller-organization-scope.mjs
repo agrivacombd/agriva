@@ -16,6 +16,7 @@ has(api, "seller_organization_id: access.organizationId", "Product insert must p
 has(form, "বিক্রয়কারী ব্যবসায়িক প্রতিষ্ঠান", "Seller form must expose organization selection");
 has(form, "seller_organization_id:sellerOrganizationId", "Form must submit selected organization ID");
 has(migration, "new.seller_organization_id := v_product.seller_organization_id", "Order must snapshot product organization at insert");
+has(migration, "for share;", "Order snapshot must serialize against concurrent seller-organization reassignment");
 has(migration, "v_organization.owner_id is distinct from v_product.farmer_id", "Checkout must verify organization owner matches product seller");
 has(migration, "v_organization.status is distinct from 'verified'", "Checkout must reject unverified seller organizations");
 has(migration, "Seller organization is not assigned to this product", "Legacy unmapped products must fail closed at checkout");
