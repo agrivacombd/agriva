@@ -86,8 +86,9 @@ GRANT USAGE ON SCHEMA public, auth TO authenticated;
 GRANT EXECUTE ON FUNCTION public.finalize_marketplace_cod_order_idempotent(uuid,integer,jsonb,text,text,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.set_marketplace_order_status(uuid,text) TO authenticated;
 
-DO $
-BEGIN('authenticated',
+DO $$
+BEGIN
+  IF NOT has_function_privilege('authenticated',
     'public.finalize_marketplace_cod_order_idempotent(uuid,integer,jsonb,text,text,text)','EXECUTE') THEN
     RAISE EXCEPTION 'authenticated role cannot execute Buy Now idempotency RPC';
   END IF;
@@ -95,7 +96,7 @@ BEGIN('authenticated',
     'public.finalize_marketplace_cod_order_idempotent(uuid,integer,jsonb,text,text,text)','EXECUTE') THEN
     RAISE EXCEPTION 'anon role must not execute Buy Now idempotency RPC';
   END IF;
-END $;
+END $$;
 
 SELECT set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);
 SELECT set_config('test.is_admin','false',false);
