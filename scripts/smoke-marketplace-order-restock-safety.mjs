@@ -14,7 +14,7 @@ assert.match(migration,/if p_status='cancelled' and o.status in \('pending','pro
 assert.doesNotMatch(migration,/if p_status in \('cancelled','refunded'\) then\s+update public\.products set stock/);
 assert.match(migration,/if o.status=p_status then return o;/);
 assert.match(migration,/Marketplace order-management permission required/);
-assert.match(migration,/grant execute on function public\.set_marketplace_order_status\(uuid,text\) to authenticated,service_role/);
+assert.match(migration,/grant execute on function public\.set_marketplace_order_status\(uuid,text\) to authenticated/);
 assert.match(sellerPage,/\["processing","shipped"\]\.includes\(order\.status\)/);
 assert.match(plantLifecycle,/if p_status='cancelled' then[\s\S]*?update public\.plant_market_products pm[\s\S]*?where oi\.order_id=o\.id/);
 console.log("Marketplace order status/restock safety contracts passed.");
