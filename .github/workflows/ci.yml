@@ -267,7 +267,7 @@ jobs:
           print("Disabled automatic migration execution; CI replays every file explicitly.")
           PY
       - name: Start local Supabase Auth and Storage with PostgreSQL
-        run: supabase start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: supabase start -x realtime,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
       - name: Replay every AGRIVA migration in deterministic filename order
         run: bash scripts/sql/replay-all-supabase-migrations.sh
       - name: Run full-schema Marketplace seller-organization runtime tests
