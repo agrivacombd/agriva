@@ -22,7 +22,8 @@ has(migration, "o.seller_organization_id is null", "Legacy org-less orders must 
 has(migration, "o.buyer_id is not distinct from uid", "Buyers retain cancellation before dispatch");
 has(migration, "(o.status='pending' and p_status='processing')", "Sellers retain the pending-to-processing transition");
 has(migration, "refund_reconciliation_status='pending'", "Paid refunds must enter external payment reconciliation");
-has(migration, "payment_status=payment_status", "Order status changes must not falsely mark a provider refund as paid");
+assert.ok(!migration.includes("payment_status=case when p_status='refunded'"), "Order status changes must not falsely mark a provider refund as completed");
+has(migration, "refund_reconciliation_status=case", "Paid refunds must be queued for provider/manual reconciliation");
 has(migration, "set reconciliation_status='pending'", "Already-paid commissions must enter accounting reconciliation without reversal");
 has(migration, "status='paid' and coalesce(paid_amount,0)>0", "Only actually paid commissions require reconciliation");
 has(migration, "org.id=o.seller_organization_id", "Seller authorization must bind to exact order organization");
