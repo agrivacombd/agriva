@@ -21,7 +21,10 @@ assert.match(form, /fetch\("\/api\/seller\/products"/, "seller form must submit 
 assert.match(form, /image_url/, "seller form must submit the public image URL with product details");
 assert.match(form, /Supabase project.{0,8}global upload limit/i, "seller form must disclose that the Supabase project-wide upload limit applies");
 assert.doesNotMatch(form, /রিসেলার কমিশন \(%\)/, "seller form must not offer a commission value overridden by the database");
-assert.match(route, /findMarketplaceOrganizationWithAccess/, "product API must verify existing Marketplace module access");
+assert.match(route, /checkMarketplaceOrganizationCreateAccess\\(sellerOrganizationId\\)/, "product API must verify create access for the selected seller organization");
+assert.match(route, /seller_organization_id:\\s*access\\.organizationId/, "product API must persist the exact authorized seller organization");
+assert.match(form, /বিক্রয়কারী ব্যবসায়িক প্রতিষ্ঠান/, "seller form must require an explicit verified business organization selection");
+assert.match(form, /seller_organization_id:sellerOrganizationId/, "seller form must submit the selected organization ID");
 assert.match(moduleAccess, /from\("organizations"\)/, "Marketplace module helper must resolve a verified organization scope");
 assert.match(moduleAccess, /\.eq\("status", "verified"\)/, "Marketplace module helper must reject unverified organizations");
 assert.match(moduleAccess, /checkModuleAccess\("marketplace", permission/, "Marketplace module helper must verify the requested permission");
