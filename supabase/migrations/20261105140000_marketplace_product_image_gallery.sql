@@ -23,7 +23,7 @@ begin
 end;
 $do$;
 
-do $
+do $constraint$
 begin
   if not exists (
     select 1
@@ -36,7 +36,7 @@ begin
       check (cardinality(image_urls) <= 4);
   end if;
 end;
-$$;
+$constraint$;
 
 update storage.buckets
 set file_size_limit = null
