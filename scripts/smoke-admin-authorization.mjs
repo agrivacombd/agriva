@@ -142,8 +142,8 @@ assert.ok(harvestResumeMigration.includes("p_status = 'approved' AND v_previous_
 const orderMigration = read("supabase/migrations/20261120140000_marketplace_order_integrity_idempotency.sql");
 assert.ok(orderMigration.includes("Marketplace order-management permission required"), "seller order transitions must require verified seller permission");
 assert.ok(orderMigration.includes("o.farmer_id<>uid"), "seller transitions must enforce order ownership");
-assert.ok(orderMigration.includes("p_status='cancelled' and o.status in ('pending','processing') and o.shipped_at is null"), "inventory must only be restored for pre-shipment cancellations");
-assert.ok(orderMigration.includes("A refund is financial"), "refund must not automatically restock inventory");
+assert.ok(orderMigration.includes("p_status in ('cancelled','refunded')") && orderMigration.includes("o.status in ('pending','processing') and o.shipped_at is null"), "inventory must only be restored before shipment");
+assert.ok(orderMigration.includes("A post-shipment refund is financial"), "post-shipment refund must not automatically restock inventory");
 assert.ok(orderMigration.includes("o.status='shipped' and p_status='delivered'"), "seller cannot cancel an order after shipment");
 assert.ok(orderMigration.includes("revoke all on function public.set_marketplace_order_status(uuid,text) from public,anon"), "order status RPC must not be executable by anonymous users");
 
