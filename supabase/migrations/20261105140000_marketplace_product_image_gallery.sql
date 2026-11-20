@@ -2,7 +2,7 @@
 alter table public.products
   add column if not exists image_urls text[] not null default '{}'::text[];
 
-do $
+do $do$
 begin
   -- Some deployed AGRIVA schemas already use image_urls and never had image_url.
   -- Backfill only when the legacy single-image column is actually present.
@@ -21,9 +21,9 @@ begin
     $backfill$;
   end if;
 end;
-$;
+$do$;
 
-do $$
+do $
 begin
   if not exists (
     select 1
