@@ -39,8 +39,14 @@ function trackErrors(page, label) {
   page.on("pageerror", (error) => pageErrors.push(`${label}: ${error.message}`));
 }
 
+async function closePrivacyNotice(page) {
+  const button = page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true });
+  if (await button.count()) await button.click();
+}
+
 async function signIn(page, email, password) {
   await page.goto("/login");
+  await page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click({ timeout: 10_000 }).catch(() => {});
   const languageButton = page.getByRole("button", { name: "English", exact: true });
   if (await languageButton.count()) await languageButton.click();
   await page.getByLabel("Email address").fill(email);
@@ -77,6 +83,7 @@ try {
   // 1. Exercise the real public signup form, profile trigger, then password login.
   const buyer = await newContext("buyer-auth");
   await buyer.page.goto("/signup");
+  await buyer.page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click({ timeout: 10_000 }).catch(() => {});
   const signupLanguage = buyer.page.getByRole("button", { name: "English", exact: true });
   if (await signupLanguage.count()) await signupLanguage.click();
   await buyer.page.getByLabel("Your name").fill("AGRIVA E2E Buyer");
