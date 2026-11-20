@@ -78,6 +78,6 @@ end;
 $$;
 
 revoke all on function public.set_marketplace_order_status(uuid,text) from public,anon;
-grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated,service_role;
+grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated;
 
 commit;
