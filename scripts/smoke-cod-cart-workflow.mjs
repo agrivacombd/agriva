@@ -32,7 +32,8 @@ assert.ok(migration.includes("revoke all on function public.finalize_marketplace
 assert.ok(read("../supabase/migrations/20261102161728_revoke_legacy_public_order_rpc_overload.sql").includes("timestamptz,text) from public,anon,authenticated"));
 assert.ok(migration.includes("manage_orders"));
 assert.ok(seller.includes("manage_orders") && seller.includes("set_marketplace_order_status"));
-assert.ok(buyNow.includes('rpc("finalize_marketplace_cod_order_safe"'));
+assert.ok(buyNow.includes('rpc("finalize_marketplace_cod_order_idempotent"'));
+assert.ok(read("../supabase/migrations/20261120140000_marketplace_order_integrity_idempotency.sql").includes("finalize_marketplace_cod_order_safe("), "idempotent Buy Now wrapper must retain the trusted attribution-safe COD finalizer");
 assert.ok(button.includes('rpc("add_marketplace_cart_item"'));
 assert.ok(cart.includes("remove"));
 assert.ok(admin.includes("record_cod_collection"));
