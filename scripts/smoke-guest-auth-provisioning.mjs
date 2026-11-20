@@ -13,6 +13,10 @@ assert.ok(lookup.includes("if (!sessionData.session?.user || sessionError) retur
 assert.ok(!lookup.includes("signInAnonymously"), "Non-provisioning lookup must not create anonymous Auth users");
 assert.ok(auth.includes("signInAnonymously"), "Explicit guest cart flow must retain guest identity provisioning");
 
+const orderTracking = read("../components/orders/OrderTracking.tsx");
+assert.ok(orderTracking.includes("getExistingMarketplaceCartUser"), "Order Tracking must only reuse an existing session");
+assert.ok(!orderTracking.includes("resolveMarketplaceCartUser"), "Opening Order Tracking must never provision a guest Auth user");
+
 const cartPage = read("../app/cart/page.tsx");
 const checkoutPage = read("../app/checkout/page.tsx");
 for (const [name, source] of [["cart page", cartPage], ["checkout page", checkoutPage]]) {

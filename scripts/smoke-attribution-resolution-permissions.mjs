@@ -11,8 +11,11 @@ assert.match(migration, /grant execute on function public\.resolve_reseller_attr
   "authenticated and trusted service role must retain execution");
 assert.match(checkoutRoute, /if \(!user\)[\s\S]*?status:\s*401/i,
   "checkout must require an authenticated user");
-assert.match(checkoutRoute, /rpc\("finalize_marketplace_cod_order_safe"/i,
-  "checkout must use the trusted attribution-safe order wrapper");
+assert.match(checkoutRoute, /rpc\("finalize_marketplace_cod_order_idempotent"/i,
+  "checkout must use the idempotent server-side order wrapper");
+const orderIntegrityMigration = readFileSync("supabase/migrations/20261120140000_marketplace_order_integrity_idempotency.sql", "utf8");
+assert.match(orderIntegrityMigration, /finalize_marketplace_cod_order_safe\(/i,
+  "idempotent wrapper must delegate to the trusted attribution-safe order finalizer");
 assert.doesNotMatch(checkoutRoute, /rpc\("resolve_reseller_attribution"/i,
   "checkout must not resolve reseller IDs in a client-controlled flow");
 

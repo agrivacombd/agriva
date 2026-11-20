@@ -13,6 +13,20 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -145,6 +159,18 @@ jobs:
         run: npm run test:guest-auth-provisioning
       - name: Atomic COD checkout and cart workflow regression test
         run: npm run test:cod-cart
+      - name: Marketplace order lifecycle and Buy Now idempotency regression test
+        run: npm run test:marketplace-order-idempotency
+      - name: Install PostgreSQL client for disposable integration database
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply marketplace integrity migration and run PostgreSQL integration tests
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: psql -v ON_ERROR_STOP=1 -f scripts/test-marketplace-order-integrity.sql
       - name: Module-access architecture regression test
         run: npm run test:module-access
       - name: Identity verification workflow regression test

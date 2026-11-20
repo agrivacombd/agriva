@@ -139,13 +139,13 @@ const harvestResumeMigration = read("supabase/migrations/20261105180000_prevent_
 assert.ok(harvestResumeMigration.includes("FOR UPDATE"), "harvest moderation must lock the listing row before transition");
 assert.ok(harvestResumeMigration.includes("p_status = 'approved' AND v_previous_status = 'sold_out'"), "database RPC must prevent sold-out listings from being reactivated");
 
-const orderMigration = read("supabase/migrations/20261026233500_harden_marketplace_order_transitions.sql");
-assert.ok(orderMigration.includes("Invalid order status transition"), "marketplace order RPC must reject invalid state transitions");
-assert.ok(orderMigration.includes("v_order.buyer_id = v_uid"), "marketplace order RPC must distinguish buyer from seller permissions");
-assert.ok(orderMigration.includes("v_order.farmer_id = v_uid"), "marketplace order RPC must enforce seller ownership");
-assert.ok(orderMigration.includes("p_status = 'cancelled' AND v_old_status IN ('pending', 'processing')"), "inventory must only be restored for pre-shipment cancellations");
-assert.ok(orderMigration.includes("A refund does not"), "refund must not automatically restock inventory");
-assert.ok(orderMigration.includes("REVOKE ALL ON FUNCTION public.set_marketplace_order_status(uuid, text) FROM PUBLIC, anon"), "order status RPC must not be executable by anonymous users");
+const orderMigration = read("supabase/migrations/20261120140000_marketplace_order_integrity_idempotency.sql");
+assert.ok(orderMigration.includes("Marketplace order-management permission required"), "seller order transitions must require verified seller permission");
+assert.ok(orderMigration.includes("o.farmer_id is distinct from uid"), "seller transitions must enforce order ownership");
+assert.ok(orderMigration.includes("p_status in ('cancelled','refunded')") && orderMigration.includes("o.status in ('pending','processing') and o.shipped_at is null"), "inventory must only be restored before shipment");
+assert.ok(orderMigration.includes("A post-shipment refund is financial"), "post-shipment refund must not automatically restock inventory");
+assert.ok(orderMigration.includes("o.status='shipped' and p_status='delivered'"), "seller cannot cancel an order after shipment");
+assert.ok(orderMigration.includes("revoke all on function public.set_marketplace_order_status(uuid,text) from public,anon"), "order status RPC must not be executable by anonymous users");
 
 const harvestMigration = read("supabase/migrations/20261030183612_reconcile_harvest_immediate_publication.sql");
 assert.ok(harvestMigration.includes("private.is_admin()"), "Harvest admin policies must use the Production private admin helper");
