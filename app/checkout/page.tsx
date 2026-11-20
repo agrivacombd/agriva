@@ -61,6 +61,7 @@ export default function Checkout() {
   const [codEnabled, setCodEnabled] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
   const [message, setMessage] = useState("");
+  const [cartLoadError, setCartLoadError] = useState(false);
   const [needsLogin, setNeedsLogin] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -84,6 +85,7 @@ export default function Checkout() {
       const supabase = createSupabaseBrowserClient();
       const { user } = await getExistingMarketplaceCartUser();
       setNeedsLogin(false);
+      setCartLoadError(false);
       if (!user) {
         // Visiting /checkout directly with no cart must not create a guest Auth user.
         setIsGuest(false);
@@ -137,6 +139,7 @@ export default function Checkout() {
       }));
       setMessage("");
     } catch (error) {
+      setCartLoadError(true);
       setMessage(error instanceof Error ? error.message : "Checkout লোড করা যায়নি। আবার চেষ্টা করুন।");
     } finally {
       if (!silent) setLoading(false);
@@ -258,6 +261,7 @@ export default function Checkout() {
             {message}
             {confirmed && orderId && <p className="mt-2 break-all text-xs">Checkout reference: {orderId}</p>}
             {needsLogin && <Link href="/login?next=%2Fcheckout" className="ml-2 underline underline-offset-2">লগইন করুন</Link>}
+            {cartLoadError && <button type="button" onClick={() => void loadCart()} className="ml-3 mt-2 inline-flex min-h-9 items-center rounded-lg border border-amber-700 px-3 py-1 font-bold">আবার চেষ্টা করুন</button>}
           </div>
         )}
         {confirmed && <Link href="/orders" className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-emerald-900 px-5 py-3 font-bold text-white">আমার অর্ডার দেখুন</Link>}

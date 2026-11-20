@@ -1,4 +1,22 @@
 -- Publish farmer harvest listings immediately while preserving owner controls and contact privacy.
+-- The private schema is not part of the exposed Data API schemas. It hosts
+-- internal RPCs and a narrow admin predicate used by policies below.
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon;
+GRANT USAGE ON SCHEMA private TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = pg_catalog, public, pg_temp
+AS $function$
+  SELECT public.is_admin();
+$function$;
+REVOKE ALL ON FUNCTION private.is_admin() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.is_admin() TO authenticated, service_role;
+
 -- Forward-only corrective migration: the earlier 20261030150000 version collides with
 -- an already-applied Production migration and its policy helper does not match Production.
 

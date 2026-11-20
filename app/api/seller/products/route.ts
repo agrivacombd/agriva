@@ -1,24 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCategory, getSubcategory } from "@/lib/marketplace/taxonomy";
-import { findMarketplaceOrganizationWithAccess } from "@/lib/authz/module-access";
+import { checkMarketplaceOrganizationCreateAccess, listMarketplaceOrganizationsWithCreateAccess } from "@/lib/authz/module-access";
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
+
+export async function GET() {
+  const result = await listMarketplaceOrganizationsWithCreateAccess();
+  if (!result.allowed) return NextResponse.json({ error: "Seller authorization is temporarily unavailable." }, { status: result.reason === "unauthenticated" ? 401 : 503 });
+  return NextResponse.json({ organizations: result.organizations });
+}
 
 export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const access = await findMarketplaceOrganizationWithAccess("create");
+  const body = await request.json().catch(() => ({}));
+  const sellerOrganizationId = String(body.seller_organization_id || "").trim();
+  if (!sellerOrganizationId) return NextResponse.json({ error: "পণ্যটি কোন verified business organization-এর অধীনে বিক্রি হবে তা নির্বাচন করুন।" }, { status: 400 });
+  const access = await checkMarketplaceOrganizationCreateAccess(sellerOrganizationId);
   if (!access.allowed) {
     return NextResponse.json(
-      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "A verified business organization with Marketplace approval is required." },
+      { error: access.reason === "authorization_unavailable" ? "Seller authorization is temporarily unavailable." : "নির্বাচিত verified organization-এ Marketplace create permission নেই।" },
       { status: access.reason === "authorization_unavailable" ? 503 : access.reason === "unauthenticated" ? 401 : 403 }
     );
   }
 
-  const body = await request.json().catch(() => ({}));
   const name = String(body.name || "").trim();
   const slug = String(body.slug || "").trim().toLowerCase();
   const price = Number(body.price);
@@ -29,7 +37,7 @@ export async function POST(request: NextRequest) {
   const seoDescription = String(body.seo_description || "").trim();
   const focusKeyword = String(body.focus_keyword || "").trim();
   const relatedKeywords = String(body.related_keywords || "").split(",").map((value: string) => value.trim()).filter(Boolean).slice(0,10);
-  const highlights = String(body.highlights || "").split(/\r?\n/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
+  const highlights = String(body.highlights || "").split(/\r?\n+/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
   const brand = String(body.brand || "").trim();
   const origin = String(body.origin || "").trim();
   const usageInstructions = String(body.usage_instructions || "").trim();
@@ -70,6 +78,7 @@ export async function POST(request: NextRequest) {
 
    const { data, error } = await supabase.from("products").insert({
     farmer_id: user.id,
+    seller_organization_id: access.organizationId,
     name,
     slug,
     category: subcategory.name,

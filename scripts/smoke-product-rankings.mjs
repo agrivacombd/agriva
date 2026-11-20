@@ -22,7 +22,7 @@ for (const fragment of [
   "create or replace function public.prune_product_rank_events",
   "security invoker", "security definer", "status in ('delivered', 'completed')",
   "o.status in ('delivered', 'completed')", "payment_status not in ('failed', 'refunded')",
-  "p.marketplace_channel = 'marketplace'", "p.deleted_at is null",
+  "p.marketplace_channel = 'marketplace'",
   "where p.status = 'active'", "where market = 'plant-market'",
   "occurred_on >= current_date - 29", "on conflict do nothing",
   "from public.marketplace_orders", "from public.plant_market_orders",

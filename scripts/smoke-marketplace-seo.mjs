@@ -14,6 +14,7 @@ const rootLayout = readFileSync("app/layout.tsx", "utf8");
 const middleware = readFileSync("middleware.ts", "utf8");
 const englishLayout = readFileSync("app/en/layout.tsx", "utf8");
 const siteChrome = readFileSync("components/site/SiteChrome.tsx", "utf8");
+const cropDiseasePanel = readFileSync("components/crop-disease/CropDiseasePanel.tsx", "utf8");
 
 assert.match(product, /export async function generateMetadata/, "Product page needs unique metadata");
 assert.match(product, /alternates:\s*\{\s*canonical:\s*`\/marketplace\/\$\{product\.slug\}`\s*\}/, "Product page needs a slug-based canonical");
@@ -120,6 +121,13 @@ for (const [label, source, marker] of [
 }
 assert.equal((cvBuilder.match(/<h1\b/g) || []).length, 1, "CV Builder must have one page-level H1; preview name is a subordinate heading");
 assert.match(marketplace, /title: "কৃষি পণ্য, বীজ ও সার"/, "Marketplace page metadata title must not repeat the brand suffix from the root template");
+assert.match(marketplace, /<MarketplaceCore[^>]*availableCategoriesOnly/, "Marketplace category UI must hide categories without active products");
+assert.match(marketplace, /পোস্ট জমা দিলে প্রকাশিত হবে; ক্রেতারা আপনার ফসল দেখে সরাসরি যোগাযোগ করতে পারবেন/, "Harvest selling service copy must reflect immediate publication");
+assert.doesNotMatch(marketplace, /ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন\. অনুমোদনের পর ক্রেতারা আপনার ফসল দেখতে পারবেন/, "Harvest listing copy must not claim an approval delay");
 assert.doesNotMatch(cmsBlogArticle, /সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত/, "Integrated pest management article title must stay concise");
+
+assert.match(cropDiseasePanel, /"checking" \| "authenticated" \| "guest" \| "error"/, "Crop disease auth check must distinguish network errors from guest state");
+assert.match(cropDiseasePanel, /setAuthStatus\("error"\)/, "Crop disease auth verification failures must display a recoverable error");
+assert.match(cropDiseasePanel, /আবার যাচাই করুন/, "Crop disease auth verification failures must offer a retry action");
 
 console.log("Marketplace SEO and locale language regression checks passed.");

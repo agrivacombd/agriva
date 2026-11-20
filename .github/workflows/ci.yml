@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
       - name: Block vulnerable production dependencies
@@ -186,8 +186,103 @@ jobs:
         run: npm run test:brand-assets
       - name: Admin AI product SEO security regression test
         run: node scripts/smoke-admin-ai-product-seo.mjs
+      - name: Marketplace order status/restock safety regression test
+        run: node scripts/smoke-marketplace-order-restock-safety.mjs
+      - name: Marketplace seller organization scope regression test
+        run: npm run test:marketplace-seller-organization-scope
       - name: Production build
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  marketplace-database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: agriva_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d agriva_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply Marketplace migrations and run isolated database tests
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: agriva_test
+        run: psql -v ON_ERROR_STOP=1 -f scripts/sql/marketplace-seller-organization-db-test.sql
+
+  marketplace-full-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_TELEMETRY_DISABLED: "1"
+      PGHOST: 127.0.0.1
+      PGPORT: 54323
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.81.3
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Initialize an ephemeral local-only Supabase stack
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("supabase/config.toml")
+          config = path.read_text()
+          db_pattern = re.compile(r"(?ms)^\[db\]\s*\n.*?(?=^\[|\Z)")
+          db_match = db_pattern.search(config)
+          if db_match:
+              db_section = db_match.group(0)
+              if re.search(r"(?m)^port\s*=", db_section):
+                  db_section = re.sub(r"(?m)^port\s*=.*$", "port = 54323", db_section, count=1)
+              else:
+                  db_section += "\\nport = 54323\\n"
+              config = config[:db_match.start()] + db_section + config[db_match.end():]
+          else:
+              config += "\\n[db]\\nport = 54323\\n"
+          pattern = re.compile(r"(?ms)^\[db\.migrations\]\s*\n.*?(?=^\[|\Z)")
+          match = pattern.search(config)
+          if match:
+              section = match.group(0)
+              if re.search(r"(?m)^enabled\s*=", section):
+                  section = re.sub(r"(?m)^enabled\s*=.*$", "enabled = false", section, count=1)
+              else:
+                  section += "\nenabled = false\n"
+              config = config[:match.start()] + section + config[match.end():]
+          else:
+              config += "\n[db.migrations]\nenabled = false\n"
+          path.write_text(config)
+          print("Set local Supabase DB port to 54323 to avoid runner port collisions; disabled automatic migration execution so CI replays every file explicitly.")
+          PY
+      - name: Start local Supabase Auth and Storage with PostgreSQL
+        run: supabase start -x realtime,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Replay every AGRIVA migration in deterministic filename order
+        run: bash scripts/sql/replay-all-supabase-migrations.sh
+      - name: Run full-schema Marketplace seller-organization runtime tests
+        run: psql -X -v ON_ERROR_STOP=1 -f scripts/sql/marketplace-seller-organization-full-schema-test.sql
+      - name: Stop disposable local Supabase stack
+        if: always()
+        run: supabase stop --no-backup || true
