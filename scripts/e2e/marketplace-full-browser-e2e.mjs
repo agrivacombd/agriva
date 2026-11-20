@@ -45,7 +45,7 @@ async function signIn(page, email, password) {
   const languageButton = page.getByRole("button", { name: "English", exact: true });
   if (await languageButton.count()) await languageButton.click();
   await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.locator('input[autocomplete="current-password"]').fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL((url) => url.pathname !== "/login", { timeout: 30_000 });
 }
