@@ -188,6 +188,8 @@ jobs:
         run: node scripts/smoke-admin-ai-product-seo.mjs
       - name: Marketplace order status/restock safety regression test
         run: node scripts/smoke-marketplace-order-restock-safety.mjs
+      - name: Marketplace seller organization scope regression test
+        run: npm run test:marketplace-seller-organization-scope
       - name: Production build
         run: npm run build
         env:
