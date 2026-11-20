@@ -58,6 +58,7 @@ set search_path = pg_catalog, public, pg_temp
 as $$
 declare
   v_product public.products;
+  v_organization public.organizations;
 begin
   select * into v_product
   from public.products
@@ -68,6 +69,15 @@ begin
   end if;
   if v_product.seller_organization_id is null then
     raise exception 'Seller organization is not assigned to this product' using errcode = '23514';
+  end if;
+  select * into v_organization
+  from public.organizations
+  where id=v_product.seller_organization_id
+  for key share;
+  if not found
+     or v_organization.owner_id is distinct from v_product.farmer_id
+     or v_organization.status is distinct from 'verified' then
+    raise exception 'Product seller organization is not verified for this owner' using errcode = '23514';
   end if;
   if new.farmer_id is distinct from v_product.farmer_id then
     raise exception 'Order seller does not match product owner' using errcode = '23514';
