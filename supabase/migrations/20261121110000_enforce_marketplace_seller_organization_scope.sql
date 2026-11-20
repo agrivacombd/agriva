@@ -189,6 +189,8 @@ begin
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
     if p_status='refunded' then
+      -- Paid commissions are deliberately retained; create an accounting follow-up
+      -- instead of silently reversing a payout that has already left the platform.
       update public.reseller_commissions
         set reconciliation_status='pending',updated_at=now()
         where order_id=o.id and status='paid' and coalesce(paid_amount,0)>0;
