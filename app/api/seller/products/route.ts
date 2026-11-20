@@ -5,7 +5,13 @@ import { checkMarketplaceOrganizationCreateAccess, listMarketplaceOrganizationsW
 
 const ALLOWED_UNITS = ["kg", "g", "piece", "pack", "liter", "bag"] as const;
 
-export async function GET() {\n  const result = await listMarketplaceOrganizationsWithCreateAccess();\n  if (!result.allowed) return NextResponse.json({ error: "Seller authorization is temporarily unavailable." }, { status: result.reason === "unauthenticated" ? 401 : 503 });\n  return NextResponse.json({ organizations: result.organizations });\n}\n\nexport async function POST(request: NextRequest) {
+export async function GET() {
+  const result = await listMarketplaceOrganizationsWithCreateAccess();
+  if (!result.allowed) return NextResponse.json({ error: "Seller authorization is temporarily unavailable." }, { status: result.reason === "unauthenticated" ? 401 : 503 });
+  return NextResponse.json({ organizations: result.organizations });
+}
+
+export async function POST(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,7 +37,8 @@ export async function GET() {\n  const result = await listMarketplaceOrganizatio
   const seoDescription = String(body.seo_description || "").trim();
   const focusKeyword = String(body.focus_keyword || "").trim();
   const relatedKeywords = String(body.related_keywords || "").split(",").map((value: string) => value.trim()).filter(Boolean).slice(0,10);
-  const highlights = String(body.highlights || "").split(/\r?\n/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
+  const highlights = String(body.highlights || "").split(/\r?
+/).map((value: string) => value.trim()).filter(Boolean).slice(0,5);
   const brand = String(body.brand || "").trim();
   const origin = String(body.origin || "").trim();
   const usageInstructions = String(body.usage_instructions || "").trim();
