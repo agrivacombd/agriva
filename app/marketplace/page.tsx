@@ -66,7 +66,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
     </section>
 
     <section id="catalogue" className="mx-auto max-w-7xl scroll-mt-24 px-3 py-4 min-[375px]:px-4 sm:scroll-mt-28 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
-      <MarketplaceCore products={products} initialQuery={initialQuery} emptyCatalogMessage={catalogueUnavailable ? "এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।" : !products.length ? "এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য (Marketplace) পাওয়া যায়নি। অনুমোদনের পর এখানে দেখা যাবে।" : undefined} />
+      <MarketplaceCore products={products} initialQuery={initialQuery} availableCategoriesOnly emptyCatalogMessage={catalogueUnavailable ? "এই মুহূর্তে পণ্যের তালিকা লোড করা যাচ্ছে না। কিছুক্ষণ পর আবার চেষ্টা করুন।" : !products.length ? "এখনো কোনো সক্রিয় ও অনুমোদিত পণ্য (Marketplace) পাওয়া যায়নি। অনুমোদনের পর এখানে দেখা যাবে।" : undefined} />
     </section>
 
     <section aria-label="বিক্রেতা ও ক্রেতাদের জন্য সেবা" className="mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
@@ -84,7 +84,7 @@ export default async function MarketplacePage({ searchParams }: { searchParams?:
         <article className="flex flex-col items-start rounded-2xl border border-emerald-200/80 bg-white p-5 sm:p-6">
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">কৃষকদের জন্য</span>
           <h3 className="mt-3 text-lg font-black">নিজের ফসল সরাসরি বিক্রি করুন</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-600">ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন। অনুমোদনের পর ক্রেতারা আপনার ফসল দেখতে পারবেন।</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">ফসলের ছবি, পরিমাণ, দাম ও অবস্থান দিয়ে পোস্ট করুন। পোস্ট জমা দিলে প্রকাশিত হবে; ক্রেতারা আপনার ফসল দেখে সরাসরি যোগাযোগ করতে পারবেন।</p>
           <Link href="/sell-harvest" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-emerald-800 px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-emerald-900">ফসল বিক্রি করুন →</Link>
         </article>
         <article className="flex flex-col items-start rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
