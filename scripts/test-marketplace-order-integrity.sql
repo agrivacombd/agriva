@@ -86,7 +86,8 @@ GRANT USAGE ON SCHEMA public, auth TO authenticated;
 GRANT EXECUTE ON FUNCTION public.finalize_marketplace_cod_order_idempotent(uuid,integer,jsonb,text,text,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.set_marketplace_order_status(uuid,text) TO authenticated;
 
-DO $\1('authenticated',
+DO $
+BEGIN('authenticated',
     'public.finalize_marketplace_cod_order_idempotent(uuid,integer,jsonb,text,text,text)','EXECUTE') THEN
     RAISE EXCEPTION 'authenticated role cannot execute Buy Now idempotency RPC';
   END IF;
