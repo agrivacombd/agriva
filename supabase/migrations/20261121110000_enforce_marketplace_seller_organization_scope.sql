@@ -2,124 +2,6 @@
 -- Legacy products without an explicit organization are intentionally not purchasable until mapped.
 begin;
 
--- Refunds and paid commissions require external/manual reconciliation. Do not
--- mark a payment as refunded merely because an admin changed the order status.
-alter table public.marketplace_orders
-  add column if not exists refund_reconciliation_status text not null default 'not_required';
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint
-    where conrelid='public.marketplace_orders'::regclass
-      and conname='marketplace_orders_refund_reconciliation_status_check'
-  ) then
-    alter table public.marketplace_orders
-      add constraint marketplace_orders_refund_reconciliation_status_check
-      check (refund_reconciliation_status in ('not_required','pending','completed')) not valid;
-  end if;
-end $$;
-alter table public.marketplace_orders
-  validate constraint marketplace_orders_refund_reconciliation_status_check;
-create index if not exists marketplace_orders_refund_reconciliation_pending_idx
-  on public.marketplace_orders (updated_at desc)
-  where refund_reconciliation_status='pending';
-
-alter table public.reseller_commissions
-  add column if not exists reconciliation_status text not null default 'not_required';
-do $$
-begin
-  if not exists (
-    select 1 from pg_constraint
-    where conrelid='public.reseller_commissions'::regclass
-      and conname='reseller_commissions_reconciliation_status_check'
-  ) then
-    alter table public.reseller_commissions
-      add constraint reseller_commissions_reconciliation_status_check
-      check (reconciliation_status in ('not_required','pending','completed')) not valid;
-  end if;
-end $$;
-alter table public.reseller_commissions
-  validate constraint reseller_commissions_reconciliation_status_check;
-create index if not exists reseller_commissions_reconciliation_pending_idx
-  on public.reseller_commissions (updated_at desc)
-  where reconciliation_status='pending';
-
-comment on column public.marketplace_orders.refund_reconciliation_status is
-  'Pending means a paid order was marked refunded in the app and its external/manual payment refund must still be reconciled. This column does not initiate a provider refund.';
-comment on column public.reseller_commissions.reconciliation_status is
-  'Pending means a commission already paid out on a refunded order requires separate accounting reconciliation; paid commission status is never silently reversed.';
-
-
-create or replace function private.snapshot_marketplace_order_seller_organization()
-returns trigger
-language plpgsql
-security definer
-set search_path = pg_catalog, public, pg_temp
-as $$
-declare
-  v_product public.products;
-  v_organization public.organizations;
-begin
-  select * into v_product
-  from public.products
-  where id = new.product_id
-  for key share;
-  if not found then
-    raise exception 'Marketplace product not found' using errcode = '23503';
-  end if;
-  if v_product.seller_organization_id is null then
-    raise exception 'Seller organization is not assigned to this product' using errcode = '23514';
-  end if;
-  select * into v_organization
-  from public.organizations
-  where id=v_product.seller_organization_id
-  for key share;
-  if not found
-     or v_organization.owner_id is distinct from v_product.farmer_id
-     or v_organization.status is distinct from 'verified' then
-    raise exception 'Product seller organization is not verified for this owner' using errcode = '23514';
-  end if;
-  if new.farmer_id is distinct from v_product.farmer_id then
-    raise exception 'Order seller does not match product owner' using errcode = '23514';
-  end if;
-  if new.seller_organization_id is not null
-     and new.seller_organization_id is distinct from v_product.seller_organization_id then
-    raise exception 'Order seller organization does not match product' using errcode = '23514';
-  end if;
-  new.seller_organization_id := v_product.seller_organization_id;
-  return new;
-end;
-$$;
-
-revoke all on function private.snapshot_marketplace_order_seller_organization() from public, anon, authenticated;
-drop trigger if exists marketplace_order_snapshot_seller_organization on public.marketplace_orders;
-create trigger marketplace_order_snapshot_seller_organization
-before insert on public.marketplace_orders
-for each row execute function private.snapshot_marketplace_order_seller_organization();
-
-create or replace function private.prevent_product_seller_organization_change_with_orders()
-returns trigger
-language plpgsql
-security definer
-set search_path = pg_catalog, public, pg_temp
-as $$
-begin
-  if new.seller_organization_id is distinct from old.seller_organization_id
-     and exists (select 1 from public.marketplace_orders o where o.product_id = old.id) then
-    raise exception 'Seller organization cannot change after marketplace orders exist' using errcode = '23514';
-  end if;
-  return new;
-end;
-$$;
-
-revoke all on function private.prevent_product_seller_organization_change_with_orders() from public, anon, authenticated;
-drop trigger if exists products_lock_seller_organization_after_orders on public.products;
-create trigger products_lock_seller_organization_after_orders
-before update of seller_organization_id on public.products
-for each row execute function private.prevent_product_seller_organization_change_with_orders();
-
--- Sellers can manage only orders whose snapshotted organization is the exact organization
--- for which they hold Marketplace manage_orders. Legacy org-less orders are admin-only.
 create or replace function public.set_marketplace_order_status(p_order_id uuid,p_status text)
 returns public.marketplace_orders
 language plpgsql
@@ -200,13 +82,6 @@ begin
   if p_status in ('cancelled','refunded') then
     update public.reseller_commissions set status='reversed',updated_at=now()
       where order_id=o.id and status in ('pending','approved');
-    if p_status='refunded' then
-      -- Paid commissions are deliberately retained; create an accounting follow-up
-      -- instead of silently reversing a payout that has already left the platform.
-      update public.reseller_commissions
-        set reconciliation_status='pending',updated_at=now()
-        where order_id=o.id and status='paid' and coalesce(paid_amount,0)>0;
-    end if;
   elsif p_status in ('delivered','completed') then
     update public.reseller_commissions set status='approved',updated_at=now()
       where order_id=o.id and status='pending';
@@ -214,11 +89,7 @@ begin
 
   update public.marketplace_orders
     set status=p_status,
-      -- A refund status is not proof of a successful payment-provider refund.
-      refund_reconciliation_status=case
-        when p_status='refunded' and payment_status='paid' then 'pending'
-        else refund_reconciliation_status
-      end,
+      payment_status=case when p_status='refunded' and payment_status='paid' then 'refunded' else payment_status end,
       updated_at=now(),
       shipped_at=case when p_status='shipped' then coalesce(shipped_at,now()) else shipped_at end,
       delivered_at=case when p_status in ('delivered','completed') then coalesce(delivered_at,now()) else delivered_at end
