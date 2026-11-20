@@ -58,6 +58,22 @@ async function newContext(label) {
 }
 
 try {
+  const readinessDeadline = Date.now() + 90_000;
+  let appReady = false;
+  while (Date.now() < readinessDeadline) {
+    try {
+      const response = await fetch(baseURL);
+      if (response.ok) {
+        appReady = true;
+        break;
+      }
+    } catch {
+      // Next.js is still starting.
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  }
+  check(appReady, "local Next.js application is ready");
+
   // 1. Exercise the real public signup form, profile trigger, then password login.
   const buyer = await newContext("buyer-auth");
   await buyer.page.goto("/signup");
@@ -102,6 +118,10 @@ try {
   await codForm.locator('input[autocomplete="tel"]').fill("01712345678");
   const addressSelects = codForm.locator("select");
   await addressSelects.nth(0).selectOption({ index: 1 });
+  await buyer.page.waitForFunction(() => {
+    const selects = document.querySelectorAll("#direct-cod-form select");
+    return selects.length === 2 && selects[1].options.length > 1;
+  });
   await addressSelects.nth(1).selectOption({ index: 1 });
   await codForm.getByRole("button", { name: "ক্যাশ অন ডেলিভারিতে অর্ডার নিশ্চিত করুন" }).click();
   await buyer.page.getByRole("status").filter({ hasText: "অর্ডার নিশ্চিত হয়েছে" }).waitFor({ state: "visible", timeout: 30_000 });
