@@ -29,4 +29,6 @@ has(migration, "org.id=o.seller_organization_id", "Seller authorization must bin
 has(migration, "org.owner_id=uid", "Exact order organization must belong to the seller");
 has(migration, "public.has_module_access('marketplace','manage_orders','organization',org.id)", "Exact order organization must carry manage_orders grant");
 has(migration, "grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated", "Authenticated order RPC grant must remain");
+assert.ok(!migration.includes("'refunded'"), "Refunded must not be an available marketplace order transition");
+assert.ok(!migration.includes("refund_reconciliation"), "Refund reconciliation fields must not be part of this release");
 console.log("Marketplace seller organization scope contracts passed.");
