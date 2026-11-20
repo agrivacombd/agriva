@@ -143,6 +143,7 @@ export default function CheckoutButton({
       return;
     }
     setQuantity(requested);
+    directCheckoutIdempotencyKeyRef.current = null;
     setCustomQuantityInput(String(requested));
     setCustomQuantitySelected(true);
     setCustomQuantityOpen(false);
