@@ -1,0 +1,61 @@
+name: Marketplace Browser E2E (isolated)
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "public/**"
+      - "scripts/e2e/**"
+      - ".github/workflows/marketplace-browser-e2e.yml"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-browser-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install locked application dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install ephemeral Playwright runner
+        run: npm install --no-save --package-lock=false playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build application with isolated placeholder config
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+      - name: Start local application
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/agriva-next.log 2>&1 &
+          echo $! > /tmp/agriva-next.pid
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+      - name: Run isolated browser route checks
+        run: node scripts/e2e/marketplace-browser-smoke.mjs
+      - name: Upload app log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-browser-e2e-app-log
+          path: /tmp/agriva-next.log
+          if-no-files-found: ignore
+          retention-days: 7
