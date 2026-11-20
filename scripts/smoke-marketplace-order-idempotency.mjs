@@ -8,8 +8,9 @@ const button = read("../components/marketplace/CheckoutButton.tsx");
 const orderTracking = read("../components/orders/OrderTracking.tsx");
 
 assert.ok(migration.includes("public.set_marketplace_order_status"), "latest migration must replace the effective order status RPC");
-assert.ok(migration.includes("p_status='cancelled' and o.status in ('pending','processing') and o.shipped_at is null"), "only pre-shipment cancellations may restock");
-assert.ok(migration.includes("A refund is financial"), "refund must not be treated as physical return");
+assert.ok(migration.includes("p_status in ('cancelled','refunded')") && migration.includes("o.status in ('pending','processing') and o.shipped_at is null"), "only pre-shipment cancellations/refunds may restock");
+assert.ok(migration.includes("A post-shipment refund is financial"), "post-shipment refund must not be treated as physical return");
+assert.ok(migration.includes("status='approved'") && migration.includes("where order_id=o.id and status='pending'"), "delivery/completion must preserve commission approval lifecycle");
 assert.ok(migration.includes("o.status='shipped' and p_status='delivered'"), "seller cannot cancel shipped orders");
 assert.ok(migration.includes("unique (buyer_id,idempotency_key)"), "Buy Now idempotency ledger must be unique per buyer/key");
 assert.ok(migration.includes("pg_advisory_xact_lock"), "concurrent retries must serialize on buyer/key");
