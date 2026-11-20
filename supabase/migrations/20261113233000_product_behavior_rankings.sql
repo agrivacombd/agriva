@@ -110,7 +110,7 @@ as $$
   select p.id, p.name::text, p.slug::text, p.category::text,
          p.category_slug::text, p.subcategory_slug::text,
          p.description::text, p.price::numeric, p.stock::numeric,
-         p.unit::text, p.image_url::text, p.created_at
+         p.unit::text, p.image_urls[1]::text, p.created_at
   from public.products p
   left join engagement e on e.product_id = p.id
   left join sales s on s.product_id = p.id
