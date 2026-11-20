@@ -1,0 +1,143 @@
+name: Marketplace Browser E2E (isolated)
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "public/**"
+      - "supabase/migrations/**"
+      - "scripts/sql/**"
+      - "scripts/e2e/**"
+      - ".github/workflows/marketplace-browser-e2e.yml"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-browser-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  marketplace-full-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_TELEMETRY_DISABLED: "1"
+      PGHOST: 127.0.0.1
+      PGPORT: 54323
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.81.3
+      - name: Install locked dependencies and PostgreSQL client
+        run: |
+          npm ci --no-audit --no-fund
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Install ephemeral Playwright runner and Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Initialize local-only Supabase with test Auth configuration
+        run: |
+          supabase init --force
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("supabase/config.toml")
+          config = path.read_text()
+
+          def set_value(text, section_name, key, value):
+              header = f"[{section_name}]"
+              section_start = re.search(rf"(?m)^\[{re.escape(section_name)}\][ \t]*$", text)
+              if not section_start:
+                  separator = "" if not text.strip() else "\n"
+                  return text + separator + header + f"\n{key} = {value}\n"
+              following = re.search(r"(?m)^\[[^\]]+\][ \t]*$", text[section_start.end():])
+              section_end = section_start.end() + following.start() if following else len(text)
+              section_text = text[section_start.start():section_end]
+              setting = re.search(rf"(?m)^[ \t]*{re.escape(key)}[ \t]*=.*$", section_text)
+              if setting:
+                  section_text = section_text[:setting.start()] + f"{key} = {value}" + section_text[setting.end():]
+              else:
+                  section_text = section_text.rstrip() + f"\n{key} = {value}\n"
+              return text[:section_start.start()] + section_text + text[section_end:]
+
+          for section, key, value in [
+              ("db", "port", "54323"),
+              ("db.migrations", "enabled", "false"),
+              ("auth", "enabled", "true"),
+              ("auth", "site_url", '"http://127.0.0.1:3000"'),
+              ("auth", "enable_signup", "true"),
+              ("auth.email", "enable_signup", "true"),
+              ("auth.email", "enable_confirmations", "false"),
+          ]:
+              config = set_value(config, section, key, value)
+          path.write_text(config)
+          print("Configured a disposable local Supabase DB and email/password Auth; email confirmations are disabled only for this runner.")
+          PY
+      - name: Start isolated Supabase PostgreSQL, Auth and PostgREST
+        run: supabase start -x realtime,imgproxy,mailpit,storage-api,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - name: Export disposable local Supabase connection settings
+        shell: bash
+        run: |
+          supabase status -o env > /tmp/supabase-status.env
+          source /tmp/supabase-status.env
+          test -n "$API_URL"
+          test -n "$ANON_KEY"
+          test -n "$SERVICE_ROLE_KEY"
+          E2E_SEEDED_PASSWORD="$(openssl rand -hex 24)Aa1!"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "E2E_SEEDED_PASSWORD=$E2E_SEEDED_PASSWORD"
+            echo "E2E_ADMIN_EMAIL=marketplace-admin-${GITHUB_RUN_ID}@example.test"
+            echo "E2E_SELLER_EMAIL=marketplace-seller-${GITHUB_RUN_ID}@example.test"
+            echo "E2E_BUYER_EMAIL=marketplace-buyer-${GITHUB_RUN_ID}@example.test"
+            echo "E2E_BASE_URL=http://127.0.0.1:3000"
+          } >> "$GITHUB_ENV"
+      - name: Replay every AGRIVA migration against the isolated database
+        run: |
+          bash scripts/sql/replay-all-supabase-migrations.sh
+          psql -X -v ON_ERROR_STOP=1 -f scripts/sql/marketplace-seller-organization-full-schema-test.sql
+      - name: Seed test-only Auth identities and Marketplace fixtures
+        run: |
+          node scripts/e2e/seed-marketplace-browser-e2e.mjs | tee /tmp/marketplace-e2e-seed.log
+          grep '^E2E_PRODUCT_ID=' /tmp/marketplace-e2e-seed.log >> "$GITHUB_ENV"
+      - name: Build application against local Supabase only
+        run: env -u SUPABASE_SERVICE_ROLE_KEY npm run build
+      - name: Start local application without the service-role key
+        run: |
+          env -u SUPABASE_SERVICE_ROLE_KEY npm run start -- --hostname 127.0.0.1 > /tmp/agriva-next.log 2>&1 &
+          echo $! > /tmp/agriva-next.pid
+      - name: Run signup, login, seller submission, COD, cancellation/restock and admin browser E2E
+        run: set -o pipefail; node scripts/e2e/marketplace-full-browser-e2e.mjs 2>&1 | tee /tmp/marketplace-browser-e2e.log
+      - name: Upload application log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-full-e2e-app-log
+          path: |
+            /tmp/agriva-next.log
+            /tmp/marketplace-browser-e2e.log
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Stop disposable Supabase stack
+        if: always()
+        run: supabase stop --no-backup || true
