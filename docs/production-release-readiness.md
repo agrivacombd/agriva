@@ -8,7 +8,7 @@
 - The complete AGRIVA SQL migration chain replays successfully against a disposable local Supabase stack in GitHub Actions.
 - Marketplace database tests and the full-schema seller-organization runtime tests passed in AGRIVA CI run [#3534](https://github.com/agrivacombd/agriva/actions/runs/44764971445).
 - Green Living PostgreSQL integration passed in run [#44](https://github.com/agrivacombd/agriva/actions/runs/44764970785).
-- The above runs validate commit `8352a28c513fc099a81cc83c056ea5d0a719df97`. A subsequent release-readiness change aligns CI with Vercel's Node 24 runtime and switches Vercel installs to `npm ci`; that exact head must pass CI before review.
+- The current release head `51be02aadd203ea444193de9b55921301067e1d0` passed AGRIVA CI [#3536](https://github.com/agrivacombd/agriva/actions/runs/44766233663), including Node 24 lint, TypeScript, the full regression suite, and production build. The Vercel install command also uses lockfile-enforcing `npm ci`.
 - The production Vercel project is `agriva-p8g6`. Its verified production domains are `agriva.com.bd` and `www.agriva.com.bd` (the latter redirects to the apex).
 - The current production deployment still points to `main` commit `504f3bc835e96a0d126f044f91e5b92ae7954a3e`; the PR branch has not been deployed to production.
 - The current PR head did not have a Vercel preview deployment at the time of inspection. Vercel's free daily deployment quota blocked newer preview attempts. Netlify preview for commit `8352a28` reported Lighthouse: Performance 52, Accessibility 96, Best Practices 83, SEO 100, PWA 90. Performance and best-practices regressions need a fresh, multi-route audit before release.
