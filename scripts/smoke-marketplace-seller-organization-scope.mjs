@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = p => readFileSync(new URL("../" + p, import.meta.url), "utf8");
+const auth = read("lib/authz/module-access.ts");
+const api = read("app/api/seller/products/route.ts");
+const form = read("components/seller/SellerProductForm.tsx");
+const migration = read("supabase/migrations/20261121110000_enforce_marketplace_seller_organization_scope.sql");
+
+const has = (source, fragment, message) => assert.ok(source.includes(fragment), message);
+has(auth, '.eq("owner_id", user.id)', "Organization listing must be owner-scoped");
+has(auth, '.eq("status", "verified")', "Only verified organizations are eligible");
+has(auth, 'checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id })', "Organization listing must require scoped create grant");
+has(auth, '.eq("id", organizationId)', "Submitted organization must be checked by exact ID");
+has(api, "checkMarketplaceOrganizationCreateAccess(sellerOrganizationId)", "POST must revalidate client-selected organization");
+has(api, "seller_organization_id: access.organizationId", "Product insert must persist server-verified organization ID");
+has(form, "বিক্রয়কারী ব্যবসায়িক প্রতিষ্ঠান", "Seller form must expose organization selection");
+has(form, "seller_organization_id:sellerOrganizationId", "Form must submit selected organization ID");
+has(migration, "new.seller_organization_id := v_product.seller_organization_id", "Order must snapshot product organization at insert");
+has(migration, "Seller organization is not assigned to this product", "Legacy unmapped products must fail closed at checkout");
+has(migration, "Seller organization cannot change after marketplace orders exist", "Product organization must be immutable after orders exist");
+has(migration, "o.seller_organization_id is null", "Legacy org-less orders must fail closed for sellers");
+has(migration, "org.id=o.seller_organization_id", "Seller authorization must bind to exact order organization");
+has(migration, "org.owner_id=uid", "Exact order organization must belong to the seller");
+has(migration, "public.has_module_access('marketplace','manage_orders','organization',org.id)", "Exact order organization must carry manage_orders grant");
+has(migration, "grant execute on function public.set_marketplace_order_status(uuid,text) to authenticated", "Authenticated order RPC grant must remain");
+console.log("Marketplace seller organization scope contracts passed.");
