@@ -20,6 +20,7 @@ type Commission = {
   amount: number | string;
   paid_amount: number | string;
   status: string;
+  reconciliation_status: string;
   created_at: string;
 };
 
@@ -40,22 +41,28 @@ export default async function AdminFinancePage() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const [payoutResult, commissionResult] = await Promise.all([
+  const [payoutResult, commissionResult, reconciliationResult] = await Promise.all([
     supabase.from("commission_payouts")
       .select("id,reseller_id,amount,status,payment_method,requested_at,approved_at,paid_at")
       .order("requested_at", { ascending: false }).limit(100),
     supabase.from("reseller_commissions")
-      .select("id,reseller_id,order_id,amount,paid_amount,status,created_at")
+      .select("id,reseller_id,order_id,amount,paid_amount,status,reconciliation_status,created_at")
       .order("created_at", { ascending: false }).limit(100),
+    supabase.from("reseller_commissions")
+      .select("id,reseller_id,order_id,amount,paid_amount,status,reconciliation_status,created_at")
+      .eq("reconciliation_status", "pending")
+      .order("updated_at", { ascending: false }).limit(100),
   ]);
 
   const payouts = (payoutResult.data ?? []) as Payout[];
   const commissions = (commissionResult.data ?? []) as Commission[];
+  const reconciliationCommissions = (reconciliationResult.data ?? []) as Commission[];
+  const pendingReconciliationTotal = reconciliationCommissions.reduce((sum, item) => sum + Number(item.paid_amount), 0);
   const pendingCommissionTotal = commissions.filter((item) => item.status === "pending").reduce((sum, item) => sum + Number(item.amount), 0);
   const requestedPayoutTotal = payouts.filter((item) => item.status === "requested").reduce((sum, item) => sum + Number(item.amount), 0);
   const approvedPayoutTotal = payouts.filter((item) => item.status === "approved").reduce((sum, item) => sum + Number(item.amount), 0);
   const paidPayoutTotal = payouts.filter((item) => item.status === "paid").reduce((sum, item) => sum + Number(item.amount), 0);
-  const hasError = Boolean(payoutResult.error || commissionResult.error);
+  const hasError = Boolean(payoutResult.error || commissionResult.error || reconciliationResult.error);
 
   return <main className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
     <div>
@@ -73,6 +80,13 @@ export default async function AdminFinancePage() {
       <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5">
         <div className="flex flex-wrap items-center justify-between gap-2"><div><h2 className="text-xl font-black">Payout queue</h2><p className="mt-1 text-sm text-[#718072]">সর্বশেষ ১০০টি payout request; status অনুযায়ী সাজানো</p></div><span className="rounded-full bg-[#edf4e9] px-3 py-1 text-xs font-bold">Read-only · Finance</span></div>
         <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs text-[#6d7b6e]"><tr><th className="px-3 py-3">Reseller ID</th><th className="px-3 py-3">Amount</th><th className="px-3 py-3">Status</th><th className="px-3 py-3">Method</th><th className="px-3 py-3">Requested</th><th className="px-3 py-3">Approved / paid</th></tr></thead><tbody>{payouts.map((payout) => <tr key={payout.id} className="border-t border-[#edf1ea]"><td className="px-3 py-3 font-mono text-xs">{payout.reseller_id.slice(0, 8)}…</td><td className="px-3 py-3 font-bold">{taka(payout.amount)}</td><td className="px-3 py-3"><span className="rounded-lg bg-[#f3f7f1] px-2 py-1 text-xs font-semibold">{statusLabel[payout.status] ?? payout.status}</span></td><td className="px-3 py-3">{payout.payment_method ?? "—"}</td><td className="px-3 py-3">{date(payout.requested_at)}</td><td className="px-3 py-3">{date(payout.paid_at ?? payout.approved_at)}</td></tr>)}</tbody></table>{!hasError && payouts.length === 0 ? <p className="p-5 text-sm text-[#718072]">এখনো কোনো payout request নেই।</p> : null}</div>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+        <h2 className="text-xl font-black">Refunded-order commission reconciliation</h2>
+        <p className="mt-1 text-sm text-[#718072]">Refunded order-এর বিপরীতে আগে পরিশোধিত commission আলাদা করে দেখানো হচ্ছে। এখানে কোনো paid payout স্বয়ংক্রিয়ভাবে reverse করা হয় না।</p>
+        <p className="mt-3 text-lg font-black">{hasError ? "—" : taka(pendingReconciliationTotal)} <span className="text-sm font-semibold">· {hasError ? "—" : reconciliationCommissions.length} pending record</span></p>
+        <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[700px] text-left text-sm"><thead className="text-xs text-[#6d7b6e]"><tr><th className="px-3 py-3">Reseller ID</th><th className="px-3 py-3">Order ID</th><th className="px-3 py-3">Paid amount</th><th className="px-3 py-3">Created</th></tr></thead><tbody>{reconciliationCommissions.map((item) => <tr key={item.id} className="border-t border-amber-200"><td className="px-3 py-3 font-mono text-xs">{item.reseller_id.slice(0, 8)}…</td><td className="px-3 py-3 font-mono text-xs">{item.order_id.slice(0, 8)}…</td><td className="px-3 py-3 font-bold">{taka(item.paid_amount)}</td><td className="px-3 py-3">{date(item.created_at)}</td></tr>)}</tbody></table>{!hasError && reconciliationCommissions.length === 0 ? <p className="p-5 text-sm text-[#718072]">কোনো pending paid-commission reconciliation নেই।</p> : null}</div>
       </section>
 
       <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5">
