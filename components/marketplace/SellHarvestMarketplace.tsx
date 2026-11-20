@@ -123,14 +123,21 @@ export default function SellHarvestMarketplace() {
 
   const loadListings = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    setUserId(user?.id ?? null);
-    const { data, error } = await supabase.from("harvest_listings")
-      .select("id,owner_id,seller_name,crop_name,variety,description,quantity,unit,price_per_unit,district,upazila,pickup_details,quality,harvest_ready,minimum_order,negotiable,transport_available,contact_phone,contact_phone_public,image_urls,status,created_at")
-      .order("created_at", { ascending: false }).limit(100);
-    if (error) setNotice("ফসলের পোস্ট লোড করা যায়নি। কিছুক্ষণ পর আবার চেষ্টা করুন।");
-    else setListings((data ?? []) as HarvestListing[]);
-    setLoading(false);
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+      setUserId(user?.id ?? null);
+      const { data, error } = await supabase.from("harvest_listings")
+        .select("id,owner_id,seller_name,crop_name,variety,description,quantity,unit,price_per_unit,district,upazila,pickup_details,quality,harvest_ready,minimum_order,negotiable,transport_available,contact_phone,contact_phone_public,image_urls,status,created_at")
+        .order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      setListings((data ?? []) as HarvestListing[]);
+      setNotice("");
+    } catch {
+      setNotice("নেটওয়ার্ক বা সার্ভার সমস্যার কারণে ফসলের পোস্ট লোড করা যায়নি। আবার চেষ্টা করুন।");
+    } finally {
+      setLoading(false);
+    }
   }, [supabase]);
 
   useEffect(() => { void loadListings(); }, [loadListings]);
@@ -165,7 +172,15 @@ export default function SellHarvestMarketplace() {
   async function submitListing(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setNotice("");
-    const { data: { user } } = await supabase.auth.getUser();
+    let user;
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      user = data.user;
+    } catch {
+      setNotice("লগইন যাচাই করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।");
+      return;
+    }
     if (!user) { window.location.href = "/login?next=%2Fsell-harvest"; return; }
     if (!districtLocations.some((item) => item.name === district) || (upazila && !availableUpazilas.includes(upazila))) { setNotice("সঠিক জেলা ও তার অন্তর্ভুক্ত উপজেলা নির্বাচন করুন।"); return; }
     if (!files.length) { setNotice("ফসলের অন্তত ১টি ছবি যোগ করুন।"); return; }
