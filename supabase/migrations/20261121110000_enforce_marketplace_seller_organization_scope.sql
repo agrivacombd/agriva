@@ -203,7 +203,6 @@ begin
   update public.marketplace_orders
     set status=p_status,
       -- A refund status is not proof of a successful payment-provider refund.
-      payment_status=payment_status,
       refund_reconciliation_status=case
         when p_status='refunded' and payment_status='paid' then 'pending'
         else refund_reconciliation_status
