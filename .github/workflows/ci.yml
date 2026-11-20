@@ -232,7 +232,7 @@ jobs:
     env:
       SUPABASE_TELEMETRY_DISABLED: "1"
       PGHOST: 127.0.0.1
-      PGPORT: 54322
+      PGPORT: 54323
       PGUSER: postgres
       PGPASSWORD: postgres
       PGDATABASE: postgres
@@ -252,6 +252,17 @@ jobs:
 
           path = Path("supabase/config.toml")
           config = path.read_text()
+          db_pattern = re.compile(r"(?ms)^\[db\]\s*\n.*?(?=^\[|\Z)")
+          db_match = db_pattern.search(config)
+          if db_match:
+              db_section = db_match.group(0)
+              if re.search(r"(?m)^port\s*=", db_section):
+                  db_section = re.sub(r"(?m)^port\s*=.*$", "port = 54323", db_section, count=1)
+              else:
+                  db_section += "\\nport = 54323\\n"
+              config = config[:db_match.start()] + db_section + config[db_match.end():]
+          else:
+              config += "\\n[db]\\nport = 54323\\n"
           pattern = re.compile(r"(?ms)^\[db\.migrations\]\s*\n.*?(?=^\[|\Z)")
           match = pattern.search(config)
           if match:
@@ -264,7 +275,7 @@ jobs:
           else:
               config += "\n[db.migrations]\nenabled = false\n"
           path.write_text(config)
-          print("Disabled automatic migration execution; CI replays every file explicitly.")
+          print("Set local Supabase DB port to 54323 to avoid runner port collisions; disabled automatic migration execution so CI replays every file explicitly.")
           PY
       - name: Start local Supabase Auth and Storage with PostgreSQL
         run: supabase start -x realtime,imgproxy,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
