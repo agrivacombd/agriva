@@ -19,6 +19,7 @@
     "test:payment-event-grants": "node scripts/smoke-payment-event-grants.mjs",
     "test:sslcommerz-payment": "node scripts/smoke-sslcommerz-payment.mjs",
     "test:marketplace-live-inventory": "node scripts/smoke-marketplace-live-inventory.mjs",
+    "test:marketplace-seller-organization-scope": "node scripts/smoke-marketplace-seller-organization-scope.mjs",
     "test:marketplace-seo": "node scripts/smoke-marketplace-seo.mjs",
     "test:seo-phase1": "node scripts/smoke-seo-phase1.mjs",
     "test:plant-science-catalog": "node scripts/smoke-plant-science-catalog.mjs",
