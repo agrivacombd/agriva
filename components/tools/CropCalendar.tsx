@@ -329,7 +329,7 @@ export default function CropCalendar() {
             </button>
           ))}
         </div>
-        <div className="mt-5 grid min-w-0 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:mt-8 lg:grid-cols-3">
+        <div className="mt-5 grid min-w-0 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:mt-8 lg:grid-cols-2">
           <div className="min-w-0 rounded-2xl bg-[#f5f7f2] p-4 sm:p-5">
             <p className="text-sm text-[#647468]">বপন / রোপণের সময়</p>
             <p className="mt-2 break-words text-base font-black leading-7 sm:text-lg">{crop.planting}</p>
@@ -352,6 +352,9 @@ export default function CropCalendar() {
           <p className="mt-2 break-words text-sm leading-6 text-[#647468]">{crop.note}</p>
           <p className="mt-3 break-words text-xs leading-5 font-semibold text-[#647468]">তথ্যভিত্তি: {crop.source}</p>
         </div>
+        <p className="mt-4 text-xs leading-5 text-[#647468]">
+          বীজের পরিমাণ BBS-এর জাতীয় নির্দেশক; জাত, বপন পদ্ধতি, অঙ্কুরোদ্গম ও স্থানীয় সুপারিশ অনুযায়ী প্রকৃত চাহিদা বদলাতে পারে।
+        </p>
         <p className="mt-4 text-xs leading-5 text-[#647468]">
           জাতীয় সময়সীমা দিয়ে প্রাথমিক পরিকল্পনা করুন; বপন বা রোপণের চূড়ান্ত তারিখ স্থানীয় আবহাওয়া, জমির ধরন, জাত এবং কৃষি কর্মকর্তার পরামর্শ অনুযায়ী ঠিক করুন।
         </p>
