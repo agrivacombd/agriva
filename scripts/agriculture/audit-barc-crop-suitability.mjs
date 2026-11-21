@@ -67,6 +67,18 @@ const cropSummary = (entry) => ({
   recordCount: entry.recordCount,
 });
 
+const boroDashboardClassesHa = [4118560, 2224969, 1227522, 203541, 2316663];
+const boroApiRows = raw.flatMap((item) => (item.records || []).map((record) => ({
+  upazila: item.upazila,
+  ...record,
+}))).filter((record) => Number(record.crop_id) === 1);
+const areaFields = ["vs", "s", "ms", "ls", "ns"];
+const boroApiClasses = areaFields.map((field) =>
+  boroApiRows.reduce((sum, record) => sum + Number(record[field] || 0), 0),
+);
+const boroApiTotal = boroApiClasses.reduce((sum, value) => sum + value, 0);
+const boroDashboardTotal = boroDashboardClassesHa.reduce((sum, value) => sum + value, 0);
+
 const result = {
   classification: "API crop-name and geographic coverage audit; coverage clusters are not an official crop master list",
   capturedAtUtc: manifest.summary.retrieved_at_utc,
@@ -84,6 +96,23 @@ const result = {
     distinctCropIdCount: new Set(crops.flatMap((entry) => entry.cropIds)).size,
     upazilaDirectoryCount: directory.size,
     totalSuitabilityRecords: raw.reduce((sum, item) => sum + (item.records || []).length, 0),
+  },
+  areaUnitCrossCheck: {
+    dashboardSource: "https://dashboard.cropzoning.gov.bd/",
+    dashboardUnitLabel: "Area [ha]",
+    crop: "Boro dhan",
+    cropId: 1,
+    situation: "Favourable Environment",
+    season: "Rabi",
+    apiRecordCount: boroApiRows.length,
+    classFieldOrder: areaFields,
+    apiClassTotals: boroApiClasses,
+    apiTotal: boroApiTotal,
+    dashboardClassTotalsHa: boroDashboardClassesHa,
+    dashboardTotalHa: boroDashboardTotal,
+    totalDifference: boroApiTotal - boroDashboardTotal,
+    totalDifferencePercent: Number(((boroApiTotal - boroDashboardTotal) / boroDashboardTotal * 100).toFixed(3)),
+    interpretation: "The API class totals are close to the official dashboard's hectare totals (0.272% total difference), strongly suggesting the API fields are area in hectares. However, the values do not match exactly and the API payload has no unit metadata; treat hectares as a high-confidence hypothesis, not a BARC-confirmed unit.",
   },
   largestIdenticalCoverageCluster: {
     cropCount: main.entries.length,
