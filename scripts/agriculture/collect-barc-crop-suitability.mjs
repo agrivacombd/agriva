@@ -53,10 +53,15 @@ async function getJson(endpoint) {
 
 function numericAreaProblems(record, upazilaCode) {
   return AREA_FIELDS.flatMap((field) => {
-    const value = Number(record[field]);
+    const rawValue = record[field];
+    const value = typeof rawValue === "number"
+      ? rawValue
+      : typeof rawValue === "string" && rawValue.trim() !== ""
+        ? Number(rawValue)
+        : Number.NaN;
     return Number.isFinite(value) && value >= 0
       ? []
-      : [{ upazilaCode, cropId: record.crop_id, field, value: record[field] }];
+      : [{ upazilaCode, cropId: record.crop_id, field, value: rawValue }];
   });
 }
 
