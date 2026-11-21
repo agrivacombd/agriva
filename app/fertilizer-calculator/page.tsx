@@ -64,7 +64,7 @@ export default function FertilizerCalculatorPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
       />
       <StandaloneCalculator kind="fertilizer" locale="bn" />
-      <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
+      <article className="mx-auto mt-12 max-w-4xl rounded-3xl border border-[#e4eadf] bg-white px-6 py-8 text-[16px] leading-8 text-slate-700 shadow-sm sm:px-10 sm:py-10 [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:border-l-4 [&_h2]:border-[#2f7d46] [&_h2]:pl-4 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:leading-snug [&_h2]:text-[#17351f] [&_h2:first-child]:mt-0 [&_h3]:mb-2 [&_h3]:mt-7 [&_h3]:text-lg [&_h3]:font-bold [&_h3]:leading-7 [&_h3]:text-[#244b31] [&_p]:my-4 [&_p]:text-[15px] [&_p]:leading-8 [&_p]:text-slate-600 [&_ul]:my-5 [&_ul]:list-disc [&_ul]:space-y-3 [&_ul]:pl-6 [&_li]:pl-1 [&_li]:text-[15px] [&_li]:leading-8 [&_li]:text-slate-600 [&_a]:font-semibold [&_a]:text-emerald-700 [&_a]:underline [&_a]:decoration-emerald-200 [&_a]:underline-offset-4 [&_strong]:font-bold [&_strong]:text-slate-800">
         <h2>সার হিসাব ক্যালকুলেটর কীভাবে কাজ করে?</h2>
         <p>
           জমির পরিমাণ এবং প্রতি একরে আপনার জানা সারের হার লিখুন। ক্যালকুলেটর জমির একককে একরে রূপান্তর করে
