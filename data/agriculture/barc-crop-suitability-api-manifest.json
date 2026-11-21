@@ -154,8 +154,8 @@
   "crop_inventory_audit": {
     "file": "barc-crop-suitability-crop-inventory-audit.json",
     "script": "scripts/agriculture/audit-barc-crop-suitability.mjs",
-    "sha256": "67acabf055452ee00281f8849dc07ded68606ca2f542cb82b69b7ca9953212cc",
-    "bytes": 7975,
+    "sha256": "acd11bb06538110e016a196162bfa0dd192a7e4e39f316d7e5bfe510bca2740f",
+    "bytes": 9015,
     "result": {
       "distinct_crop_names": 95,
       "distinct_crop_ids": 140,
@@ -166,6 +166,31 @@
       "directory_entry_outside_cluster": "Banchharampur, Brahmanbaria (BARC code 201204)",
       "additional_crop_labels": 19
     },
-    "interpretation": "The 76-name cluster is an observed API coverage pattern, not a BARC-confirmed crop master list. BARC FY 2025-26 annual report says 479/495 upazilas; API cluster maps to 480 AGRIVA upazilas plus two city-corporation entries. Confirm one-upazila difference, crop-name inventory, assessment date and boundary treatment with BARC."
+    "interpretation": "The 76-name cluster is an observed API coverage pattern, not a BARC-confirmed crop master list. BARC FY 2025-26 annual report says 479/495 upazilas; API cluster maps to 480 AGRIVA upazilas plus two city-corporation entries. Confirm one-upazila difference, crop-name inventory, assessment date and boundary treatment with BARC.",
+    "area_unit_cross_check": {
+      "crop": "Boro dhan",
+      "crop_id": 1,
+      "situation": "Favourable Environment",
+      "season": "Rabi",
+      "api_class_totals": [
+        4135919,
+        2232017,
+        1209085,
+        213096,
+        2328551
+      ],
+      "api_total": 10118668,
+      "dashboard_class_totals_ha": [
+        4118560,
+        2224969,
+        1227522,
+        203541,
+        2316663
+      ],
+      "dashboard_total_ha": 10091255,
+      "difference": 27413,
+      "difference_percent": 0.272,
+      "interpretation": "Strong evidence that API class fields are hectare areas, but not exact reconciliation and not a declared API unit."
+    }
   }
 }
