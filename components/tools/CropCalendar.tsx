@@ -215,29 +215,41 @@ export default function CropCalendar() {
             সরকারি পোর্টালে একই জেলা আবার নির্বাচন করে সর্বশেষ স্থানীয় তথ্য দেখুন। AGRIVA-এর নিচের তারিখগুলো এখনো জাতীয় BBS সময়সীমা—জেলা-নির্দিষ্ট তারিখ হিসেবে দেখানো হচ্ছে না।
           </p>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <a
-            href="https://www.bamis.gov.bd/en/calendar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl border border-[#dce8dc] p-4 transition hover:border-emerald-500 hover:bg-emerald-50"
-          >
-            <span className="block text-sm font-black text-[#17351f]">BAMIS ফসল আবহাওয়া পঞ্জিকা ↗</span>
-            <span className="mt-1 block text-xs leading-5 text-[#647468]">ফসল নির্বাচন করে জেলা অনুযায়ী আবহাওয়া-ভিত্তিক ক্যালেন্ডার দেখুন</span>
-          </a>
-          <a
-            href="https://portal.cropzoning.gov.bd/cropSuitability"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-xl border border-[#dce8dc] p-4 transition hover:border-emerald-500 hover:bg-emerald-50"
-          >
-            <span className="block text-sm font-black text-[#17351f]">BARC ফসল উপযোগিতা ↗</span>
-            <span className="mt-1 block text-xs leading-5 text-[#647468]">জেলা ও উপজেলা নির্বাচন করে মৌসুমভিত্তিক উপযোগী ফসল যাচাই করুন</span>
-          </a>
+        <div className="mt-5 rounded-2xl border border-[#dce8dc] bg-[#f8fbf7] p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">জেলা-ভিত্তিক তথ্য কেন্দ্র</p>
+              <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার কৃষি তথ্য</h3>
+              <p className="mt-1 text-xs leading-5 text-[#647468]">নিচের সরকারি উৎসগুলোতে {selectedDistrict} নির্বাচন করে স্থানীয় ফসল, আবহাওয়া ও জমির উপযোগিতা যাচাই করুন।</p>
+            </div>
+            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">জেলা নির্বাচিত</span>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <a href="https://www.bamis.gov.bd/page/district-wise-major-crops/" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#dce8dc] bg-white p-4 transition hover:border-emerald-500 hover:bg-emerald-50">
+              <span className="block text-sm font-black text-[#17351f]">১. জেলার প্রধান ফসল ↗</span>
+              <span className="mt-1 block text-xs leading-5 text-[#647468]">BAMIS-এর জেলা-ভিত্তিক প্রধান ফসলের তথ্য দেখুন।</span>
+            </a>
+            <a href="https://www.bamis.gov.bd/bulletin/district/" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#dce8dc] bg-white p-4 transition hover:border-emerald-500 hover:bg-emerald-50">
+              <span className="block text-sm font-black text-[#17351f]">২. জেলা কৃষি আবহাওয়া বুলেটিন ↗</span>
+              <span className="mt-1 block text-xs leading-5 text-[#647468]">সর্বশেষ জেলা-ভিত্তিক আবহাওয়া সতর্কতা ও কৃষি পরামর্শ যাচাই করুন।</span>
+            </a>
+            <a href="https://portal.cropzoning.gov.bd/cropSuitability" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#dce8dc] bg-white p-4 transition hover:border-emerald-500 hover:bg-emerald-50">
+              <span className="block text-sm font-black text-[#17351f]">৩. ফসল ও জমির উপযোগিতা ↗</span>
+              <span className="mt-1 block text-xs leading-5 text-[#647468]">BARC পোর্টালে জেলা ও উপজেলা বেছে মৌসুমভিত্তিক ফসলের উপযোগিতা দেখুন।</span>
+            </a>
+            <a href="https://www.bamis.gov.bd/page/aezs-maps/" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#dce8dc] bg-white p-4 transition hover:border-emerald-500 hover:bg-emerald-50">
+              <span className="block text-sm font-black text-[#17351f]">৪. কৃষি-পরিবেশ অঞ্চল (AEZ) ↗</span>
+              <span className="mt-1 block text-xs leading-5 text-[#647468]">মাটির ধরন, ভূমির উচ্চতা, পানি ও ফসল বিন্যাসের অঞ্চলভিত্তিক বৈশিষ্ট্য বুঝুন।</span>
+            </a>
+            <a href="https://www.bamis.gov.bd/en/calendar" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-[#dce8dc] bg-white p-4 transition hover:border-emerald-500 hover:bg-emerald-50 sm:col-span-2">
+              <span className="block text-sm font-black text-[#17351f]">৫. ফসলভিত্তিক আবহাওয়া পঞ্জিকা ↗</span>
+              <span className="mt-1 block text-xs leading-5 text-[#647468]">BAMIS-এ ফসল নির্বাচন করে সংশ্লিষ্ট আবহাওয়া-সংবেদনশীলতা ও ক্যালেন্ডার দেখুন।</span>
+            </a>
+          </div>
+          <p className="mt-3 rounded-lg bg-[#fff8e8] p-3 text-xs leading-5 text-[#705a2a]">
+            গুরুত্বপূর্ণ: AGRIVA এখন নির্বাচিত জেলার নাম ধরে সরকারি তথ্যসূত্রগুলো সাজিয়ে দিচ্ছে; সরকারি পোর্টালের ভেতরে জেলা/উপজেলা স্বয়ংক্রিয়ভাবে নির্বাচন করে না। তাই লিংক খোলার পর {selectedDistrict} জেলা নিজে নির্বাচন করুন। যাচাই করা জেলা-নির্দিষ্ট তারিখ না পাওয়া পর্যন্ত নিচের ক্যালেন্ডার জাতীয় BBS ভিত্তি হিসেবেই দেখানো হবে।
+          </p>
         </div>
-        <p className="mt-3 text-xs leading-5 text-[#647468]">
-          তথ্যসূত্র: <a className="font-semibold text-emerald-800 underline" href="https://www.bamis.gov.bd/res/public/pages/2019/05/25/739.pdf" target="_blank" rel="noopener noreferrer">BAMIS জেলা-ভিত্তিক প্রধান ফসলের তালিকা</a> (প্রকাশিত ২০১৯; বর্তমান মৌসুমের পরামর্শ নয়)।
-        </p>
       </div>
 
       <div className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
