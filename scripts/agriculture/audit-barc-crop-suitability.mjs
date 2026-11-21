@@ -16,74 +16,57 @@ const manifest = JSON.parse(await fs.readFile(path.join(root, "barc-crop-suitabi
 
 const byName = new Map();
 const directory = new Map();
-
 for (const item of raw) {
   const upazila = item.upazila;
   const code = String(upazila.upazila_code);
-  directory.set(code, {
-    code,
-    district: upazila.district_name,
-    upazila: upazila.thana_name,
-  });
-
+  directory.set(code, { code, district: upazila.district_name, upazila: upazila.thana_name });
   for (const record of item.records || []) {
-    const name = record.crop_name;
-    if (!name) continue;
-    if (!byName.has(name)) {
-      byName.set(name, {
-        name,
-        cropIds: new Set(),
-        upazilaCodes: new Set(),
-        seasons: new Set(),
-        situations: new Set(),
-        rows: 0,
+    if (!record.crop_name) continue;
+    if (!byName.has(record.crop_name)) {
+      byName.set(record.crop_name, {
+        cropName: record.crop_name, cropIds: new Set(), codes: new Set(),
+        seasons: new Set(), recordCount: 0,
       });
     }
-    const entry = byName.get(name);
+    const entry = byName.get(record.crop_name);
     entry.cropIds.add(String(record.crop_id));
-    entry.upazilaCodes.add(code);
+    entry.codes.add(code);
     if (record.crop_season) entry.seasons.add(record.crop_season);
-    if (record.crop_var) entry.situations.add(record.crop_var);
-    entry.rows += 1;
+    entry.recordCount += 1;
   }
 }
 
-const internalCropCoverage = [...byName.values()].map((entry) => ({
-  cropName: entry.name,
+const crops = [...byName.values()].map((entry) => ({
+  cropName: entry.cropName,
   cropIds: [...entry.cropIds].sort((a, b) => Number(a) - Number(b)),
-  upazilaCount: entry.upazilaCodes.size,
-  upazilaCodes: [...entry.upazilaCodes].sort(),
+  codes: [...entry.codes].sort(),
+  upazilaCount: entry.codes.size,
   seasons: [...entry.seasons].sort(),
-  situations: [...entry.situations].sort(),
-  recordCount: entry.rows,
-})).sort((a, b) => a.cropName.localeCompare(b.cropName));
-
-const byCoverageSignature = new Map();
-for (const crop of internalCropCoverage) {
-  const signature = crop.upazilaCodes.join(",");
-  if (!byCoverageSignature.has(signature)) byCoverageSignature.set(signature, []);
-  byCoverageSignature.get(signature).push(crop.cropName);
+  recordCount: entry.recordCount,
+}));
+const clusters = new Map();
+for (const crop of crops) {
+  const signature = crop.codes.join(",");
+  if (!clusters.has(signature)) clusters.set(signature, []);
+  clusters.get(signature).push(crop);
 }
-const coverageClusters = [...byCoverageSignature.entries()]
-  .map(([signature, names]) => ({
-    signature,
-    cropCount: names.length,
-    upazilaCount: signature ? signature.split(",").length : 0,
-    cropNames: names.sort(),
-  }))
-  .sort((a, b) => b.cropCount - a.cropCount || b.upazilaCount - a.upazilaCount);
+const rankedClusters = [...clusters.entries()]
+  .map(([signature, entries]) => ({ signature, entries }))
+  .sort((a, b) => b.entries.length - a.entries.length);
+const main = rankedClusters[0];
+const mainCodes = main.signature ? main.signature.split(",") : [];
+const mapping = new Map(crosswalk.mapping.map(([code, id]) => [String(code), id]));
+const matchedCodes = mainCodes.filter((code) => mapping.has(code));
+const unmatchedCodes = mainCodes.filter((code) => !mapping.has(code));
+const outsideMain = [...directory.values()].filter((entry) => !mainCodes.includes(entry.code));
+const cropSummary = (entry) => ({
+  cropName: entry.cropName,
+  cropIds: entry.cropIds,
+  upazilaCount: entry.upazilaCount,
+  seasons: entry.seasons,
+  recordCount: entry.recordCount,
+});
 
-const commonCluster = coverageClusters[0];
-const commonCodes = commonCluster.signature ? commonCluster.signature.split(",") : [];
-const mapping = new Map(crosswalk.mapping.map(([barcCode, agrivaId]) => [String(barcCode), agrivaId]));
-const mappedCommon = commonCodes.filter((code) => mapping.has(code));
-const unmatchedCommon = commonCodes
-  .filter((code) => !mapping.has(code))
-  .map((code) => directory.get(code) || { code });
-const apiDirectoryOutsideCommon = [...directory.values()]
-  .filter((entry) => !commonCodes.includes(entry.code));
-
-const cropCoverage = internalCropCoverage.map(({ upazilaCodes, ...crop }) => crop);
 const result = {
   classification: "API crop-name and geographic coverage audit; coverage clusters are not an official crop master list",
   capturedAtUtc: manifest.summary.retrieved_at_utc,
@@ -97,31 +80,32 @@ const result = {
     projectPageCoverage: "The project page currently states 76 crops across 464 of 495 upazilas.",
   },
   apiInventory: {
-    distinctCropNameCount: cropCoverage.length,
-    distinctCropIdCount: new Set(cropCoverage.flatMap((entry) => entry.cropIds)).size,
+    distinctCropNameCount: crops.length,
+    distinctCropIdCount: new Set(crops.flatMap((entry) => entry.cropIds)).size,
     upazilaDirectoryCount: directory.size,
     totalSuitabilityRecords: raw.reduce((sum, item) => sum + (item.records || []).length, 0),
   },
   largestIdenticalCoverageCluster: {
-    cropCount: commonCluster.cropCount,
-    upazilaCodeCount: commonCluster.upazilaCount,
-    matchedAgrivaUpazilaCount: mappedCommon.length,
-    unmatchedApiLocationCount: unmatchedCommon.length,
-    unmatchedApiLocations: unmatchedCommon,
-    cropNames: commonCluster.cropNames,
+    cropCount: main.entries.length,
+    upazilaCodeCount: mainCodes.length,
+    matchedAgrivaUpazilaCount: matchedCodes.length,
+    unmatchedApiLocationCount: unmatchedCodes.length,
+    unmatchedApiLocations: unmatchedCodes.map((code) => directory.get(code) || { code }),
+    cropNames: main.entries.map((entry) => entry.cropName).sort(),
     caveat: "This 76-name cluster is identified only by identical API coverage in this capture. BARC has not confirmed that these names constitute the final 76-crop assessment inventory.",
   },
-  apiDirectoryEntriesOutsideLargestCluster: apiDirectoryOutsideCommon,
-  coverageClusters: coverageClusters.map(({ cropCount, upazilaCount, cropNames }) => ({
-    cropCount,
-    upazilaCount,
-    cropNames,
-  })),
-  cropCoverage,
+  coverageCountDistribution: Object.fromEntries(
+    [...new Set(crops.map((entry) => entry.upazilaCount))]
+      .sort((a, b) => a - b)
+      .map((count) => [String(count), crops.filter((entry) => entry.upazilaCount === count).length]),
+  ),
+  additionalCropLabels: crops.filter((entry) => !main.entries.some((core) => core.cropName === entry.cropName))
+    .map(cropSummary).sort((a, b) => a.upazilaCount - b.upazilaCount || a.cropName.localeCompare(b.cropName)),
+  apiDirectoryEntriesOutsideLargestCluster: outsideMain,
   reconciliation: {
     latestAnnualReportClaim: "479 upazilas",
-    apiLargestClusterMappedToAgriva: mappedCommon.length,
-    apiLargestClusterIncludesNonUpazilaEntries: unmatchedCommon.length,
+    apiLargestClusterMappedToAgriva: matchedCodes.length,
+    apiLargestClusterIncludesNonUpazilaEntries: unmatchedCodes.length,
     discrepancy: "The API's largest identical-coverage cluster maps to 480 AGRIVA upazila records, one more than BARC's FY 2025-26 annual-report figure of 479. The API directory also includes two city-corporation entries. The project page's 464 figure is older/different. Confirm assessment vintage and boundary treatment with BARC.",
   },
   limitations: [
@@ -141,5 +125,6 @@ console.log(JSON.stringify({
   largestClusterCropCount: result.largestIdenticalCoverageCluster.cropCount,
   largestClusterUpazilas: result.largestIdenticalCoverageCluster.upazilaCodeCount,
   matchedAgrivaUpazilas: result.largestIdenticalCoverageCluster.matchedAgrivaUpazilaCount,
+  additionalCropLabels: result.additionalCropLabels.length,
   outsideCluster: result.apiDirectoryEntriesOutsideLargestCluster,
 }, null, 2));
