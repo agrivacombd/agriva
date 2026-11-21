@@ -12,6 +12,84 @@ type Crop = {
   source: string;
 };
 
+const divisions = [
+  { id: "barishal", name: "বরিশাল" },
+  { id: "chattogram", name: "চট্টগ্রাম" },
+  { id: "dhaka", name: "ঢাকা" },
+  { id: "khulna", name: "খুলনা" },
+  { id: "mymensingh", name: "ময়মনসিংহ" },
+  { id: "rajshahi", name: "রাজশাহী" },
+  { id: "rangpur", name: "রংপুর" },
+  { id: "sylhet", name: "সিলেট" },
+] as const;
+
+const districts = [
+  { name: "বরগুনা", division: "barishal" },
+  { name: "বরিশাল", division: "barishal" },
+  { name: "ভোলা", division: "barishal" },
+  { name: "ঝালকাঠি", division: "barishal" },
+  { name: "পটুয়াখালী", division: "barishal" },
+  { name: "পিরোজপুর", division: "barishal" },
+  { name: "বান্দরবান", division: "chattogram" },
+  { name: "ব্রাহ্মণবাড়িয়া", division: "chattogram" },
+  { name: "চাঁদপুর", division: "chattogram" },
+  { name: "চট্টগ্রাম", division: "chattogram" },
+  { name: "কক্সবাজার", division: "chattogram" },
+  { name: "কুমিল্লা", division: "chattogram" },
+  { name: "ফেনী", division: "chattogram" },
+  { name: "খাগড়াছড়ি", division: "chattogram" },
+  { name: "লক্ষ্মীপুর", division: "chattogram" },
+  { name: "নোয়াখালী", division: "chattogram" },
+  { name: "রাঙামাটি", division: "chattogram" },
+  { name: "ঢাকা", division: "dhaka" },
+  { name: "ফরিদপুর", division: "dhaka" },
+  { name: "গাজীপুর", division: "dhaka" },
+  { name: "গোপালগঞ্জ", division: "dhaka" },
+  { name: "কিশোরগঞ্জ", division: "dhaka" },
+  { name: "মাদারীপুর", division: "dhaka" },
+  { name: "মানিকগঞ্জ", division: "dhaka" },
+  { name: "মুন্সিগঞ্জ", division: "dhaka" },
+  { name: "নারায়ণগঞ্জ", division: "dhaka" },
+  { name: "নরসিংদী", division: "dhaka" },
+  { name: "রাজবাড়ী", division: "dhaka" },
+  { name: "শরীয়তপুর", division: "dhaka" },
+  { name: "টাঙ্গাইল", division: "dhaka" },
+  { name: "বাগেরহাট", division: "khulna" },
+  { name: "চুয়াডাঙ্গা", division: "khulna" },
+  { name: "যশোর", division: "khulna" },
+  { name: "ঝিনাইদহ", division: "khulna" },
+  { name: "খুলনা", division: "khulna" },
+  { name: "কুষ্টিয়া", division: "khulna" },
+  { name: "মাগুরা", division: "khulna" },
+  { name: "মেহেরপুর", division: "khulna" },
+  { name: "নড়াইল", division: "khulna" },
+  { name: "সাতক্ষীরা", division: "khulna" },
+  { name: "জামালপুর", division: "mymensingh" },
+  { name: "ময়মনসিংহ", division: "mymensingh" },
+  { name: "নেত্রকোনা", division: "mymensingh" },
+  { name: "শেরপুর", division: "mymensingh" },
+  { name: "বগুড়া", division: "rajshahi" },
+  { name: "জয়পুরহাট", division: "rajshahi" },
+  { name: "নওগাঁ", division: "rajshahi" },
+  { name: "নাটোর", division: "rajshahi" },
+  { name: "চাঁপাইনবাবগঞ্জ", division: "rajshahi" },
+  { name: "পাবনা", division: "rajshahi" },
+  { name: "রাজশাহী", division: "rajshahi" },
+  { name: "সিরাজগঞ্জ", division: "rajshahi" },
+  { name: "দিনাজপুর", division: "rangpur" },
+  { name: "গাইবান্ধা", division: "rangpur" },
+  { name: "কুড়িগ্রাম", division: "rangpur" },
+  { name: "লালমনিরহাট", division: "rangpur" },
+  { name: "নীলফামারী", division: "rangpur" },
+  { name: "পঞ্চগড়", division: "rangpur" },
+  { name: "রংপুর", division: "rangpur" },
+  { name: "ঠাকুরগাঁও", division: "rangpur" },
+  { name: "হবিগঞ্জ", division: "sylhet" },
+  { name: "মৌলভীবাজার", division: "sylhet" },
+  { name: "সুনামগঞ্জ", division: "sylhet" },
+  { name: "সিলেট", division: "sylhet" },
+] as const;
+
 const crops: Crop[] = [
   {
     id: "aus",
@@ -80,46 +158,130 @@ const crops: Crop[] = [
 
 export default function CropCalendar() {
   const [selected, setSelected] = useState("aus");
+  const [selectedDivision, setSelectedDivision] = useState("rangpur");
+  const [selectedDistrict, setSelectedDistrict] = useState("দিনাজপুর");
   const crop = useMemo(() => crops.find((item) => item.id === selected) ?? crops[0], [selected]);
+  const availableDistricts = useMemo(
+    () => districts.filter((district) => district.division === selectedDivision),
+    [selectedDivision],
+  );
+  const divisionName = divisions.find((division) => division.id === selectedDivision)?.name ?? "";
+
+  function changeDivision(value: string) {
+    setSelectedDivision(value);
+    const firstDistrict = districts.find((district) => district.division === value);
+    if (firstDistrict) setSelectedDistrict(firstDistrict.name);
+  }
 
   return (
-    <section className="mt-6 rounded-2xl bg-white p-4 shadow-sm sm:mt-8 sm:rounded-3xl sm:p-6">
-      <div className="flex flex-wrap gap-2" aria-label="ফসল নির্বাচন">
-        {crops.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            onClick={() => setSelected(item.id)}
-            aria-pressed={item.id === selected}
-            className={`max-w-full break-words rounded-full px-3 py-2 text-xs font-bold leading-5 transition sm:px-4 sm:text-sm ${item.id === selected ? "bg-[#17351f] text-white" : "bg-[#eef5ed] text-[#17351f]"}`}
+    <section className="mt-6 space-y-5 sm:mt-8">
+      <div className="rounded-2xl border border-[#dce8dc] bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+        <div className="max-w-2xl">
+          <p className="text-xs font-black uppercase tracking-[.16em] text-[#b58b28]">স্থানীয় কৃষি তথ্য</p>
+          <h2 className="mt-2 text-xl font-black text-[#17351f] sm:text-2xl">আপনার জেলা নির্বাচন করুন</h2>
+          <p className="mt-2 text-sm leading-6 text-[#647468]">
+            জেলা নির্বাচন করে সরকারি BAMIS ও BARC পোর্টালে ওই এলাকার ফসলের আবহাওয়া পঞ্জিকা ও ফসল উপযোগিতা যাচাই করুন।
+          </p>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm font-bold text-[#244b31]">
+            বিভাগ
+            <select
+              value={selectedDivision}
+              onChange={(event) => changeDivision(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-[#d8e3d6] bg-white px-4 py-3 text-base text-slate-800 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+            >
+              {divisions.map((division) => (
+                <option key={division.id} value={division.id}>{division.name}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-bold text-[#244b31]">
+            জেলা
+            <select
+              value={selectedDistrict}
+              onChange={(event) => setSelectedDistrict(event.target.value)}
+              className="mt-2 w-full rounded-xl border border-[#d8e3d6] bg-white px-4 py-3 text-base text-slate-800 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
+            >
+              {availableDistricts.map((district) => (
+                <option key={district.name} value={district.name}>{district.name}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="mt-4 rounded-xl bg-[#f3f7f1] p-4">
+          <p className="text-sm font-bold text-[#17351f]">নির্বাচিত এলাকা: {selectedDistrict}, {divisionName} বিভাগ</p>
+          <p className="mt-1 text-xs leading-5 text-[#647468]">
+            সরকারি পোর্টালে একই জেলা আবার নির্বাচন করে সর্বশেষ স্থানীয় তথ্য দেখুন। AGRIVA-এর নিচের তারিখগুলো এখনো জাতীয় BBS সময়সীমা—জেলা-নির্দিষ্ট তারিখ হিসেবে দেখানো হচ্ছে না।
+          </p>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <a
+            href="https://www.bamis.gov.bd/en/calendar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl border border-[#dce8dc] p-4 transition hover:border-emerald-500 hover:bg-emerald-50"
           >
-            {item.name}
-          </button>
-        ))}
-      </div>
-      <div className="mt-5 grid min-w-0 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:mt-8 lg:grid-cols-3">
-        <div className="min-w-0 rounded-2xl bg-[#f5f7f2] p-4 sm:p-5">
-          <p className="text-sm text-[#647468]">বপন / রোপণের সময়</p>
-          <p className="mt-2 break-words text-base font-black leading-7 sm:text-lg">{crop.planting}</p>
+            <span className="block text-sm font-black text-[#17351f]">BAMIS ফসল আবহাওয়া পঞ্জিকা ↗</span>
+            <span className="mt-1 block text-xs leading-5 text-[#647468]">ফসল নির্বাচন করে জেলা অনুযায়ী আবহাওয়া-ভিত্তিক ক্যালেন্ডার দেখুন</span>
+          </a>
+          <a
+            href="https://portal.cropzoning.gov.bd/cropSuitability"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-xl border border-[#dce8dc] p-4 transition hover:border-emerald-500 hover:bg-emerald-50"
+          >
+            <span className="block text-sm font-black text-[#17351f]">BARC ফসল উপযোগিতা ↗</span>
+            <span className="mt-1 block text-xs leading-5 text-[#647468]">জেলা ও উপজেলা নির্বাচন করে মৌসুমভিত্তিক উপযোগী ফসল যাচাই করুন</span>
+          </a>
         </div>
-        <div className="rounded-2xl bg-[#f5f7f2] p-5">
-          <p className="text-sm text-[#647468]">বৃদ্ধি ও পরিপক্বতা</p>
-          <p className="mt-2 text-lg font-black leading-7">{crop.maturity}</p>
-        </div>
-        <div className="rounded-2xl bg-[#f5f7f2] p-5">
-          <p className="text-sm text-[#647468]">ফসল সংগ্রহের সময়</p>
-          <p className="mt-2 text-lg font-black leading-7">{crop.harvest}</p>
-        </div>
+        <p className="mt-3 text-xs leading-5 text-[#647468]">
+          তথ্যসূত্র: <a className="font-semibold text-emerald-800 underline" href="https://www.bamis.gov.bd/res/public/pages/2019/05/25/739.pdf" target="_blank" rel="noopener noreferrer">BAMIS জেলা-ভিত্তিক প্রধান ফসলের তালিকা</a> (প্রকাশিত ২০১৯; বর্তমান মৌসুমের পরামর্শ নয়)।
+        </p>
       </div>
-      <div className="mt-4 rounded-2xl border border-[#dfe8dd] p-4 sm:mt-5 sm:p-5">
-        <p className="font-bold">চাষ পরিকল্পনার পরামর্শ</p>
-        <p className="mt-2 break-words text-sm leading-6 text-[#647468]">{crop.note}</p>
-        <p className="mt-3 break-words text-xs leading-5 font-semibold text-[#647468]">তথ্যভিত্তি: {crop.source}</p>
+
+      <div className="rounded-2xl bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
+        <div>
+          <p className="text-xs font-black uppercase tracking-[.16em] text-[#b58b28]">জাতীয় ফসল ক্যালেন্ডার</p>
+          <h2 className="mt-2 text-xl font-black text-[#17351f] sm:text-2xl">প্রধান ফসলের বপন ও সংগ্রহের সময়</h2>
+          <p className="mt-2 text-sm leading-6 text-[#647468]">নিচের সময়সীমা BBS-এর জাতীয় ভিত্তির তথ্য। স্থানীয় তারিখের জন্য উপরের সরকারি জেলা-ভিত্তিক উৎস যাচাই করুন।</p>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2" aria-label="ফসল নির্বাচন">
+          {crops.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setSelected(item.id)}
+              aria-pressed={item.id === selected}
+              className={`max-w-full break-words rounded-full px-3 py-2 text-xs font-bold leading-5 transition sm:px-4 sm:text-sm ${item.id === selected ? "bg-[#17351f] text-white" : "bg-[#eef5ed] text-[#17351f]"}`}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+        <div className="mt-5 grid min-w-0 gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:mt-8 lg:grid-cols-3">
+          <div className="min-w-0 rounded-2xl bg-[#f5f7f2] p-4 sm:p-5">
+            <p className="text-sm text-[#647468]">বপন / রোপণের সময়</p>
+            <p className="mt-2 break-words text-base font-black leading-7 sm:text-lg">{crop.planting}</p>
+          </div>
+          <div className="rounded-2xl bg-[#f5f7f2] p-5">
+            <p className="text-sm text-[#647468]">বৃদ্ধি ও পরিপক্বতা</p>
+            <p className="mt-2 text-lg font-black leading-7">{crop.maturity}</p>
+          </div>
+          <div className="rounded-2xl bg-[#f5f7f2] p-5">
+            <p className="text-sm text-[#647468]">ফসল সংগ্রহের সময়</p>
+            <p className="mt-2 text-lg font-black leading-7">{crop.harvest}</p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-2xl border border-[#dfe8dd] p-4 sm:mt-5 sm:p-5">
+          <p className="font-bold">চাষ পরিকল্পনার পরামর্শ</p>
+          <p className="mt-2 break-words text-sm leading-6 text-[#647468]">{crop.note}</p>
+          <p className="mt-3 break-words text-xs leading-5 font-semibold text-[#647468]">তথ্যভিত্তি: {crop.source}</p>
+        </div>
+        <p className="mt-4 text-xs leading-5 text-[#647468]">
+          জাতীয় সময়সীমা দিয়ে প্রাথমিক পরিকল্পনা করুন; বপন বা রোপণের চূড়ান্ত তারিখ স্থানীয় আবহাওয়া, জমির ধরন, জাত এবং কৃষি কর্মকর্তার পরামর্শ অনুযায়ী ঠিক করুন।
+        </p>
       </div>
-      <p className="mt-4 text-xs leading-5 text-[#647468]">
-        এটি BBS-এর জাতীয় পর্যায়ের পরিকল্পনা-ভিত্তি; নির্দিষ্ট জেলা বা উপজেলার জন্য চূড়ান্ত কৃষি পরামর্শ নয়।
-        স্থানীয় সময় যাচাই করতে BAMIS-এর জেলা-ভিত্তিক ফসল আবহাওয়া পঞ্জিকা দেখুন।
-      </p>
     </section>
   );
 }
