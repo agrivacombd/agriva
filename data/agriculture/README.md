@@ -9,7 +9,16 @@
 - Upstream repository reports 8 divisions, 64 districts and 495 upazilas; dataset licence: CC-BY-4.0; last upstream update stated as 2026-09-08. This is a third-party administrative reference dataset, not an official agricultural dataset.
 - This is an administrative lookup dataset, not an agricultural suitability dataset.
 
-## Agricultural evidence sources (not yet imported as machine-readable records)
+## District crop statistics
+
+- File: `district-crop-area-shares-2022-23.json`
+- Coverage: 64 unique districts.
+- Metric: share of gross cropped area (%) for rice, wheat, maize, potato, pulses, oilseeds, vegetables, chili, onion, sugarcane and jute; gross cropped area in hectares.
+- Reference period: 2022/23.
+- Source: IFPRI, *Food Security and Nutrition in Bangladesh: Evidence-Based Strategies for Advancement* (October 2024), Table 3.7, pp. 212–213. The table states its underlying source as BBS, *Yearbook of Agricultural Statistics 2023*.
+- This is observed district-level crop-area share, not crop suitability and not upazila-level data. Shares can sum to more than 100% because multiple crops may be grown on the same land across seasons.
+
+## Additional agricultural evidence sources (not yet imported as machine-readable records)
 
 1. BAMIS / Department of Agricultural Extension, *Districtwise Distribution of Major Crops in Bangladesh* (PDF, 2020):
    https://www.bamis.gov.bd/res/attachment/2020/02/16/13310.pdf
