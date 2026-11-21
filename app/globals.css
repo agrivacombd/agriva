@@ -22,3 +22,51 @@ body {
   font-family: "Noto Sans Bengali", "Hind Siliguri", "Nirmala UI", "Vrinda", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 button, input { font: inherit; }
+
+/* Readable editorial styling for calculator SEO content (no typography plugin required). */
+.agriva-seo-content {
+  color: #263b32;
+  font-size: 1rem;
+  line-height: 1.9;
+}
+.agriva-seo-content h2 {
+  margin: 2.25rem 0 1rem;
+  color: #075c43;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  font-weight: 800;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+.agriva-seo-content h2:first-child { margin-top: 0; }
+.agriva-seo-content h3 {
+  margin: 1.75rem 0 0.65rem;
+  color: #174b39;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-weight: 700;
+  line-height: 1.55;
+}
+.agriva-seo-content p { margin: 0.65rem 0 1rem; }
+.agriva-seo-content ul,
+.agriva-seo-content ol {
+  margin: 0.65rem 0 1.25rem;
+  padding-left: 1.5rem;
+}
+.agriva-seo-content ul { list-style: disc; }
+.agriva-seo-content ol { list-style: decimal; }
+.agriva-seo-content li { margin: 0.35rem 0; padding-left: 0.2rem; }
+.agriva-seo-content li::marker { color: #0b6b4f; }
+.agriva-seo-content strong { color: #163d2f; font-weight: 700; }
+.agriva-seo-content a {
+  color: #087653;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #9bd5bd;
+  text-underline-offset: 3px;
+}
+.agriva-seo-content a:hover { color: #064b39; text-decoration-color: currentColor; }
+@media (max-width: 640px) {
+  .agriva-seo-content { font-size: 0.96rem; line-height: 1.85; }
+  .agriva-seo-content h2 { margin-top: 1.8rem; }
+  .agriva-seo-content h3 { margin-top: 1.4rem; }
+}
+
