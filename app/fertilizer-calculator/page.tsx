@@ -84,7 +84,7 @@ export default function FertilizerCalculatorPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
       />
       <StandaloneCalculator kind="fertilizer" locale="bn" />
-      <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
+      <article className="agriva-seo-content mx-auto mt-10 mb-12 w-full max-w-4xl rounded-2xl border border-emerald-100 bg-white px-5 py-7 shadow-sm sm:px-8 sm:py-10">
         <h2>সারের পরিমাণ কীভাবে হিসাব করবেন?</h2>
         <p>
           জমির আয়তন, সারের ধরন এবং ওই ফসল ও জমির জন্য যাচাই করা প্রয়োগের হার জানা থাকলে মোট প্রয়োজনীয়
