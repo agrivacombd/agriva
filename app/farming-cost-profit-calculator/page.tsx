@@ -5,7 +5,7 @@ import StandaloneCalculator from "@/components/tools/StandaloneCalculator";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "চাষের খরচ ও লাভ-লোকসান ক্যালকুলেটর | AGRIVA",
+  title: "চাষের খরচ ও লাভ-লোকসান ক্যালকুলেটর",
   description: "বীজ, সার, শ্রম, সেচ, অন্যান্য খরচ, উৎপাদন ও বিক্রয়মূল্য দিয়ে চাষের মোট খরচ, সম্ভাব্য আয়, লাভ-লোকসান ও ব্রেক-ইভেন হিসাব করুন।",
   alternates: {
     canonical: "/farming-cost-profit-calculator",
