@@ -68,8 +68,9 @@ export default function WeatherPanel() {
         </div>}
       </section>
       <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-extrabold text-amber-950">কৃষকের জন্য সতর্কতা</h2><p className="mt-2 text-sm leading-6 text-amber-900">পূর্বাভাস সম্ভাবনাভিত্তিক; স্থানীয় বৃষ্টি ও মাঠের অবস্থা আলাদা হতে পারে। কীটনাশক প্রয়োগ, সেচ বা ফসল কাটার সিদ্ধান্তের আগে সরকারি আবহাওয়া বুলেটিন এবং স্থানীয় কৃষি কর্মকর্তার পরামর্শ যাচাই করুন.</p><a className="mt-3 inline-block text-sm font-bold text-amber-950 underline" href="https://www.bmd.gov.bd/" target="_blank" rel="noreferrer">বাংলাদেশ আবহাওয়া অধিদপ্তর ↗</a></section>
+      <p className="mx-auto mt-4 max-w-5xl px-1 text-xs leading-6 text-slate-500">আবহাওয়ার ডেটা: <a className="underline" href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a>। পূর্বাভাস পরিবর্তিত হতে পারে; সরকারি সতর্কতা যাচাই করুন।</p>
     </div>
-  </main>;
+  </div>;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
