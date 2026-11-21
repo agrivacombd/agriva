@@ -1,10 +1,7 @@
 {
-  "raw_file": "barc-crop-suitability-api-raw.json.gz",
-  "raw_sha256": "1aeb7e17fb1a48eee3090316bf167f80404f3ebdc6f725271b99067dfd0099a1",
-  "raw_gzip_bytes": 732941,
-  "crosswalk_file": "barc-crop-suitability-crosswalk-audit.json",
-  "crosswalk_sha256": "3cf810e185c926d61b74f60a10f7f8d41c98c9a4058f2d7529e44e6acc004d38",
-  "crosswalk_bytes": 105534,
+  "crosswalk_file": "barc-crop-suitability-crosswalk.json",
+  "crosswalk_sha256": "76bb363d512d811b23a7880544d119b866cd5aace3482e474633bacfc98aa361",
+  "crosswalk_bytes": 12602,
   "summary": {
     "classification": "BARC Agri-Advisory Portal API response; not yet reconciled with the project page final 76-crop assessment inventory",
     "retrieved_at_utc": "2026-11-21T20:48:20Z",
@@ -147,5 +144,11 @@
       "Area field units were not explicit in the API payload inspected. Do not label them hectares until BARC confirms.",
       "This is suitability class area, not a yield forecast or profitability ranking."
     ]
+  },
+  "raw_capture": {
+    "file": "barc-crop-suitability-api-raw.json.gz",
+    "sha256": "1aeb7e17fb1a48eee3090316bf167f80404f3ebdc6f725271b99067dfd0099a1",
+    "bytes": 732941,
+    "status": "Captured and checksum-verified in the investigation workspace; not committed to this branch. Recreate with scripts/agriculture/collect-barc-crop-suitability.mjs."
   }
 }
