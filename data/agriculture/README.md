@@ -50,6 +50,9 @@
 2. BARC Crop Zoning Information System:
    https://czis.cropzoning.gov.bd/
    - Provides GIS-based crop suitability, land/soil and crop zoning tools.
+3. BARC, *Fertilizer Recommendation Guide-2024* (published September 2024):
+   https://apps.barc.gov.bd/fertilizer_recommendation/FRG%20English%2030.10.2024.pdf
+   - An official cross-reference for crop names, varieties and fertilizer recommendations. It is not, by itself, the authoritative 76-crop suitability inventory; use it only to reconcile terminology and avoid treating fertilizer coverage as suitability coverage.
 
 ## Important implementation rule
 
