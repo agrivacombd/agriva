@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import StandaloneCalculator from "@/components/tools/StandaloneCalculator";
 
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\\/$/, "");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
   title: "সার হিসাব ক্যালকুলেটর: জমি অনুযায়ী সারের পরিমাণ | AGRIVA",
