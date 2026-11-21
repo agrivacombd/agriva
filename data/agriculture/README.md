@@ -6,7 +6,7 @@
 - Records: 495 upazilas under 64 districts and 8 divisions.
 - Fields: BBS-style administrative identifier, Bangla/English upazila name, district and division parent names.
 - Upstream source: `open-admin-data/bangladesh-administrative-divisions`, `data/all-upazila.json`.
-- Upstream source notes cite Bangladesh Bureau of Statistics geocodes published as Bangladesh Subnational Administrative Boundaries (COD-AB) by UN OCHA; see upstream README for source and licence.
+- Upstream repository reports 8 divisions, 64 districts and 495 upazilas; dataset licence: CC-BY-4.0; last upstream update stated as 2026-09-08. This is a third-party administrative reference dataset, not an official agricultural dataset.
 - This is an administrative lookup dataset, not an agricultural suitability dataset.
 
 ## Agricultural evidence sources (not yet imported as machine-readable records)
