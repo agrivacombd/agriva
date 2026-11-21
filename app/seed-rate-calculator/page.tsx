@@ -85,7 +85,7 @@ export default function SeedRateCalculatorPage() {
       />
       <StandaloneCalculator kind="seed" locale="bn" />
       <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
-        <h2>জমি ও বপন পদ্ধতি অনুযায়ী বীজের পরিমাণ কীভাবে হিসাব করবেন?</h2>
+        <h2>বীজের প্রয়োজনীয় পরিমাণ কীভাবে হিসাব করবেন?</h2>
         <p>
           বীজের মোট প্রয়োজন বের করতে জমির আয়তন এবং নির্দিষ্ট ফসল, জাত ও বপন পদ্ধতির জন্য প্রযোজ্য
           বীজের হার জানতে হবে। সরাসরি জমিতে বপন, বীজতলায় চারা তৈরি এবং পরে চারা রোপণের ক্ষেত্রে
