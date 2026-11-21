@@ -7,8 +7,8 @@ type Locale = "bn" | "en";
 
 const copy = {
   bn: {
-    home: "AGRIVA হোম", eyebrow: "ফ্রি কৃষি টুল", area: "জমির পরিমাণ", unit: "জমির একক", acre: "একর", hectare: "হেক্টর", decimal: "শতক",
-    rate: "প্রতি একরে হার", kg: "কেজি", result: "আনুমানিক প্রয়োজনীয় পরিমাণ", note: "ফলাফল আপনার দেওয়া তথ্যের ভিত্তিতে গণনা করা হয়েছে। ফসল, জাত, মাটি ও স্থানীয় কৃষি নির্দেশনা অনুযায়ী হার যাচাই করুন।",
+    home: "সব কৃষি ক্যালকুলেটর", eyebrow: "ফ্রি কৃষি টুল", area: "জমির পরিমাণ", unit: "জমির একক", acre: "একর", hectare: "হেক্টর", decimal: "শতক",
+    rate: "প্রতি একরে সারের হার", kg: "কেজি", result: "আনুমানিক প্রয়োজনীয় পরিমাণ", note: "ফলাফল আপনার দেওয়া তথ্যের ভিত্তিতে গণনা করা হয়েছে। ফসল, জাত, মাটি ও স্থানীয় কৃষি নির্দেশনা অনুযায়ী হার যাচাই করুন।",
     seedRate: "প্রতি একরে বীজের হার", costSeed: "বীজের খরচ", costFertilizer: "সার ও উপকরণ", costLabor: "শ্রমিকের খরচ", costWater: "সেচের খরচ", costOther: "অন্যান্য খরচ",
     yield: "মোট উৎপাদন", price: "প্রতি কেজির বিক্রয়মূল্য", currency: "মুদ্রা", bdt: "বাংলাদেশি টাকা (BDT)", usd: "মার্কিন ডলার (USD)", inr: "ভারতীয় রুপি (INR)",
     totalCost: "মোট খরচ", revenue: "সম্ভাব্য বিক্রয় আয়", profit: "সম্ভাব্য লাভ", loss: "সম্ভাব্য লোকসান", checklist: "চাষের কাজের চেকলিস্ট", progress: "সম্পন্ন কাজ",
@@ -16,8 +16,8 @@ const copy = {
     disclaimer: "এটি পরিকল্পনার সহায়ক অনুমান, নিশ্চয়তা নয়। পরিবহন, জমির ভাড়া, ঋণের সুদ ও অন্যান্য খরচও হিসাবের মধ্যে রাখুন।",
   },
   en: {
-    home: "AGRIVA home", eyebrow: "Free agriculture tool", area: "Land area", unit: "Area unit", acre: "Acres", hectare: "Hectares", decimal: "Decimals",
-    rate: "Rate per acre", kg: "kg", result: "Estimated required amount", note: "Calculated from your inputs. Verify rates against the crop, variety, soil test and local agricultural guidance.",
+    home: "All agriculture calculators", eyebrow: "Free agriculture tool", area: "Land area", unit: "Area unit", acre: "Acres", hectare: "Hectares", decimal: "Decimals",
+    rate: "Fertilizer rate per acre", kg: "kg", result: "Estimated required amount", note: "Calculated from your inputs. Verify rates against the crop, variety, soil test and local agricultural guidance.",
     seedRate: "Seed rate per acre", costSeed: "Seed cost", costFertilizer: "Fertilizer and inputs", costLabor: "Labour cost", costWater: "Irrigation cost", costOther: "Other costs",
     yield: "Total yield", price: "Selling price per kg", currency: "Currency", bdt: "Bangladeshi taka (BDT)", usd: "US dollar (USD)", inr: "Indian rupee (INR)",
     totalCost: "Total cost", revenue: "Estimated revenue", profit: "Estimated profit", loss: "Estimated loss", checklist: "Crop task checklist", progress: "Tasks completed",
@@ -50,7 +50,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
   const t = copy[locale];
   const [area, setArea] = useState("1");
   const [areaUnit, setAreaUnit] = useState<"acre" | "hectare" | "decimal">("acre");
-  const [rate, setRate] = useState(kind === "seed" ? "20" : "25");
+  const [rate, setRate] = useState("");
   const [currency, setCurrency] = useState<MoneyCode>("BDT");
   const [costs, setCosts] = useState({ seed: "1500", fertilizer: "3000", labor: "2500", irrigation: "1000", other: "500" });
   const [yieldKg, setYieldKg] = useState("1200");
@@ -126,6 +126,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
               {field(kind === "seed" ? t.seedRate : t.rate, rate, setRate, t.kg)}
               <label className="block text-sm font-semibold text-slate-700">{t.unit}<select value={areaUnit} onChange={(event) => setAreaUnit(event.target.value as typeof areaUnit)} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base"><option value="acre">{t.acre}</option><option value="hectare">{t.hectare}</option><option value="decimal">{t.decimal}</option></select></label>
             </div>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{kind === "seed" ? (isBn ? "বীজের হারটি আপনার ফসল, জাত ও বপন পদ্ধতির জন্য প্রযোজ্য নির্ভরযোগ্য সুপারিশ থেকে লিখুন।" : "Enter a seed rate from a reliable recommendation for your crop, variety and planting method.") : (isBn ? "সারের হারটি মাটি পরীক্ষার রিপোর্ট বা স্থানীয় কৃষি সুপারিশ থেকে লিখুন। এই টুল নিজে থেকে সারের মাত্রা নির্ধারণ করে না।" : "Enter a fertilizer rate from your soil-test report or local agricultural recommendation. This tool does not prescribe a fertilizer dose.")}</p>
             <div className="mt-5 rounded-2xl bg-emerald-50 p-5"><p className="text-sm font-semibold text-emerald-900">{t.result}</p><p className="mt-1 text-3xl font-black text-emerald-950">{number(totalRate)} {t.kg}</p></div>
             <p className="mt-4 text-xs leading-6 text-amber-800">{t.note}</p>
           </section>
