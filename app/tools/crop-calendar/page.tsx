@@ -5,12 +5,12 @@ import CropCalendar from "@/components/tools/CropCalendar";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "বাংলাদেশের ফসল ক্যালেন্ডার: বপন ও কাটার সময়",
-  description: "আউশ, আমন, বোরো, গম, রবি ভুট্টা ও আলুর বপন-রোপণ এবং ফসল সংগ্রহের জাতীয় সময়সীমা দেখুন। BBS ও BAMIS-এর উৎসসহ কৃষি পরিকল্পনা করুন।",
+  title: "বাংলাদেশের ফসল ক্যালেন্ডার: জেলা ও উপজেলা ভিত্তিক কৃষি পরিকল্পনা",
+  description: "বিভাগ, জেলা ও উপজেলা নির্বাচন করে বাংলাদেশের ফসল ক্যালেন্ডার, BAMIS জেলা-ভিত্তিক প্রধান ফসল এবং BARC ফসল উপযোগিতা যাচাই করুন।",
   alternates: { canonical: "/tools/crop-calendar" },
   openGraph: {
     title: "বাংলাদেশের ফসল ক্যালেন্ডার | AGRIVA",
-    description: "বাংলাদেশে প্রধান ফসলের বপন, রোপণ ও সংগ্রহের সময় জানুন; স্থানীয় BAMIS পরামর্শ দিয়ে সময় যাচাই করুন।",
+    description: "বিভাগ, জেলা ও উপজেলা অনুযায়ী ফসল পরিকল্পনা করুন; BBS, BAMIS ও BARC-এর সরকারি কৃষি তথ্যসূত্র দেখুন।",
     url: "/tools/crop-calendar",
     type: "website",
     locale: "bn_BD",
