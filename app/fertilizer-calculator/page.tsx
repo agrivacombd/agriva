@@ -5,7 +5,7 @@ import StandaloneCalculator from "@/components/tools/StandaloneCalculator";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "সার হিসাব ক্যালকুলেটর: জমি অনুযায়ী সারের পরিমাণ | AGRIVA",
+  title: "সার হিসাব ক্যালকুলেটর: জমি অনুযায়ী সারের পরিমাণ",
   description: "একর, হেক্টর বা শতক ও প্রতি একরের নির্ধারিত সারের হার দিয়ে প্রয়োজনীয় পরিমাণ হিসাব করুন। মাটি পরীক্ষা ও BARC নির্দেশিকা থেকে সঠিক হার যাচাই করুন।",
   alternates: {
     canonical: "/fertilizer-calculator",
@@ -41,12 +41,27 @@ const breadcrumbJsonLd = {
   ],
 };
 
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    { "@type": "Question", name: "এই ক্যালকুলেটর কি আমার ফসলের জন্য সঠিক সারের মাত্রা বলে?", acceptedAnswer: { "@type": "Answer", text: "না। এটি আপনার দেওয়া হার অনুযায়ী পরিমাণ হিসাব করে। ফসল ও জমির জন্য সঠিক হার মাটি পরীক্ষা, BARC-এর নির্দেশিকা এবং স্থানীয় কৃষি কর্মকর্তার পরামর্শ থেকে যাচাই করুন।" } },
+    { "@type": "Question", name: "জমি শতকে দিলে সারের হার কীভাবে লিখব?", acceptedAnswer: { "@type": "Answer", text: "জমির একক হিসেবে শতক নির্বাচন করুন, কিন্তু সারের হার কেজি/একর হিসেবে লিখুন। উদাহরণস্বরূপ, ৫০ শতক জমি ০.৫ একরের সমান।" } },
+    { "@type": "Question", name: "মাটি পরীক্ষা ছাড়া কি সারের হার ব্যবহার করা যাবে?", acceptedAnswer: { "@type": "Answer", text: "মাটি পরীক্ষা সবচেয়ে ভালো ভিত্তি। পরীক্ষা না থাকলে BARC-এর নির্দেশিকায় এলাকার ফসল বিন্যাসভিত্তিক সুপারিশ দেখুন এবং স্থানীয় কৃষি কর্মকর্তার সঙ্গে মিলিয়ে নিন। এক এলাকার বা এক ফসলের হার অন্য জমিতে সরাসরি প্রয়োগ করবেন না." } },
+  ],
+};
+
 export default function FertilizerCalculatorPage() {
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
       />
       <StandaloneCalculator kind="fertilizer" locale="bn" />
       <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
