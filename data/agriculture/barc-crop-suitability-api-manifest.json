@@ -150,5 +150,22 @@
     "sha256": "1aeb7e17fb1a48eee3090316bf167f80404f3ebdc6f725271b99067dfd0099a1",
     "bytes": 732941,
     "status": "Captured and checksum-verified in the investigation workspace; not committed to this branch. Recreate with scripts/agriculture/collect-barc-crop-suitability.mjs."
+  },
+  "crop_inventory_audit": {
+    "file": "barc-crop-suitability-crop-inventory-audit.json",
+    "script": "scripts/agriculture/audit-barc-crop-suitability.mjs",
+    "sha256": "67acabf055452ee00281f8849dc07ded68606ca2f542cb82b69b7ca9953212cc",
+    "bytes": 7975,
+    "result": {
+      "distinct_crop_names": 95,
+      "distinct_crop_ids": 140,
+      "largest_identical_coverage_cluster_crop_names": 76,
+      "cluster_api_upazila_codes": 482,
+      "cluster_matched_agriva_upazilas": 480,
+      "city_corporation_entries": 2,
+      "directory_entry_outside_cluster": "Banchharampur, Brahmanbaria (BARC code 201204)",
+      "additional_crop_labels": 19
+    },
+    "interpretation": "The 76-name cluster is an observed API coverage pattern, not a BARC-confirmed crop master list. BARC FY 2025-26 annual report says 479/495 upazilas; API cluster maps to 480 AGRIVA upazilas plus two city-corporation entries. Confirm one-upazila difference, crop-name inventory, assessment date and boundary treatment with BARC."
   }
 }
