@@ -85,7 +85,7 @@ export default function FertilizerCalculatorPage() {
       />
       <StandaloneCalculator kind="fertilizer" locale="bn" />
       <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
-        <h2>জমি অনুযায়ী সারের পরিমাণ কীভাবে হিসাব করবেন?</h2>
+        <h2>সারের পরিমাণ কীভাবে হিসাব করবেন?</h2>
         <p>
           জমির আয়তন, সারের ধরন এবং ওই ফসল ও জমির জন্য যাচাই করা প্রয়োগের হার জানা থাকলে মোট প্রয়োজনীয়
           পরিমাণ বের করা যায়। প্রথমে মাটি পরীক্ষার রিপোর্ট বা নির্ভরযোগ্য কৃষি নির্দেশনা থেকে হার সংগ্রহ
