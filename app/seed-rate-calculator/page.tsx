@@ -5,7 +5,7 @@ import StandaloneCalculator from "@/components/tools/StandaloneCalculator";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "বীজের পরিমাণ হিসাব ক্যালকুলেটর: জমি অনুযায়ী বীজ",
+  title: "বীজের পরিমাণ হিসাব ক্যালকুলেটর: জমি অনুযায়ী বীজ | AGRIVA",
   description: "একর, হেক্টর বা শতক অনুযায়ী জমির পরিমাণ ও প্রতি একরের বীজের হার দিয়ে প্রয়োজনীয় বীজ হিসাব করুন। ফসল, জাত ও বপন পদ্ধতির হার যাচাই করুন।",
   alternates: {
     canonical: "/seed-rate-calculator",
@@ -41,17 +41,6 @@ const breadcrumbJsonLd = {
   ],
 };
 
-
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    { "@type": "Question", name: "এই ক্যালকুলেটর কি ধান, গম ও সবজির বীজের হার নিজে থেকে বলে?", acceptedAnswer: { "@type": "Answer", text: "না। ফসল ও পদ্ধতির জন্য যাচাই করা বীজের হার আপনাকে লিখতে হবে। BARC কৃষি পরামর্শক বাতায়ন এবং স্থানীয় কৃষি কর্মকর্তার নির্দেশনা থেকে হার যাচাই করুন।" } },
-    { "@type": "Question", name: "জমি শতকে দিলে বীজের হার কীভাবে লিখব?", acceptedAnswer: { "@type": "Answer", text: "জমির একক হিসেবে শতক নির্বাচন করুন, কিন্তু বীজের হার কেজি/একর হিসেবে লিখুন। উদাহরণস্বরূপ, ৫০ শতক জমি ০.৫ একরের সমান।" } },
-    { "@type": "Question", name: "বীজের হার কি অঙ্কুরোদ্গমের ওপর নির্ভর করে?", acceptedAnswer: { "@type": "Answer", text: "হ্যাঁ। বীজের মান ও অঙ্কুরোদ্গম, জাত, বপন পদ্ধতি এবং মাঠের অবস্থার কারণে প্রয়োজনীয় বীজের পরিমাণ বদলাতে পারে। কম অঙ্কুরোদ্গমের বীজ ব্যবহার করার আগে স্থানীয় কৃষি পরামর্শ নিন." } },
-  ],
-};
-
 export default function SeedRateCalculatorPage() {
   return (
     <>
@@ -59,12 +48,8 @@ export default function SeedRateCalculatorPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
-      />
       <StandaloneCalculator kind="seed" locale="bn" />
-      <article className="mx-auto mt-8 sm:mt-10 lg:mt-12 max-w-4xl min-w-0 break-words [overflow-wrap:anywhere] rounded-2xl sm:rounded-3xl border border-[#e4eadf] bg-white px-4 py-6 text-[15px] leading-7 text-slate-700 shadow-sm sm:px-7 sm:py-8 sm:text-base sm:leading-8 lg:px-10 lg:py-10 [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:border-l-4 [&_h2]:border-[#2f7d46] [&_h2]:pl-3 [&_h2]:text-xl [&_h2]:font-black [&_h2]:leading-snug [&_h2]:text-[#17351f] sm:[&_h2]:mb-4 sm:[&_h2]:mt-10 sm:[&_h2]:pl-4 sm:[&_h2]:text-2xl [&_h2:first-child]:mt-0 [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-bold [&_h3]:leading-7 [&_h3]:text-[#244b31] sm:[&_h3]:mt-7 sm:[&_h3]:text-lg [&_p]:my-3 [&_p]:text-sm [&_p]:leading-7 [&_p]:text-slate-600 sm:[&_p]:my-4 sm:[&_p]:text-[15px] sm:[&_p]:leading-8 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 sm:[&_ul]:my-5 sm:[&_ul]:space-y-3 sm:[&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-5 sm:[&_ol]:my-5 sm:[&_ol]:space-y-3 sm:[&_ol]:pl-6 [&_li]:pl-1 [&_li]:text-sm [&_li]:leading-7 [&_li]:text-slate-600 sm:[&_li]:text-[15px] sm:[&_li]:leading-8 [&_a]:break-words [&_a]:font-semibold [&_a]:text-emerald-700 [&_a]:underline [&_a]:decoration-emerald-200 [&_a]:underline-offset-4 [&_strong]:font-bold [&_strong]:text-slate-800">
+      <article className="prose prose-green mx-auto mt-10 max-w-4xl px-4 pb-12 sm:px-6">
         <h2>বীজের প্রয়োজনীয় পরিমাণ কীভাবে হিসাব করবেন?</h2>
         <p>
           জমির পরিমাণ এবং আপনার ফসল, জাত ও বপন পদ্ধতির জন্য প্রযোজ্য প্রতি একরের বীজের হার লিখুন।
