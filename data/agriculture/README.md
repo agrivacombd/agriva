@@ -27,7 +27,7 @@
   - `/api/crop-suitability-districts`
   - `/api/crop-suitability-upazilas/{district_code}`
   - `/api/crop-suitability/{upazila_code}`
-- Reproducible collector: `scripts/agriculture/collect-barc-crop-suitability.mjs`. It writes `barc-crop-suitability-api-raw.json` and `barc-crop-suitability-api-summary.json` under this directory. It uses a conservative request delay and retries rate limits/server errors.
+- Reproducible collector: `scripts/agriculture/collect-barc-crop-suitability.mjs`. It writes `barc-crop-suitability-api-raw.json` and `barc-crop-suitability-api-summary.json` under this directory. It uses a conservative request delay, retries rate limits/server errors, and rejects missing/blank class-area values. Node syntax check passed. A fresh 2026-11-22 run in a new Vercel sandbox was blocked before data retrieval because Node and curl could not verify the API TLS certificate chain (`UNABLE_TO_VERIFY_LEAF_SIGNATURE` / issuer unavailable). TLS verification was not disabled; rerun from a trusted environment or after the certificate-chain issue is resolved.
 - Investigation capture (2026-11-21): 64 districts, 483 upazila directory entries, 483 upazilas with records, 50,724 suitability rows, 95 distinct crop names, 140 crop IDs and three season labels (Rabi, Kharif-1, Kharif-2). No API errors, duplicate composite keys or invalid/non-negative numeric area values were observed in this capture.
 - Summary and SHA-256 manifest: `barc-crop-suitability-api-manifest.json`.
 - Reviewed BARC-to-AGRIVA join map: `barc-crop-suitability-crosswalk.json`. BARC's `upazila_code` is a different code system from AGRIVA's `BD...` IDs; do not join by concatenating or assuming the codes are interchangeable.
