@@ -149,7 +149,8 @@
     "file": "barc-crop-suitability-api-raw.json.gz",
     "sha256": "1aeb7e17fb1a48eee3090316bf167f80404f3ebdc6f725271b99067dfd0099a1",
     "bytes": 732941,
-    "status": "Captured and checksum-verified in the investigation workspace; not committed to this branch. Recreate with scripts/agriculture/collect-barc-crop-suitability.mjs."
+    "status": "Historical capture collected and checksum-verified during the investigation, but the temporary sandbox has since stopped. The compressed raw archive is not committed to Git and is no longer available from that workspace; recreate the raw JSON with scripts/agriculture/collect-barc-crop-suitability.mjs.",
+    "availability": "not_committed_recollect_required"
   },
   "crop_inventory_audit": {
     "file": "barc-crop-suitability-crop-inventory-audit.json",
