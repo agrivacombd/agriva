@@ -47,7 +47,7 @@ export default function WeatherPanel() {
     } finally { setLoading(false); }
   }
 
-  return <div className="min-h-screen bg-[#f6faf7] px-4 py-8 text-slate-900 sm:px-6 sm:py-12">
+  return <div className="bg-[#f6faf7] px-4 py-8 text-slate-900 sm:px-6 sm:py-10">
     <div className="mx-auto max-w-5xl">
       <a href="/tools" className="text-sm font-bold text-emerald-800 hover:underline">← কৃষি টুলবক্সে ফিরুন</a>
       <header className="mt-5 rounded-[2rem] bg-gradient-to-br from-sky-950 to-emerald-800 p-7 text-white sm:p-10">
