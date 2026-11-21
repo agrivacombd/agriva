@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { calculateRequiredQuantity } from "@/lib/calculators/quantity.mjs";
 
 export type CalculatorKind = "fertilizer" | "seed" | "profit" | "calendar";
 type Locale = "bn" | "en";
@@ -79,9 +80,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
     try { window.localStorage.setItem(taskStorageKey, JSON.stringify(checkedTasks)); } catch { /* Storage may be disabled. */ }
   }, [kind, taskStorageKey, checkedTasks, tasksLoaded]);
 
-  const areaFactor = areaUnit === "acre" ? 1 : areaUnit === "hectare" ? 2.47105 : 0.01;
-  const acres = safeProduct(nonNegativeNumber(area), areaFactor);
-  const totalRate = useMemo(() => safeProduct(nonNegativeNumber(area), areaFactor, nonNegativeNumber(rate)), [area, areaFactor, rate]);
+  const totalRate = useMemo(() => calculateRequiredQuantity(area, areaUnit, rate), [area, areaUnit, rate]);
   const totalCost = Object.values(costs).reduce((sum, value) => safeSum(sum, nonNegativeNumber(value)), 0);
   const revenue = safeProduct(nonNegativeNumber(yieldKg), nonNegativeNumber(pricePerKg));
   const rawNet = revenue - totalCost;

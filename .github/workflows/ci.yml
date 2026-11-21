@@ -35,6 +35,8 @@ jobs:
           path: dev-dependency-audit.json
           if-no-files-found: ignore
           retention-days: 14
+      - name: Seed and fertilizer calculator unit conversion and formula regression tests
+        run: npm run test:calculators
       - name: Lint
         run: npm run lint -- --no-cache
       - name: TypeScript check
