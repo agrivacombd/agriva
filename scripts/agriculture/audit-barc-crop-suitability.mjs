@@ -10,11 +10,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 
 const root = path.resolve("data/agriculture");
-const rawPath = path.join(root, "barc-crop-suitability-api-raw.json");
-const crosswalkPath = path.join(root, "barc-crop-suitability-crosswalk.json");
-const outputPath = path.join(root, "barc-crop-suitability-crop-inventory-audit.json");
-const raw = JSON.parse(await fs.readFile(rawPath, "utf8"));
-const crosswalk = JSON.parse(await fs.readFile(crosswalkPath, "utf8"));
+const raw = JSON.parse(await fs.readFile(path.join(root, "barc-crop-suitability-api-raw.json"), "utf8"));
+const crosswalk = JSON.parse(await fs.readFile(path.join(root, "barc-crop-suitability-crosswalk.json"), "utf8"));
+const manifest = JSON.parse(await fs.readFile(path.join(root, "barc-crop-suitability-api-manifest.json"), "utf8"));
 
 const byName = new Map();
 const directory = new Map();
@@ -50,43 +48,46 @@ for (const item of raw) {
   }
 }
 
-const cropCoverage = [...byName.values()].map((entry) => ({
+const internalCropCoverage = [...byName.values()].map((entry) => ({
   cropName: entry.name,
   cropIds: [...entry.cropIds].sort((a, b) => Number(a) - Number(b)),
   upazilaCount: entry.upazilaCodes.size,
+  upazilaCodes: [...entry.upazilaCodes].sort(),
   seasons: [...entry.seasons].sort(),
   situations: [...entry.situations].sort(),
   recordCount: entry.rows,
 })).sort((a, b) => a.cropName.localeCompare(b.cropName));
 
 const byCoverageSignature = new Map();
-for (const crop of cropCoverage) {
+for (const crop of internalCropCoverage) {
   const signature = crop.upazilaCodes.join(",");
   if (!byCoverageSignature.has(signature)) byCoverageSignature.set(signature, []);
   byCoverageSignature.get(signature).push(crop.cropName);
 }
 const coverageClusters = [...byCoverageSignature.entries()]
   .map(([signature, names]) => ({
+    signature,
     cropCount: names.length,
     upazilaCount: signature ? signature.split(",").length : 0,
     cropNames: names.sort(),
-    upazilaCodes: signature ? signature.split(",") : [],
   }))
   .sort((a, b) => b.cropCount - a.cropCount || b.upazilaCount - a.upazilaCount);
 
 const commonCluster = coverageClusters[0];
+const commonCodes = commonCluster.signature ? commonCluster.signature.split(",") : [];
 const mapping = new Map(crosswalk.mapping.map(([barcCode, agrivaId]) => [String(barcCode), agrivaId]));
-const mappedCommon = commonCluster.upazilaCodes.filter((code) => mapping.has(code));
-const unmatchedCommon = commonCluster.upazilaCodes
+const mappedCommon = commonCodes.filter((code) => mapping.has(code));
+const unmatchedCommon = commonCodes
   .filter((code) => !mapping.has(code))
   .map((code) => directory.get(code) || { code });
 const apiDirectoryOutsideCommon = [...directory.values()]
-  .filter((entry) => !commonCluster.upazilaCodes.includes(entry.code));
+  .filter((entry) => !commonCodes.includes(entry.code));
 
+const cropCoverage = internalCropCoverage.map(({ upazilaCodes, ...crop }) => crop);
 const result = {
   classification: "API crop-name and geographic coverage audit; coverage clusters are not an official crop master list",
-  capturedAtUtc: "2026-11-21T20:48:20Z",
-  source: "https://api1.cropzoning.gov.bd",
+  capturedAtUtc: manifest.summary.retrieved_at_utc,
+  source: manifest.summary.api_base,
   officialReference: {
     annualReport: "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2026/9/cae1a14a-896a-4f97-b1c8-76a13fab40a6.pdf",
     annualReportPeriod: "2025-2026",
@@ -97,7 +98,7 @@ const result = {
   },
   apiInventory: {
     distinctCropNameCount: cropCoverage.length,
-    distinctCropIdCount: new Set([...byName.values()].flatMap((entry) => [...entry.cropIds])).size,
+    distinctCropIdCount: new Set(cropCoverage.flatMap((entry) => entry.cropIds)).size,
     upazilaDirectoryCount: directory.size,
     totalSuitabilityRecords: raw.reduce((sum, item) => sum + (item.records || []).length, 0),
   },
@@ -131,6 +132,7 @@ const result = {
   ],
 };
 
+const outputPath = path.join(root, "barc-crop-suitability-crop-inventory-audit.json");
 await fs.writeFile(outputPath, JSON.stringify(result, null, 2) + "\n");
 console.log(JSON.stringify({
   outputPath,
