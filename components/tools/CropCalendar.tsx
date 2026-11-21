@@ -365,7 +365,7 @@ export default function CropCalendar() {
               <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">জেলা-ভিত্তিক ফসলের আবাদ</p>
               <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার ফসল আবাদ-অংশ</h3>
             </div>
-            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">BBS ২০২২/২৩</span>
+            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">IFPRI / BBS ২০২২/২৩</span>
           </div>
           {selectedDistrictCropShare ? (
             <>
@@ -381,7 +381,7 @@ export default function CropCalendar() {
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-xs leading-5 text-[#647468]">এটি জেলা-স্তরের আবাদি জমির পরিসংখ্যান; নির্বাচিত উপজেলার জমির উপযোগিতা বা ভবিষ্যৎ ফলনের নিশ্চয়তা নয়।</p>
+              <p className="mt-3 text-xs leading-5 text-[#647468]">এটি জেলা-স্তরের আবাদি জমির পরিসংখ্যান; নির্বাচিত উপজেলার জমির উপযোগিতা বা ভবিষ্যৎ ফলনের নিশ্চয়তা নয়। কোনো ফসলের মান ০.০% হলে সেটি শুধু ২০২২/২৩ রিপোর্টিং সময়ের তথ্য—ফসলটি ওই জেলায় কখনো চাষ হয় না, এমন অর্থ নয়।</p>
               <a className="mt-2 inline-block text-xs font-bold text-emerald-800 underline" href="https://bangladesh.ifpri.info/files/2024/11/IFPRI_Food-Security-in-Bangladesh_Report_November-2024.pdf" target="_blank" rel="noopener noreferrer">IFPRI (Oct 2024), Table 3.7; underlying source: BBS Yearbook 2023 ↗</a>
             </>
           ) : (
