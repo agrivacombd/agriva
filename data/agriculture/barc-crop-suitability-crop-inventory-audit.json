@@ -8,7 +8,15 @@
     "annualReportPublished": "October 2026",
     "annualReportCoverage": "BARC reports 76 crop suitability assessments completed in 30 additional upazilas during FY 2025-26, bringing cumulative coverage to 479 of 495 upazilas (annual report pp. 6 and 9).",
     "projectPage": "https://portal.cropzoning.gov.bd/aboutProject",
-    "projectPageCoverage": "The project page currently states 76 crops across 464 of 495 upazilas."
+    "projectPageCoverage": "The project page currently states 76 crops across 464 of 495 upazilas.",
+    "economicReview2026": {
+      "url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2026/8/1dd01cf9-4ada-4159-9a2f-376f8beedbef.pdf",
+      "document": "BARC information for Bangladesh Economic Review 2026",
+      "printedPage": 3,
+      "claim": "Crop-zoning activities for 76 crops completed in 480 upazilas; work in remaining 15 upazilas ongoing.",
+      "distinction": "This wording is crop-zoning activities, whereas the FY 2025-26 Annual Report states suitability assessments completed in 30 additional upazilas, cumulative 479. The two counts should not be silently conflated."
+    },
+    "verificationRequest": "docs/research/barc-crop-suitability-verification-request.md"
   },
   "apiInventory": {
     "distinctCropNameCount": 95,
@@ -383,10 +391,12 @@
     }
   ],
   "reconciliation": {
-    "latestAnnualReportClaim": "479 upazilas",
+    "latestAnnualReportClaim": "479 upazilas (FY 2025-26 Annual Report; suitability assessments completed)",
     "apiLargestClusterMappedToAgriva": 480,
     "apiLargestClusterIncludesNonUpazilaEntries": 2,
-    "discrepancy": "The API's largest identical-coverage cluster maps to 480 AGRIVA upazila records, one more than BARC's FY 2025-26 annual-report figure of 479. The API directory also includes two city-corporation entries. The project page's 464 figure is older/different. Confirm assessment vintage and boundary treatment with BARC."
+    "discrepancy": "The API's 76-label identical-coverage cluster maps to 480 AGRIVA upazila records plus two city-corporation entries. BARC's FY 2025-26 Annual Report reports 479 upazilas for completed suitability assessments, while BARC information for Bangladesh Economic Review 2026 says crop-zoning activities for 76 crops have been completed in 480 upazilas and work in 15 remains. The project page still says 464. These may reflect different cut-off dates or definitions (assessment completion versus crop-zoning activities); BARC must confirm the current canonical count and date.",
+    "additionalEconomicReviewClaim": "480 upazilas (BARC information for Bangladesh Economic Review 2026; crop-zoning activities completed)",
+    "currentConclusion": "The API's 480-upazila coverage is now corroborated by a separate BARC 2026 publication for crop-zoning activities, but not yet confirmed as the same milestone/definition as completed suitability assessment. Keep the discrepancy open."
   },
   "limitations": [
     "Do not treat the largest coverage cluster as an official BARC crop master list until BARC confirms it.",
