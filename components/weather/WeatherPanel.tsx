@@ -47,7 +47,7 @@ export default function WeatherPanel() {
     } finally { setLoading(false); }
   }
 
-  return <main className="min-h-screen bg-[#f6faf7] px-4 py-8 text-slate-900 sm:px-6 sm:py-12">
+  return <div className="min-h-screen bg-[#f6faf7] px-4 py-8 text-slate-900 sm:px-6 sm:py-12">
     <div className="mx-auto max-w-5xl">
       <a href="/tools" className="text-sm font-bold text-emerald-800 hover:underline">← কৃষি টুলবক্সে ফিরুন</a>
       <header className="mt-5 rounded-[2rem] bg-gradient-to-br from-sky-950 to-emerald-800 p-7 text-white sm:p-10">
@@ -62,7 +62,7 @@ export default function WeatherPanel() {
         {error && <p role="alert" className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
         {forecast?.current && <div className="mt-6">
           <div className="rounded-2xl bg-emerald-50 p-5"><p className="font-bold text-emerald-900">{selected} · বর্তমান অবস্থা</p><p className="mt-2 text-4xl font-black text-emerald-950">{Math.round(forecast.current.temperature_2m)}°C</p><p className="mt-1 text-sm text-emerald-900">{weatherLabel(forecast.current.weather_code)}</p>
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"><Metric label="আর্দ্রতা" value={forecast.current.relative_humidity_2m + "%"} /><Metric label="বৃষ্টিপাত" value={forecast.current.precipitation + " মিমি"} /><Metric label="বাতাসের গতি" value={forecast.current.wind_speed_10m + " কিমি/ঘণ্টা"} /></div>
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3"><Metric label="আর্দ্রতা" value={forecast.current.relative_humidity_2m + "%"} /><Metric label="বৃষ্টিপাত" value={forecast.current.precipitation + " মিমি"} /><Metric label="বাতাসের গতি" value={forecast.current.wind_speed_10m + " কিমি/ঘণ্টা"} /></div>
           </div>
           {forecast.daily && <><h2 className="mt-7 text-xl font-black">আগামী ৫ দিন</h2><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{forecast.daily.time.map((date, i) => <article key={date} className="rounded-xl border border-slate-200 p-4"><p className="font-extrabold">{new Intl.DateTimeFormat("bn-BD", { day: "numeric", month: "short", weekday: "short", timeZone: "Asia/Dhaka" }).format(new Date(date + "T12:00:00"))}</p><p className="mt-2 text-sm text-slate-600">{weatherLabel(forecast.daily!.weather_code[i])}</p><p className="mt-2 text-lg font-black">{Math.round(forecast.daily!.temperature_2m_min[i])}° – {Math.round(forecast.daily!.temperature_2m_max[i])}°C</p><p className="mt-1 text-sm text-sky-800">বৃষ্টির সম্ভাবনা: {forecast.daily!.precipitation_probability_max[i]}%</p></article>)}</div></>}
         </div>}
