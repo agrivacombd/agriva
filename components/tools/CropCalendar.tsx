@@ -1,6 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import upazilaReference from "@/data/agriculture/bangladesh-upazilas.json";
+
+type UpazilaReference = {
+  id: string;
+  name: string;
+  nameEn: string;
+  districtId: string;
+  district: string;
+  districtEn: string;
+  divisionId: string;
+  division: string;
+  divisionEn: string;
+};
+
+const upazilas = upazilaReference as UpazilaReference[];
 
 type Crop = {
   id: string;
@@ -218,17 +233,27 @@ export default function CropCalendar() {
   const [selected, setSelected] = useState("aus");
   const [selectedDivision, setSelectedDivision] = useState("rangpur");
   const [selectedDistrict, setSelectedDistrict] = useState("দিনাজপুর");
+  const [selectedUpazila, setSelectedUpazila] = useState("দিনাজপুর সদর");
   const crop = useMemo(() => crops.find((item) => item.id === selected) ?? crops[0], [selected]);
   const availableDistricts = useMemo(
     () => districts.filter((district) => district.division === selectedDivision),
     [selectedDivision],
   );
   const divisionName = divisions.find((division) => division.id === selectedDivision)?.name ?? "";
+  const availableUpazilas = useMemo(
+    () => upazilas.filter((item) => item.district === selectedDistrict).sort((a, b) => a.name.localeCompare(b.name, "bn")),
+    [selectedDistrict],
+  );
+  const selectedUpazilaRecord = availableUpazilas.find((item) => item.name === selectedUpazila) ?? availableUpazilas[0];
 
   function changeDivision(value: string) {
     setSelectedDivision(value);
     const firstDistrict = districts.find((district) => district.division === value);
-    if (firstDistrict) setSelectedDistrict(firstDistrict.name);
+    if (firstDistrict) {
+      setSelectedDistrict(firstDistrict.name);
+      const firstUpazila = upazilas.find((item) => item.district === firstDistrict.name);
+      setSelectedUpazila(firstUpazila?.name ?? "");
+    }
   }
 
   return (
@@ -258,7 +283,12 @@ export default function CropCalendar() {
             জেলা
             <select
               value={selectedDistrict}
-              onChange={(event) => setSelectedDistrict(event.target.value)}
+              onChange={(event) => {
+                const nextDistrict = event.target.value;
+                setSelectedDistrict(nextDistrict);
+                const firstUpazila = upazilas.find((item) => item.district === nextDistrict);
+                setSelectedUpazila(firstUpazila?.name ?? "");
+              }}
               className="mt-2 w-full rounded-xl border border-[#d8e3d6] bg-white px-4 py-3 text-base text-slate-800 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
             >
               {availableDistricts.map((district) => (
@@ -266,19 +296,48 @@ export default function CropCalendar() {
               ))}
             </select>
           </label>
+          <label className="text-sm font-bold text-[#244b31]">
+            উপজেলা
+            <select
+              value={selectedUpazilaRecord?.name ?? ""}
+              onChange={(event) => setSelectedUpazila(event.target.value)}
+              disabled={availableUpazilas.length === 0}
+              className="mt-2 w-full rounded-xl border border-[#d8e3d6] bg-white px-4 py-3 text-base text-slate-800 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-100"
+            >
+              {availableUpazilas.map((item) => (
+                <option key={item.id} value={item.name}>{item.name}</option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="mt-4 rounded-xl bg-[#f3f7f1] p-4">
-          <p className="text-sm font-bold text-[#17351f]">নির্বাচিত এলাকা: {selectedDistrict}, {divisionName} বিভাগ</p>
+          <p className="text-sm font-bold text-[#17351f]">নির্বাচিত এলাকা: {selectedDistrict} জেলা, {selectedUpazilaRecord?.name ?? "উপজেলা নির্বাচন করুন"} উপজেলা, {divisionName} বিভাগ</p>
           <p className="mt-1 text-xs leading-5 text-[#647468]">
             সরকারি পোর্টালে একই জেলা আবার নির্বাচন করে সর্বশেষ স্থানীয় তথ্য দেখুন। AGRIVA-এর নিচের তারিখগুলো এখনো জাতীয় BBS সময়সীমা—জেলা-নির্দিষ্ট তারিখ হিসেবে দেখানো হচ্ছে না।
           </p>
         </div>
+        <div className="mt-4 rounded-2xl border border-[#dce8dc] bg-white p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">যাচাইকৃত প্রধান ফসল</p>
+              <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার ফসল প্রোফাইল</h3>
+            </div>
+            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">BAMIS নথি</span>
+          </div>
+          <div className="mt-3 rounded-xl bg-[#f3f7f1] p-4">
+            <p className="text-sm font-black text-[#17351f]">ধান</p>
+            <p className="mt-1 text-sm leading-6 text-[#647468]">BAMIS-এর জেলা-ভিত্তিক প্রধান ফসলের তালিকায় ধানকে বাংলাদেশের সব ৬৪ জেলার ফসল হিসেবে উল্লেখ করা হয়েছে।</p>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[#647468]">গম, আখ, ডাল, তৈলবীজ, মসলা, সবজি ও ফলের জেলা-ভিত্তিক উপস্থিতির চিহ্নিত তালিকাটি সরকারি PDF-এ আছে। মূল টেবিলের প্রতিটি জেলার চিহ্ন নির্ভুলভাবে ডেটা আকারে যাচাই ও রূপান্তর শেষ না হওয়া পর্যন্ত সেগুলো এখানে অনুমান করে দেখানো হচ্ছে না।</p>
+          <a className="mt-2 inline-block text-xs font-bold text-emerald-800 underline" href="https://www.bamis.gov.bd/res/attachment/2020/02/16/13310.pdf" target="_blank" rel="noopener noreferrer">BAMIS: Districtwise Distribution of Major Crops in Bangladesh (PDF) ↗</a>
+        </div>
+
         <div className="mt-5 rounded-2xl border border-[#dce8dc] bg-[#f8fbf7] p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">জেলা-ভিত্তিক তথ্য কেন্দ্র</p>
               <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার কৃষি তথ্য</h3>
-              <p className="mt-1 text-xs leading-5 text-[#647468]">নিচের সরকারি উৎসগুলোতে {selectedDistrict} নির্বাচন করে স্থানীয় ফসল, আবহাওয়া ও জমির উপযোগিতা যাচাই করুন।</p>
+              <p className="mt-1 text-xs leading-5 text-[#647468]">{selectedDistrict} জেলার {selectedUpazilaRecord?.name ?? "নির্বাচিত"} উপজেলার জন্য সরকারি ফসল উপযোগিতা ও কৃষি-আবহাওয়া তথ্য যাচাই করুন।</p>
             </div>
             <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">জেলা নির্বাচিত</span>
           </div>
@@ -314,7 +373,7 @@ export default function CropCalendar() {
         <div>
           <p className="text-xs font-black uppercase tracking-[.16em] text-[#b58b28]">জাতীয় ফসল ক্যালেন্ডার</p>
           <h2 className="mt-2 text-xl font-black text-[#17351f] sm:text-2xl">প্রধান ফসলের বপন ও সংগ্রহের সময়</h2>
-          <p className="mt-2 text-sm leading-6 text-[#647468]">নিচের সময়সীমা BBS-এর জাতীয় ভিত্তির তথ্য। স্থানীয় তারিখের জন্য উপরের সরকারি জেলা-ভিত্তিক উৎস যাচাই করুন।</p>
+          <p className="mt-2 text-sm leading-6 text-[#647468]">নিচের সময়সীমা BBS-এর জাতীয় ভিত্তির তথ্য। {selectedDistrict} জেলার {selectedUpazilaRecord?.name ?? "নির্বাচিত"} উপজেলার জন্য স্থানীয় তারিখের সরকারি যাচাই এখনো আলাদাভাবে প্রয়োজন।</p>
         </div>
         <div className="mt-5 flex flex-wrap gap-2" aria-label="ফসল নির্বাচন">
           {crops.map((item) => (
