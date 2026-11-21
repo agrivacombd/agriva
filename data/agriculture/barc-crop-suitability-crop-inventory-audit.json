@@ -16,6 +16,41 @@
     "upazilaDirectoryCount": 483,
     "totalSuitabilityRecords": 50724
   },
+  "areaUnitCrossCheck": {
+    "dashboardSource": "https://dashboard.cropzoning.gov.bd/",
+    "dashboardUnitLabel": "Area [ha]",
+    "crop": "Boro dhan",
+    "cropId": 1,
+    "situation": "Favourable Environment",
+    "season": "Rabi",
+    "apiRecordCount": 483,
+    "classFieldOrder": [
+      "vs",
+      "s",
+      "ms",
+      "ls",
+      "ns"
+    ],
+    "apiClassTotals": [
+      4135919,
+      2232017,
+      1209085,
+      213096,
+      2328551
+    ],
+    "apiTotal": 10118668,
+    "dashboardClassTotalsHa": [
+      4118560,
+      2224969,
+      1227522,
+      203541,
+      2316663
+    ],
+    "dashboardTotalHa": 10091255,
+    "totalDifference": 27413,
+    "totalDifferencePercent": 0.272,
+    "interpretation": "The API class totals are close to the official dashboard's hectare totals (0.272% total difference), strongly suggesting the API fields are area in hectares. However, the values do not match exactly and the API payload has no unit metadata; treat hectares as a high-confidence hypothesis, not a BARC-confirmed unit."
+  },
   "largestIdenticalCoverageCluster": {
     "cropCount": 76,
     "upazilaCodeCount": 482,
