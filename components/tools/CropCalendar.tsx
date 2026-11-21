@@ -16,6 +16,25 @@ type UpazilaReference = {
 };
 
 const upazilas = upazilaReference as UpazilaReference[];
+const districtNameAliases: Record<string, string> = {
+  "পটুয়াখালী": "পটুয়াখালী",
+  "ব্রাহ্মণবাড়িয়া": "ব্রাহ্মণবাড়ীয়া",
+  "খাগড়াছড়ি": "খাগড়াছড়ি",
+  "নোয়াখালী": "নোয়াখালী",
+  "রাঙামাটি": "রাঙ্গামাটি",
+  "নারায়ণগঞ্জ": "নারায়ণগঞ্জ",
+  "রাজবাড়ী": "রাজবাড়ী",
+  "শরীয়তপুর": "শরিয়তপুর",
+  "চুয়াডাঙ্গা": "চুয়াডাঙ্গা",
+  "কুষ্টিয়া": "কুষ্টিয়া",
+  "নড়াইল": "নড়াইল",
+  "ময়মনসিংহ": "ময়মনসিংহ",
+  "বগুড়া": "বগুড়া",
+  "জয়পুরহাট": "জয়পুরহাট",
+  "কুড়িগ্রাম": "কুড়িগ্রাম",
+  "পঞ্চগড়": "পঞ্চগড়",
+};
+const getUpazilaDistrictName = (district: string) => districtNameAliases[district] ?? district;
 
 type Crop = {
   id: string;
@@ -241,7 +260,7 @@ export default function CropCalendar() {
   );
   const divisionName = divisions.find((division) => division.id === selectedDivision)?.name ?? "";
   const availableUpazilas = useMemo(
-    () => upazilas.filter((item) => item.district === selectedDistrict).sort((a, b) => a.name.localeCompare(b.name, "bn")),
+    () => upazilas.filter((item) => item.district === getUpazilaDistrictName(selectedDistrict)).sort((a, b) => a.name.localeCompare(b.name, "bn")),
     [selectedDistrict],
   );
   const selectedUpazilaRecord = availableUpazilas.find((item) => item.name === selectedUpazila) ?? availableUpazilas[0];
@@ -251,7 +270,7 @@ export default function CropCalendar() {
     const firstDistrict = districts.find((district) => district.division === value);
     if (firstDistrict) {
       setSelectedDistrict(firstDistrict.name);
-      const firstUpazila = upazilas.find((item) => item.district === firstDistrict.name);
+      const firstUpazila = upazilas.find((item) => item.district === getUpazilaDistrictName(firstDistrict.name));
       setSelectedUpazila(firstUpazila?.name ?? "");
     }
   }
@@ -286,7 +305,7 @@ export default function CropCalendar() {
               onChange={(event) => {
                 const nextDistrict = event.target.value;
                 setSelectedDistrict(nextDistrict);
-                const firstUpazila = upazilas.find((item) => item.district === nextDistrict);
+                const firstUpazila = upazilas.find((item) => item.district === getUpazilaDistrictName(nextDistrict));
                 setSelectedUpazila(firstUpazila?.name ?? "");
               }}
               className="mt-2 w-full rounded-xl border border-[#d8e3d6] bg-white px-4 py-3 text-base text-slate-800 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100"
