@@ -362,10 +362,10 @@ export default function CropCalendar() {
         <div className="mt-4 rounded-2xl border border-[#dce8dc] bg-white p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">যাচাইকৃত প্রধান ফসল</p>
-              <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার ফসল প্রোফাইল</h3>
+              <p className="text-xs font-black uppercase tracking-[.12em] text-[#b58b28]">জেলা-ভিত্তিক ফসলের আবাদ</p>
+              <h3 className="mt-1 text-lg font-black text-[#17351f]">{selectedDistrict} জেলার ফসল আবাদ-অংশ</h3>
             </div>
-            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">BAMIS নথি</span>
+            <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">BBS ২০২২/২৩</span>
           </div>
           {selectedDistrictCropShare ? (
             <>
