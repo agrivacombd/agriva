@@ -199,6 +199,13 @@
       "difference": 27413,
       "difference_percent": 0.272,
       "interpretation": "Strong evidence that API class fields are hectare areas, but not exact reconciliation and not a declared API unit."
-    }
+    },
+    "official_references": {
+      "annual_report_2025_2026": "479 upazilas; completed suitability assessments (October 2026)",
+      "bangladesh_economic_review_2026": "480 upazilas; completed crop-zoning activities for 76 crops, remaining 15 ongoing",
+      "current_project_page": "464 upazilas",
+      "interpretation": "The 479 and 480 statements use different wording and may use different cut-off dates or definitions. BARC confirmation is required."
+    },
+    "verification_request": "docs/research/barc-crop-suitability-verification-request.md"
   }
 }
