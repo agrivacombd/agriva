@@ -266,7 +266,7 @@ export default function CropCalendar() {
             জেলা নির্বাচন করে সরকারি BAMIS ও BARC পোর্টালে ওই এলাকার ফসলের আবহাওয়া পঞ্জিকা ও ফসল উপযোগিতা যাচাই করুন।
           </p>
         </div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <label className="text-sm font-bold text-[#244b31]">
             বিভাগ
             <select
