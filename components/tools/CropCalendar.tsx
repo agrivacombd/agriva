@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import upazilaReference from "@/data/agriculture/bangladesh-upazilas.json";
+import districtCropShareReference from "@/data/agriculture/district-crop-area-shares-2022-23.json";
 
 type UpazilaReference = {
   id: string;
@@ -35,6 +36,22 @@ const districtNameAliases: Record<string, string> = {
   "পঞ্চগড়": "পঞ্চগড়",
 };
 const getUpazilaDistrictName = (district: string) => districtNameAliases[district] ?? district;
+type DistrictCropShare = {
+  districtId: string;
+  district: string;
+  districtEn: string;
+  referenceYear: string;
+  grossCroppedAreaHa: number;
+  shareOfGrossCroppedAreaPct: Record<string, number>;
+};
+
+const districtCropShares = districtCropShareReference.districts as DistrictCropShare[];
+const cropShareLabels: Record<string, string> = {
+  rice: "ধান", wheat: "গম", maize: "ভুট্টা", potato: "আলু", pulses: "ডাল",
+  oilseeds: "তৈলবীজ", vegetables: "সবজি", chili: "মরিচ", onion: "পেঁয়াজ",
+  sugarcane: "আখ", jute: "পাট",
+};
+
 
 type Crop = {
   id: string;
@@ -264,6 +281,13 @@ export default function CropCalendar() {
     [selectedDistrict],
   );
   const selectedUpazilaRecord = availableUpazilas.find((item) => item.name === selectedUpazila) ?? availableUpazilas[0];
+  const selectedDistrictCropShare = districtCropShares.find((item) => item.districtId === selectedUpazilaRecord?.districtId);
+  const cropShareEntries = useMemo(
+    () => Object.entries(selectedDistrictCropShare?.shareOfGrossCroppedAreaPct ?? {})
+      .map(([key, value]) => ({ key, label: cropShareLabels[key] ?? key, value }))
+      .sort((a, b) => b.value - a.value),
+    [selectedDistrictCropShare],
+  );
 
   function changeDivision(value: string) {
     setSelectedDivision(value);
@@ -343,12 +367,26 @@ export default function CropCalendar() {
             </div>
             <span className="rounded-full bg-[#e8f1e5] px-3 py-1 text-xs font-bold text-[#245334]">BAMIS নথি</span>
           </div>
-          <div className="mt-3 rounded-xl bg-[#f3f7f1] p-4">
-            <p className="text-sm font-black text-[#17351f]">ধান</p>
-            <p className="mt-1 text-sm leading-6 text-[#647468]">BAMIS-এর জেলা-ভিত্তিক প্রধান ফসলের তালিকায় ধানকে বাংলাদেশের সব ৬৪ জেলার ফসল হিসেবে উল্লেখ করা হয়েছে।</p>
-          </div>
-          <p className="mt-3 text-xs leading-5 text-[#647468]">গম, আখ, ডাল, তৈলবীজ, মসলা, সবজি ও ফলের জেলা-ভিত্তিক উপস্থিতির চিহ্নিত তালিকাটি সরকারি PDF-এ আছে। মূল টেবিলের প্রতিটি জেলার চিহ্ন নির্ভুলভাবে ডেটা আকারে যাচাই ও রূপান্তর শেষ না হওয়া পর্যন্ত সেগুলো এখানে অনুমান করে দেখানো হচ্ছে না।</p>
-          <a className="mt-2 inline-block text-xs font-bold text-emerald-800 underline" href="https://www.bamis.gov.bd/res/attachment/2020/02/16/13310.pdf" target="_blank" rel="noopener noreferrer">BAMIS: Districtwise Distribution of Major Crops in Bangladesh (PDF) ↗</a>
+          {selectedDistrictCropShare ? (
+            <>
+              <div className="mt-3 rounded-xl bg-[#f3f7f1] p-4">
+                <p className="text-sm font-black text-[#17351f]">মোট আবাদি জমি: {selectedDistrictCropShare.grossCroppedAreaHa.toLocaleString("bn-BD")} হেক্টর</p>
+                <p className="mt-1 text-xs leading-5 text-[#647468]">নিচের শতাংশগুলো ওই জেলার মোট ফসলি জমিতে প্রতিটি ফসলের আবাদি অংশ (২০২২/২৩)। একই জমিতে বছরে একাধিক ফসল হওয়ায় শতাংশগুলো যোগ করলে ১০০% নাও হতে পারে।</p>
+              </div>
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                {cropShareEntries.map((item) => (
+                  <div key={item.key} className="flex items-center justify-between gap-3 rounded-lg border border-[#e6ede3] px-3 py-2">
+                    <span className="text-sm font-semibold text-[#244b31]">{item.label}</span>
+                    <span className="text-sm font-black tabular-nums text-[#17351f]">{item.value.toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-xs leading-5 text-[#647468]">এটি জেলা-স্তরের আবাদি জমির পরিসংখ্যান; নির্বাচিত উপজেলার জমির উপযোগিতা বা ভবিষ্যৎ ফলনের নিশ্চয়তা নয়।</p>
+              <a className="mt-2 inline-block text-xs font-bold text-emerald-800 underline" href="https://bangladesh.ifpri.info/files/2024/11/IFPRI_Food-Security-in-Bangladesh_Report_November-2024.pdf" target="_blank" rel="noopener noreferrer">IFPRI (Oct 2024), Table 3.7; underlying source: BBS Yearbook 2023 ↗</a>
+            </>
+          ) : (
+            <p className="mt-3 text-sm text-[#647468]">এই জেলার আবাদি জমির ডেটা ডেটাসেটে পাওয়া যায়নি।</p>
+          )}
         </div>
 
         <div className="mt-5 rounded-2xl border border-[#dce8dc] bg-[#f8fbf7] p-4 sm:p-5">
