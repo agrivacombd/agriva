@@ -261,9 +261,9 @@ export default function CropCalendar() {
       <div className="rounded-2xl border border-[#dce8dc] bg-white p-4 shadow-sm sm:rounded-3xl sm:p-6">
         <div className="max-w-2xl">
           <p className="text-xs font-black uppercase tracking-[.16em] text-[#b58b28]">স্থানীয় কৃষি তথ্য</p>
-          <h2 className="mt-2 text-xl font-black text-[#17351f] sm:text-2xl">আপনার জেলা নির্বাচন করুন</h2>
+          <h2 className="mt-2 text-xl font-black text-[#17351f] sm:text-2xl">আপনার এলাকা নির্বাচন করুন</h2>
           <p className="mt-2 text-sm leading-6 text-[#647468]">
-            জেলা নির্বাচন করে সরকারি BAMIS ও BARC পোর্টালে ওই এলাকার ফসলের আবহাওয়া পঞ্জিকা ও ফসল উপযোগিতা যাচাই করুন।
+            বিভাগ, জেলা ও উপজেলা নির্বাচন করে আপনার এলাকার কৃষি তথ্য ও ফসল পরিকল্পনা দেখুন।
           </p>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -313,7 +313,7 @@ export default function CropCalendar() {
         <div className="mt-4 rounded-xl bg-[#f3f7f1] p-4">
           <p className="text-sm font-bold text-[#17351f]">নির্বাচিত এলাকা: {selectedDistrict} জেলা, {selectedUpazilaRecord?.name ?? "উপজেলা নির্বাচন করুন"} উপজেলা, {divisionName} বিভাগ</p>
           <p className="mt-1 text-xs leading-5 text-[#647468]">
-            সরকারি পোর্টালে একই জেলা আবার নির্বাচন করে সর্বশেষ স্থানীয় তথ্য দেখুন। AGRIVA-এর নিচের তারিখগুলো এখনো জাতীয় BBS সময়সীমা—জেলা-নির্দিষ্ট তারিখ হিসেবে দেখানো হচ্ছে না।
+            নির্বাচিত উপজেলা অনুযায়ী প্রশাসনিক তালিকা ও কৃষি তথ্যসূত্র সাজানো হয়েছে। নিচের বপন ও সংগ্রহের সময়গুলো এখনো BBS-এর জাতীয় ভিত্তির সময়সীমা; এগুলোকে উপজেলা-নির্দিষ্ট তারিখ মনে করবেন না।
           </p>
         </div>
         <div className="mt-4 rounded-2xl border border-[#dce8dc] bg-white p-4 sm:p-5">
@@ -364,7 +364,7 @@ export default function CropCalendar() {
             </a>
           </div>
           <p className="mt-3 rounded-lg bg-[#fff8e8] p-3 text-xs leading-5 text-[#705a2a]">
-            গুরুত্বপূর্ণ: AGRIVA এখন নির্বাচিত জেলার নাম ধরে সরকারি তথ্যসূত্রগুলো সাজিয়ে দিচ্ছে; সরকারি পোর্টালের ভেতরে জেলা/উপজেলা স্বয়ংক্রিয়ভাবে নির্বাচন করে না। তাই লিংক খোলার পর {selectedDistrict} জেলা নিজে নির্বাচন করুন। যাচাই করা জেলা-নির্দিষ্ট তারিখ না পাওয়া পর্যন্ত নিচের ক্যালেন্ডার জাতীয় BBS ভিত্তি হিসেবেই দেখানো হবে।
+            গুরুত্বপূর্ণ: AGRIVA-তে ৮ বিভাগ, ৬৪ জেলা ও ৪৯৫টি উপজেলার প্রশাসনিক তালিকা যুক্ত হয়েছে। তবে BARC-এর উপযোগিতা স্কোর এখনো সরাসরি এই পেজে আমদানি হয়নি। BARC পোর্টালে {selectedDistrict} জেলা ও {selectedUpazilaRecord?.name ?? "নির্বাচিত উপজেলা"} নির্বাচন করে মূল ফলাফল যাচাই করুন। যাচাইকৃত ডেটা ইন্টিগ্রেশন সম্পন্ন না হওয়া পর্যন্ত কোনো ফসলকে এই উপজেলার জন্য খুব উপযোগী/অনুপযোগী বলে দেখানো হবে না।
           </p>
         </div>
       </div>
