@@ -54,7 +54,6 @@ const cropCoverage = [...byName.values()].map((entry) => ({
   cropName: entry.name,
   cropIds: [...entry.cropIds].sort((a, b) => Number(a) - Number(b)),
   upazilaCount: entry.upazilaCodes.size,
-  upazilaCodes: [...entry.upazilaCodes].sort(),
   seasons: [...entry.seasons].sort(),
   situations: [...entry.situations].sort(),
   recordCount: entry.rows,
