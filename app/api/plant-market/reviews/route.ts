@@ -12,9 +12,16 @@ export async function GET(request:NextRequest){
   const supabase=await createSupabaseServerClient();
   const {data,error}=await supabase.from("plant_market_reviews").select("id,rating,title,body,photo_urls,verified_purchase,created_at").eq("product_id",productId).eq("status","approved").order("created_at",{ascending:false}).limit(50);
   if(error)return NextResponse.json({error:"Reviews লোড করা যায়নি।"},{status:503});
-  const rows=data||[];
+  const bucket=supabase.storage.from("plant-market-review-photos");
+  const rows=await Promise.all((data||[]).map(async review=>({
+    ...review,
+    photo_urls:await Promise.all((review.photo_urls||[]).map(async path=>{
+      const {data:signed}=await bucket.createSignedUrl(path,3600);
+      return signed?.signedUrl||null;
+    }))
+  })));
   const average=rows.length?rows.reduce((sum,r)=>sum+r.rating,0)/rows.length:0;
-  return NextResponse.json({reviews:rows,reviewCount:rows.length,averageRating:Number(average.toFixed(1))});
+  return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:rows.length,averageRating:Number(average.toFixed(1))});
 }
 
 export async function POST(request:NextRequest){
@@ -51,7 +58,7 @@ export async function POST(request:NextRequest){
       const path=user.id+"/"+review.id+"/"+crypto.randomUUID()+".webp";
       const uploaded=await bucket.upload(path,output,{contentType:"image/webp",cacheControl:"31536000",upsert:false});
       if(uploaded.error)throw new Error("upload-failed");
-      paths.push(path);urls.push(bucket.getPublicUrl(path).data.publicUrl);
+      paths.push(path);urls.push(path);
     }
     if(urls.length){
       const {error:updateError}=await supabase.from("plant_market_reviews").update({photo_urls:urls}).eq("id",review.id).eq("reviewer_id",user.id).eq("status","pending");
