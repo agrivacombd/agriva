@@ -163,6 +163,18 @@ function GreenIcon({ name, className = "h-8 w-8" }: { name: GreenIconName; class
   );
 }
 
+function IndoorPlantIcon({ className = "h-6 w-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} role="img" aria-label="ইনডোর প্ল্যান্ট">
+      <path d="M16 25V14" fill="none" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M15 14C8 14 6 9 5 5c7-.5 10 3 10 9Z" fill="#22c55e" stroke="#14532d" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M17 17C17 9 22 5 28 5c0 7-4 12-11 12Z" fill="#86efac" stroke="#14532d" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M10 21h12l-2 8h-8z" fill="#b45309" stroke="#78350f" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M9 20h14v3H9z" fill="#d97706" stroke="#78350f" strokeWidth="1.5" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 export default function GreenLivingPage() {
   return (
     <main className="min-h-screen overflow-x-clip bg-[#f6faf7] text-slate-900">
@@ -236,7 +248,7 @@ export default function GreenLivingPage() {
             {guides.map((guide) => (
               <article key={guide.title} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
                 <div className="flex items-center gap-3">
-                  <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50"><GreenIcon name={guide.icon as GreenIconName} className="h-6 w-6 text-emerald-800" /></span>
+                  <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50">{guide.category === "ইনডোর প্ল্যান্ট" ? <IndoorPlantIcon className="h-8 w-8" /> : <GreenIcon name={guide.icon as GreenIconName} className="h-6 w-6 text-emerald-800" />}</span>
                   <p className="text-xs font-bold text-emerald-800">{guide.category}</p>
                 </div>
                 <h3 className="mt-4 text-lg font-extrabold leading-7 text-slate-900">{guide.title}</h3>
