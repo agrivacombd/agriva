@@ -110,9 +110,59 @@ const faqJsonLd = {
 };
 
 type GreenIconName = "plant" | "exchange" | "globe" | "guide" | "sun" | "journal" | "water" | "bug" | "camera";
-function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:string}){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{name==="plant"?<><path d="M12 21v-9M12 12C5 12 4 7 4 4c5 0 8 3 8 8ZM12 14c0-6 4-9 8-9 0 5-3 9-8 9Z"/><path d="M6 17h12l-2 4H8z"/></>:name==="exchange"?<><path d="M7 7h13l-3-3M20 7l-3 3M17 17H4l3 3M4 17l3-3"/></>:name==="globe"?<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></>:name==="guide"?<><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-3 7-4-4 7-3Z"/></>:name==="sun"?<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M5 5l1.4 1.4M17.6 17.6 19 19M2 12h2M20 12h2M5 19l1.4-1.4M17.6 6.4 19 5"/></>:name==="journal"?<><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></>:name==="water"?<path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11Z"/>:name==="bug"?<><path d="M8 9h8v7a4 4 0 0 1-8 0V9ZM12 5v4M5 12h3M16 12h3M5 17h3M16 17h3M7 6l2 2M17 6l-2 2"/></>:<><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m8 5 2-2h4l2 2"/><circle cx="12" cy="12" r="3"/></>}</svg>}\nexport default function GreenLivingPage() {
+
+function GreenIcon({ name, className = "h-8 w-8" }: { name: GreenIconName; className?: string }) {
+  const shared = { stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   return (
-    <main className="min-h-screen bg-[#f6faf7] text-slate-900">
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true" {...shared}>
+      {name === "plant" ? (
+        <>
+          <path d="M12 21v-9M12 12C5 12 4 7 4 4c5 0 8 3 8 8ZM12 14c0-6 4-9 8-9 0 5-3 9-8 9Z" />
+          <path d="M6 17h12l-2 4H8z" />
+        </>
+      ) : name === "exchange" ? (
+        <>
+          <path d="M7 7h13l-3-3M20 7l-3 3M17 17H4l3 3M4 17l3-3" />
+        </>
+      ) : name === "globe" ? (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" />
+        </>
+      ) : name === "guide" ? (
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m15.5 8.5-3 7-4-4 7-3Z" />
+        </>
+      ) : name === "sun" ? (
+        <>
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M5 5l1.4 1.4M17.6 17.6 19 19M2 12h2M20 12h2M5 19l1.4-1.4M17.6 6.4 19 5" />
+        </>
+      ) : name === "journal" ? (
+        <>
+          <path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" />
+        </>
+      ) : name === "water" ? (
+        <path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11Z" />
+      ) : name === "bug" ? (
+        <>
+          <path d="M8 9h8v7a4 4 0 0 1-8 0V9ZM12 5v4M5 12h3M16 12h3M5 17h3M16 17h3M7 6l2 2M17 6l-2 2" />
+        </>
+      ) : (
+        <>
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="m8 5 2-2h4l2 2" />
+          <circle cx="12" cy="12" r="3" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export default function GreenLivingPage() {
+  return (
+    <main className="min-h-screen overflow-x-clip bg-[#f6faf7] text-slate-900">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
@@ -124,10 +174,10 @@ function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:str
           <span aria-current="page" className="font-semibold text-emerald-900">Green Living</span>
         </nav>
 
-        <header className="relative mt-5 overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-700 px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-14">
+        <header className="relative mt-5 overflow-hidden rounded-2xl sm:rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-700 px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-14">
           <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-16 h-64 w-64 rounded-full border-[32px] border-white/10 sm:h-80 sm:w-80" />
           <p className="relative text-sm font-bold tracking-wide text-emerald-200">AGRIVA · GREEN LIVING</p>
-          <h1 className="relative mt-4 max-w-3xl text-3xl font-black leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="relative mt-4 max-w-3xl text-[clamp(1.75rem,7vw,3.75rem)] font-black leading-[1.12] sm:text-5xl lg:text-6xl">
             আপনার ঘর, ছাদ আর বারান্দায় আরও একটু সবুজ
           </h1>
           <p className="relative mt-5 max-w-2xl text-base leading-8 text-emerald-50 sm:text-lg">
@@ -144,7 +194,7 @@ function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:str
           <p className="relative mt-4 text-xs leading-6 text-emerald-100">বাংলাদেশের গরম, বর্ষা, আলো ও ছোট জায়গার বাস্তবতা মাথায় রেখে শেখার জন্য তৈরি।</p>
         </header>
 
-        <section aria-labelledby="green-living-tools" className="mt-8 grid gap-4 sm:grid-cols-3">
+        <section aria-labelledby="green-living-tools" className="mt-6 grid gap-3 sm:mt-8 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="plant" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="exchange" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="globe" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
@@ -156,7 +206,7 @@ function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:str
             <h2 id="why-green-living" className="mt-2 text-2xl font-black tracking-tight text-emerald-950 sm:text-3xl">বাগান করা হোক সহজ, আনন্দের ও ধারাবাহিক</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600 sm:text-base">প্রথম গাছ কেনা থেকে যত্নের ভুল বুঝতে পারা—ধাপে ধাপে শিখুন। সব গাছের জন্য এক নিয়ম নয়; আপনার গাছ, জায়গা ও পরিবেশ বুঝে সিদ্ধান্ত নিন।</p>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {[
               { icon: "guide", title: "সহজ নির্দেশনা", text: "প্রথমবার বাগান শুরু করলেও ছোট ছোট ধাপে এগোন।" },
               { icon: "sun", title: "জায়গা বুঝে যত্ন", text: "আলো, বাতাস, টব ও মাটির অবস্থা বিবেচনা করুন।" },
@@ -179,7 +229,7 @@ function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:str
             </div>
             <p className="max-w-xl text-sm leading-6 text-slate-600">শুরু করার জন্য প্রয়োজনীয় বিষয়গুলো এক জায়গায়।</p>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {guides.map((guide) => (
               <article key={guide.title} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
                 <div className="flex items-center gap-3">
@@ -202,7 +252,7 @@ function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:str
             <h2 id="habit-title" className="mt-2 text-2xl font-black text-emerald-950 sm:text-3xl">প্রতিদিন সব গাছে পানি নয়—প্রতিদিন একটু পর্যবেক্ষণ</h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">গাছের যত্নে নির্দিষ্ট রুটিন কাজে লাগে, কিন্তু পানি বা সার দেওয়ার সিদ্ধান্ত গাছের বাস্তব অবস্থা দেখে নিন। পাতার রং, মাটির আর্দ্রতা, নতুন বৃদ্ধি ও পোকামাকড় লক্ষ্য করলে সমস্যা আগে ধরতে সুবিধা হয়।</p>
           </div>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2">
             {[
               ["১", "দেখুন", "পাতা, কাণ্ড, মাটি ও টবের ড্রেনেজ পর্যবেক্ষণ করুন।"],
               ["২", "বুঝুন", "গাছের ধরন, আলো ও সাম্প্রতিক আবহাওয়ার কথা ভাবুন।"],
