@@ -103,7 +103,7 @@ export default function SiteChrome() {
   const privateRoute = /^\/(admin|dashboard|auth|login|signup|garden|profile|orders)(\/|$)/.test(pathname);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
   const [signedIn, setSignedIn] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -156,15 +156,38 @@ export default function SiteChrome() {
   }, [english, pathname]);
 
   useEffect(() => {
+    let frame = 0;
+    let previousShowTop = false;
+
     const update = () => {
+      frame = 0;
       const y = window.scrollY;
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(100, Math.max(0, (y / max) * 100)) : 0);
-      setShowTop(y > 520);
+      const progress = max > 0 ? Math.min(100, Math.max(0, (y / max) * 100)) : 0;
+
+      // Update the decorative progress bar directly to avoid rerendering the
+      // entire navigation on every scroll event.
+      if (progressBarRef.current) {
+        progressBarRef.current.style.width = progress + "%";
+      }
+
+      const shouldShowTop = y > 520;
+      if (shouldShowTop !== previousShowTop) {
+        previousShowTop = shouldShowTop;
+        setShowTop(shouldShowTop);
+      }
     };
-    window.addEventListener("scroll", update, { passive: true });
+
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
     update();
-    return () => window.removeEventListener("scroll", update);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -210,7 +233,7 @@ export default function SiteChrome() {
   const primaryLinks = english ? enPrimaryLinks : bnPrimaryLinks;
   return (
     <>
-      <div aria-hidden="true" className="fixed left-0 top-0 z-[80] h-1 bg-emerald-600 transition-[width] duration-100" style={{ width: progress + "%" }} />
+      <div ref={progressBarRef} aria-hidden="true" className="fixed left-0 top-0 z-[80] h-1 bg-emerald-600 transition-[width] duration-100" style={{ width: "0%" }} />
       <header className="sticky top-0 z-[70] border-b border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90">
         <div className="mx-auto flex min-h-16 max-w-7xl min-w-0 items-center gap-1.5 px-3 min-[380px]:gap-2 min-[380px]:px-4 sm:min-h-[68px] sm:gap-5 sm:px-6 lg:px-8">
           <Link href={english ? "/en" : "/"} className="flex shrink-0 items-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:ring-offset-2" aria-label="AGRIVA home">
