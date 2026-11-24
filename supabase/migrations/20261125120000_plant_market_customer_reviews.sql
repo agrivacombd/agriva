@@ -58,3 +58,9 @@ CREATE POLICY plant_market_review_photo_owner_insert ON storage.objects FOR INSE
 DROP POLICY IF EXISTS plant_market_review_photo_owner_delete ON storage.objects;
 CREATE POLICY plant_market_review_photo_owner_delete ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'plant-market-review-photos' AND (storage.foldername(name))[1] = (SELECT auth.uid())::text);
+
+-- Allow a reviewer to discard their own pending draft/submission if upload processing rolls back.
+DROP POLICY IF EXISTS plant_market_reviews_own_delete_pending ON public.plant_market_reviews;
+CREATE POLICY plant_market_reviews_own_delete_pending ON public.plant_market_reviews
+  FOR DELETE TO authenticated USING (reviewer_id = (SELECT auth.uid()) AND status = 'pending');
+GRANT DELETE ON public.plant_market_reviews TO authenticated;
