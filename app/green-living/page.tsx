@@ -261,6 +261,23 @@ export default function GreenLivingPage() {
           </div>
         </section>
 
+        <section aria-labelledby="topic-guides" className="mt-10">
+          <h2 id="topic-guides" className="text-2xl font-black text-emerald-950 sm:text-3xl">বিষয়ভিত্তিক বিস্তারিত গাইড</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">আপনার পরিস্থিতি অনুযায়ী আলাদা গাইড থেকে আরও নির্দিষ্ট উত্তর ও করণীয় জানুন।</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Link href="/green-living/indoor-plants-bangladesh" className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+              <h3 className="text-lg font-extrabold text-emerald-950">Indoor Plants in Bangladesh</h3>
+              <p className="mt-2 text-sm leading-7 text-slate-600">ঘরের আলো বুঝে গাছ বাছাই, পানি, মাটি, এসি রুম, বর্ষা ও সমস্যা সমাধানের গাইড।</p>
+              <span className="mt-3 inline-block font-bold text-emerald-800 underline underline-offset-4">Indoor plant guide পড়ুন</span>
+            </Link>
+            <Link href="/green-living/rooftop-gardening-bangladesh" className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+              <h3 className="text-lg font-extrabold text-emerald-950">Rooftop Gardening Guide</h3>
+              <p className="mt-2 text-sm leading-7 text-slate-600">ছাদের নিরাপত্তা, রোদ, planter, drainage, গরম-বর্ষার যত্ন ও beginner checklist।</p>
+              <span className="mt-3 inline-block font-bold text-emerald-800 underline underline-offset-4">Rooftop guide পড়ুন</span>
+            </Link>
+          </div>
+        </section>
+
         <section aria-labelledby="internal-links" className="mt-10 rounded-2xl bg-emerald-950 p-5 text-white sm:p-7">
           <h2 id="internal-links" className="text-2xl font-black">গাছ শেখা, কেনা ও যত্ন—এক জায়গায়</h2>
           <div className="mt-4 flex flex-wrap gap-3">
