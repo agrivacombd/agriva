@@ -1,5 +1,5 @@
 "use client";
-import {useMemo,useState} from "react";
+import {useState} from "react";
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 type Item={id:string;name:string;slug:string;price:number|string;stock:number;unit:string|null;image_url:string|null};
@@ -9,7 +9,7 @@ export default function PlantMarketComboOffer({current,related}:{current:Item;re
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(""),[login,setLogin]=useState(false);
  const router=useRouter();
  const bundle=[current,...options.filter(p=>selected.includes(p.id))];
- const total=useMemo(()=>bundle.reduce((sum,p)=>sum+Number(p.price||0),0),[bundle]);
+ const total=bundle.reduce((sum,p)=>sum+Number(p.price||0),0);
  async function add(){
   if(busy)return;setBusy(true);setMessage("");setLogin(false);let added=0;
   try{
