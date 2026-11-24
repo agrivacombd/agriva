@@ -8,6 +8,7 @@ import PlantProductShare from "@/components/plant-market/PlantProductShare";
 import PlantWishlistButton from "@/components/plant-market/PlantWishlistButton";
 import PlantMarketRecentlyViewed from "@/components/plant-market/PlantMarketRecentlyViewed";
 import PlantMarketReviews from "@/components/plant-market/PlantMarketReviews";
+import PlantMarketDeliveryInfo from "@/components/plant-market/PlantMarketDeliveryInfo";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -76,6 +77,7 @@ export default async function PlantMarketProductPage({params}:Props){
                   {product.delivery_area&&<p className="flex gap-2 sm:col-span-2"><span>🚚</span>ডেলিভারি: {product.delivery_area}</p>}
                 </div>
               </div>
+              <PlantMarketDeliveryInfo deliveryArea={product.delivery_area}/>
               <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
               <div className="mt-3"><PlantProductShare name={product.name}/></div>
               <p className="mt-3 text-xs leading-5 text-slate-500">Buy Now করলে Checkout-এ যাবেন। কার্টে আগে যোগ করা পণ্য থাকলে Order Summary-তে সেগুলোও দেখা যাবে।</p>
