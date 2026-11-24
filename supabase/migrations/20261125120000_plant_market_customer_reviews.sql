@@ -47,11 +47,23 @@ GRANT SELECT, INSERT, UPDATE ON public.plant_market_reviews TO authenticated;
 
 -- Public photo read, authenticated upload limited to a user's own folder.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-VALUES ('plant-market-review-photos','plant-market-review-photos',true,4194304,ARRAY['image/jpeg','image/png','image/webp'])
-ON CONFLICT (id) DO UPDATE SET public=true,file_size_limit=4194304,allowed_mime_types=ARRAY['image/jpeg','image/png','image/webp'];
+VALUES ('plant-market-review-photos','plant-market-review-photos',false,4194304,ARRAY['image/jpeg','image/png','image/webp'])
+ON CONFLICT (id) DO UPDATE SET public=false,file_size_limit=4194304,allowed_mime_types=ARRAY['image/jpeg','image/png','image/webp'];
 DROP POLICY IF EXISTS plant_market_review_photo_public_read ON storage.objects;
 CREATE POLICY plant_market_review_photo_public_read ON storage.objects FOR SELECT TO anon, authenticated
-  USING (bucket_id = 'plant-market-review-photos');
+  USING (
+    bucket_id = 'plant-market-review-photos'
+    AND EXISTS (
+      SELECT 1 FROM public.plant_market_reviews review
+      WHERE review.id = (storage.foldername(name))[2]::uuid AND review.status = 'approved'
+    )
+  );
+DROP POLICY IF EXISTS plant_market_review_photo_owner_read ON storage.objects;
+CREATE POLICY plant_market_review_photo_owner_read ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'plant-market-review-photos' AND (storage.foldername(name))[1] = (SELECT auth.uid())::text);
+DROP POLICY IF EXISTS plant_market_review_photo_admin_read ON storage.objects;
+CREATE POLICY plant_market_review_photo_admin_read ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'plant-market-review-photos' AND public.is_admin());
 DROP POLICY IF EXISTS plant_market_review_photo_owner_insert ON storage.objects;
 CREATE POLICY plant_market_review_photo_owner_insert ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'plant-market-review-photos' AND (storage.foldername(name))[1] = (SELECT auth.uid())::text);
@@ -79,6 +91,6 @@ CREATE POLICY plant_market_reviews_own_update ON public.plant_market_reviews
     AND cardinality(photo_urls) <= 3
     AND NOT EXISTS (
       SELECT 1 FROM unnest(photo_urls) AS photo_url
-      WHERE photo_url NOT LIKE '%/plant-market-review-photos/' || (SELECT auth.uid())::text || '/%'
+      WHERE photo_url NOT LIKE (SELECT auth.uid())::text || '/%'
     )
   );
