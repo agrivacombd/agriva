@@ -94,7 +94,34 @@ export default async function PlantMarketProductPage({params}:Props){
         <section className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
           <div className="rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
             <h2 className="text-xl font-black text-emerald-950">🌱 এই গাছটি কোথায় ভালো মানাবে?</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-700">{product.usage_instructions||"আপনার বাগান, বারান্দা বা ঘরের উপযোগী জায়গা বেছে নিন। গাছের নির্দিষ্ট আলো ও পানি দেওয়ার নির্দেশনা অনুসরণ করলে পরিচর্যা সহজ হবে।"}</p>
+            <p className="mt-3 text-sm leading-7 text-slate-700">{product.usage_instructions||"উজ্জ্বল আলো-বাতাস পায় এমন বাগান, ছাদ বা বারান্দার জায়গা বেছে নিন। পানি যেন টবে জমে না থাকে এবং গাছের বাড়ার জন্য পর্যাপ্ত জায়গা থাকে—এ দুটো বিষয় খেয়াল রাখুন।"}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">☀️ আলো ও অবস্থান</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{product.sunlight||"উজ্জ্বল আলো-বাতাস পায় এমন জায়গা বেছে নিন। আলো কম হলে গাছের বৃদ্ধি ও ফুল আসা ব্যাহত হতে পারে।"}</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">🪴 টব ও মাটি</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">ড্রেনেজ ছিদ্রযুক্ত টব এবং পানি সহজে বের হয় এমন ঝুরঝুরে, উর্বর মাটি ব্যবহার করুন।</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">🌿 বাড়ার জায়গা</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">গাছের সম্ভাব্য বিস্তারের জন্য চারপাশে জায়গা রাখুন। লতানো ডাল হলে মজবুত জালি, খুঁটি বা ট্রেলিসের ব্যবস্থা করুন।</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">💧 পানি ও পরিচর্যা</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{product.watering||"পানি দেওয়ার আগে মাটির ওপরের স্তর দেখে নিন। মাটি ভেজা থাকলে আবার পানি দেবেন না; পানি জমে থাকা এড়িয়ে চলুন।"}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+              <h3 className="text-sm font-extrabold text-amber-950">📍 জায়গা বাছাইয়ের ছোট চেকলিস্ট</h3>
+              <ul className="mt-2 space-y-1.5 text-sm leading-6 text-amber-950">
+                <li>✓ প্রতিদিনের আলো ও বাতাসের পরিমাণ বিবেচনা করুন।</li>
+                <li>✓ বৃষ্টির পানি বা সেচের পানি বের হওয়ার পথ রাখুন।</li>
+                <li>✓ দেয়াল, চলাচলের পথ ও পাশের গাছ থেকে প্রয়োজনীয় ফাঁকা জায়গা রাখুন।</li>
+                <li>✓ ছাদ বা খোলা বারান্দায় অতিরিক্ত বাতাস হলে টব স্থিতিশীল রাখুন।</li>
+              </ul>
+            </div>
             {product.origin&&<p className="mt-3 text-sm text-slate-500">উৎপত্তিস্থল: {product.origin}</p>}
           </div>
           <div id="plant-care" className="scroll-mt-24 rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
