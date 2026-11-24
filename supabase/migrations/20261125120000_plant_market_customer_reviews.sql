@@ -55,7 +55,7 @@ CREATE POLICY plant_market_review_photo_public_read ON storage.objects FOR SELEC
     bucket_id = 'plant-market-review-photos'
     AND EXISTS (
       SELECT 1 FROM public.plant_market_reviews review
-      WHERE review.id = (storage.foldername(name))[2]::uuid AND review.status = 'approved'
+      WHERE review.id::text = (storage.foldername(name))[2] AND review.status = 'approved'
     )
   );
 DROP POLICY IF EXISTS plant_market_review_photo_owner_read ON storage.objects;
@@ -66,10 +66,28 @@ CREATE POLICY plant_market_review_photo_admin_read ON storage.objects FOR SELECT
   USING (bucket_id = 'plant-market-review-photos' AND public.is_admin());
 DROP POLICY IF EXISTS plant_market_review_photo_owner_insert ON storage.objects;
 CREATE POLICY plant_market_review_photo_owner_insert ON storage.objects FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'plant-market-review-photos' AND (storage.foldername(name))[1] = (SELECT auth.uid())::text);
+  WITH CHECK (
+    bucket_id = 'plant-market-review-photos'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+    AND EXISTS (
+      SELECT 1 FROM public.plant_market_reviews review
+      WHERE review.id::text = (storage.foldername(name))[2]
+        AND review.reviewer_id = (SELECT auth.uid())
+        AND review.status = 'pending'
+    )
+  );
 DROP POLICY IF EXISTS plant_market_review_photo_owner_delete ON storage.objects;
 CREATE POLICY plant_market_review_photo_owner_delete ON storage.objects FOR DELETE TO authenticated
-  USING (bucket_id = 'plant-market-review-photos' AND (storage.foldername(name))[1] = (SELECT auth.uid())::text);
+  USING (
+    bucket_id = 'plant-market-review-photos'
+    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+    AND EXISTS (
+      SELECT 1 FROM public.plant_market_reviews review
+      WHERE review.id::text = (storage.foldername(name))[2]
+        AND review.reviewer_id = (SELECT auth.uid())
+        AND review.status = 'pending'
+    )
+  );
 
 -- Allow a reviewer to discard their own pending draft/submission if upload processing rolls back.
 DROP POLICY IF EXISTS plant_market_reviews_own_delete_pending ON public.plant_market_reviews;
