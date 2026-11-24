@@ -7,6 +7,7 @@ import PlantMarketAddToCart from "@/components/plant-market/PlantMarketAddToCart
 import PlantProductShare from "@/components/plant-market/PlantProductShare";
 import PlantWishlistButton from "@/components/plant-market/PlantWishlistButton";
 import PlantMarketRecentlyViewed from "@/components/plant-market/PlantMarketRecentlyViewed";
+import PlantMarketReviews from "@/components/plant-market/PlantMarketReviews";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -111,6 +112,8 @@ export default async function PlantMarketProductPage({params}:Props){
             <details className="py-3"><summary className="cursor-pointer font-bold">পণ্য ক্ষতিগ্রস্ত অবস্থায় এলে কী করব?</summary><p className="mt-2 text-sm leading-6 text-slate-600">প্যাকেট খোলার সময় ছবি বা ভিডিও রাখুন এবং দ্রুত AGRIVA support-এ order number সহ যোগাযোগ করুন; replacement/return eligibility policy অনুযায়ী যাচাই করা হবে।</p></details>
           </div>
         </section>
+
+        <PlantMarketReviews productId={product.id} />
 
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
