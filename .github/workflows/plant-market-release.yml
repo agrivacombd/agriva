@@ -44,7 +44,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Plant Market release contract smoke
         run: node scripts/smoke-plant-market-release.mjs
-      - name: Plant Market smoke tests\n        run: npm run test:plant-market && npm run test:plant-market-reviews\n      - name: TypeScript check
+      - name: Plant Market smoke tests
+        run: npm run test:plant-market && npm run test:plant-market-reviews\n      - name: TypeScript check
         run: npx tsc --noEmit
       - name: Production build
         run: npm run build
