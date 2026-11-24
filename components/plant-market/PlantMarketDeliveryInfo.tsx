@@ -12,7 +12,7 @@ export default function PlantMarketDeliveryInfo({deliveryArea}:{deliveryArea:str
    {Object.entries(ranges).map(([key,value])=><option key={key} value={key}>{value.label}</option>)}
   </select>
   <p className="mt-3 text-lg font-black text-sky-950">সম্ভাব্য সময়: {estimate.range}</p>
-  <p className="mt-1 text-xs leading-5 text-slate-600">এটি সাধারণ ধারণা মাত্র—কুরিয়ার/সেলার নিশ্চিত করা ETA নয়। গাছের ধরন, আবহাওয়া, প্যাকিং ও ঠিকানার কারণে সময় পরিবর্তিত হতে পারে। সঠিক delivery fee ও সময় অর্ডার নিশ্চিত করার সময় জানানো হবে।</p>
+  <p className="mt-1 text-xs leading-5 text-slate-600">এটি সাধারণ ধারণা মাত্র—কুরিয়ার/সেলার নিশ্চিত করা ETA নয়। গাছের ধরন, আবহাওয়া, প্যাকিং ও ঠিকানার কারণে সময় পরিবর্তিত হতে পারে। ডেলিভারি চার্জ checkout-এর মোটে অন্তর্ভুক্ত নয়; সেলার অর্ডার নিশ্চিত করার সময় আলাদাভাবে জানাবেন।</p>
   </div></div>
  </section>;
 }
