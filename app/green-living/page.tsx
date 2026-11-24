@@ -5,23 +5,23 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").re
 const pageUrl = `${siteUrl}/green-living`;
 
 export const metadata: Metadata = {
-  title: "Green Living: ইনডোর প্ল্যান্ট ও ছাদবাগান",
+  title: "ইনডোর প্ল্যান্ট ও ছাদবাগান গাইড | Green Living – AGRIVA",
   description:
-    "বাংলাদেশের ইনডোর প্ল্যান্ট, ছাদবাগান, বারান্দার গাছ ও শখের বাগানপ্রেমীদের জন্য সহজ বাংলা গাইড, গাছের যত্নের পরিকল্পনা এবং ব্যবহারিক টিপস।",
+    "ইনডোর প্ল্যান্টের যত্ন, গাছে পানি, আলো, মাটি-টব, ছাদবাগান ও বারান্দার গাছ নিয়ে বাংলাদেশি আবহাওয়ার উপযোগী সহজ বাংলা গাইড ও FAQ।",
   alternates: { canonical: "/green-living" },
   openGraph: {
     type: "website",
     locale: "bn_BD",
     url: pageUrl,
-    title: "AGRIVA Green Living | আপনার সবুজ জগত",
+    title: "ইনডোর প্ল্যান্ট, ছাদবাগান ও গাছের যত্ন | AGRIVA Green Living",
     description:
-      "ইনডোর প্ল্যান্ট, ছাদবাগান ও শখের বাগানের যত্ন শিখুন—সহজ বাংলায়, বাংলাদেশি আবহাওয়ার কথা মাথায় রেখে।",
+      "ঘরের গাছ, ছাদবাগান, পানি, আলো, মাটি ও পরিচর্যার প্রশ্নের উত্তর সহজ বাংলায় জানুন।",
     siteName: "AGRIVA",
   },
   twitter: {
     card: "summary",
-    title: "AGRIVA Green Living | আপনার সবুজ জগত",
-    description: "ইনডোর প্ল্যান্ট ও ছাদবাগানের সহজ বাংলা গাইড।",
+    title: "ইনডোর প্ল্যান্ট ও ছাদবাগানের বাংলা গাইড | AGRIVA",
+    description: "ঘরের গাছ ও ছাদবাগানের আলো, পানি, মাটি ও পরিচর্যা নিয়ে সহজ বাংলা নির্দেশনা।",
   },
 };
 
@@ -99,7 +99,20 @@ const faqs = [
   },
 ];
 
-const faqJsonLd = {
+const starterChecklist = [
+  ["জায়গা ও আলো", "দিনের কোন সময়ে জানালা দিয়ে আলো আসে এবং কতক্ষণ থাকে লিখে রাখুন।"],
+  ["গাছ নির্বাচন", "আপনার আলো ও জায়গার সঙ্গে মানানসই ১–২টি গাছ দিয়ে শুরু করুন।"],
+  ["টব ও ড্রেনেজ", "টবের নিচে পানি বের হওয়ার ছিদ্র আছে কি না নিশ্চিত করুন।"],
+  ["পানি দেওয়ার আগে", "মাটির উপরিভাগ ও টবের ওজন/আর্দ্রতা পরীক্ষা করুন।"],
+  ["পর্যবেক্ষণ", "পাতা, নতুন বৃদ্ধি, পোকা ও মাটির অবস্থা সপ্তাহে কয়েকবার দেখুন।"],
+  ["নোট", "পানি, স্থান পরিবর্তন বা সার দেওয়ার তারিখ ছোট নোটে লিখুন।"],
+];
+const lightLevels = [
+  ["উজ্জ্বল পরোক্ষ আলো", "জানালার কাছাকাছি উজ্জ্বল জায়গা, যেখানে পাতায় দীর্ঘক্ষণ সরাসরি কড়া রোদ পড়ে না।"],
+  ["মাঝারি আলো", "জানালা থেকে কিছুটা দূরে আলো পাওয়া জায়গা; বৃদ্ধি ধীর হতে পারে।"],
+  ["কম আলো", "আলো কম পাওয়া কোণ; সব গাছ এই পরিবেশে টিকে থাকতে পারে না।"],
+];
+\nconst faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: faqs.map((faq) => ({
@@ -213,6 +226,48 @@ export default function GreenLivingPage() {
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="plant" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="exchange" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="globe" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
+        </section>
+
+        <section aria-labelledby="quick-answer" className="mt-8 rounded-2xl border border-emerald-200 bg-white p-5 sm:p-7">
+          <p className="text-xs font-black tracking-wider text-emerald-800">QUICK ANSWER · দ্রুত শুরু</p>
+          <h2 id="quick-answer" className="mt-2 text-xl font-black text-emerald-950 sm:text-2xl">বাড়িতে গাছ লাগানো শুরু করবেন কীভাবে?</h2>
+          <p className="mt-3 text-sm leading-7 text-slate-700">প্রথমে আপনার ঘর বা বারান্দায় আলো কতটা আসে তা দেখুন। সেই জায়গার উপযোগী গাছ বেছে ড্রেনেজ ছিদ্রযুক্ত টবে লাগান। পানি দেওয়ার আগে মাটির আর্দ্রতা পরীক্ষা করুন এবং গাছের পরিবর্তন নোট রাখুন। একসঙ্গে অনেক গাছ না নিয়ে অল্প কয়েকটি দিয়ে শুরু করলে পরিচর্যা সহজ হয়।</p>
+        </section>
+
+        <section aria-labelledby="starter-title" className="mt-10">
+          <h2 id="starter-title" className="text-2xl font-black text-emerald-950 sm:text-3xl">নতুন বাগানির জন্য ৬ ধাপের চেকলিস্ট</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-600">ঘরে গাছ আনার আগে এই তালিকা দেখে নিন।</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {starterChecklist.map(([title, description], i) => <article key={title} className="flex gap-3 rounded-xl border border-emerald-100 bg-white p-4"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-800 text-sm font-bold text-white">{i+1}</span><div><h3 className="font-extrabold text-emerald-950">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{description}</p></div></article>)}
+          </div>
+        </section>
+
+        <section aria-labelledby="light-title" className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 sm:p-7">
+          <h2 id="light-title" className="text-2xl font-black text-emerald-950">ঘরের গাছের জন্য আলো কীভাবে বুঝবেন?</h2>
+          <p className="mt-2 text-sm leading-7 text-slate-600">আলো গাছের বৃদ্ধির গুরুত্বপূর্ণ উপাদান। শুধু “ইনডোর” লেখা থাকলেই অন্ধকার জায়গায় রাখা যাবে না—গাছভেদে আলোর চাহিদা আলাদা।</p>
+          <div className="mt-4 grid gap-3">
+            {lightLevels.map(([title, description]) => <div key={title} className="rounded-xl bg-[#f6faf7] p-4"><h3 className="font-bold text-emerald-950">{title}</h3><p className="mt-1 text-sm leading-6 text-slate-600">{description}</p></div>)}
+          </div>
+        </section>
+
+        <section aria-labelledby="bd-season-title" className="mt-10">
+          <h2 id="bd-season-title" className="text-2xl font-black text-emerald-950 sm:text-3xl">বাংলাদেশের আবহাওয়ায় গাছের যত্নের ৪টি বিষয়</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <article className="rounded-xl border bg-white p-4"><h3 className="font-bold text-emerald-950">গরম ও তীব্র রোদ</h3><p className="mt-2 text-sm leading-7 text-slate-600">জানালার কড়া রোদ বা ছাদের গরমে পাতায় stress দেখা দিলে গাছের অবস্থান ও মাটির আর্দ্রতা যাচাই করুন।</p></article>
+            <article className="rounded-xl border bg-white p-4"><h3 className="font-bold text-emerald-950">বর্ষা ও আর্দ্রতা</h3><p className="mt-2 text-sm leading-7 text-slate-600">বৃষ্টির পানি জমে থাকা, ভেজা মাটি ও বাতাস চলাচল কমে যাওয়ার বিষয়টি লক্ষ্য রাখুন।</p></article>
+            <article className="rounded-xl border bg-white p-4"><h3 className="font-bold text-emerald-950">বাতাস চলাচল</h3><p className="mt-2 text-sm leading-7 text-slate-600">বন্ধ ও স্যাঁতসেঁতে কোণে গাছ গাদাগাদি করে রাখবেন না; স্বাভাবিক বাতাস চলাচলের জায়গা দিন।</p></article>
+            <article className="rounded-xl border bg-white p-4"><h3 className="font-bold text-emerald-950">ছাদ বা বারান্দার নিরাপত্তা</h3><p className="mt-2 text-sm leading-7 text-slate-600">টবের ওজন, ঝড়ো বাতাস, পানি নিষ্কাশন ও চলাচলের জায়গা বিবেচনা করুন।</p></article>
+          </div>
+        </section>
+
+        <section aria-labelledby="internal-links" className="mt-10 rounded-2xl bg-emerald-950 p-5 text-white sm:p-7">
+          <h2 id="internal-links" className="text-2xl font-black">গাছ শেখা, কেনা ও যত্ন—এক জায়গায়</h2>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link href="/plant-market" className="rounded-lg bg-white px-4 py-3 text-sm font-bold text-emerald-950">গাছ ও বাগানের পণ্য দেখুন</Link>
+            <Link href="/green-exchange/board" className="rounded-lg border border-white/40 px-4 py-3 text-sm font-bold text-white">গাছ বিনিময় বোর্ড</Link>
+            <Link href="/garden" className="rounded-lg border border-white/40 px-4 py-3 text-sm font-bold text-white">Personal Garden</Link>
+            <Link href="/impact" className="rounded-lg border border-white/40 px-4 py-3 text-sm font-bold text-white">Green Impact</Link>
+          </div>
         </section>
 
         <section aria-labelledby="why-green-living" className="mt-10">
