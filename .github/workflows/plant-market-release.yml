@@ -8,10 +8,16 @@ on:
       - "app/api/plant-market/**"
       - "app/api/plant-seller/products/**"
       - "app/api/admin/plant-market-products/**"
+      - "app/api/admin/plant-market-reviews/**"
       - "components/plant-market/**"
       - "components/marketplace/MarketplaceCore.tsx"
       - "components/seller/PlantSellerProductForm.tsx"
       - "components/admin/PlantMarketProductReview.tsx"
+      - "components/admin/PlantMarketReviewModeration.tsx"
+      - "supabase/migrations/*plant_market_customer_reviews.sql"
+      - "scripts/smoke-plant-market.mjs"
+      - "scripts/smoke-plant-market-reviews.mjs"
+      - "package.json"
       - "lib/plant-market/**"
       - "scripts/smoke-plant-market-release.mjs"
       - ".github/workflows/plant-market-release.yml"
@@ -38,6 +44,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Plant Market release contract smoke
         run: node scripts/smoke-plant-market-release.mjs
+      - name: Plant Market smoke tests
+        run: npm run test:plant-market && npm run test:plant-market-reviews
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: Production build

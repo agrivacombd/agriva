@@ -210,6 +210,13 @@ export default function WeatherPage() {
             </div>
           </div>
 
+          <section aria-labelledby="weather-limitations" className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <h2 id="weather-limitations" className="text-xl font-black text-amber-950">তথ্যের সীমাবদ্ধতা</h2>
+            <p className="mt-3 text-sm leading-7 text-amber-900">
+              পূর্বাভাস মডেলভিত্তিক এবং সময়ের সঙ্গে পরিবর্তিত হতে পারে। নির্বাচিত শহর বা এলাকার তথ্য আপনার নির্দিষ্ট জমির আবহাওয়ার সঙ্গে পুরোপুরি নাও মিলতে পারে। সেচ, স্প্রে বা ফসল কাটার মতো সিদ্ধান্তের আগে জমির অবস্থা যাচাই করুন এবং জরুরি পরিস্থিতিতে সরকারি আবহাওয়া সতর্কতা অনুসরণ করুন।
+            </p>
+          </section>
+
           <div className="mt-12">
             <h2 className="text-xl font-black text-emerald-950 sm:text-2xl">সাধারণ প্রশ্ন ও উত্তর</h2>
             <div className="mt-4 divide-y divide-slate-200 rounded-2xl border border-slate-200">

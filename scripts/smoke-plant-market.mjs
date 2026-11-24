@@ -95,4 +95,53 @@ assert.ok(sharedCatalogue.includes('isPlantMarket ? ["ইনডোর গাছ"
 assert.ok(!sharedCatalogue.includes('"BUY NOW"'), "detail-page navigation must not imply instant purchase");
 assert.ok(plantCartButton.includes("response.status === 401"), "guests must be offered a sign-in path");
 
+const recentlyViewed = read("components/plant-market/PlantMarketRecentlyViewed.tsx");
+assert.match(plantDetail,/PlantMarketRecentlyViewed/,"Plant Market detail pages show recently viewed products");
+assert.match(recentlyViewed,/agriva-plant-market-recently-viewed/,"Recently viewed products use a dedicated local-storage key");
+assert.match(recentlyViewed,/MAX_ITEMS = 8/,"Recently viewed history is capped");
+assert.match(recentlyViewed,/setItems\(next\.filter\(\(item\) => item\.id !== product\.id\)\)/,"Recently viewed section excludes the current product");
+assert.match(recentlyViewed,/তালিকা মুছুন/,"Customers can clear local browsing history");
+
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");
+
+const reviewsMigration = read("supabase/migrations/20261125120000_plant_market_customer_reviews.sql");
+const reviewApi = read("app/api/plant-market/reviews/route.ts");
+const reviewAdminApi = read("app/api/admin/plant-market-reviews/route.ts");
+const reviewUi = read("components/plant-market/PlantMarketReviews.tsx");
+const reviewModerationUi = read("components/admin/PlantMarketReviewModeration.tsx");
+const adminPage = read("app/admin/plant-market-products/page.tsx");
+assert.ok(reviewsMigration.includes("UNIQUE (product_id, reviewer_id)"), "one review per account per product");
+assert.ok(reviewsMigration.includes("status = 'pending'"), "reviews default to pending moderation");
+assert.ok(reviewsMigration.includes("rating BETWEEN 1 AND 5"), "rating range constrained in database");
+assert.ok(reviewsMigration.includes("ENABLE ROW LEVEL SECURITY"), "review table has RLS enabled");
+assert.ok(reviewsMigration.includes("verified_purchase boolean NOT NULL DEFAULT false"), "purchase verification is not self-claimed");
+assert.ok(reviewsMigration.includes("plant-market-review-photos"), "review photo storage bucket exists");
+assert.ok(reviewApi.includes("auth.getUser()"), "review submission requires authenticated user");
+assert.ok(reviewApi.includes("MAX_PHOTOS=3") && reviewApi.includes("MAX_BYTES=4*1024*1024"), "photo count and size are limited");
+assert.ok(reviewApi.includes("status:\"pending\"") && reviewApi.includes("verified_purchase:false"), "submissions are unverified and pending");
+assert.ok(reviewApi.includes("sharp(") && reviewApi.includes(".webp({quality:82})"), "uploaded review images are normalized");
+assert.ok(reviewApi.includes("plant_market_products") && reviewApi.includes('eq("status","active")'), "only active products accept reviews");
+assert.ok(reviewApi.includes("23505"), "duplicate review submissions handled");
+assert.ok(reviewAdminApi.includes('requireAdminApi("catalog.moderate")'), "admin queue is capability-protected");
+assert.ok(reviewAdminApi.includes('eq("status","pending")'), "moderation updates only pending reviews");
+assert.ok(reviewUi.includes("/api/plant-market/reviews?productId="), "customer review listing API integrated");
+assert.ok(reviewUi.includes('form.append("photos",file)'), "photo review form posts photos");
+assert.ok(reviewUi.includes("Verified purchase"), "verified purchase badge only rendered for flagged reviews");
+assert.ok(adminPage.includes("PlantMarketReviewModeration"), "admin review queue rendered");
+assert.ok(reviewModerationUi.includes("Approve / Publish") && reviewModerationUi.includes("Reject"), "admin can approve or reject reviews");
+assert.ok(plantDetail.includes("<PlantMarketReviews productId={product.id} />"), "product page contains reviews component");
+
+const deliveryInfo = read("components/plant-market/PlantMarketDeliveryInfo.tsx");
+assert.match(plantDetail,/PlantMarketDeliveryInfo deliveryArea=\{product\.delivery_area\}/,"product detail includes delivery estimator with seller area");
+assert.ok(deliveryInfo.includes("১–৩ কর্মদিবস")&&deliveryInfo.includes("৩–৫ কর্মদিবস")&&deliveryInfo.includes("৪–৭ কর্মদিবস"),"delivery estimate provides area tiers");
+assert.ok(deliveryInfo.includes("সময়টি সাধারণ ধারণা")&&deliveryInfo.includes("নিশ্চিত courier ETA নয়"),"delivery ranges are explicitly non-guaranteed");
+assert.ok(deliveryInfo.includes("Checkout-এর মোটে delivery fee যোগ হয়নি"),"delivery charge is disclosed as excluded from checkout total");
+const checkoutClient = read("components/plant-market/PlantMarketCheckoutClient.tsx");
+assert.ok(checkoutClient.includes("ডেলিভারি চার্জ এই মোটে অন্তর্ভুক্ত নয়"),"checkout total warns shipping charge is not included");
+
+const combo = read("components/plant-market/PlantMarketComboOffer.tsx");
+assert.match(plantDetail,/PlantMarketComboOffer current=\{\{/,"product page integrates combo cart builder");
+assert.ok(combo.includes("/api/plant-market/cart")&&combo.includes("quantity:1"),"combo add-to-cart uses the existing stock-checked API");
+assert.ok(combo.includes("সবগুলো কার্টে যোগ করুন"),"combo supports adding selected products together");
+assert.ok(combo.includes("এখনো combo discount নেই"),"combo UI discloses that no promotional discount is applied");
+assert.ok(combo.includes("added>0"),"combo handles partial cart-add failures explicitly");
