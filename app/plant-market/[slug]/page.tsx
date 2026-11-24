@@ -30,7 +30,7 @@ export default async function PlantMarketProductPage({params}:Props){
   if (slug !== canonicalSlug) permanentRedirect(`/plant-market/${encodeURIComponent(canonicalSlug)}`);
   const { data: relatedProducts } = await supabase.from("plant_market_products")
     .select("id,name,slug,price,stock,unit,image_url")
-    .eq("status","active").eq("category_slug",product.category_slug).neq("id",product.id)
+    .eq("status","active").eq("category_slug",product.category_slug).gt("stock",0).neq("id",product.id)
     .order("created_at",{ascending:false}).limit(4);
   const safeDescription = sanitizeProductDescription(product.description || "");
   const plainDescription = productDescriptionToText(safeDescription);
@@ -153,7 +153,7 @@ export default async function PlantMarketProductPage({params}:Props){
         <PlantMarketReviews productId={product.id} />
 
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আপনার গাছের সঙ্গে মানানসই</p><h2 className="mt-1 text-2xl font-black">একই ক্যাটাগরির আরও গাছ ও চারা</h2><p className="mt-1 text-sm text-slate-600">বর্তমানে স্টকে থাকা একই ধরনের আরও পছন্দের গাছ দেখুন।</p></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<span className="text-5xl">🪴</span>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
       <PlantMarketRecentlyViewed product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}} />
