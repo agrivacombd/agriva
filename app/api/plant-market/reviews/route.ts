@@ -15,7 +15,7 @@ export async function GET(request:NextRequest){
   const bucket=supabase.storage.from("plant-market-review-photos");
   const rows=await Promise.all((data||[]).map(async review=>({
     ...review,
-    photo_urls:await Promise.all((review.photo_urls||[]).map(async path=>{
+    photo_urls:await Promise.all((review.photo_urls||[]).map(async (path:string)=>{
       const {data:signed}=await bucket.createSignedUrl(path,3600);
       return signed?.signedUrl||null;
     }))
