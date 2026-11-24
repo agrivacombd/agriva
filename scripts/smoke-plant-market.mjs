@@ -130,3 +130,9 @@ assert.ok(reviewUi.includes("Verified purchase"), "verified purchase badge only 
 assert.ok(adminPage.includes("PlantMarketReviewModeration"), "admin review queue rendered");
 assert.ok(reviewModerationUi.includes("Approve / Publish") && reviewModerationUi.includes("Reject"), "admin can approve or reject reviews");
 assert.ok(plantDetail.includes("<PlantMarketReviews productId={product.id} />"), "product page contains reviews component");
+
+const deliveryInfo = read("components/plant-market/PlantMarketDeliveryInfo.tsx");
+assert.match(plantDetail,/PlantMarketDeliveryInfo deliveryArea=\{product\.delivery_area\}/,"product detail includes delivery estimator with seller area");
+assert.ok(deliveryInfo.includes("১–৩ কর্মদিবস")&&deliveryInfo.includes("৩–৫ কর্মদিবস")&&deliveryInfo.includes("৪–৭ কর্মদিবস"),"delivery estimate provides area tiers");
+assert.ok(deliveryInfo.includes("সাধারণ ধারণা মাত্র")&&deliveryInfo.includes("নিশ্চিত করা ETA নয়"),"delivery ranges are explicitly non-guaranteed");
+assert.ok(deliveryInfo.includes("delivery fee"),"shipping charge remains confirmation-dependent");
