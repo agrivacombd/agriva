@@ -41,7 +41,7 @@ export default async function PlantMarketProductPage({params}:Props){
   const displayUnit=unitLabels[String(product.unit||"piece").toLowerCase()]||product.unit||"পিস";
   const specs=[["গাছের আকার",product.plant_size],["টবের সাইজ",product.pot_size],["গাছের বয়স",product.plant_age],["সূর্যালোক",product.sunlight],["পানি",product.watering],["ফুল ফোটার মৌসুম",product.flowering_season],["ডেলিভারি এলাকা",product.delivery_area]].filter((item)=>item[1]);
   return (
-    <main className="min-h-screen bg-[#f6f8f3] px-3 py-5 text-[#17351f] sm:px-6 sm:py-8">
+    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_#e8f2e4_0%,_#f6f8f3_42%,_#f6f8f3_100%)] px-3 py-5 pb-28 text-[#17351f] sm:px-6 sm:py-8 sm:pb-12">
       <ProductClickTracker market="plant-market" productId={product.id}/>
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/>
       <div className="mx-auto max-w-7xl">
@@ -50,14 +50,15 @@ export default async function PlantMarketProductPage({params}:Props){
         </nav>
         <nav aria-label="Product sections" className="mt-3 flex gap-2 overflow-x-auto pb-1 text-xs font-bold sm:text-sm"><a href="#plant-product-details" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">বিস্তারিত</a><a href="#plant-care" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">পরিচর্যা</a><a href="#customer-reviews" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">ক্রেতাদের রিভিউ</a></nav>
 
-        <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-sm">
-          <div className="grid lg:grid-cols-[1.05fr_.95fr]">
+        <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-[0_18px_60px_rgba(20,55,32,0.08)]">
+          <div className="grid lg:grid-cols-[1.08fr_.92fr] lg:items-start">
             <PlantMarketProductGallery productId={product.id} productName={product.name} mainImage={product.image_url} mainAlt={product.image_alt}/>
-            <div className="p-5 sm:p-8 lg:p-10">
+            <div className="min-w-0 p-5 sm:p-8 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:p-8 xl:p-10">
               <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-bold text-emerald-700">{product.category}</p><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">AGRIVA Plant Market</span></div>
-              <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
+              <h1 className="mt-2 text-[1.85rem] font-black leading-[1.22] tracking-tight text-[#17351f] sm:text-4xl">{product.name}</h1>
               {product.scientific_name&&<p className="mt-2 text-sm italic text-slate-500">{product.scientific_name}</p>}
               <div className="mt-3"><PlantWishlistButton product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}}/></div>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-emerald-900"><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">🌿 গাছের যত্নের তথ্য</span><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">💳 Cash on Delivery</span><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">📦 অর্ডারে স্টক যাচাই</span></div>
               <div className="mt-5 flex flex-wrap items-baseline gap-2">
                 <p className="text-4xl font-black tracking-tight text-emerald-950">৳{Number(product.price).toLocaleString("bn-BD")}</p>
                 <span className="text-sm font-semibold text-slate-500">/ {displayUnit}</span>
@@ -81,7 +82,7 @@ export default async function PlantMarketProductPage({params}:Props){
                 </div>
               </div>
               <PlantMarketDeliveryInfo deliveryArea={product.delivery_area}/>
-              <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
+              <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} price={Number(product.price)} disabled={Number(product.stock)<1}/></div>
               <div className="mt-3"><PlantProductShare name={product.name}/></div>
               <p className="mt-3 text-xs leading-5 text-slate-500">Buy Now করলে Checkout-এ যাবেন। কার্টে আগে যোগ করা পণ্য থাকলে Order Summary-তে সেগুলোও দেখা যাবে।</p>
             </div>
