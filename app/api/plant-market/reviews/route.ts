@@ -10,7 +10,7 @@ export async function GET(request:NextRequest){
   const productId=request.nextUrl.searchParams.get("productId")||"";
   if(!UUID.test(productId))return NextResponse.json({error:"Product ID সঠিক নয়।"},{status:400});
   const supabase=await createSupabaseServerClient();
-  const {data,error}=await supabase.from("plant_market_reviews").select("id,rating,title,body,photo_urls,verified_purchase,created_at",{count:"exact"}).eq("product_id",productId).eq("status","approved").order("created_at",{ascending:false}).limit(50);
+  const {data,error,count}=await supabase.from("plant_market_reviews").select("id,rating,title,body,photo_urls,verified_purchase,created_at",{count:"exact"}).eq("product_id",productId).eq("status","approved").order("created_at",{ascending:false}).limit(50);
   if(error)return NextResponse.json({error:"Reviews লোড করা যায়নি।"},{status:503});
   const bucket=supabase.storage.from("plant-market-review-photos");
   const rows=await Promise.all((data||[]).map(async review=>({
