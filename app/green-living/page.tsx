@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 const guides = [
   {
-    icon: "🪴",
+    icon: "plant",
     category: "ইনডোর প্ল্যান্ট",
     title: "ঘরের ভেতর গাছ রাখার আগে যে বিষয়গুলো দেখবেন",
     description:
@@ -35,7 +35,7 @@ const guides = [
     points: ["পরোক্ষ আলো কতটা আসে দেখুন", "ড্রেনেজ ছিদ্রযুক্ত টব বেছে নিন", "পাতা ও মাটির অবস্থা নিয়মিত দেখুন"],
   },
   {
-    icon: "🌿",
+    icon: "plant",
     category: "ছাদ ও বারান্দা",
     title: "ছোট জায়গায় বাগান শুরু করার সহজ পরিকল্পনা",
     description:
@@ -43,7 +43,7 @@ const guides = [
     points: ["দিনে কতক্ষণ রোদ পড়ে লক্ষ্য করুন", "ভারী টব রাখার আগে ছাদের নিরাপত্তা বিবেচনা করুন", "একসঙ্গে অল্প কয়েকটি গাছ দিয়ে শুরু করুন"],
   },
   {
-    icon: "💧",
+    icon: "water",
     category: "গাছের যত্ন",
     title: "গাছে পানি দেওয়ার একটাই নিয়ম সবার জন্য নয়",
     description:
@@ -51,7 +51,7 @@ const guides = [
     points: ["পানি দেওয়ার আগে মাটির আর্দ্রতা দেখুন", "টবে অতিরিক্ত পানি জমতে দেবেন না", "একই ক্যালেন্ডার সব গাছে প্রয়োগ করবেন না"],
   },
   {
-    icon: "🌱",
+    icon: "plant",
     category: "মাটি ও টব",
     title: "টবের মাটি ও ড্রেনেজ কেন গুরুত্বপূর্ণ",
     description:
@@ -59,7 +59,7 @@ const guides = [
     points: ["বাগানের ভারী মাটি সরাসরি সব টবে ব্যবহার করবেন না", "গাছের ধরন অনুযায়ী মিশ্রণ বাছুন", "নতুন মাটি ব্যবহারের আগে মান ও পরিচ্ছন্নতা যাচাই করুন"],
   },
   {
-    icon: "🐛",
+    icon: "bug",
     category: "সমস্যা শনাক্ত",
     title: "পাতা হলুদ হলে প্রথমে কী পরীক্ষা করবেন",
     description:
@@ -67,7 +67,7 @@ const guides = [
     points: ["মাটির ভেজাভাব ও ড্রেনেজ পরীক্ষা করুন", "পাতার দুই পাশ ও কাণ্ডে পোকা দেখুন", "একসঙ্গে অনেক সার বা রাসায়নিক প্রয়োগ করবেন না"],
   },
   {
-    icon: "📷",
+    icon: "camera",
     category: "গাছের অগ্রগতি",
     title: "ছবি দিয়ে গাছের বেড়ে ওঠা নথিবদ্ধ করুন",
     description:
@@ -109,19 +109,8 @@ const faqJsonLd = {
   })),
 };
 
-function GardenPlantIcon({ className = "h-8 w-8" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <path d="M24 28V15" stroke="#166534" strokeWidth="2.8" strokeLinecap="round" />
-      <path d="M23 19C14 19 10 14 10 8c8 0 13 3 13 11Z" fill="#84CC16" stroke="#166534" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M25 23c0-8 5-13 14-13 0 7-4 13-14 13Z" fill="#22C55E" stroke="#166534" strokeWidth="1.8" strokeLinejoin="round" />
-      <path d="M15 30h18l-2.5 13h-13L15 30Z" fill="#B45309" stroke="#78350F" strokeWidth="2" strokeLinejoin="round" />
-      <path d="M13 29h22v4H13z" fill="#D97706" stroke="#78350F" strokeWidth="1.8" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export default function GreenLivingPage() {
+type GreenIconName = "plant" | "exchange" | "globe" | "guide" | "sun" | "journal" | "water" | "bug" | "camera";
+function GreenIcon({name,className="h-8 w-8"}:{name:GreenIconName;className?:string}){return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">{name==="plant"?<><path d="M12 21v-9M12 12C5 12 4 7 4 4c5 0 8 3 8 8ZM12 14c0-6 4-9 8-9 0 5-3 9-8 9Z"/><path d="M6 17h12l-2 4H8z"/></>:name==="exchange"?<><path d="M7 7h13l-3-3M20 7l-3 3M17 17H4l3 3M4 17l3-3"/></>:name==="globe"?<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></>:name==="guide"?<><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-3 7-4-4 7-3Z"/></>:name==="sun"?<><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M5 5l1.4 1.4M17.6 17.6 19 19M2 12h2M20 12h2M5 19l1.4-1.4M17.6 6.4 19 5"/></>:name==="journal"?<><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></>:name==="water"?<path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11Z"/>:name==="bug"?<><path d="M8 9h8v7a4 4 0 0 1-8 0V9ZM12 5v4M5 12h3M16 12h3M5 17h3M16 17h3M7 6l2 2M17 6l-2 2"/></>:<><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m8 5 2-2h4l2 2"/><circle cx="12" cy="12" r="3"/></>}</svg>}\nexport default function GreenLivingPage() {
   return (
     <main className="min-h-screen bg-[#f6faf7] text-slate-900">
       <script
@@ -156,9 +145,9 @@ export default function GreenLivingPage() {
         </header>
 
         <section aria-labelledby="green-living-tools" className="mt-8 grid gap-4 sm:grid-cols-3">
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GardenPlantIcon className="h-8 w-8" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌱</p><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌍</p><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="plant" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="exchange" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GreenIcon name="globe" className="h-8 w-8 text-emerald-800" /><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
         </section>
 
         <section aria-labelledby="why-green-living" className="mt-10">
@@ -169,12 +158,12 @@ export default function GreenLivingPage() {
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             {[
-              { icon: "🧭", title: "সহজ নির্দেশনা", text: "প্রথমবার বাগান শুরু করলেও ছোট ছোট ধাপে এগোন।" },
-              { icon: "☀️", title: "জায়গা বুঝে যত্ন", text: "আলো, বাতাস, টব ও মাটির অবস্থা বিবেচনা করুন।" },
-              { icon: "📔", title: "নিজের অভিজ্ঞতা", text: "ছবি ও নোট রেখে কী কাজ করছে তা বুঝে নিন।" },
+              { icon: "guide", title: "সহজ নির্দেশনা", text: "প্রথমবার বাগান শুরু করলেও ছোট ছোট ধাপে এগোন।" },
+              { icon: "sun", title: "জায়গা বুঝে যত্ন", text: "আলো, বাতাস, টব ও মাটির অবস্থা বিবেচনা করুন।" },
+              { icon: "journal", title: "নিজের অভিজ্ঞতা", text: "ছবি ও নোট রেখে কী কাজ করছে তা বুঝে নিন।" },
             ].map((item) => (
               <article key={item.title} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
-                <span aria-hidden="true" className="text-3xl">{item.icon}</span>
+                <GreenIcon name={item.icon as GreenIconName} className="h-8 w-8 text-emerald-800" />
                 <h3 className="mt-3 text-lg font-extrabold text-emerald-950">{item.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-slate-600">{item.text}</p>
               </article>
@@ -194,7 +183,7 @@ export default function GreenLivingPage() {
             {guides.map((guide) => (
               <article key={guide.title} className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md">
                 <div className="flex items-center gap-3">
-                  <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50 text-2xl">{guide.icon}</span>
+                  <span aria-hidden="true" className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-emerald-50"><GreenIcon name={guide.icon as GreenIconName} className="h-6 w-6 text-emerald-800" /></span>
                   <p className="text-xs font-bold text-emerald-800">{guide.category}</p>
                 </div>
                 <h3 className="mt-4 text-lg font-extrabold leading-7 text-slate-900">{guide.title}</h3>
