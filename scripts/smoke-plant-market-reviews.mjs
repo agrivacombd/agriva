@@ -17,11 +17,15 @@ assert.ok(schema.includes("plant_market_reviews_admin_read"),"admins have a sepa
 assert.ok(schema.includes("plant-market-review-photos"));
 assert.ok(schema.includes("public=false"),"pending review images use private storage");
 assert.ok(schema.includes("status = 'approved'"),"storage read policy exposes approved reviews only");
+assert.ok(schema.includes("review.id::text = (storage.foldername(name))[2]"),"photo read policy avoids unsafe UUID cast on object paths");
+assert.ok(schema.includes("review.status = 'pending'")&&schema.includes("plant_market_review_photo_owner_insert"),"photo uploads are limited to owner pending review folders");
+assert.ok(schema.includes("plant_market_review_photo_owner_delete")&&schema.includes("review.status = 'pending'"),"users can remove photos only from pending reviews");
 assert.ok(route.includes("auth.getUser()"));
 assert.ok(route.includes("MAX_PHOTOS=3")&&route.includes("MAX_BYTES=4*1024*1024"));
 assert.ok(route.includes('status:"pending"')&&route.includes("verified_purchase:false"));
 assert.ok(route.includes("sharp(")&&route.includes(".webp({quality:82})"));
 assert.ok(route.includes("createSignedUrl(path,3600)"),"public review listing signs photos for approved reviews");
+assert.ok(route.includes('{count:"exact"}')&&route.includes("ratingRows"),"review summary counts all reviews and averages all ratings");
 assert.ok(route.includes('eq("status","active")')&&route.includes("23505"));
 assert.ok(adminRoute.includes('requireAdminApi("catalog.moderate")'));
 assert.ok(adminRoute.includes("createSignedUrl(path,3600)"),"admin review queue uses signed photo links");
