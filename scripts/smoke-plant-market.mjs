@@ -135,7 +135,9 @@ const deliveryInfo = read("components/plant-market/PlantMarketDeliveryInfo.tsx")
 assert.match(plantDetail,/PlantMarketDeliveryInfo deliveryArea=\{product\.delivery_area\}/,"product detail includes delivery estimator with seller area");
 assert.ok(deliveryInfo.includes("১–৩ কর্মদিবস")&&deliveryInfo.includes("৩–৫ কর্মদিবস")&&deliveryInfo.includes("৪–৭ কর্মদিবস"),"delivery estimate provides area tiers");
 assert.ok(deliveryInfo.includes("সাধারণ ধারণা মাত্র")&&deliveryInfo.includes("নিশ্চিত করা ETA নয়"),"delivery ranges are explicitly non-guaranteed");
-assert.ok(deliveryInfo.includes("delivery fee"),"shipping charge remains confirmation-dependent");
+assert.ok(deliveryInfo.includes("ডেলিভারি চার্জ checkout-এর মোটে অন্তর্ভুক্ত নয়"),"delivery charge is disclosed as excluded from checkout total");
+const checkoutClient = read("components/plant-market/PlantMarketCheckoutClient.tsx");
+assert.ok(checkoutClient.includes("ডেলিভারি চার্জ এই মোটে অন্তর্ভুক্ত নয়"),"checkout total warns shipping charge is not included");
 
 const combo = read("components/plant-market/PlantMarketComboOffer.tsx");
 assert.match(plantDetail,/PlantMarketComboOffer current=\{\{/,"product page integrates combo cart builder");
