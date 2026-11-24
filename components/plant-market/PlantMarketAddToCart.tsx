@@ -24,7 +24,7 @@ export default function PlantMarketAddToCart({
   useEffect(() => {
     const target = purchaseRef.current;
     if (!target || typeof IntersectionObserver === "undefined") return;
-    const observer = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { rootMargin: "-96px 0px 0px 0px", threshold: 0 });
+    const observer = new IntersectionObserver(([entry]) => setShowSticky(entry.boundingClientRect.top < 0 && !entry.isIntersecting), { rootMargin: "-96px 0px 0px 0px", threshold: 0 });
     observer.observe(target);
     return () => observer.disconnect();
   }, []);
