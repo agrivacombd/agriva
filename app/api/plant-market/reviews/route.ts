@@ -10,7 +10,7 @@ export async function GET(request:NextRequest){
   const productId=request.nextUrl.searchParams.get("productId")||"";
   if(!UUID.test(productId))return NextResponse.json({error:"Product ID সঠিক নয়।"},{status:400});
   const supabase=await createSupabaseServerClient();
-  const {data,error}=await supabase.from("plant_market_reviews").select("id,rating,title,body,photo_urls,verified_purchase,created_at").eq("product_id",productId).eq("status","approved").order("created_at",{ascending:false}).limit(50);
+  const {data,error}=await supabase.from("plant_market_reviews").select("id,rating,title,body,photo_urls,verified_purchase,created_at",{count:"exact"}).eq("product_id",productId).eq("status","approved").order("created_at",{ascending:false}).limit(50);
   if(error)return NextResponse.json({error:"Reviews লোড করা যায়নি।"},{status:503});
   const bucket=supabase.storage.from("plant-market-review-photos");
   const rows=await Promise.all((data||[]).map(async review=>({
@@ -20,8 +20,10 @@ export async function GET(request:NextRequest){
       return signed?.signedUrl||null;
     }))
   })));
-  const average=rows.length?rows.reduce((sum,r)=>sum+r.rating,0)/rows.length:0;
-  return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:rows.length,averageRating:Number(average.toFixed(1))});
+  const {data:ratingRows,ratingError}=await supabase.from("plant_market_reviews").select("rating").eq("product_id",productId).eq("status","approved");
+  if(ratingError)return NextResponse.json({error:"Review summary লোড করা যায়নি।"},{status:503});
+  const average=ratingRows?.length?ratingRows.reduce((sum,r)=>sum+r.rating,0)/ratingRows.length:0;
+  return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:count??0,averageRating:Number(average.toFixed(1))});
 }
 
 export async function POST(request:NextRequest){
