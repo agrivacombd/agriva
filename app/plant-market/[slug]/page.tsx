@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import PlantMarketAddToCart from "@/components/plant-market/PlantMarketAddToCart";
 import PlantProductShare from "@/components/plant-market/PlantProductShare";
 import PlantWishlistButton from "@/components/plant-market/PlantWishlistButton";
+import PlantMarketRecentlyViewed from "@/components/plant-market/PlantMarketRecentlyViewed";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -115,6 +116,7 @@ export default async function PlantMarketProductPage({params}:Props){
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<span className="text-5xl">🪴</span>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
+      <PlantMarketRecentlyViewed product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}} />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-950/10 bg-white/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,.08)] backdrop-blur sm:hidden">
