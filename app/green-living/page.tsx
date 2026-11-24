@@ -117,8 +117,11 @@ function GreenIcon({ name, className = "h-8 w-8" }: { name: GreenIconName; class
     <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true" {...shared}>
       {name === "plant" ? (
         <>
-          <path d="M12 21v-9M12 12C5 12 4 7 4 4c5 0 8 3 8 8ZM12 14c0-6 4-9 8-9 0 5-3 9-8 9Z" />
-          <path d="M6 17h12l-2 4H8z" />
+          <path d="M12 20v-8" strokeWidth="2.2" />
+          <path d="M11 11C6.2 10.8 4.2 7.7 4 4.5c4.5-.2 7.2 2.2 7.8 6.5Z" fill="#22c55e" stroke="#166534" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M13 13c.3-4.4 3.2-7.2 7-7.4.1 4.4-2.4 7.2-7 7.4Z" fill="#86efac" stroke="#166534" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M7 16h10l-1.5 5h-7z" fill="#a16207" stroke="#854d0e" strokeWidth="1.4" strokeLinejoin="round" />
+          <path d="M6 15h12v2H6z" fill="#d97706" stroke="#854d0e" strokeWidth="1.3" strokeLinejoin="round" />
         </>
       ) : name === "exchange" ? (
         <>
