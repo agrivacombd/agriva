@@ -5,6 +5,7 @@ import { canonicalPlantProductSlug, resolvePlantProductSlug } from "@/lib/plant-
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import PlantMarketAddToCart from "@/components/plant-market/PlantMarketAddToCart";
 import PlantProductShare from "@/components/plant-market/PlantProductShare";
+import PlantWishlistButton from "@/components/plant-market/PlantWishlistButton";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -39,7 +40,7 @@ export default async function PlantMarketProductPage({params}:Props){
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/>
       <div className="mx-auto max-w-7xl">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-semibold text-emerald-800 sm:text-sm">
-          <Link href="/">AGRIVA</Link><span className="text-slate-400">/</span><Link href="/plant-market">Plant Market</Link><span className="text-slate-400">/</span><span className="text-slate-500">{product.name}</span>
+          <Link href="/">AGRIVA</Link><span className="text-slate-400">/</span><Link href="/plant-market">Plant Market</Link><span className="text-slate-400">/</span><Link href="/plant-market/wishlist">Wishlist ♥</Link><span className="text-slate-400">/</span><span className="text-slate-500">{product.name}</span>
         </nav>
 
         <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-sm">
@@ -52,6 +53,7 @@ export default async function PlantMarketProductPage({params}:Props){
               <p className="text-sm font-bold text-emerald-700">{product.category}</p>
               <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
               {product.scientific_name&&<p className="mt-2 text-sm italic text-slate-500">{product.scientific_name}</p>}
+              <div className="mt-3"><PlantWishlistButton product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}}/></div>
               <div className="mt-5 flex flex-wrap items-baseline gap-2">
                 <p className="text-4xl font-black tracking-tight text-emerald-950">৳{Number(product.price).toLocaleString("bn-BD")}</p>
                 <span className="text-sm font-semibold text-slate-500">/ {displayUnit}</span>
@@ -72,7 +74,7 @@ export default async function PlantMarketProductPage({params}:Props){
                   {product.delivery_area&&<p className="flex gap-2 sm:col-span-2"><span>🚚</span>ডেলিভারি: {product.delivery_area}</p>}
                 </div>
               </div>
-              <div className="mt-5"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
+              <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
               <div className="mt-3"><PlantProductShare name={product.name}/></div>
               <p className="mt-3 text-xs leading-5 text-slate-500">Buy Now করলে Checkout-এ যাবেন। কার্টে আগে যোগ করা পণ্য থাকলে Order Summary-তে সেগুলোও দেখা যাবে।</p>
             </div>
@@ -98,11 +100,27 @@ export default async function PlantMarketProductPage({params}:Props){
           <div className="break-words text-base leading-8 text-slate-700 [&_h2]:my-3 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:my-2 [&_h3]:font-bold [&_p]:my-3 [&_p]:leading-8 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-300 [&_blockquote]:pl-3 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline" dangerouslySetInnerHTML={{__html:safeDescription}}/>
         </section>}
 
+        
+        <section aria-label="সাধারণ প্রশ্ন" className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
+          <h2 className="text-xl font-black text-emerald-950">❓ কেনার আগে সাধারণ প্রশ্ন</h2>
+          <div className="mt-4 divide-y divide-emerald-950/10">
+            <details className="py-3"><summary className="cursor-pointer font-bold">এই পণ্যটি কি এখন অর্ডার করা যাবে?</summary><p className="mt-2 text-sm leading-6 text-slate-600">{Number(product.stock)>0 ? <>হ্যাঁ, বর্তমানে {Number(product.stock).toLocaleString("bn-BD")} {displayUnit} স্টকে আছে। অর্ডার দেওয়ার সময় স্টক আবার যাচাই করা হবে।</> : "এই মুহূর্তে স্টক নেই। স্টক ফিরে এলে পণ্য পেজে আপডেট হবে।"}</p></details>
+            <details className="py-3"><summary className="cursor-pointer font-bold">ডেলিভারি কত দিনে হবে?</summary><p className="mt-2 text-sm leading-6 text-slate-600">ডেলিভারি সময় আপনার ঠিকানা ও অর্ডার নিশ্চিত হওয়ার উপর নির্ভর করে। checkout-এ ঠিকানা দেওয়ার পর প্রযোজ্য তথ্য যাচাই করুন।{product.delivery_area ? " ডেলিভারি এলাকা: " + product.delivery_area + "." : ""}</p></details>
+            <details className="py-3"><summary className="cursor-pointer font-bold">গাছটির যত্ন কীভাবে নেব?</summary><p className="mt-2 text-sm leading-6 text-slate-600">{[product.sunlight && "আলো: " + product.sunlight,product.watering && "পানি: " + product.watering,product.usage_instructions].filter(Boolean).join("। ") || "পণ্যের পরিচর্যা নির্দেশনা অনুসরণ করুন; আলো, পানি ও মাটি গাছের ধরন অনুযায়ী ঠিক রাখুন।"}</p></details>
+            <details className="py-3"><summary className="cursor-pointer font-bold">পণ্য ক্ষতিগ্রস্ত অবস্থায় এলে কী করব?</summary><p className="mt-2 text-sm leading-6 text-slate-600">প্যাকেট খোলার সময় ছবি বা ভিডিও রাখুন এবং দ্রুত AGRIVA support-এ order number সহ যোগাযোগ করুন; replacement/return eligibility policy অনুযায়ী যাচাই করা হবে।</p></details>
+          </div>
+        </section>
+
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<span className="text-5xl">🪴</span>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
       </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-950/10 bg-white/95 p-3 shadow-[0_-8px_24px_rgba(0,0,0,.08)] backdrop-blur sm:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3"><div className="min-w-0"><p className="text-[10px] font-bold text-slate-500">দাম</p><p className="truncate text-lg font-black text-emerald-950">৳{Number(product.price).toLocaleString("bn-BD")}</p></div><a href="#purchase-area" className="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-emerald-900 px-4 text-sm font-extrabold text-white">{Number(product.stock)>0?"কিনুন / কার্টে যোগ করুন":"স্টক শেষ"}</a></div>
+      </div>
+      <div className="h-20 sm:hidden" aria-hidden="true"/>
     </main>
   );
 }
