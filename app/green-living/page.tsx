@@ -112,7 +112,8 @@ const lightLevels = [
   ["মাঝারি আলো", "জানালা থেকে কিছুটা দূরে আলো পাওয়া জায়গা; বৃদ্ধি ধীর হতে পারে।"],
   ["কম আলো", "আলো কম পাওয়া কোণ; সব গাছ এই পরিবেশে টিকে থাকতে পারে না।"],
 ];
-\nconst faqJsonLd = {
+
+const faqJsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: faqs.map((faq) => ({
