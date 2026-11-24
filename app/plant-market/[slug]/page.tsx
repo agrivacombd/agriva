@@ -9,6 +9,7 @@ import PlantWishlistButton from "@/components/plant-market/PlantWishlistButton";
 import PlantMarketRecentlyViewed from "@/components/plant-market/PlantMarketRecentlyViewed";
 import PlantMarketReviews from "@/components/plant-market/PlantMarketReviews";
 import PlantMarketDeliveryInfo from "@/components/plant-market/PlantMarketDeliveryInfo";
+import PlantMarketComboOffer from "@/components/plant-market/PlantMarketComboOffer";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -84,6 +85,8 @@ export default async function PlantMarketProductPage({params}:Props){
             </div>
           </div>
         </article>
+
+        {relatedProducts && relatedProducts.length>0 && <PlantMarketComboOffer current={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),stock:Number(product.stock),unit:product.unit,image_url:product.image_url}} related={relatedProducts.map(item=>({...item,stock:Number(item.stock),price:Number(item.price),unit:item.unit||null}))}/>}
 
         <section className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
           <div className="rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
