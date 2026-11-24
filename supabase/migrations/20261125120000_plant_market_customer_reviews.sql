@@ -64,3 +64,21 @@ DROP POLICY IF EXISTS plant_market_reviews_own_delete_pending ON public.plant_ma
 CREATE POLICY plant_market_reviews_own_delete_pending ON public.plant_market_reviews
   FOR DELETE TO authenticated USING (reviewer_id = (SELECT auth.uid()) AND status = 'pending');
 GRANT DELETE ON public.plant_market_reviews TO authenticated;
+
+-- Admins can moderate through the capability-checked API. Reviewers may attach
+-- only URLs in their own storage folder while the review remains pending.
+DROP POLICY IF EXISTS plant_market_reviews_admin_update ON public.plant_market_reviews;
+CREATE POLICY plant_market_reviews_admin_update ON public.plant_market_reviews
+  FOR UPDATE TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+DROP POLICY IF EXISTS plant_market_reviews_own_update ON public.plant_market_reviews;
+CREATE POLICY plant_market_reviews_own_update ON public.plant_market_reviews
+  FOR UPDATE TO authenticated USING (reviewer_id = (SELECT auth.uid()) AND status = 'pending')
+  WITH CHECK (
+    reviewer_id = (SELECT auth.uid()) AND status = 'pending' AND verified_purchase = false
+    AND moderated_by IS NULL AND moderated_at IS NULL
+    AND cardinality(photo_urls) <= 3
+    AND NOT EXISTS (
+      SELECT 1 FROM unnest(photo_urls) AS photo_url
+      WHERE photo_url NOT LIKE '%/plant-market-review-photos/' || (SELECT auth.uid())::text || '/%'
+    )
+  );
