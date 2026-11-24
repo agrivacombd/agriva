@@ -13,6 +13,7 @@ assert.ok(schema.includes("rating BETWEEN 1 AND 5"));
 assert.ok(schema.includes("status text NOT NULL DEFAULT 'pending'"));
 assert.ok(schema.includes("verified_purchase boolean NOT NULL DEFAULT false"));
 assert.ok(schema.includes("ENABLE ROW LEVEL SECURITY"));
+assert.ok(schema.includes("plant_market_reviews_admin_read"),"admins have a separate RLS policy for moderation queue");
 assert.ok(schema.includes("plant-market-review-photos"));
 assert.ok(schema.includes("public=false"),"pending review images use private storage");
 assert.ok(schema.includes("status = 'approved'"),"storage read policy exposes approved reviews only");
