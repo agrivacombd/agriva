@@ -10,6 +10,7 @@ import PlantMarketRecentlyViewed from "@/components/plant-market/PlantMarketRece
 import PlantMarketReviews from "@/components/plant-market/PlantMarketReviews";
 import PlantMarketDeliveryInfo from "@/components/plant-market/PlantMarketDeliveryInfo";
 import PlantMarketComboOffer from "@/components/plant-market/PlantMarketComboOffer";
+import PlantMarketProductGallery from "@/components/plant-market/PlantMarketProductGallery";
 import ProductClickTracker from "@/components/marketplace/ProductClickTracker";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 type Props = { params: Promise<{ slug: string }> };
@@ -51,10 +52,7 @@ export default async function PlantMarketProductPage({params}:Props){
 
         <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-sm">
           <div className="grid lg:grid-cols-[1.05fr_.95fr]">
-            <div className="relative flex min-h-[320px] items-center justify-center bg-gradient-to-br from-[#edf5e8] via-[#f7faf4] to-[#e1efdc] p-4 sm:min-h-[520px] sm:p-8">
-              <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">🌿 Plant Market</div>
-              {product.image_url ? <img src={product.image_url} alt={product.image_alt||`${product.name} — AGRIVA Plant Market`} decoding="async" fetchPriority="high" className="max-h-[520px] w-full object-contain drop-shadow-sm"/> : <span className="text-8xl">🪴</span>}
-            </div>
+            <PlantMarketProductGallery productId={product.id} productName={product.name} mainImage={product.image_url} mainAlt={product.image_alt}/>
             <div className="p-5 sm:p-8 lg:p-10">
               <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-bold text-emerald-700">{product.category}</p><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">AGRIVA Plant Market</span></div>
               <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
@@ -101,8 +99,9 @@ export default async function PlantMarketProductPage({params}:Props){
           <div id="plant-care" className="scroll-mt-24 rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
             <h2 className="text-xl font-black text-emerald-950">🧑‍🌾 দ্রুত পরিচর্যা গাইড</h2>
             <dl className="mt-3 space-y-3">
-              {[[ "সূর্যালোক",product.sunlight,"☀️"],["পানি",product.watering,"💧"],["ফুল/ফল আসার সময়",product.flowering_season,"🌸"]].filter((x)=>x[1]).map(([label,value,emoji])=><div key={label} className="flex gap-3 rounded-2xl bg-emerald-50/70 p-3"><span>{emoji}</span><div><dt className="text-sm font-bold text-emerald-900">{label}</dt><dd className="mt-1 text-sm leading-6 text-slate-700">{value}</dd></div></div>)}
+              {[[ "সূর্যালোক",product.sunlight,"☀️"],["পানি",product.watering,"💧"],["ফুল/ফল আসার সময়",product.flowering_season,"🌸"],["গাছের আকার",product.plant_size,"📏"],["টবের সাইজ",product.pot_size,"🪴"]].map(([label,value,emoji])=><div key={label} className="flex gap-3 rounded-2xl bg-emerald-50/70 p-3"><span>{emoji}</span><div><dt className="text-sm font-bold text-emerald-900">{label}</dt><dd className="mt-1 text-sm leading-6 text-slate-700">{value||"বিক্রেতা এখনও এই তথ্য দেননি। অর্ডারের আগে জেনে নিন।"}</dd></div></div>)}
             </dl>
+            <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4"><h3 className="text-sm font-extrabold text-amber-950">🌿 গাছ হাতে পাওয়ার পর</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-amber-900"><li>প্যাকেট খুলে গাছ ও মাটির অবস্থা পরীক্ষা করুন; ক্ষতি থাকলে ছবি/ভিডিও রাখুন।</li><li>গাছের নির্দিষ্ট নির্দেশনা না জেনে অতিরিক্ত পানি বা সার দেবেন না।</li><li>নতুন পরিবেশে ধীরে মানিয়ে নিন; হঠাৎ তীব্র রোদ বা বড় পরিবর্তন এড়িয়ে চলুন।</li></ul><p className="mt-2 text-xs text-amber-800">এগুলো সাধারণ পরামর্শ; গাছের প্রজাতি ও বিক্রেতার নির্দেশনা অনুযায়ী পরিচর্যা করুন।</p></div>
           </div>
         </section>
 
