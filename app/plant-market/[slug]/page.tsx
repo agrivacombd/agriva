@@ -106,10 +106,11 @@ export default async function PlantMarketProductPage({params}:Props){
           </div>
         </section>
 
-        {safeDescription&&<section id="plant-product-details" aria-label="পণ্যের বিস্তারিত বিবরণ" className="scroll-mt-24 mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm md:p-8">
+        <section id="plant-product-details" aria-label="পণ্যের বিস্তারিত বিবরণ" className="scroll-mt-24 mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 shadow-sm md:p-8">
           <h2 className="mb-4 text-2xl font-black text-emerald-950">পণ্যের বিস্তারিত বিবরণ</h2>
-          <div className="break-words text-base leading-8 text-slate-700 [&_h2]:my-3 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:my-2 [&_h3]:font-bold [&_p]:my-3 [&_p]:leading-8 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-300 [&_blockquote]:pl-3 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline" dangerouslySetInnerHTML={{__html:safeDescription}}/>
-        </section>}
+          {safeDescription?<div className="break-words text-base leading-8 text-slate-700 [&_h2]:my-3 [&_h2]:text-lg [&_h2]:font-extrabold [&_h3]:my-2 [&_h3]:font-bold [&_p]:my-3 [&_p]:leading-8 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-3 [&_blockquote]:border-l-4 [&_blockquote]:border-emerald-300 [&_blockquote]:pl-3 [&_a]:font-semibold [&_a]:text-emerald-800 [&_a]:underline" dangerouslySetInnerHTML={{__html:safeDescription}}/>:<p className="text-sm leading-7 text-slate-600">বিক্রেতার বিস্তারিত বিবরণ এখনও যোগ করা হয়নি। নিচে দেওয়া পণ্যের বৈশিষ্ট্য ও পরিচর্যার তথ্য দেখে সিদ্ধান্ত নিন।</p>}
+          {specs.length>0&&<dl className="mt-5 grid gap-2 sm:grid-cols-2">{specs.map(([label,value])=><div key={label} className="rounded-xl bg-slate-50 p-3"><dt className="text-xs font-semibold text-slate-500">{label}</dt><dd className="mt-1 text-sm font-bold text-slate-800">{value}</dd></div>)}</dl>}
+        </section>
 
         
         <section aria-label="সাধারণ প্রশ্ন" className="mt-6 rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
