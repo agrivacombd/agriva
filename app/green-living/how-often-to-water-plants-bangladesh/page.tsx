@@ -139,6 +139,7 @@ export default function WateringPlantsBangladeshGuide() {
         <section className="mt-8 rounded-2xl bg-emerald-950 p-5 text-white sm:p-7">
           <h2 className="text-2xl font-black">আরও Plant Care Guide পড়ুন</h2>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            <Link href="/green-living/yellow-leaves-causes-solutions" className="rounded-xl border border-white/30 px-4 py-3 text-sm font-bold hover:bg-white/10">পাতা হলুদ হলে কী করবেন</Link>
             <Link href="/green-living/low-light-indoor-plants-bangladesh" className="rounded-xl border border-white/30 px-4 py-3 text-sm font-bold hover:bg-white/10">কম আলোতে indoor plant guide</Link>
             <Link href="/green-living" className="rounded-xl border border-white/30 px-4 py-3 text-sm font-bold hover:bg-white/10">Green Living-এর সব গাইড</Link>
             <Link href="/plant-market" className="rounded-xl bg-white px-4 py-3 text-sm font-bold text-emerald-950">গাছ ও gardening products</Link>
