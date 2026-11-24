@@ -1,0 +1,23 @@
+"use client";
+import {useEffect,useMemo,useState} from "react";
+
+type Photo={url:string;reviewTitle:string;reviewId:string};
+export default function PlantMarketProductGallery({productId,productName,mainImage,mainAlt}:{productId:string;productName:string;mainImage:string|null;mainAlt:string|null}){
+ const [photos,setPhotos]=useState<Photo[]>([]);
+ const [active,setActive]=useState(0);
+ const [zoom,setZoom]=useState(false);
+ useEffect(()=>{let live=true;fetch("/api/plant-market/reviews?productId="+encodeURIComponent(productId),{cache:"no-store"}).then(async res=>{if(!res.ok)return;const data=await res.json();const found:Photo[]=(data.reviews||[]).flatMap((review:any)=>(review.photo_urls||[]).filter(Boolean).map((url:string)=>({url,reviewTitle:review.title||"Customer photo",reviewId:review.id})));if(live)setPhotos(found.slice(0,12));}).catch(()=>{});return()=>{live=false}},[productId]);
+ const slides=useMemo(()=>[{url:mainImage,alt:mainAlt||productName,label:"Product photo",reviewTitle:""} ,...photos.map(photo=>({url:photo.url,alt:productName+" — customer photo",label:"Customer photo",reviewTitle:photo.reviewTitle}))].filter(slide=>slide.url),[mainImage,mainAlt,productName,photos]);
+ if(!slides.length)return <div className="relative flex min-h-[320px] items-center justify-center bg-gradient-to-br from-[#edf5e8] via-[#f7faf4] to-[#e1efdc] p-4 sm:min-h-[520px]"><div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">🌿 Plant Market</div><span className="text-8xl">🪴</span></div>;
+ const current=slides[Math.min(active,slides.length-1)];
+ return <div className="relative bg-gradient-to-br from-[#edf5e8] via-[#f7faf4] to-[#e1efdc] p-4 sm:p-6">
+  <div className="absolute left-4 top-4 z-10 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">🌿 Plant Market</div>
+  <button type="button" onClick={()=>setZoom(true)} aria-label="ছবি বড় করে দেখুন" className="flex min-h-[300px] w-full items-center justify-center rounded-2xl p-2 sm:min-h-[480px]">
+   <img src={current.url!} alt={current.alt} decoding="async" fetchPriority={active===0?"high":"auto"} className="max-h-[520px] w-full object-contain drop-shadow-sm"/>
+  </button>
+  <div className="mt-3 flex items-center justify-between gap-2 text-xs font-semibold text-emerald-900"><span>{current.label==="Customer photo"?"ক্রেতার বাস্তব ছবি":"পণ্যের ছবি"}</span><span>{active+1}/{slides.length} · ছবিতে ট্যাপ করে zoom করুন</span></div>
+  {slides.length>1&&<div className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="Product image thumbnails">{slides.map((slide,i)=><button type="button" key={slide.url} onClick={()=>setActive(i)} aria-label={i===0?"মূল পণ্যের ছবি":"ক্রেতার ছবি "+i} aria-pressed={active===i} className={"h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 bg-white p-1 "+(active===i?"border-emerald-800":"border-transparent")}><img src={slide.url!} alt="" loading="lazy" className="h-full w-full object-contain"/></button>)}</div>}
+  {photos.length>0&&<p className="mt-2 text-xs leading-5 text-slate-600">ক্রেতাদের অনুমোদিত ছবি · {photos.length}টি</p>}
+  {zoom&&<div role="dialog" aria-modal="true" aria-label="Product image preview" className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4" onClick={()=>setZoom(false)}><button type="button" onClick={()=>setZoom(false)} className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-sm font-bold text-slate-900">বন্ধ করুন ✕</button><img src={current.url!} alt={current.alt} className="max-h-[90vh] max-w-[96vw] object-contain" onClick={e=>e.stopPropagation()}/><p className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-slate-900">{current.label==="Customer photo"?"ক্রেতার বাস্তব ছবি":"পণ্যের ছবি"}</p></div>}
+ </div>;
+}
