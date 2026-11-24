@@ -108,7 +108,7 @@ const reviewsMigration = read("supabase/migrations/20261125120000_plant_market_c
 const reviewApi = read("app/api/plant-market/reviews/route.ts");
 const reviewAdminApi = read("app/api/admin/plant-market-reviews/route.ts");
 const reviewUi = read("components/plant-market/PlantMarketReviews.tsx");
-const moderationUi = read("components/admin/PlantMarketReviewModeration.tsx");
+const reviewModerationUi = read("components/admin/PlantMarketReviewModeration.tsx");
 const adminPage = read("app/admin/plant-market-products/page.tsx");
 assert.ok(reviewsMigration.includes("UNIQUE (product_id, reviewer_id)"), "one review per account per product");
 assert.ok(reviewsMigration.includes("status = 'pending'"), "reviews default to pending moderation");
@@ -128,5 +128,5 @@ assert.ok(reviewUi.includes("/api/plant-market/reviews?productId="), "customer r
 assert.ok(reviewUi.includes('form.append("photos",file)'), "photo review form posts photos");
 assert.ok(reviewUi.includes("Verified purchase"), "verified purchase badge only rendered for flagged reviews");
 assert.ok(adminPage.includes("PlantMarketReviewModeration"), "admin review queue rendered");
-assert.ok(moderationUi.includes("Approve / Publish") && moderationUi.includes("Reject"), "admin can approve or reject reviews");
+assert.ok(reviewModerationUi.includes("Approve / Publish") && reviewModerationUi.includes("Reject"), "admin can approve or reject reviews");
 assert.ok(plantDetail.includes("<PlantMarketReviews productId={product.id} />"), "product page contains reviews component");
