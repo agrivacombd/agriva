@@ -1,22 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 
 export default function PlantMarketAddToCart({
-  productId, stock = 0, disabled = false,
+  productId, stock = 0, disabled = false, price = 0,
 }: {
   productId: string;
   stock?: number;
   disabled?: boolean;
+  price?: number;
 }) {
   const available = Math.max(0, Math.floor(Number(stock) || 0));
   const [quantity,setQuantity] = useState(1);
   const [busy,setBusy] = useState(false);
   const [message,setMessage] = useState("");
   const [needsLogin,setNeedsLogin] = useState(false);
+  const [showSticky,setShowSticky] = useState(false);
+  const purchaseRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const target = purchaseRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setShowSticky(!entry.isIntersecting), { rootMargin: "-96px 0px 0px 0px", threshold: 0 });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
   const router = useRouter();
 
   async function add(buyNow = false) {
@@ -47,7 +58,7 @@ export default function PlantMarketAddToCart({
     } finally {setBusy(false);}
   }
 
-  return <section className="mt-6 space-y-3" aria-label="পণ্য কেনার অপশন">
+  return <section ref={purchaseRef} className="mt-6 space-y-3" aria-label="পণ্য কেনার অপশন">
     {available > 0 && !disabled && <div className="flex items-center gap-3">
       <span className="text-sm font-bold text-slate-700">পরিমাণ</span>
       <div className="flex items-center overflow-hidden rounded-xl border border-emerald-200" role="group" aria-label="পণ্যের পরিমাণ">
@@ -70,6 +81,7 @@ export default function PlantMarketAddToCart({
       <Link href="/plant-market/cart" className="text-sm font-bold text-emerald-800 underline underline-offset-4">কার্ট দেখুন</Link>
       <span className="text-xs text-slate-500">Cash on Delivery · স্টক যাচাই সাপেক্ষে</span>
     </div>
+    {showSticky && available > 0 && !disabled && <div className="fixed inset-x-0 bottom-0 z-40 border-t border-emerald-950/10 bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(15,45,30,0.12)] backdrop-blur sm:hidden"><div className="mx-auto flex max-w-lg items-center gap-3"><div className="min-w-0 flex-1"><p className="text-[11px] font-semibold text-slate-500">বর্তমান মূল্য</p><p className="truncate text-lg font-black text-emerald-950">৳{Number(price).toLocaleString("bn-BD")}</p></div><button type="button" onClick={()=>void add(true)} disabled={busy} className="min-h-12 flex-1 rounded-xl bg-emerald-900 px-4 py-3 text-sm font-extrabold text-white shadow-sm disabled:opacity-60">{busy?"প্রসেস হচ্ছে…":"এখনই কিনুন"}</button></div></div>}
     {message && <div role="status" className="flex flex-wrap items-center gap-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-900">
       <span>{message}</span>
       {needsLogin && <Link href={"/login?next=" + encodeURIComponent(typeof window !== "undefined" ? window.location.pathname : "/plant-market")} className="rounded-lg bg-emerald-900 px-4 py-2 text-xs font-bold text-white">লগইন করুন</Link>}
