@@ -109,6 +109,18 @@ const faqJsonLd = {
   })),
 };
 
+function GardenPlantIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <path d="M24 28V15" stroke="#166534" strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M23 19C14 19 10 14 10 8c8 0 13 3 13 11Z" fill="#84CC16" stroke="#166534" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M25 23c0-8 5-13 14-13 0 7-4 13-14 13Z" fill="#22C55E" stroke="#166534" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M15 30h18l-2.5 13h-13L15 30Z" fill="#B45309" stroke="#78350F" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M13 29h22v4H13z" fill="#D97706" stroke="#78350F" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function GreenLivingPage() {
   return (
     <main className="min-h-screen bg-[#f6faf7] text-slate-900">
@@ -144,7 +156,7 @@ export default function GreenLivingPage() {
         </header>
 
         <section aria-labelledby="green-living-tools" className="mt-8 grid gap-4 sm:grid-cols-3">
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🪴</p><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><GardenPlantIcon className="h-8 w-8" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌱</p><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌍</p><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
         </section>
