@@ -7,7 +7,15 @@ export async function GET(request:NextRequest){
  if(!["pending","approved","rejected"].includes(status))return NextResponse.json({error:"Invalid status."},{status:400});
  const {data,error}=await access.supabase.from("plant_market_reviews").select("id,product_id,reviewer_id,rating,title,body,photo_urls,verified_purchase,status,moderation_note,created_at,plant_market_products(name,slug)").eq("status",status).order("created_at",{ascending:true}).limit(100);
  if(error)return NextResponse.json({error:"Review queue load failed."},{status:503});
- return NextResponse.json({reviews:data||[]});
+ const bucket=access.supabase.storage.from("plant-market-review-photos");
+ const reviews=await Promise.all((data||[]).map(async review=>({
+  ...review,
+  photo_urls:await Promise.all((review.photo_urls||[]).map(async path=>{
+   const {data:signed}=await bucket.createSignedUrl(path,3600);
+   return signed?.signedUrl||null;
+  }))
+ })));
+ return NextResponse.json({reviews:reviews.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)}))});
 }
 export async function PATCH(request:NextRequest){
  const access=await requireAdminApi("catalog.moderate");if(!access.ok)return access.response;
