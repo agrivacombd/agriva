@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 const exchangeTypes = [
   {
-    icon: "🪴",
+    icon: "indoor-plant",
     title: "গাছের বদলে গাছ",
     description: "আপনার অতিরিক্ত ইনডোর প্ল্যান্ট, ফুলের গাছ বা ফলের চারার বদলে অন্য গাছ নেওয়ার প্রস্তাব করুন।",
   },
@@ -94,6 +94,18 @@ const pageSchema = {
   isPartOf: { "@type": "WebSite", name: "AGRIVA", url: siteUrl },
 };
 
+function IndoorPlantIcon({ className = "h-10 w-10" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <path d="M24 26V13" stroke="#D9F99D" strokeWidth="2.8" strokeLinecap="round" />
+      <path d="M23 18C14 18 10 13 10 7c8 0 13 3 13 11Z" fill="#A3E635" stroke="#ECFCCB" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M25 22c0-8 5-13 14-13 0 7-4 13-14 13Z" fill="#4ADE80" stroke="#ECFCCB" strokeWidth="1.8" strokeLinejoin="round" />
+      <path d="M15 28h18l-2.5 14h-13L15 28Z" fill="#D97706" stroke="#FEF3C7" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M13 27h22v4H13z" fill="#FBBF24" stroke="#FEF3C7" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function GreenExchangePage() {
   return (
     <main className="min-h-screen bg-[#f7faf6] text-slate-900">
@@ -122,7 +134,7 @@ export default function GreenExchangePage() {
             <p className="mt-4 text-sm text-emerald-100">পোস্ট জমা দিতে লগইন প্রয়োজন। নতুন পোস্ট যাচাইয়ের পর পাবলিক তালিকায় দেখানো হবে।</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4" aria-label="Green Exchange examples">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🪴</span><h2 className="mt-3 font-bold">ইনডোর প্ল্যান্ট</h2><p className="mt-1 text-sm leading-6 text-emerald-100">ঘরের গাছ ও ছোট টব</p></div>
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><IndoorPlantIcon className="h-10 w-10" /><h2 className="mt-3 font-bold">ইনডোর প্ল্যান্ট</h2><p className="mt-1 text-sm leading-6 text-emerald-100">ঘরের গাছ ও ছোট টব</p></div>
             <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🌱</span><h2 className="mt-3 font-bold">চারা ও কাটিং</h2><p className="mt-1 text-sm leading-6 text-emerald-100">নতুন গাছের শুরু</p></div>
             <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🌼</span><h2 className="mt-3 font-bold">ফুল ও ফলের গাছ</h2><p className="mt-1 text-sm leading-6 text-emerald-100">বাগানের বৈচিত্র্য</p></div>
             <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🎁</span><h2 className="mt-3 font-bold">উপহার দিন</h2><p className="mt-1 text-sm leading-6 text-emerald-100">টাকা ছাড়াই ভাগাভাগি</p></div>
@@ -137,7 +149,7 @@ export default function GreenExchangePage() {
           <p className="mt-3 leading-7 text-slate-600">শুরু করার আগে গাছের অবস্থা, পরিমাণ ও বিনিময়ের শর্ত পরিষ্কার করুন। সব প্রস্তাবই দুই পক্ষের সম্মতির ভিত্তিতে হওয়া উচিত।</p>
         </div>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {exchangeTypes.map((item) => <article key={item.title} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><span className="text-3xl" aria-hidden="true">{item.icon}</span><h3 className="mt-4 text-lg font-bold">{item.title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p></article>)}
+          {exchangeTypes.map((item) => <article key={item.title} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><span className="text-3xl" aria-hidden="true">{item.icon === "indoor-plant" ? <IndoorPlantIcon className="h-8 w-8" /> : item.icon}</span><h3 className="mt-4 text-lg font-bold">{item.title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p></article>)}
         </div>
       </section>
 

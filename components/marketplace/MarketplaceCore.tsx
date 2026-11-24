@@ -322,7 +322,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
-  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:"🌿"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:"🪴"}))], [products]);
+  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:"leaf"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:"leaf"}))], [products]);
   const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
   const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
@@ -431,7 +431,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </button>
         {mobileCategoryOpen && <nav id="mobile-marketplace-category-menu" aria-label="পণ্যের ক্যাটাগরি" className="mt-2 grid max-h-[55vh] grid-cols-2 gap-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
           <button type="button" onClick={() => { setCategory("all"); setMobileCategoryOpen(false); }} aria-pressed={category === "all"} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === "all" ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span>সব পণ্য</span><span className="text-[10px] opacity-75">{products.length}</span></button>
-          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => { setCategory(item.slug); setMobileCategoryOpen(false); }} aria-pressed={category === item.slug} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span className="min-w-0 truncate">{item.icon} {item.name}</span><span className="shrink-0 text-[10px] opacity-75">{new Intl.NumberFormat("bn-BD").format(item.count)}</span></button>)}
+          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => { setCategory(item.slug); setMobileCategoryOpen(false); }} aria-pressed={category === item.slug} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span className="flex min-w-0 items-center gap-1.5 truncate">{isPlantMarket ? <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true"><path d="M20 4c-8.5 0-13 4.2-13 10.2A5.8 5.8 0 0 0 12.8 20C18.8 20 20 11.5 20 4Z" fill="currentColor" opacity=".18"/><path d="M20 4c-8.5 0-13 4.2-13 10.2A5.8 5.8 0 0 0 12.8 20C18.8 20 20 11.5 20 4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M5 21 16 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg> : <span aria-hidden="true">{item.icon}</span>} {item.name}</span><span className="shrink-0 text-[10px] opacity-75">{new Intl.NumberFormat("bn-BD").format(item.count)}</span></button>)}
         </nav>}
       </div>}
 
@@ -442,7 +442,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </div>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition ${category === item.slug ? "border-emerald-700 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/60"}`}>
-            <span className="text-2xl" aria-hidden="true">{item.icon}</span><span className="text-[11px] font-extrabold leading-4 text-slate-800">{item.name}</span><span className="text-[10px] text-slate-400">{new Intl.NumberFormat("bn-BD").format(item.count)} পণ্য</span>
+            <span className="text-2xl" aria-hidden="true">{isPlantMarket ? <svg viewBox="0 0 24 24" fill="none" className="h-7 w-7 text-emerald-700"><path d="M20 4c-8.5 0-13 4.2-13 10.2A5.8 5.8 0 0 0 12.8 20C18.8 20 20 11.5 20 4Z" fill="currentColor" opacity=".18"/><path d="M20 4c-8.5 0-13 4.2-13 10.2A5.8 5.8 0 0 0 12.8 20C18.8 20 20,11.5,20,4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/><path d="M5 21 16 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/></svg> : item.icon}</span><span className="text-[11px] font-extrabold leading-4 text-slate-800">{item.name}</span><span className="text-[10px] text-slate-400">{new Intl.NumberFormat("bn-BD").format(item.count)} পণ্য</span>
           </button>)}
         </div>
       </section>}

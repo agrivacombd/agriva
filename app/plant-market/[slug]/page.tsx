@@ -30,7 +30,7 @@ export default async function PlantMarketProductPage({params}:Props){
   if (slug !== canonicalSlug) permanentRedirect(`/plant-market/${encodeURIComponent(canonicalSlug)}`);
   const { data: relatedProducts } = await supabase.from("plant_market_products")
     .select("id,name,slug,price,stock,unit,image_url")
-    .eq("status","active").eq("category_slug",product.category_slug).neq("id",product.id)
+    .eq("status","active").eq("category_slug",product.category_slug).gt("stock",0).neq("id",product.id)
     .order("created_at",{ascending:false}).limit(4);
   const safeDescription = sanitizeProductDescription(product.description || "");
   const plainDescription = productDescriptionToText(safeDescription);
@@ -41,23 +41,24 @@ export default async function PlantMarketProductPage({params}:Props){
   const displayUnit=unitLabels[String(product.unit||"piece").toLowerCase()]||product.unit||"পিস";
   const specs=[["গাছের আকার",product.plant_size],["টবের সাইজ",product.pot_size],["গাছের বয়স",product.plant_age],["সূর্যালোক",product.sunlight],["পানি",product.watering],["ফুল ফোটার মৌসুম",product.flowering_season],["ডেলিভারি এলাকা",product.delivery_area]].filter((item)=>item[1]);
   return (
-    <main className="min-h-screen bg-[#f6f8f3] px-3 py-5 text-[#17351f] sm:px-6 sm:py-8">
+    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_#e8f2e4_0%,_#f6f8f3_42%,_#f6f8f3_100%)] px-3 py-5 pb-28 text-[#17351f] sm:px-6 sm:py-8 sm:pb-12">
       <ProductClickTracker market="plant-market" productId={product.id}/>
       <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema).replace(/</g,"\\u003c")}}/>
       <div className="mx-auto max-w-7xl">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-semibold text-emerald-800 sm:text-sm">
           <Link href="/">AGRIVA</Link><span className="text-slate-400">/</span><Link href="/plant-market">Plant Market</Link><span className="text-slate-400">/</span><span aria-current="page" className="text-slate-500">{product.name}</span>
         </nav>
-        <nav aria-label="Product sections" className="mt-3 flex gap-2 overflow-x-auto pb-1 text-xs font-bold sm:text-sm"><a href="#plant-product-details" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">বিস্তারিত</a><a href="#plant-care" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">পরিচর্যা</a><a href="#customer-reviews" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">ক্রেতাদের রিভিউ</a></nav>
+        <nav aria-label="Product sections" className="sticky top-16 z-30 mt-3 flex gap-2 overflow-x-auto rounded-full border border-emerald-950/10 bg-[#f6f8f3]/95 px-2 py-2 pb-2 text-xs font-bold shadow-sm backdrop-blur sm:text-sm"><a href="#plant-product-details" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">বিস্তারিত</a><a href="#plant-care" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">পরিচর্যা</a><a href="#customer-reviews" className="whitespace-nowrap rounded-full border border-emerald-200 bg-white px-3 py-2 text-emerald-900">ক্রেতাদের রিভিউ</a></nav>
 
-        <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-sm">
-          <div className="grid lg:grid-cols-[1.05fr_.95fr]">
+        <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-[0_18px_60px_rgba(20,55,32,0.08)]">
+          <div className="grid lg:grid-cols-[1.08fr_.92fr] lg:items-start">
             <PlantMarketProductGallery productId={product.id} productName={product.name} mainImage={product.image_url} mainAlt={product.image_alt}/>
-            <div className="p-5 sm:p-8 lg:p-10">
+            <div className="min-w-0 p-5 sm:p-8 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:p-8 xl:p-10">
               <div className="flex flex-wrap items-center gap-2"><p className="text-sm font-bold text-emerald-700">{product.category}</p><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">AGRIVA Plant Market</span></div>
-              <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">{product.name}</h1>
+              <h1 className="mt-2 text-[1.85rem] font-black leading-[1.22] tracking-tight text-[#17351f] sm:text-4xl">{product.name}</h1>
               {product.scientific_name&&<p className="mt-2 text-sm italic text-slate-500">{product.scientific_name}</p>}
               <div className="mt-3"><PlantWishlistButton product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}}/></div>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold text-emerald-900"><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">🌿 গাছের যত্নের তথ্য</span><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">💳 Cash on Delivery</span><span className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5">📦 অর্ডারে স্টক যাচাই</span></div>
               <div className="mt-5 flex flex-wrap items-baseline gap-2">
                 <p className="text-4xl font-black tracking-tight text-emerald-950">৳{Number(product.price).toLocaleString("bn-BD")}</p>
                 <span className="text-sm font-semibold text-slate-500">/ {displayUnit}</span>
@@ -81,7 +82,7 @@ export default async function PlantMarketProductPage({params}:Props){
                 </div>
               </div>
               <PlantMarketDeliveryInfo deliveryArea={product.delivery_area}/>
-              <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
+              <div id="purchase-area" className="mt-5 scroll-mt-24"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} price={Number(product.price)} disabled={Number(product.stock)<1}/></div>
               <div className="mt-3"><PlantProductShare name={product.name}/></div>
               <p className="mt-3 text-xs leading-5 text-slate-500">Buy Now করলে Checkout-এ যাবেন। কার্টে আগে যোগ করা পণ্য থাকলে Order Summary-তে সেগুলোও দেখা যাবে।</p>
             </div>
@@ -93,7 +94,34 @@ export default async function PlantMarketProductPage({params}:Props){
         <section className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
           <div className="rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
             <h2 className="text-xl font-black text-emerald-950">🌱 এই গাছটি কোথায় ভালো মানাবে?</h2>
-            <p className="mt-3 text-sm leading-7 text-slate-700">{product.usage_instructions||"আপনার বাগান, বারান্দা বা ঘরের উপযোগী জায়গা বেছে নিন। গাছের নির্দিষ্ট আলো ও পানি দেওয়ার নির্দেশনা অনুসরণ করলে পরিচর্যা সহজ হবে।"}</p>
+            <p className="mt-3 text-sm leading-7 text-slate-700">{product.usage_instructions||"উজ্জ্বল আলো-বাতাস পায় এমন বাগান, ছাদ বা বারান্দার জায়গা বেছে নিন। পানি যেন টবে জমে না থাকে এবং গাছের বাড়ার জন্য পর্যাপ্ত জায়গা থাকে—এ দুটো বিষয় খেয়াল রাখুন।"}</p>
+            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">☀️ আলো ও অবস্থান</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{product.sunlight||"উজ্জ্বল আলো-বাতাস পায় এমন জায়গা বেছে নিন। আলো কম হলে গাছের বৃদ্ধি ও ফুল আসা ব্যাহত হতে পারে।"}</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">🪴 টব ও মাটি</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">ড্রেনেজ ছিদ্রযুক্ত টব এবং পানি সহজে বের হয় এমন ঝুরঝুরে, উর্বর মাটি ব্যবহার করুন।</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">🌿 বাড়ার জায়গা</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">গাছের সম্ভাব্য বিস্তারের জন্য চারপাশে জায়গা রাখুন। লতানো ডাল হলে মজবুত জালি, খুঁটি বা ট্রেলিসের ব্যবস্থা করুন।</p>
+              </div>
+              <div className="rounded-2xl bg-emerald-50/80 p-3">
+                <p className="text-xs font-extrabold text-emerald-900">💧 পানি ও পরিচর্যা</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{product.watering||"পানি দেওয়ার আগে মাটির ওপরের স্তর দেখে নিন। মাটি ভেজা থাকলে আবার পানি দেবেন না; পানি জমে থাকা এড়িয়ে চলুন।"}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4">
+              <h3 className="text-sm font-extrabold text-amber-950">📍 জায়গা বাছাইয়ের ছোট চেকলিস্ট</h3>
+              <ul className="mt-2 space-y-1.5 text-sm leading-6 text-amber-950">
+                <li>✓ প্রতিদিনের আলো ও বাতাসের পরিমাণ বিবেচনা করুন।</li>
+                <li>✓ বৃষ্টির পানি বা সেচের পানি বের হওয়ার পথ রাখুন।</li>
+                <li>✓ দেয়াল, চলাচলের পথ ও পাশের গাছ থেকে প্রয়োজনীয় ফাঁকা জায়গা রাখুন।</li>
+                <li>✓ ছাদ বা খোলা বারান্দায় অতিরিক্ত বাতাস হলে টব স্থিতিশীল রাখুন।</li>
+              </ul>
+            </div>
             {product.origin&&<p className="mt-3 text-sm text-slate-500">উৎপত্তিস্থল: {product.origin}</p>}
           </div>
           <div id="plant-care" className="scroll-mt-24 rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
@@ -125,7 +153,7 @@ export default async function PlantMarketProductPage({params}:Props){
         <PlantMarketReviews productId={product.id} />
 
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
-          <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আপনার গাছের সঙ্গে মানানসই</p><h2 className="mt-1 text-2xl font-black">একই ক্যাটাগরির আরও গাছ ও চারা</h2><p className="mt-1 text-sm text-slate-600">বর্তমানে স্টকে থাকা একই ধরনের আরও পছন্দের গাছ দেখুন।</p></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<span className="text-5xl">🪴</span>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
       <PlantMarketRecentlyViewed product={{id:product.id,name:product.name,slug:canonicalSlug,price:Number(product.price),image:product.image_url}} />
