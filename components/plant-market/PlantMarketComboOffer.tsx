@@ -24,7 +24,7 @@ export default function PlantMarketComboOffer({current,related}:{current:Item;re
   }catch(e){setMessage(added>0?added+"টি পণ্য যোগ হয়েছে; বাকি পণ্য যোগ হয়নি। "+(e instanceof Error?e.message:"আবার চেষ্টা করুন।"):(e instanceof Error?e.message:"কার্টে যোগ করা যায়নি।"));}
   finally{setBusy(false);}
  }
- if(options.length===0)return null;
+ if(options.length===0||Number(current.stock)<1)return null;
  return <section className="mt-7 rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 sm:p-7" aria-label="Plant combo suggestions">
   <div><p className="text-xs font-black uppercase tracking-wide text-emerald-700">Plant Market Combo</p><h2 className="mt-1 text-xl font-black text-emerald-950">একসাথে বেছে নিন আপনার গাছের সেট</h2><p className="mt-1 text-sm text-slate-600">এই পণ্যের সঙ্গে আরও কিছু একই ক্যাটাগরির পণ্য যোগ করুন। এখনো combo discount নেই—নিয়মিত মূল্যই যোগ হবে।</p></div>
   <div className="mt-4 space-y-2">{options.map(item=><label key={item.id} className="flex cursor-pointer items-center gap-3 rounded-2xl border border-emerald-100 bg-white p-3">
