@@ -43,7 +43,7 @@ export default async function GrowthVerification() {
   return <>{rows.map((item) => {
     const definition = verificationMeta[item.provider_key];
     const token = (item.config as Record<string, unknown> | null)?.[definition?.key ?? "token"];
-    if (!definition || typeof token !== "string" || !token || /[<>\\u0000-\\u001f]/.test(token)) return null;
+    if (!definition || typeof token !== "string" || !token || /[<>\u0000-\u001f]/.test(token)) return null;
     return <meta key={item.provider_key} name={definition.name} content={token} />;
   })}</>;
 }
