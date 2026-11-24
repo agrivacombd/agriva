@@ -94,3 +94,7 @@ CREATE POLICY plant_market_reviews_own_update ON public.plant_market_reviews
       WHERE photo_url NOT LIKE (SELECT auth.uid())::text || '/%'
     )
   );
+
+DROP POLICY IF EXISTS plant_market_reviews_admin_read ON public.plant_market_reviews;
+CREATE POLICY plant_market_reviews_admin_read ON public.plant_market_reviews
+  FOR SELECT TO authenticated USING (public.is_admin());
