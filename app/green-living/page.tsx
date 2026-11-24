@@ -265,6 +265,11 @@ export default function GreenLivingPage() {
           <h2 id="topic-guides" className="text-2xl font-black text-emerald-950 sm:text-3xl">বিষয়ভিত্তিক বিস্তারিত গাইড</h2>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">আপনার পরিস্থিতি অনুযায়ী আলাদা গাইড থেকে আরও নির্দিষ্ট উত্তর ও করণীয় জানুন।</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <Link href="/green-living/how-often-to-water-plants-bangladesh" className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
+              <h3 className="text-lg font-extrabold text-emerald-950">How Often to Water Plants in Bangladesh</h3>
+              <p className="mt-2 text-sm leading-7 text-slate-600">গরম, বর্ষা ও শীতকালে indoor, rooftop ও balcony গাছে কখন পানি দেবেন—soil check ও সহজ watering tips।</p>
+              <span className="mt-3 inline-block font-bold text-emerald-800 underline underline-offset-4">Watering guide পড়ুন</span>
+            </Link>
             <Link href="/green-living/low-light-indoor-plants-bangladesh" className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:border-emerald-300 hover:shadow-md">
               <h3 className="text-lg font-extrabold text-emerald-950">Best Indoor Plants for Low Light</h3>
               <p className="mt-2 text-sm leading-7 text-slate-600">কম আলো পাওয়া ঘর ও apartment-এর জন্য ১০টি গাছ, আলো বুঝে নির্বাচন এবং beginner care tips।</p>
