@@ -23,7 +23,9 @@ export async function GET(request:NextRequest){
   const {data:ratingRows,error:ratingError}=await supabase.from("plant_market_reviews").select("rating").eq("product_id",productId).eq("status","approved");
   if(ratingError)return NextResponse.json({error:"Review summary লোড করা যায়নি।"},{status:503});
   const average=ratingRows?.length?ratingRows.reduce((sum,r)=>sum+r.rating,0)/ratingRows.length:0;
-  return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:count??0,averageRating:Number(average.toFixed(1))});
+  const ratingDistribution={1:0,2:0,3:0,4:0,5:0};
+  for(const review of ratingRows||[])ratingDistribution[review.rating as 1|2|3|4|5]++;
+  return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:count??0,averageRating:Number(average.toFixed(1)),ratingDistribution});
 }
 
 export async function POST(request:NextRequest){
