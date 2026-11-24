@@ -20,7 +20,7 @@ export async function GET(request:NextRequest){
       return signed?.signedUrl||null;
     }))
   })));
-  const {data:ratingRows,ratingError}=await supabase.from("plant_market_reviews").select("rating").eq("product_id",productId).eq("status","approved");
+  const {data:ratingRows,error:ratingError}=await supabase.from("plant_market_reviews").select("rating").eq("product_id",productId).eq("status","approved");
   if(ratingError)return NextResponse.json({error:"Review summary লোড করা যায়নি।"},{status:503});
   const average=ratingRows?.length?ratingRows.reduce((sum,r)=>sum+r.rating,0)/ratingRows.length:0;
   return NextResponse.json({reviews:rows.map(r=>({...r,photo_urls:r.photo_urls.filter(Boolean)})),reviewCount:count??0,averageRating:Number(average.toFixed(1))});
