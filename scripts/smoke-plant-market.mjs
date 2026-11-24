@@ -95,4 +95,11 @@ assert.ok(sharedCatalogue.includes('isPlantMarket ? ["ইনডোর গাছ"
 assert.ok(!sharedCatalogue.includes('"BUY NOW"'), "detail-page navigation must not imply instant purchase");
 assert.ok(plantCartButton.includes("response.status === 401"), "guests must be offered a sign-in path");
 
+const recentlyViewed = read("components/plant-market/PlantMarketRecentlyViewed.tsx");
+assert.match(plantDetail,/PlantMarketRecentlyViewed/,"Plant Market detail pages show recently viewed products");
+assert.match(recentlyViewed,/agriva-plant-market-recently-viewed/,"Recently viewed products use a dedicated local-storage key");
+assert.match(recentlyViewed,/MAX_ITEMS = 8/,"Recently viewed history is capped");
+assert.match(recentlyViewed,/setItems\(next\.filter\(\(item\) => item\.id !== product\.id\)\)/,"Recently viewed section excludes the current product");
+assert.match(recentlyViewed,/তালিকা মুছুন/,"Customers can clear local browsing history");
+
 console.log("Separate Marketplace and Plant Market module-access smoke checks passed.");
