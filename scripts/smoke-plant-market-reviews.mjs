@@ -49,4 +49,8 @@ assert.ok(checkoutMigration.includes("grant execute on function public.plant_mar
 assert.ok(checkoutMigration.includes("for update of pm")&&checkoutMigration.includes("if p.stock<p.quantity"),"checkout locks products and validates stock atomically");
 assert.ok(checkoutMigration.includes("idempotency_key")&&checkoutMigration.includes("replayed"),"checkout supports idempotent retries");
 assert.ok(checkoutClient.includes("Cash on Delivery-তে অর্ডার নিশ্চিত করুন")&&checkoutClient.includes("ডেলিভারি চার্জ এই মোটে অন্তর্ভুক্ত নয়"),"checkout explains COD and excluded shipping fees");
+const deliveryInfo=read("components/plant-market/PlantMarketDeliveryInfo.tsx");
+assert.ok(deliveryInfo.includes("এলাকা নির্বাচন করুন")&&deliveryInfo.includes("সম্ভাব্য সময়"),"delivery time is chosen by customer zone instead of assuming Dhaka");
+assert.ok(deliveryInfo.includes("ডেলিভারি চার্জ এখনই হিসাব করা যাচ্ছে না")&&deliveryInfo.includes("Checkout-এর মোটে delivery fee যোগ হয়নি"),"shipping fee remains explicitly unestimated and excluded");
+assert.ok(product.includes("গাছ হাতে পাওয়ার পর")&&product.includes("অতিরিক্ত পানি বা সার দেবেন না"),"care guide adds arrival checklist without inventing product-specific care");
 console.log("Plant Market customer reviews smoke tests passed.");
