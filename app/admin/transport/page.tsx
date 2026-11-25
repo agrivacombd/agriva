@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { Check } from "lucide-react";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
 async function requireAdmin(capability: AdminCapability = "transport.read") {
@@ -111,7 +112,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
                 <textarea name="note" maxLength={1000} defaultValue={partner.verification_note ?? ""} rows={2} className="mt-1.5 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600" placeholder="যাচাইয়ের সংক্ষিপ্ত কারণ লিখুন" />
               </label>
               <div className="mt-3 flex flex-wrap gap-2">
-                {partner.verification_status !== "verified" && <button name="status" value="verified" className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#22613d]">✓ অনুমোদন করুন</button>}
+                {partner.verification_status !== "verified" && <button name="status" value="verified" className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#22613d]"><Check size={15} aria-hidden="true" className="mr-1 inline-block" />অনুমোদন করুন</button>}
                 {partner.verification_status !== "rejected" && <button name="status" value="rejected" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800 hover:bg-rose-100">প্রত্যাখ্যান</button>}
                 {partner.verification_status !== "suspended" && <button name="status" value="suspended" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-100">স্থগিত করুন</button>}
               </div>
