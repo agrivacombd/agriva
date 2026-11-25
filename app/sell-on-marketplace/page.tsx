@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Banknote, Camera, Check, ClipboardList, FileText, Leaf, Package, Settings, ShieldCheck, Sprout, Wheat } from "lucide-react";
+import { Camera, Check, ClipboardList, FileText, Leaf, Package, Settings, ShieldCheck, Sprout, Wheat } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
