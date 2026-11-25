@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Check, FileText, Flower2, House, Package, ShieldCheck, Shovel, Sprout, TreeDeciduous, UserRound } from "lucide-react";
+import { BadgeCheck, Camera, Check, FileText, Flower2, House, Leaf, ShieldCheck, Shovel, ShoppingBag, Sprout, TreeDeciduous, UserRound } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
@@ -42,7 +42,7 @@ const steps = [
   { number: "01", title: "অ্যাকাউন্টে লগইন করুন", detail: "আপনার AGRIVA account ব্যবহার করুন অথবা নতুন account তৈরি করুন।", icon: UserRound },
   { number: "02", title: "Seller আবেদন জমা দিন", detail: "পরিচয় ও আপনার নার্সারি/ব্যবসার প্রয়োজনীয় তথ্য দিয়ে আবেদন সম্পন্ন করুন।", icon: FileText },
   { number: "03", title: "যাচাই ও অনুমোদন", detail: "AGRIVA টিম আবেদন পর্যালোচনা করবে। প্রয়োজন হলে অতিরিক্ত তথ্য চাইতে পারে।", icon: BadgeCheck },
-  { number: "04", title: "পণ্য তালিকাভুক্ত করুন", detail: "অনুমোদনের পর Plant Seller Dashboard থেকে পণ্যের listing জমা দিন।", icon: "🪴" },
+  { number: "04", title: "পণ্য তালিকাভুক্ত করুন", detail: "অনুমোদনের পর Plant Seller Dashboard থেকে পণ্যের listing জমা দিন।", icon: Sprout },
 ];
 
 const preparation = [
@@ -181,20 +181,20 @@ export default function SellOnPlantMarketPage() {
                   <p className="mt-2 max-w-sm text-sm leading-6 text-white/85">গাছের সঠিক তথ্য ও বাস্তব ছবি দিয়ে তৈরি করুন আস্থার listing</p>
                 </div>
                 <div className="absolute right-4 top-4 rounded-full border border-white/50 bg-white/90 px-3 py-2 text-xs font-extrabold text-[#27543a] shadow-sm">
-                  🪴 Plant Seller Centre
+                  Plant Seller Centre
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 p-2 pt-4 sm:gap-3 sm:p-3">
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">🌿</span>
+                  <Leaf size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">গাছ ও চারা</p>
                 </div>
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">📷</span>
+                  <Camera size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">বাস্তব ছবি</p>
                 </div>
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">🛒</span>
+                  <ShoppingBag size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">পণ্য listing</p>
                 </div>
               </div>
@@ -219,12 +219,12 @@ export default function SellOnPlantMarketPage() {
         </div>
         <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article className="rounded-2xl border border-[#e0e9dc] bg-white p-6 shadow-[0_8px_28px_rgba(30,67,41,.04)]">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf5e9] text-2xl">🌱</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf5e9] text-emerald-800"><Sprout size={25} aria-hidden="true" /></span>
             <h3 className="mt-4 text-lg font-extrabold">পণ্য সুন্দরভাবে উপস্থাপন</h3>
             <p className="mt-2 text-sm leading-6 text-[#66776a]">গাছের ছবি, নাম, আকার, দাম ও পরিচর্যার তথ্য দিয়ে পরিষ্কার listing তৈরি করুন।</p>
           </article>
           <article className="rounded-2xl border border-[#e0e9dc] bg-white p-6 shadow-[0_8px_28px_rgba(30,67,41,.04)]">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f0e8] text-2xl">🧑‍🌾</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f0e8] text-emerald-800"><UserRound size={25} aria-hidden="true" /></span>
             <h3 className="mt-4 text-lg font-extrabold">নিজের Seller Dashboard</h3>
             <p className="mt-2 text-sm leading-6 text-[#66776a]">অনুমোদনের পর Plant Seller Dashboard থেকে পণ্য listing জমা দিন।</p>
           </article>
@@ -394,7 +394,7 @@ export default function SellOnPlantMarketPage() {
               <h3 className="font-extrabold">আবেদনের আগে জেনে নিন</h3>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-[#5e7062]">
                 <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>Plant Market-এর জন্য আলাদা seller permission প্রয়োজন।</span></li>
-                <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>আবেদন যাচাই ও অনুমোদনের আগে পণ্য যোগ করা যাবে না।</span></li>
+                <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>আবেদন যাচাই ও অনুমোদনের আগে পণ্য যোগ করা যাবে না।</span></li>
                 <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>জমা দেওয়া listing review-এর পর প্রকাশিত হবে।</span></li>
               </ul>
             </div>
