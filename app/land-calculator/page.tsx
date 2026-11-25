@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CheckCircle2 } from "lucide-react";
 import LandCalculatorClient from "@/components/tools/LandCalculatorClient";
 
 export const metadata: Metadata = {
@@ -39,7 +40,7 @@ export default function LandCalculatorPage() {
           <h1 className="mt-3 max-w-3xl text-3xl font-black leading-tight tracking-tight sm:text-5xl">জমির হিসাব করুন সহজেই</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-emerald-50 sm:text-base sm:leading-8">শতাংশ, কাঠা, বিঘা, একর ও বর্গফুটে জমির পরিমাণ রূপান্তর করুন। দৈর্ঘ্য-প্রস্থ দিয়ে ক্ষেত্রফল এবং জমির আনুমানিক মূল্যও হিসাব করুন—সম্পূর্ণ বিনামূল্যে।</p>
           <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold text-emerald-950">
-            <span className="rounded-full bg-lime-300 px-3 py-1.5">✓ বাংলা ভাষায়</span><span className="rounded-full bg-white/15 px-3 py-1.5 text-white">✓ মোবাইল-ফ্রেন্ডলি</span><span className="rounded-full bg-white/15 px-3 py-1.5 text-white">✓ তাৎক্ষণিক ফলাফল</span>
+            <span className="rounded-full bg-lime-300 px-3 py-1.5"><CheckCircle2 size={14} aria-hidden="true" className="mr-1 inline-block" />বাংলা ভাষায়</span><span className="rounded-full bg-white/15 px-3 py-1.5 text-white"><CheckCircle2 size={14} aria-hidden="true" className="mr-1 inline-block" />মোবাইল-ফ্রেন্ডলি</span><span className="rounded-full bg-white/15 px-3 py-1.5 text-white"><CheckCircle2 size={14} aria-hidden="true" className="mr-1 inline-block" />তাৎক্ষণিক ফলাফল</span>
           </div>
         </div>
       </section>
