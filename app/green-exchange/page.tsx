@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Flower2, Gift, Leaf, Package, Sprout } from "lucide-react";
+import { Flower2, Gift, Package, Sprout } from "lucide-react";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const pageUrl = `${siteUrl}/green-exchange`;
