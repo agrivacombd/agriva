@@ -330,7 +330,7 @@ export default function Checkout() {
                             className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-emerald-50 sm:h-[72px] sm:w-[72px]">
                             {item.image_url
                               ? <Image src={item.image_url} alt={item.name} fill unoptimized sizes="72px" className="object-contain p-1" />
-                              : <span className="text-2xl" aria-hidden="true">🌱</span>}
+                              : <Sprout size={28} strokeWidth={1.7} aria-hidden="true" className="text-emerald-600" />}
                           </Link>
                           <div className="min-w-0 flex-1 pr-6">
                             <Link href={detailLink} className="line-clamp-2 text-sm font-black leading-5 text-slate-900 hover:text-emerald-800">{item.name}</Link>
