@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Trash2, Truck } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShoppingBasket, ShoppingCart, Sprout, Trash2, Truck } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { getExistingMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 import { CART_UPDATED_EVENT } from "@/components/site/HeaderCartLink";
