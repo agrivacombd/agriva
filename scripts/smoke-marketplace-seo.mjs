@@ -111,7 +111,7 @@ const banglaSeedRate = readFileSync("app/seed-rate-calculator/page.tsx", "utf8")
 
 for (const [label, source, marker] of [
   ["AI guide", aiPage, "উত্তর ব্যবহারে সতর্কতা"],
-  ["Weather guide", weatherPage, "তথ্যের সীমাবদ্ধতা"],
+  ["Weather guide", weatherPage, "AGRIVA-তে কোন কোন এলাকার আবহাওয়া দেখা যায়?"],
   ["English crop calendar guide", englishCropCalendar, "How to plan farm work with a crop calendar"],
   ["English fertilizer guide", englishFertilizer, "How to estimate fertilizer quantity"],
   ["English seed rate guide", englishSeedRate, "How to estimate seed requirements"],
