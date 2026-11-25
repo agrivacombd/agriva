@@ -1,5 +1,6 @@
 import type {Metadata} from "next";
 import Link from "next/link";
+import { Bug, Carrot, Leaf, Stethoscope, Trees, Wheat, Sprout } from "lucide-react";
 import {LESSONS} from "@/lib/learn/lessons";
 import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 
@@ -18,13 +19,14 @@ export const metadata:Metadata={
   keywords:["কৃষি শেখার গাইড","ধান চাষ পদ্ধতি","সবজি চাষ বাংলাদেশ","মাটির স্বাস্থ্য","ফসলের রোগ","IPM","agriculture learning Bangladesh"],
 };
 const features=[
-  {href:"/learn/plant-disease",title:"ফসলের রোগ ও লক্ষণ চেনার ল্যাব",tag:"রোগবালাই",duration:"শিক্ষামূলক কেস",emoji:"🩺",
+  {href:"/learn/plant-disease",title:"ফসলের রোগ ও লক্ষণ চেনার ল্যাব",tag:"রোগবালাই",duration:"শিক্ষামূলক কেস",icon:Stethoscope,
    description:"ধান, গম, টমেটো, আলু ও অন্যান্য পরিচিত ফসলের রোগের লক্ষণ, সম্ভাব্য কারণ ও নিরাপদ প্রাথমিক ব্যবস্থাপনা জানুন।"},
-  {href:"/learn/plant-science",title:"উদ্ভিদ ও বৈজ্ঞানিক নামের Academy",tag:"উদ্ভিদবিদ্যা",duration:"রেফারেন্স + কুইজ",emoji:"🌳",
+  {href:"/learn/plant-science",title:"উদ্ভিদ ও বৈজ্ঞানিক নামের Academy",tag:"উদ্ভিদবিদ্যা",duration:"রেফারেন্স + কুইজ",icon:Trees,
    description:"উদ্ভিদের বাংলা ও ইংরেজি নাম, বৈজ্ঞানিক নাম, পরিবার এবং উদ্ভিদ শনাক্তকরণের শেখার উপকরণ দেখুন।"},
 ];
+const lessonIcons=[Wheat,Carrot,Sprout,Bug];
 const guides=LESSONS.map((lesson,index)=>({
-  href:"/learn/"+lesson.slug,title:lesson.title,tag:lesson.crop,duration:lesson.duration,emoji:["🌾","🥬","🌱","🐛"][index]||"🌿",
+  href:"/learn/"+lesson.slug,title:lesson.title,tag:lesson.crop,duration:lesson.duration,icon:lessonIcons[index]||Leaf,
   description:lesson.summary,
 }));
 const allGuides=[...guides,...features];
@@ -112,7 +114,7 @@ export default function LearnPage(){
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {guides.map(guide=><Link href={guide.href} key={guide.href}
             className="group flex h-full min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:p-6">
-            <div className="flex items-start justify-between gap-3"><span className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-2xl" aria-hidden="true">{guide.emoji}</span><span className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600">{guide.duration}</span></div>
+            <div className="flex items-start justify-between gap-3"><span className="grid h-12 w-12 place-items-center rounded-xl bg-emerald-50 text-emerald-700" aria-hidden="true"><guide.icon size={26} strokeWidth={1.8} /></span><span className="rounded-full bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-600">{guide.duration}</span></div>
             <span className="mt-4 text-xs font-extrabold text-emerald-800">{guide.tag}</span>
             <h3 className="mt-2 text-lg font-black leading-snug text-slate-900 sm:text-xl">{guide.title}</h3>
             <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{guide.description}</p>
@@ -127,7 +129,7 @@ export default function LearnPage(){
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {features.map(feature=><Link key={feature.href} href={feature.href}
             className="group flex min-w-0 flex-col rounded-2xl border border-emerald-200 bg-white p-5 transition hover:border-emerald-500 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:p-6">
-            <div className="flex flex-wrap items-center gap-2"><span className="text-3xl" aria-hidden="true">{feature.emoji}</span><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">{feature.tag} · {feature.duration}</span></div>
+            <div className="flex flex-wrap items-center gap-2"><feature.icon size={28} strokeWidth={1.8} aria-hidden="true" className="text-emerald-700" /><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">{feature.tag} · {feature.duration}</span></div>
             <h3 className="mt-4 text-lg font-black sm:text-xl">{feature.title}</h3>
             <p className="mt-3 flex-1 text-sm leading-7 text-slate-600">{feature.description}</p>
             <span className="mt-5 text-sm font-extrabold text-emerald-800 group-hover:underline">শেখার টুল খুলুন <span aria-hidden="true">→</span></span>
