@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Camera, Check, FileText, Flower2, House, Leaf, ShieldCheck, Shovel, ShoppingBag, Sprout, TreeDeciduous, UserRound } from "lucide-react";
+import { BadgeCheck, Camera, Check, FileText, Flower2, House, Leaf, Search, ShieldCheck, Shovel, ShoppingBag, Sprout, TreeDeciduous, UserRound } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
@@ -344,12 +344,12 @@ export default function SellOnPlantMarketPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-              <span className="text-2xl">🔎</span>
+              <Search size={25} aria-hidden="true" className="text-white" />
               <h3 className="mt-3 font-extrabold">Seller verification</h3>
               <p className="mt-2 text-sm leading-6 text-white/70">পরিচয় ও ব্যবসার তথ্য পর্যালোচনা করা হয়।</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-              <span className="text-2xl">🪴</span>
+              <Sprout size={25} aria-hidden="true" className="text-white" />
               <h3 className="mt-3 font-extrabold">Product review</h3>
               <p className="mt-2 text-sm leading-6 text-white/70">জমা দেওয়া পণ্যের তথ্য review-এর পর প্রকাশিত হয়।</p>
             </div>
