@@ -4,7 +4,7 @@ const read=p=>readFileSync(new URL("../"+p,import.meta.url),"utf8");
 const page=read("app/learn/plant-disease/page.tsx"),layout=read("app/learn/plant-disease/layout.tsx");
 const selected=page.indexOf('id="selected-disease-details"');
 const cards=page.indexOf('filtered.map(c=><button');
-const steps=page.indexOf('🧭 ধাপে ধাপে রোগ পর্যবেক্ষণ');
+const steps=page.indexOf('ধাপে ধাপে রোগ পর্যবেক্ষণ');
 assert.ok(selected>0&&cards>selected&&steps>cards,"Selected case details must appear above the results list and steps");
 assert.match(page,/scrollIntoView\(\{behavior:"smooth",block:"start"\}\)/);
 assert.match(page,/detailsRef\.current\?\.focus/);
