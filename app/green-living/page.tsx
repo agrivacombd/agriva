@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Bug, Camera, Compass, Droplets, Flower2, Leaf, NotebookPen, Sprout, Sun } from "lucide-react";
+import { Bug, Camera, Check, Compass, Droplets, Flower2, Globe2, Leaf, NotebookPen, Sprout, Sun } from "lucide-react";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const pageUrl = `${siteUrl}/green-living`;
@@ -147,7 +147,7 @@ export default function GreenLivingPage() {
         <section aria-labelledby="green-living-tools" className="mt-8 grid gap-4 sm:grid-cols-3">
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><Flower2 size={26} aria-hidden="true" className="text-emerald-700" /><h2 className="mt-3 font-extrabold text-emerald-950">নিজের Garden গড়ুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">নিজের গাছের তালিকা ও care task এক জায়গায় রাখুন।</p><Link href="/garden" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Personal Garden খুলুন</Link></article>
           <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><Sprout size={26} aria-hidden="true" className="text-emerald-700" /><h2 className="mt-3 font-extrabold text-emerald-950">গাছ বিনিময় করুন</h2><p className="mt-2 text-sm leading-6 text-slate-600">চারা, কাটিং বা গাছ ভাগ করে স্থানীয় বাগানিদের সঙ্গে যুক্ত হোন।</p><Link href="/green-exchange/board" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Exchange board দেখুন</Link></article>
-          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><p className="text-2xl" aria-hidden="true">🌍</p><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
+          <article className="rounded-2xl border border-emerald-950/10 bg-white p-5 shadow-sm"><Globe2 size={26} aria-hidden="true" className="text-emerald-700" /><h2 className="mt-3 font-extrabold text-emerald-950">কমিউনিটির অগ্রগতি</h2><p className="mt-2 text-sm leading-6 text-slate-600">বাস্তব platform activity থেকে Green Impact metrics দেখুন।</p><Link href="/impact" className="mt-4 inline-flex min-h-10 items-center font-bold text-emerald-800 underline underline-offset-4">Impact dashboard</Link></article>
         </section>
 
         <section aria-labelledby="why-green-living" className="mt-10">
@@ -189,7 +189,7 @@ export default function GreenLivingPage() {
                 <h3 className="mt-4 text-lg font-extrabold leading-7 text-slate-900">{guide.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-slate-600">{guide.description}</p>
                 <ul className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm leading-6 text-slate-700">
-                  {guide.points.map((point) => <li key={point} className="flex gap-2"><span aria-hidden="true" className="font-bold text-emerald-700">✓</span><span>{point}</span></li>)}
+                  {guide.points.map((point) => <li key={point} className="flex gap-2"><Check size={16} aria-hidden="true" className="mt-1 shrink-0 text-emerald-700" /><span>{point}</span></li>)}
                 </ul>
               </article>
             ))}
