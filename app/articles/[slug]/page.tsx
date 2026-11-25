@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Bug, Leaf, Sprout, Wheat } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ReadingProgress, ShareArticle } from "../article-reading-tools";
 
@@ -9,7 +10,7 @@ const articles = [
     category: "ফসল চাষ",
     title: "বোরো ধান চাষের আগে জমি প্রস্তুতির গুরুত্বপূর্ণ ধাপ",
     readTime: "৫ মিনিট",
-    emoji: "🌾",
+    icon: Wheat,
     intro: "বোরো ধানের ভালো ফলনের জন্য মৌসুম শুরুর আগেই জমি, সেচ এবং চারা রোপণের পরিকল্পনা গুছিয়ে নেওয়া গুরুত্বপূর্ণ। জমির অবস্থা ও স্থানীয় কৃষি পরামর্শ অনুযায়ী কাজের সময় ঠিক করুন।",
     sections: [
       ["জমি ও পানি ব্যবস্থাপনা যাচাই করুন", "জমির উঁচু-নিচু অংশ, পানি নিষ্কাশনের ব্যবস্থা এবং সেচের নির্ভরযোগ্যতা দেখুন। জমি সমতল হলে সেচের পানি তুলনামূলক সমানভাবে ছড়াতে পারে।"],
@@ -22,7 +23,7 @@ const articles = [
     category: "মাটির স্বাস্থ্য",
     title: "মাটির স্বাস্থ্য ভালো রাখতে জৈব পদার্থের ভূমিকা",
     readTime: "৪ মিনিট",
-    emoji: "🌱",
+    icon: Sprout,
     intro: "উৎপাদনশীল মাটি শুধু গাছকে পুষ্টি দেয় না; পানি ধরে রাখা, শিকড়ের বৃদ্ধি এবং মাটির জীববৈচিত্র্য বজায় রাখতেও ভূমিকা রাখে। জৈব পদার্থ মাটির এই গুণগুলো উন্নত করতে সহায়তা করতে পারে।",
     sections: [
       ["কম্পোস্ট ও পচা জৈব সার ব্যবহার", "ভালোভাবে পচানো কম্পোস্ট মাটিতে জৈব পদার্থ যোগ করতে পারে। কাঁচা বা অপরিপক্ব উপাদান সরাসরি ব্যবহার করলে সমস্যা হতে পারে, তাই পরিপক্বতা নিশ্চিত করুন।"],
@@ -35,7 +36,7 @@ const articles = [
     category: "রোগবালাই",
     title: "সমন্বিত বালাই ব্যবস্থাপনা: পর্যবেক্ষণ থেকে সিদ্ধান্ত",
     readTime: "৬ মিনিট",
-    emoji: "🐞",
+    icon: Bug,
     intro: "সমন্বিত বালাই ব্যবস্থাপনায় নিয়মিত পর্যবেক্ষণ, প্রতিরোধমূলক চাষাবাদ, উপকারী জীব সংরক্ষণ এবং প্রয়োজন হলে লক্ষ্যভিত্তিক ব্যবস্থা একসঙ্গে বিবেচনা করা হয়।",
     sections: [
       ["ক্ষেত নিয়মিত পর্যবেক্ষণ করুন", "গাছের পাতা, কাণ্ড ও ফলের পরিবর্তন দেখুন। কোথায় লক্ষণ দেখা যাচ্ছে, কত গাছে ছড়িয়েছে এবং সময়ের সঙ্গে বাড়ছে কি না—এসব নোট করুন।"],
@@ -48,7 +49,7 @@ const articles = [
     category: "সবজি",
     title: "সবজি বাগানে সঠিক পানি ব্যবস্থাপনার সহজ কৌশল",
     readTime: "৪ মিনিট",
-    emoji: "🥬",
+    icon: Leaf,
     intro: "সবজি গাছে অতিরিক্ত ও অপর্যাপ্ত—দুই ধরনের সেচই সমস্যার কারণ হতে পারে। মাটির আর্দ্রতা, আবহাওয়া এবং গাছের বৃদ্ধির ধাপ দেখে সেচ পরিকল্পনা করা ভালো।",
     sections: [
       ["মাটির আর্দ্রতা পরীক্ষা করুন", "শুধু উপরিভাগ শুকনো দেখেই সেচের সিদ্ধান্ত নেবেন না। শিকড়ের কাছের মাটি পরীক্ষা করুন এবং জমির ধরন অনুযায়ী পানি দেওয়ার ব্যবধান ঠিক করুন।"],
@@ -116,7 +117,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
           <Link href="/" className="hover:underline">হোম</Link><span aria-hidden="true">/</span><Link href="/articles" className="hover:underline">Blog</Link><span aria-hidden="true">/</span><span className="text-slate-500">{article.category}</span>
         </nav>
         <header className="mt-7 overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm">
-          <div aria-hidden="true" className="flex min-h-48 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-7xl sm:min-h-60">{article.emoji}</div>
+          <div aria-hidden="true" className="flex min-h-48 items-center justify-center bg-gradient-to-br from-emerald-50 to-lime-100 text-emerald-700 sm:min-h-60"><article.icon size={76} strokeWidth={1.4} aria-hidden="true" /></div>
           <div className="p-6 sm:p-9">
             <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-800">{article.category}</span>
             <h1 className="mt-4 text-3xl font-black leading-tight text-slate-950 sm:text-4xl">{article.title}</h1>
