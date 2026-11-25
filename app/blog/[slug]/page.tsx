@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Sprout } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ArticleMarkdown, parseArticleMarkdown } from "@/lib/content/article-markdown";
@@ -227,7 +228,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     {item.hero_image_url ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img src={item.hero_image_url} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain" />
-                    ) : <span aria-hidden="true" className="text-5xl">🌱</span>}
+                    ) : <Sprout size={52} strokeWidth={1.5} aria-hidden="true" className="text-emerald-600" />}
                   </Link>
                   <div className="flex flex-1 flex-col px-2 py-4">
                     <h3 className="text-lg font-extrabold leading-7 text-slate-950"><Link href={`/blog/${item.slug}`} className="hover:text-emerald-800">{item.title}</Link></h3>
