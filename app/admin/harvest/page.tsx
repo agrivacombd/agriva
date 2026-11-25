@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { Wheat } from "lucide-react";
 import { requireAdminPage } from "@/lib/admin/authz";
 
 async function moderateHarvestListing(formData: FormData) {
@@ -57,7 +58,7 @@ export default async function AdminHarvestPage({ searchParams }: { searchParams:
     {params.notice && noticeLabels[params.notice] && <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-white p-3 text-sm">{noticeLabels[params.notice]}</p>}
     {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-red-800">ডেটাবেস থেকে পোস্ট আনা যায়নি। Migration ও RLS policy যাচাই করুন।</p>}
     <div className="mt-6 space-y-4">{(listings ?? []).map((item) => <article key={item.id} className="grid gap-4 rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:grid-cols-[140px_1fr]">
-      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-emerald-50">{item.image_urls?.[0] ? <img src={item.image_urls[0]} alt={item.crop_name} className="h-full w-full object-cover"/> : <div className="grid h-full place-items-center text-4xl">🌾</div>}</div>
+      <div className="aspect-[4/3] overflow-hidden rounded-xl bg-emerald-50">{item.image_urls?.[0] ? <img src={item.image_urls[0]} alt={item.crop_name} className="h-full w-full object-cover"/> : <div className="grid h-full place-items-center text-emerald-700"><Wheat size={38} strokeWidth={1.5} aria-hidden="true" /></div>}</div>
       <div><div className="flex flex-wrap items-start justify-between gap-2"><h2 className="text-xl font-black">{item.crop_name}{item.variety ? " · " + item.variety : ""}</h2><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold">{statusName(item.status)}</span></div><p className="mt-1 text-sm text-slate-600">বিক্রেতা: {item.seller_name} · {item.upazila ? item.upazila + ", " : ""}{item.district}</p><p className="mt-2 text-sm font-bold">৳{Number(item.price_per_unit).toLocaleString("en-BD")} / {unitName(item.unit)} · পরিমাণ {Number(item.quantity).toLocaleString("en-BD")} {unitName(item.unit)}</p><p className="mt-1 text-xs text-slate-500">পোস্ট: {new Date(item.created_at).toLocaleString("bn-BD")} · মডারেশন: {item.moderation_status}</p>{item.moderation_note && <p className="mt-2 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">নোট: {item.moderation_note}</p>}
       <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
         {item.status === "paused" && item.moderation_status === "pending" && <form action={moderateHarvestListing} className="flex flex-wrap items-center gap-2"><input type="hidden" name="listing_id" value={item.id}/><input type="hidden" name="decision" value="approve"/><button className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">আবার চালু করুন</button></form>}
