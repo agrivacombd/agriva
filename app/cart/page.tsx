@@ -194,7 +194,7 @@ export default function Cart() {
                         {item.image_url ? (
                           <Image src={item.image_url} alt={item.name} fill unoptimized sizes="96px" className="object-contain p-1.5" />
                         ) : (
-                          <span className="text-3xl" aria-hidden="true">🌱</span>
+                          <Sprout size={34} strokeWidth={1.7} aria-hidden="true" className="text-emerald-600" />
                         )}
                       </Link>
                       <div className="min-w-0 flex-1 pr-8">
