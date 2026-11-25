@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Flower2, Gift, Leaf, Package, Sprout } from "lucide-react";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const pageUrl = `${siteUrl}/green-exchange`;
@@ -27,22 +28,22 @@ export const metadata: Metadata = {
 
 const exchangeTypes = [
   {
-    icon: "🪴",
+    icon: Flower2,
     title: "গাছের বদলে গাছ",
     description: "আপনার অতিরিক্ত ইনডোর প্ল্যান্ট, ফুলের গাছ বা ফলের চারার বদলে অন্য গাছ নেওয়ার প্রস্তাব করুন।",
   },
   {
-    icon: "🌱",
+    icon: Sprout,
     title: "চারা ও কাটিং বিনিময়",
     description: "শিকড় গজানো কাটিং, সুস্থ চারা এবং পরিচিত প্রজাতির বীজের তথ্য দিয়ে বিনিময়ের পরিকল্পনা করুন।",
   },
   {
-    icon: "🎁",
+    icon: Gift,
     title: "গাছ উপহার দিন",
     description: "বিনিময়ে কিছু না নিয়েও নতুন বাগানি বা স্থানীয় কমিউনিটির কাউকে গাছ দিতে পারেন।",
   },
   {
-    icon: "🧤",
+    icon: Package,
     title: "বাগানের উপকরণ ভাগাভাগি",
     description: "পরিষ্কার ও ব্যবহারযোগ্য টব, প্ল্যান্ট স্ট্যান্ড বা ছোট বাগানের সরঞ্জাম বিনিময়ের সুযোগ তৈরি করুন।",
   },
@@ -122,10 +123,10 @@ export default function GreenExchangePage() {
             <p className="mt-4 text-sm text-emerald-100">পোস্ট জমা দিতে লগইন প্রয়োজন। নতুন পোস্ট যাচাইয়ের পর পাবলিক তালিকায় দেখানো হবে।</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4" aria-label="Green Exchange examples">
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🪴</span><h2 className="mt-3 font-bold">ইনডোর প্ল্যান্ট</h2><p className="mt-1 text-sm leading-6 text-emerald-100">ঘরের গাছ ও ছোট টব</p></div>
-            <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🌱</span><h2 className="mt-3 font-bold">চারা ও কাটিং</h2><p className="mt-1 text-sm leading-6 text-emerald-100">নতুন গাছের শুরু</p></div>
-            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🌼</span><h2 className="mt-3 font-bold">ফুল ও ফলের গাছ</h2><p className="mt-1 text-sm leading-6 text-emerald-100">বাগানের বৈচিত্র্য</p></div>
-            <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><span className="text-4xl" aria-hidden="true">🎁</span><h2 className="mt-3 font-bold">উপহার দিন</h2><p className="mt-1 text-sm leading-6 text-emerald-100">টাকা ছাড়াই ভাগাভাগি</p></div>
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><Flower2 size={34} strokeWidth={1.8} aria-hidden="true" className="text-lime-200" /><h2 className="mt-3 font-bold">ইনডোর প্ল্যান্ট</h2><p className="mt-1 text-sm leading-6 text-emerald-100">ঘরের গাছ ও ছোট টব</p></div>
+            <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><Sprout size={34} strokeWidth={1.8} aria-hidden="true" className="text-lime-200" /><h2 className="mt-3 font-bold">চারা ও কাটিং</h2><p className="mt-1 text-sm leading-6 text-emerald-100">নতুন গাছের শুরু</p></div>
+            <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><Flower2 size={34} strokeWidth={1.8} aria-hidden="true" className="text-lime-200" /><h2 className="mt-3 font-bold">ফুল ও ফলের গাছ</h2><p className="mt-1 text-sm leading-6 text-emerald-100">বাগানের বৈচিত্র্য</p></div>
+            <div className="mt-7 rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm"><Gift size={34} strokeWidth={1.8} aria-hidden="true" className="text-lime-200" /><h2 className="mt-3 font-bold">উপহার দিন</h2><p className="mt-1 text-sm leading-6 text-emerald-100">টাকা ছাড়াই ভাগাভাগি</p></div>
           </div>
         </div>
       </section>
@@ -137,7 +138,7 @@ export default function GreenExchangePage() {
           <p className="mt-3 leading-7 text-slate-600">শুরু করার আগে গাছের অবস্থা, পরিমাণ ও বিনিময়ের শর্ত পরিষ্কার করুন। সব প্রস্তাবই দুই পক্ষের সম্মতির ভিত্তিতে হওয়া উচিত।</p>
         </div>
         <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {exchangeTypes.map((item) => <article key={item.title} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><span className="text-3xl" aria-hidden="true">{item.icon}</span><h3 className="mt-4 text-lg font-bold">{item.title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p></article>)}
+          {exchangeTypes.map((item) => <article key={item.title} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><item.icon size={30} strokeWidth={1.8} aria-hidden="true" className="text-emerald-700" /><h3 className="mt-4 text-lg font-bold">{item.title}</h3><p className="mt-2 text-sm leading-7 text-slate-600">{item.description}</p></article>)}
         </div>
       </section>
 
