@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BadgeCheck, Banknote, Camera, Check, ClipboardList, FileText, Leaf, Package, Settings, ShieldCheck, Sprout, Wheat } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
@@ -33,37 +34,37 @@ const categories = [
     number: "01",
     title: "বীজ ও চারা উৎপাদনের উপকরণ",
     description: "ফসল, সবজি ও অন্যান্য অনুমোদিত বীজের পণ্য।",
-    icon: "🌱",
+    icon: Sprout,
   },
   {
     number: "02",
     title: "সার ও মাটির পুষ্টি উপকরণ",
     description: "সার, মাটি উন্নয়ন ও উদ্ভিদ পুষ্টি-সম্পর্কিত পণ্য।",
-    icon: "🪴",
+    icon: Leaf,
   },
   {
     number: "03",
     title: "ফসল সুরক্ষা পণ্য",
     description: "প্রযোজ্য নিয়ম মেনে অনুমোদিত ফসল সুরক্ষা পণ্য।",
-    icon: "🛡️",
+    icon: ShieldCheck,
   },
   {
     number: "04",
     title: "কৃষি যন্ত্রপাতি ও সরঞ্জাম",
     description: "কৃষিকাজে ব্যবহৃত যন্ত্র, যন্ত্রাংশ ও সরঞ্জাম।",
-    icon: "⚙️",
+    icon: Settings,
   },
   {
     number: "05",
     title: "খাদ্যশস্য ও কৃষিপণ্য",
     description: "অনুমোদিত শস্য, ডাল, তেলবীজ ও প্যাকেটজাত কৃষিপণ্য।",
-    icon: "🌾",
+    icon: Wheat,
   },
   {
     number: "06",
     title: "অন্যান্য কৃষি উপকরণ",
     description: "Marketplace-এর নীতিমালার আওতাভুক্ত অন্যান্য পণ্য।",
-    icon: "📦",
+    icon: Package,
   },
 ];
 
@@ -206,8 +207,8 @@ export default function SellOnMarketplacePage() {
               </Link>
             </div>
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[#526658]">
-              <span className="inline-flex items-center gap-2"><span className="text-emerald-700">✓</span> আলাদা Seller verification</span>
-              <span className="inline-flex items-center gap-2"><span className="text-emerald-700">✓</span> পণ্য জমার আগে নির্দেশনা</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-emerald-700" /> আলাদা Seller verification</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-emerald-700" /> পণ্য জমার আগে নির্দেশনা</span>
               <span className="inline-flex items-center gap-2"><span className="text-emerald-700">✓</span> Admin review-এর পর প্রকাশ</span>
             </div>
           </div>
@@ -220,16 +221,16 @@ export default function SellOnMarketplacePage() {
                   <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">AGRIVA Seller Centre</p>
                   <h2 className="mt-1 text-xl font-black">আপনার পণ্যের পরিচিতি</h2>
                 </div>
-                <span className="rounded-xl bg-emerald-50 px-3 py-2 text-2xl" aria-hidden="true">🌾</span>
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-50 text-emerald-700" aria-hidden="true"><Wheat size={26} /></span>
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-2xl bg-[#f1f6ed] p-4">
-                  <span className="text-2xl" aria-hidden="true">🌱</span>
+                  <Sprout size={26} aria-hidden="true" className="text-emerald-700" />
                   <p className="mt-3 text-sm font-extrabold">পণ্যের category</p>
                   <p className="mt-1 text-xs leading-5 text-[#647468]">সঠিক বিভাগ ও উপবিভাগ</p>
                 </div>
                 <div className="rounded-2xl bg-[#f1f6ed] p-4">
-                  <span className="text-2xl" aria-hidden="true">📷</span>
+                  <Camera size={26} aria-hidden="true" className="text-emerald-700" />
                   <p className="mt-3 text-sm font-extrabold">পণ্যের ছবি</p>
                   <p className="mt-1 text-xs leading-5 text-[#647468]">পরিষ্কার ও বাস্তব ছবি</p>
                 </div>
@@ -239,7 +240,7 @@ export default function SellOnMarketplacePage() {
                   <p className="mt-1 text-xs leading-5 text-[#647468]">একক অনুযায়ী সঠিক তথ্য</p>
                 </div>
                 <div className="rounded-2xl bg-[#f1f6ed] p-4">
-                  <span className="text-2xl" aria-hidden="true">✍️</span>
+                  <FileText size={26} aria-hidden="true" className="text-emerald-700" />
                   <p className="mt-3 text-sm font-extrabold">বিস্তারিত বিবরণ</p>
                   <p className="mt-1 text-xs leading-5 text-[#647468]">যাচাইযোগ্য specification</p>
                 </div>
@@ -281,7 +282,7 @@ export default function SellOnMarketplacePage() {
               className="group rounded-2xl border border-emerald-950/10 bg-white p-6 shadow-[0_8px_30px_rgba(20,55,32,.04)] transition hover:-translate-y-1 hover:border-emerald-800/25 hover:shadow-lg"
             >
               <div className="flex items-start justify-between">
-                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6eb] text-2xl" aria-hidden="true">{category.icon}</span>
+                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6eb] text-emerald-700" aria-hidden="true"><category.icon size={25} strokeWidth={1.8} /></span>
                 <span className="text-xs font-black tracking-widest text-emerald-800/45">{category.number}</span>
               </div>
               <h3 className="mt-5 text-lg font-extrabold">{category.title}</h3>
@@ -339,7 +340,7 @@ export default function SellOnMarketplacePage() {
               ["Specification ও ব্যবহার", "ব্র্যান্ড, পরিমাণ, উপাদান বা ব্যবহারবিধি—যা প্রযোজ্য এবং নিশ্চিত, তাই লিখুন।"],
             ].map(([title, description]) => (
               <li key={title} className="flex gap-3">
-                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-sm font-black text-emerald-900">✓</span>
+                <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-900"><Check size={16} aria-hidden="true" /></span>
                 <div><h3 className="font-extrabold">{title}</h3><p className="mt-1 text-sm leading-6 text-[#68796b]">{description}</p></div>
               </li>
             ))}
@@ -347,7 +348,7 @@ export default function SellOnMarketplacePage() {
         </div>
         <aside className="rounded-[2rem] border border-emerald-950/10 bg-white p-6 shadow-[0_18px_60px_rgba(20,55,32,.07)] sm:p-8">
           <div className="flex items-center gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6eb] text-2xl" aria-hidden="true">📋</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#eff6eb] text-emerald-700" aria-hidden="true"><ClipboardList size={25} /></span>
             <div><p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Seller checklist</p><h3 className="text-xl font-black">পণ্য জমা দেওয়ার আগে</h3></div>
           </div>
           <div className="mt-6 space-y-3">
