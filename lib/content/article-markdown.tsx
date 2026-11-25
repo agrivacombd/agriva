@@ -1,11 +1,12 @@
 import type {ReactNode} from "react";
 
 export type ArticleBlock={
-  kind:"p"|"h2"|"h3"|"ul"|"ol"|"quote"|"table"|"image";
+  kind:"p"|"h2"|"h3"|"ul"|"ol"|"task"|"quote"|"table"|"image";
   lines:string[];
   headers?:string[];
   rows?:string[][];
   image?:{src:string;alt:string};
+  tasks?:{checked:boolean;text:string}[];
 };
 /** Markdown only. Never render raw HTML or scriptable links from article content. */
 function safeUrl(value:string):string|null{
@@ -91,6 +92,7 @@ export function ArticleMarkdown({body,headingLinks=false,locale="bn"}:{body:stri
       if(block.kind==="h3")return <h3 key={i} id={headingLinks ? `section-${i}` : undefined} className="scroll-mt-24 pt-3 text-lg font-bold leading-[1.5] text-[#173b2d]">{inline(block.lines[0])}</h3>;
       if(block.kind==="ul")return <ul key={i} className="list-disc space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ul>;
       if(block.kind==="ol")return <ol key={i} className="list-decimal space-y-1.5 pl-6 marker:text-emerald-700">{block.lines.map((line,j)=><li key={j}>{inline(line)}</li>)}</ol>;
+      if(block.kind==="task")return <ul key={i} className="my-2 list-none space-y-2 pl-0" aria-label={locale==="en"?"Checklist":"যাচাই তালিকা"}>{(block.tasks||[]).map((task,j)=><li key={j} className="flex min-w-0 items-start gap-3 rounded-lg border border-slate-100 bg-white px-3 py-2.5"><input type="checkbox" checked={task.checked} readOnly disabled aria-label={task.text} className="mt-1 h-4 w-4 shrink-0 cursor-default accent-emerald-700 disabled:opacity-100"/><span className="min-w-0">{inline(task.text)}</span></li>)}</ul>;
       if(block.kind==="quote")return <blockquote key={i} className="border-l-4 border-emerald-300 bg-emerald-50 px-4 py-3 italic">{inline(block.lines[0])}</blockquote>;
       if(block.kind==="table"){
         const headers=block.headers||[];
