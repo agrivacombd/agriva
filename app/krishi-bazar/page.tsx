@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Check } from "lucide-react";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
@@ -182,7 +183,7 @@ export default function KrishiBazarPage() {
               "একক দাম, মোট মূল্য ও অতিরিক্ত খরচ",
               "সরবরাহের সময়, স্থান ও পরিবহন",
               "পেমেন্টের পদ্ধতি ও ফেরত/বাতিলের শর্ত",
-            ].map((tip) => <li key={tip} className="flex items-start gap-3 rounded-xl bg-[#f5f8f1] p-4 text-sm font-semibold leading-6"><span aria-hidden="true" className="mt-0.5 text-emerald-700">✓</span><span>{tip}</span></li>)}
+            ].map((tip) => <li key={tip} className="flex items-start gap-3 rounded-xl bg-[#f5f8f1] p-4 text-sm font-semibold leading-6"><Check size={17} aria-hidden="true" className="mt-0.5 shrink-0 text-emerald-700" /><span>{tip}</span></li>)}
           </ul>
         </div>
       </section>
