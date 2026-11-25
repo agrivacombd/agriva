@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
-const proxy = readFileSync("middleware.ts", "utf8");
+const proxy = readFileSync("proxy.ts", "utf8");
 assert.match(proxy, /supabase\.auth\.getUser\(\)/, "proxy must continue refreshing the user session");
 assert.match(proxy, /refresh_token_not_found/, "known missing refresh-token errors must be recognized");
 assert.match(proxy, /invalid_refresh_token/, "invalid refresh-token errors must be recognized");
