@@ -51,7 +51,7 @@ assert.match(migration,/module_access_application_withdrawal_audit/,"module-spec
 assert.match(migration,/pause_market_listings_on_module_grant_revocation/,"revocation pauses only the affected market's active listings");
 assert.doesNotMatch(migration,/marketplace_seller_permissions|plant_seller_permissions|marketplace_seller_applications|plant_seller_applications/,"no duplicate seller permission or application tables are created");
 assert.doesNotMatch(migration,/handle_new_user/,"catalogue migration does not replace existing Auth or guest checkout triggers");
-assert.match(marketplaceApi,/findMarketplaceOrganizationWithAccess/,"Marketplace product API checks Marketplace module access");
+assert.match(marketplaceApi,/checkMarketplaceOrganizationCreateAccess\(sellerOrganizationId\)/,"Marketplace product API checks the selected organization's approved create grant");
 assert.match(marketplaceApi,/marketplace_channel:\s*"marketplace"/,"Marketplace product API writes only Marketplace-channel products");
 assert.match(marketplacePage,/findMarketplaceOrganizationWithAccess/,"Marketplace product form requires verified module access");
 assert.match(marketplaceList,/findMarketplaceOrganizationWithAccess/,"Marketplace seller dashboard requires module access");

@@ -1,9 +1,13 @@
 -- Seller-authored product SEO and structured detail fields.
--- Reuse the existing Marketplace SEO columns (seo_title, seo_description,
--- seo_keywords, brand); add only missing seller detail fields there.
--- Plant Market has an independent table and receives the equivalent SEO fields.
+-- Ensure the Marketplace SEO columns exist on a clean replay as well as on
+-- deployed schemas that may already have received them through another path.
+-- Plant Market has an independent table and receives equivalent SEO fields.
 -- Additive only: no existing product data or publication status is changed.
 ALTER TABLE public.products
+  ADD COLUMN IF NOT EXISTS seo_title text,
+  ADD COLUMN IF NOT EXISTS seo_description text,
+  ADD COLUMN IF NOT EXISTS seo_keywords text[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS brand text,
   ADD COLUMN IF NOT EXISTS focus_keyword text,
   ADD COLUMN IF NOT EXISTS origin text,
   ADD COLUMN IF NOT EXISTS highlights text[] NOT NULL DEFAULT '{}',

@@ -50,3 +50,48 @@ export async function findMarketplaceOrganizationWithAccess(permission: Extract<
   }
   return { allowed: false as const, reason: unavailable ? "authorization_unavailable" as const : "forbidden" as const };
 }
+
+
+/** Return only verified organizations with an explicit Marketplace create grant. */
+export async function listMarketplaceOrganizationsWithCreateAccess() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { allowed: false as const, reason: "unauthenticated" as const };
+  const { data: organizations, error } = await supabase
+    .from("organizations")
+    .select("id,name")
+    .eq("owner_id", user.id)
+    .eq("status", "verified")
+    .order("name", { ascending: true })
+    .limit(20);
+  if (error) return { allowed: false as const, reason: "authorization_unavailable" as const };
+  const eligible = [];
+  let unavailable = false;
+  for (const organization of organizations ?? []) {
+    const access = await checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id });
+    if (access.allowed) eligible.push(organization);
+    else if (access.reason === "authorization_unavailable") unavailable = true;
+  }
+  if (unavailable && eligible.length === 0) return { allowed: false as const, reason: "authorization_unavailable" as const };
+  return { allowed: true as const, organizations: eligible };
+}
+
+/** Validate a caller-selected organization against ownership, verification and scoped grant. */
+export async function checkMarketplaceOrganizationCreateAccess(organizationId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { allowed: false as const, reason: "unauthenticated" as const };
+  const { data: organization, error } = await supabase
+    .from("organizations")
+    .select("id")
+    .eq("id", organizationId)
+    .eq("owner_id", user.id)
+    .eq("status", "verified")
+    .maybeSingle();
+  if (error) return { allowed: false as const, reason: "authorization_unavailable" as const };
+  if (!organization) return { allowed: false as const, reason: "forbidden" as const };
+  const access = await checkModuleAccess("marketplace", "create", { type: "organization", id: organization.id });
+  return access.allowed
+    ? { allowed: true as const, userId: user.id, organizationId: organization.id }
+    : { allowed: false as const, reason: access.reason };
+}

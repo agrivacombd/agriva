@@ -168,7 +168,8 @@ export default function CropDiseasePanel() {
   const [result, setResult] = useState<HistoryItem | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyMessage, setHistoryMessage] = useState("আপনার আগের বিশ্লেষণ দেখতে লগইন করুন।");
-  const [authStatus, setAuthStatus] = useState<"checking" | "authenticated" | "guest">("checking");
+  const [authStatus, setAuthStatus] = useState<"checking" | "authenticated" | "guest" | "error">("checking");
+  const [authRetry, setAuthRetry] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -186,9 +187,9 @@ export default function CropDiseasePanel() {
           setHistoryMessage(data.error || "ইতিহাস লোড করা যায়নি।");
         }
       })
-      .catch(() => { if (active) { setAuthStatus("checking"); setHistoryMessage("লগইন যাচাই করা যায়নি। ইন্টারনেট সংযোগ পরীক্ষা করে পেজ রিফ্রেশ করুন।"); } });
+      .catch(() => { if (active) { setAuthStatus("error"); setHistoryMessage("ইন্টারনেট বা সার্ভার সমস্যার কারণে লগইন যাচাই করা যায়নি। আবার চেষ্টা করুন।"); } });
     return () => { active = false; };
-  }, []);
+  }, [authRetry]);
 
   function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.target.files || []);
@@ -249,9 +250,9 @@ export default function CropDiseasePanel() {
 
         {authStatus !== "authenticated" ? <section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-6 text-center shadow-sm sm:p-10" aria-live="polite">
           <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-emerald-50 text-2xl" aria-hidden="true">🔒</div>
-          <h2 className="text-xl font-black text-slate-900">{authStatus === "checking" ? "লগইন যাচাই করা হচ্ছে" : "ফসলের ছবি বিশ্লেষণ করতে লগইন করুন"}</h2>
-          <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">{authStatus === "checking" ? "আপনার অ্যাকাউন্ট যাচাই না হওয়া পর্যন্ত ছবি আপলোড বন্ধ থাকবে। কিছুক্ষণ অপেক্ষা করুন অথবা পেজ রিফ্রেশ করুন।" : "আপনার ছবি ও বিশ্লেষণের ইতিহাস ব্যক্তিগতভাবে সংরক্ষণ করতে AGRIVA অ্যাকাউন্ট প্রয়োজন। লগইন করার পর ছবি আপলোড ও বিশ্লেষণ করতে পারবেন।"}</p>
-          {authStatus === "guest" && <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/login?next=%2Fcrop-disease" className="rounded-xl bg-emerald-800 px-6 py-3 font-bold text-white hover:bg-emerald-900">লগইন করুন</Link><Link href="/signup" className="rounded-xl border border-emerald-200 px-6 py-3 font-bold text-emerald-900 hover:bg-emerald-50">নতুন অ্যাকাউন্ট খুলুন</Link></div>}
+          <h2 className="text-xl font-black text-slate-900">{authStatus === "checking" ? "লগইন যাচাই করা হচ্ছে" : authStatus === "error" ? "লগইন যাচাই করা যায়নি" : "ফসলের ছবি বিশ্লেষণ করতে লগইন করুন"}</h2>
+          <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">{authStatus === "checking" ? "আপনার অ্যাকাউন্ট যাচাই না হওয়া পর্যন্ত ছবি আপলোড বন্ধ থাকবে। কিছুক্ষণ অপেক্ষা করুন।" : authStatus === "error" ? "সাময়িক নেটওয়ার্ক বা সার্ভার সমস্যা হতে পারে। পুনরায় যাচাই করলে কাজ শুরু হতে পারে।" : "আপনার ছবি ও বিশ্লেষণের ইতিহাস ব্যক্তিগতভাবে সংরক্ষণ করতে AGRIVA অ্যাকাউন্ট প্রয়োজন। লগইন করার পর ছবি আপলোড ও বিশ্লেষণ করতে পারবেন।"}</p>
+          {authStatus === "guest" && <div className="mt-6 flex flex-wrap justify-center gap-3"><Link href="/login?next=%2Fcrop-disease" className="rounded-xl bg-emerald-800 px-6 py-3 font-bold text-white hover:bg-emerald-900">লগইন করুন</Link><Link href="/signup" className="rounded-xl border border-emerald-200 px-6 py-3 font-bold text-emerald-900 hover:bg-emerald-50">নতুন অ্যাকাউন্ট খুলুন</Link></div>}{authStatus === "error" && <button type="button" onClick={() => { setAuthStatus("checking"); setAuthRetry((attempt) => attempt + 1); }} className="mt-6 rounded-xl bg-emerald-800 px-6 py-3 font-bold text-white hover:bg-emerald-900">আবার যাচাই করুন</button>}
         </section> : <section className="mt-6 rounded-3xl border border-emerald-100 bg-white p-5 shadow-sm sm:p-8">
           <form onSubmit={submit} className="space-y-5">
             <div className="grid gap-5 md:grid-cols-2">
