@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mail, Phone } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -26,13 +27,13 @@ export default function ContactUsPage() {
           <h2 className="text-xl font-extrabold">যোগাযোগের মাধ্যম</h2>
           <div className="mt-5 grid gap-4 md:grid-cols-3">
             <a href={`tel:${phoneNumber}`} className="group rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50/50">
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800" aria-hidden="true">☎</span>
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800" aria-hidden="true"><Phone size={20} /></span>
               <h3 className="mt-4 font-extrabold">ফোন করুন</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">সরাসরি কল করতে নম্বরে চাপ দিন।</p>
               <span className="mt-4 inline-block font-bold text-emerald-800">{phoneNumber}</span>
             </a>
             <a href={`https://wa.me/${internationalPhoneNumber}?text=${whatsappMessage}`} target="_blank" rel="noopener noreferrer" className="group rounded-2xl border border-slate-200 p-5 transition hover:-translate-y-0.5 hover:border-emerald-300 hover:bg-emerald-50/50">
-              <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800" aria-hidden="true">✉</span>
+              <span className="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-emerald-800" aria-hidden="true"><Mail size={20} /></span>
               <h3 className="mt-4 font-extrabold">WhatsApp</h3>
               <p className="mt-2 text-sm leading-6 text-slate-600">প্রস্তুত করা বার্তাসহ WhatsApp খুলুন। পাঠানোর আগে বার্তা সম্পাদনা করতে পারবেন।</p>
               <span className="mt-4 inline-block font-bold text-emerald-800">{phoneNumber}</span>

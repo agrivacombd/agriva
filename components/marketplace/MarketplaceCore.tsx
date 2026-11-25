@@ -7,7 +7,7 @@ import { INTEREST_CHANGED, INTEREST_KEY, clearInterest, personalizationAllowed, 
 } from "@/lib/marketplace/personalization";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, CheckCircle2, Heart, X } from "lucide-react";
+import { ShoppingCart, CheckCircle2, Heart, X, Sprout, Flower2, Grid2X2, Calculator, Search } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { trackAnalyticsEvent } from "@/lib/analytics";
 import MarketplaceAuthModal from "@/components/marketplace/MarketplaceAuthModal";
@@ -322,7 +322,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
   useEffect(() => setQuery(initialQuery), [initialQuery]);
 
-  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:"🌿"},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:"🪴"}))], [products]);
+  const plantCategories = useMemo(() => [{slug:"all",name:"সব ক্যাটাগরি",icon:Sprout},...Array.from(new Set(products.map(p => p.category?.trim()).filter((v):v is string => Boolean(v)))).sort((a,b)=>a.localeCompare(b,"bn")).map(name=>({slug:name,name,icon:Flower2}))], [products]);
   const catalogueCategories = isPlantMarket ? plantCategories : MARKETPLACE_CATEGORIES;
   const categoryCounts = useMemo(() => catalogueCategories.map((item) => ({
     ...item,
@@ -426,12 +426,12 @@ export default function MarketplaceCore({ products, showCategories = true, avail
 
       {showCategories && <div className="sticky top-0 z-30 -mx-4 border-b border-emerald-900/10 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md sm:hidden">
         <button type="button" onClick={() => setMobileCategoryOpen((open) => !open)} aria-expanded={mobileCategoryOpen} aria-controls="mobile-marketplace-category-menu" className="flex min-h-11 w-full items-center justify-between gap-3 rounded-xl border border-emerald-900/15 bg-emerald-50/70 px-3 text-left text-sm font-extrabold text-emerald-950 transition active:bg-emerald-100">
-          <span className="flex min-w-0 items-center gap-2"><span aria-hidden="true" className="text-lg">☷</span><span className="shrink-0">ক্যাটাগরি</span><span className="truncate rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-800">{selectedCategory?.name || "সব পণ্য"}</span></span>
+          <span className="flex min-w-0 items-center gap-2"><Grid2X2 size={18} aria-hidden="true" className="shrink-0 text-emerald-800" /><span className="shrink-0">ক্যাটাগরি</span><span className="truncate rounded-full bg-white px-2.5 py-1 text-xs font-bold text-emerald-800">{selectedCategory?.name || "সব পণ্য"}</span></span>
           <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className={`h-5 w-5 shrink-0 transition-transform ${mobileCategoryOpen ? "rotate-180" : ""}`}><path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </button>
         {mobileCategoryOpen && <nav id="mobile-marketplace-category-menu" aria-label="পণ্যের ক্যাটাগরি" className="mt-2 grid max-h-[55vh] grid-cols-2 gap-2 overflow-y-auto overscroll-contain rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
           <button type="button" onClick={() => { setCategory("all"); setMobileCategoryOpen(false); }} aria-pressed={category === "all"} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === "all" ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span>সব পণ্য</span><span className="text-[10px] opacity-75">{products.length}</span></button>
-          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => { setCategory(item.slug); setMobileCategoryOpen(false); }} aria-pressed={category === item.slug} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span className="min-w-0 truncate">{item.icon} {item.name}</span><span className="shrink-0 text-[10px] opacity-75">{new Intl.NumberFormat("bn-BD").format(item.count)}</span></button>)}
+          {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => { setCategory(item.slug); setMobileCategoryOpen(false); }} aria-pressed={category === item.slug} className={`flex min-h-11 items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition ${category === item.slug ? "bg-emerald-900 text-white" : "bg-slate-50 text-slate-700 hover:bg-emerald-50"}`}><span className="min-w-0 truncate">{typeof item.icon === "string" ? item.icon : <item.icon size={16} aria-hidden="true" className="inline-block align-middle" />} {item.name}</span><span className="shrink-0 text-[10px] opacity-75">{new Intl.NumberFormat("bn-BD").format(item.count)}</span></button>)}
         </nav>}
       </div>}
 
@@ -442,7 +442,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
         </div>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`group flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition ${category === item.slug ? "border-emerald-700 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-emerald-300 hover:bg-emerald-50/60"}`}>
-            <span className="text-2xl" aria-hidden="true">{item.icon}</span><span className="text-[11px] font-extrabold leading-4 text-slate-800">{item.name}</span><span className="text-[10px] text-slate-400">{new Intl.NumberFormat("bn-BD").format(item.count)} পণ্য</span>
+            <span className="flex h-9 w-9 items-center justify-center text-emerald-700" aria-hidden="true">{typeof item.icon === "string" ? item.icon : <item.icon size={28} strokeWidth={1.8} />}</span><span className="text-[11px] font-extrabold leading-4 text-slate-800">{item.name}</span><span className="text-[10px] text-slate-400">{new Intl.NumberFormat("bn-BD").format(item.count)} পণ্য</span>
           </button>)}
         </div>
       </section>}
@@ -456,7 +456,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
               {categoryCounts.map((item) => <button type="button" key={item.slug} onClick={() => setCategory(item.slug)} aria-pressed={category === item.slug} className={`flex min-h-10 items-center justify-between gap-2 rounded-lg px-3 text-left text-xs font-semibold ${category === item.slug ? "bg-emerald-50 text-emerald-900" : "text-slate-600 hover:bg-slate-50"}`}><span>{item.name}</span><span className="text-slate-400">{item.count}</span></button>)}
             </nav>
             <Link href="/agriculture-calculators" className="mt-5 block rounded-xl bg-gradient-to-br from-emerald-900 to-emerald-700 p-4 text-white transition hover:shadow-lg">
-              <span className="text-xl" aria-hidden="true">🧮</span><span className="mt-2 block text-sm font-black">জমির হিসাব করুন</span><span className="mt-1 block text-[11px] leading-5 text-emerald-50/80">জমির পরিমাণ ও চাষের হিসাবের টুল দেখুন</span><span className="mt-3 inline-block text-xs font-bold text-lime-200">ক্যালকুলেটর দেখুন →</span>
+              <Calculator size={24} aria-hidden="true" className="text-lime-200" /><span className="mt-2 block text-sm font-black">জমির হিসাব করুন</span><span className="mt-1 block text-[11px] leading-5 text-emerald-50/80">জমির পরিমাণ ও চাষের হিসাবের টুল দেখুন</span><span className="mt-3 inline-block text-xs font-bold text-lime-200">ক্যালকুলেটর দেখুন →</span>
             </Link>
           </div>
         </aside>}
@@ -498,7 +498,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
                   onClick={()=>{trackProductRankEvents("marketplace","listing_click",[item.id]);recordInterest(item,"click");}}
                   className="group flex min-w-0 flex-col rounded-xl border border-emerald-100 bg-white p-2.5 hover:border-emerald-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
                   <div className="relative aspect-[5/4] overflow-hidden rounded-lg bg-slate-50">
-                    {item.image_url?<Image src={item.image_url} alt={item.name} fill unoptimized sizes="(max-width: 640px) 45vw, 200px" className="object-contain p-1.5" />:<span className="grid h-full place-items-center text-3xl" aria-hidden="true">🌱</span>}
+                    {item.image_url?<Image src={item.image_url} alt={item.name} fill unoptimized sizes="(max-width: 640px) 45vw, 200px" className="object-contain p-1.5" />:<span className="grid h-full place-items-center" aria-hidden="true"><Sprout size={34} strokeWidth={1.6} className="text-emerald-600" /></span>}
                   </div>
                   <span className="mt-2 line-clamp-2 min-h-10 break-words text-xs font-bold leading-5 text-slate-900 sm:text-sm">{item.name}</span>
                   <span className="mt-auto pt-1 text-sm font-black text-emerald-900">৳{money(item.price as number | string)}</span>
@@ -514,7 +514,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
               <button type="button" onClick={() => setPage((current) => current + 1)} className="min-h-11 rounded-xl border border-emerald-800 bg-white px-6 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50">আরও পণ্য দেখুন ({new Intl.NumberFormat("bn-BD").format(visible.length - paginated.length)}টি বাকি)</button>
             </div>}
           </> : <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-12 text-center sm:px-8">
-            <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl" aria-hidden="true">⌕</span>
+            <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700" aria-hidden="true"><Search size={28} strokeWidth={1.8} /></span>
             <p className="mt-4 font-extrabold text-slate-900">{emptyCatalogMessage ? "Marketplace ক্যাটালগ এখন খালি" : wishlistOnly ? "সংরক্ষিত কোনো পণ্য পাওয়া যায়নি" : "এই অনুসন্ধানে কোনো পণ্য পাওয়া যায়নি"}</p>
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">{emptyCatalogMessage || (wishlistOnly ? "পণ্যের হৃদয় আইকনে চাপ দিয়ে সংরক্ষণ করুন, অথবা ফিল্টার বন্ধ করে সব পণ্য দেখুন।" : isPlantMarket ? "গাছ বা চারার অন্য নাম দিয়ে খুঁজে দেখুন। গাছ বিনিময়ের বোর্ডেও নতুন পোস্ট পেতে পারেন।" : "অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা আপনার প্রয়োজনটি চাহিদা বোর্ডে জানান।")}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-2">

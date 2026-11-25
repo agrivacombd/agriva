@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { FileText } from "lucide-react";
 import type { BlogFeedEntry } from "@/lib/learn/blog-feed";
 import {BOOKMARK_KEY,clearReader,enableReader,readBookmarks,readReaderState,recommendationScore,READER_EVENT,READER_KEY,toggleBookmark,type ReaderState} from "@/lib/blog/reader-interests";
 
@@ -20,7 +21,7 @@ function ArticleArtwork({ article, priority = false }: { article: BlogFeedEntry;
         // eslint-disable-next-line @next/next/no-img-element
         <img src={article.heroImageUrl} alt={article.heroImageAlt || article.title} loading={priority ? "eager" : "lazy"} decoding="async" className="h-full w-full object-contain" />
       ) : (
-        <span aria-hidden="true" className="text-6xl sm:text-7xl">{article.emoji}</span>
+        <FileText size={64} strokeWidth={1.4} aria-hidden="true" className="text-emerald-700 sm:h-20 sm:w-20" />
       )}
     </div>
   );

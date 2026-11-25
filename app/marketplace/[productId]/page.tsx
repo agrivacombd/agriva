@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Check, Wheat } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 /* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -263,7 +264,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             ) : (
               <div className="grid aspect-[4/3] w-full place-items-center rounded-xl border border-slate-200 bg-white p-6 text-center sm:aspect-square">
                 <div>
-                  <span className="text-5xl" aria-hidden="true">🌾</span>
+                  <Wheat size={52} strokeWidth={1.5} aria-hidden="true" className="text-emerald-600" />
                   <p className="mt-3 text-sm text-slate-600">এই পণ্যের ছবি এখনো যোগ করা হয়নি।</p>
                 </div>
               </div>
@@ -297,7 +298,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
 
             <div className="mt-4 grid gap-2 text-xs font-semibold text-emerald-950 sm:grid-cols-2">
-              <p className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5"><span className="text-base" aria-hidden="true">✓</span> ক্যাশ অন ডেলিভারিতে অর্ডার</p>
+              <p className="flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50/70 px-3 py-2.5"><Check size={16} aria-hidden="true" className="text-emerald-700" /> ক্যাশ অন ডেলিভারিতে অর্ডার</p>
               <p className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5"><span className="text-base" aria-hidden="true">৳</span> চূড়ান্ত চার্জ অর্ডারের আগে দেখুন</p>
             </div>
             <div className="mt-4 border-t border-slate-100 pt-4">
@@ -348,7 +349,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="mt-5">
                 <h3 className="text-base font-extrabold text-slate-900">মূল বৈশিষ্ট্য</h3>
                 <ul className="mt-2 grid gap-2 text-sm leading-6 text-slate-700 sm:grid-cols-2">
-                  {product.highlights.slice(0, 6).map(item => <li key={item} className="flex min-w-0 gap-2"><span className="mt-1 font-bold text-emerald-700" aria-hidden="true">✓</span><span className="break-words">{item}</span></li>)}
+                  {product.highlights.slice(0, 6).map(item => <li key={item} className="flex min-w-0 gap-2"><Check size={16} className="mt-1 shrink-0 text-emerald-700" aria-hidden="true" /><span className="break-words">{item}</span></li>)}
                 </ul>
               </div>
             )}

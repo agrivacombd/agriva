@@ -8,7 +8,7 @@ import {
   ChevronRight, CloudSun, Leaf, Search,
   ShoppingBasket, Sprout, Store, Tractor, TrendingUp, Wheat, Zap,
   Users, GraduationCap, Stethoscope, PackageCheck, ShoppingCart, Truck,
-  Briefcase, FileText,
+  Briefcase, FileText, Phone, Mail,
 } from "lucide-react";
 
 const services = [
@@ -393,10 +393,10 @@ export default async function Home() {
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
               <a href="tel:01717504028" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#0b6b4f] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#07543e] sm:w-auto" aria-label="AGRIVA-তে 01717504028 নম্বরে ফোন করুন">
-                <span aria-hidden="true">☎</span> ফোন করুন: 01717504028
+                <Phone size={16} aria-hidden="true" /> ফোন করুন: 01717504028
               </a>
               <a href="https://wa.me/8801717504028?text=Hello%20AGRIVA%2C%20I%20would%20like%20to%20know%20more%20about%20your%20services." target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-sm font-bold text-emerald-900 transition hover:bg-emerald-100 sm:w-auto" aria-label="AGRIVA-কে WhatsApp-এ মেসেজ পাঠান 01717504028">
-                <span aria-hidden="true">✉</span> WhatsApp-এ মেসেজ দিন
+                <Mail size={16} aria-hidden="true" /> WhatsApp-এ মেসেজ দিন
               </a>
             </div>
           </div>

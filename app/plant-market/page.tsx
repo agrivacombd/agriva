@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CheckCircle2, Sprout, Flower2 } from "lucide-react";
 import MarketplaceCore, { type MarketplaceProduct } from "@/components/marketplace/MarketplaceCore";
 import { createClient } from "@supabase/supabase-js";
 import { canonicalPlantProductSlug } from "@/lib/plant-market/product-slugs";
@@ -82,7 +83,7 @@ export default async function PlantMarketPage() {
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-20 h-80 w-80 rounded-full border-[48px] border-white/10" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 right-[4%] hidden h-[27rem] w-[27rem] rounded-full border border-lime-100/20 lg:block" />
         <div className="relative mx-auto max-w-7xl px-3 py-4 min-[375px]:px-4 min-[375px]:py-5 sm:px-6 sm:py-10 lg:px-8 lg:py-14">
-          <p className="inline-flex items-center gap-2 rounded-full border border-lime-200/25 bg-lime-100/10 px-4 py-2 text-[11px] font-extrabold tracking-[.18em] text-lime-100 shadow-sm backdrop-blur">🌿 <span>AGRIVA PLANT MARKET</span></p>
+          <p className="inline-flex items-center gap-2 rounded-full border border-lime-200/25 bg-lime-100/10 px-4 py-2 text-[11px] font-extrabold tracking-[.18em] text-lime-100 shadow-sm backdrop-blur"><Sprout size={16} strokeWidth={2} aria-hidden="true" /> <span>AGRIVA PLANT MARKET</span></p>
           <h1 className="mt-2 max-w-3xl text-[clamp(1.35rem,5.5vw,1.75rem)] font-black leading-[1.25] tracking-tight sm:mt-4 sm:text-4xl sm:leading-tight lg:text-[3.4rem]">আপনার সবুজ জায়গার জন্য <span className="text-lime-300">গাছ, চারা ও বাগান সামগ্রী</span></h1>
           <p className="mt-2 max-w-2xl text-xs leading-5 text-emerald-50/90 sm:mt-4 sm:text-base sm:leading-8">ঘরের গাছ থেকে ছাদবাগান—গাছ, চারা, বীজ, টব ও বাগানের প্রয়োজনীয় পণ্য খুঁজুন। এখানে শুধু ডেটাবেসে থাকা সক্রিয় ও অনুমোদিত পণ্য দেখানো হয়।</p>
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6">
@@ -93,7 +94,7 @@ export default async function PlantMarketPage() {
             )}
             <Link href="/sell-on-plant-market" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Seller হন</Link><Link href="/plant-seller/products" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Seller Dashboard</Link><Link href="/plant-market/cart" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">Plant Cart</Link><Link href="/plant-market/orders" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">আমার অর্ডার</Link><Link href="/green-exchange" className="inline-flex min-h-[3.25rem] items-center justify-center rounded-xl border border-white/25 bg-white/[0.08] px-7 py-3.5 text-sm font-bold text-white backdrop-blur transition hover:bg-white/15">গাছ বিনিময় করুন</Link>
           </div>
-          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/85 sm:text-sm"><span>✓ বাস্তব পণ্য তালিকা</span><span>✓ অনুমোদিত পণ্য</span><span>✓ মোবাইল-ফ্রেন্ডলি</span></div>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-3 text-xs font-semibold text-emerald-50/85 sm:text-sm"><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} aria-hidden="true" /> বাস্তব পণ্য তালিকা</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} aria-hidden="true" /> অনুমোদিত পণ্য</span><span className="inline-flex items-center gap-1.5"><CheckCircle2 size={15} aria-hidden="true" /> মোবাইল-ফ্রেন্ডলি</span></div>
         </div>
       </section>
 
@@ -111,7 +112,7 @@ export default async function PlantMarketPage() {
           <MarketplaceCore products={products} showCategories={true} productHrefPrefix="/plant-market" />
         ) : (
           <div className="rounded-2xl border border-dashed border-emerald-900/25 bg-white p-8 text-center sm:p-12">
-            <div aria-hidden="true" className="text-5xl">🪴</div>
+            <Flower2 size={48} strokeWidth={1.5} aria-hidden="true" className="mx-auto text-emerald-700" />
             <h3 className="mt-4 text-xl font-extrabold">এখনো কোনো গাছ বা বাগান-সম্পর্কিত পণ্য পাওয়া যায়নি</h3>
             <p className="mx-auto mt-2 max-w-xl text-sm leading-7 text-slate-600">যাচাই ও অনুমোদনের পরে নতুন গাছ ও বাগান-সম্পর্কিত পণ্য এখানে দেখা যাবে। ততদিন গাছ বিনিময়ের পোস্ট দেখতে পারেন অথবা Plant Seller হিসেবে আবেদন করতে পারেন।</p>
             <div className="mt-5 flex flex-wrap justify-center gap-3">

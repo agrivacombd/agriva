@@ -224,6 +224,13 @@ export default function WeatherPage() {
             </div>
           </div>
 
+          <section className="mt-12 rounded-2xl border border-amber-200 bg-amber-50 p-5" aria-labelledby="weather-data-limits">
+            <h2 id="weather-data-limits" className="font-extrabold text-amber-950">তথ্যের সীমাবদ্ধতা</h2>
+            <p className="mt-2 text-sm leading-7 text-amber-950/80">
+              আবহাওয়ার পূর্বাভাস মডেলভিত্তিক এবং সময়ের সঙ্গে পরিবর্তিত হতে পারে। নির্বাচিত শহর বা এলাকার তথ্য আপনার নির্দিষ্ট গ্রাম, জমি বা খামারের আবহাওয়ার সঙ্গে পুরোপুরি নাও মিলতে পারে। AGRIVA-র তথ্যকে পরিকল্পনার সহায়ক হিসেবে ব্যবহার করুন; জরুরি সতর্কতা, স্থানীয় পর্যবেক্ষণ এবং কৃষি কর্মকর্তার পরামর্শকে অগ্রাধিকার দিন।
+            </p>
+          </section>
+
           <aside className="mt-12 rounded-2xl border border-sky-200 bg-sky-50 p-5">
             <h2 className="font-extrabold text-sky-950">বিশ্বস্ত আবহাওয়া ও কৃষি-আবহাওয়া তথ্যসূত্র</h2>
             <p className="mt-2 text-sm leading-7 text-sky-950/80">

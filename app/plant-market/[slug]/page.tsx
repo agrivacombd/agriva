@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Check, Droplets, Flower2, Leaf, Package, Ruler, ShoppingCart, Sprout, Sun, Truck, UserRound } from "lucide-react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { canonicalPlantProductSlug, resolvePlantProductSlug } from "@/lib/plant-market/product-slugs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -32,7 +33,7 @@ export default async function PlantMarketProductPage({params}:Props){
   const schema={"@context":"https://schema.org","@type":"Product",name:product.name,description:plainDescription||undefined,category:product.category,image:product.image_url?[product.image_url]:undefined,sku:undefined,brand:product.brand?{"@type":"Brand",name:product.brand}:undefined,countryOfOrigin:product.origin||undefined,keywords:[product.focus_keyword,...(Array.isArray(product.seo_keywords)?product.seo_keywords:[])].filter(Boolean).join(", ")||undefined,additionalProperty:Array.isArray(product.highlights)?product.highlights.slice(0,5).map((value:string)=>({"@type":"PropertyValue",name:"Plant feature",value})):undefined,offers:{"@type":"Offer",priceCurrency:"BDT",price:product.price,availability:Number(product.stock)>0?"https://schema.org/InStock":"https://schema.org/OutOfStock",url:`${base}/plant-market/${encodeURIComponent(canonicalSlug)}`}};
   const unitLabels:Record<string,string>={piece:"পিস",pcs:"পিস",kg:"কেজি",g:"গ্রাম",pack:"প্যাকেট",bag:"বস্তা",liter:"লিটার"};
   const displayUnit=unitLabels[String(product.unit||"piece").toLowerCase()]||product.unit||"পিস";
-  const specs=[["গাছের আকার",product.plant_size],["টবের সাইজ",product.pot_size],["গাছের বয়স",product.plant_age],["সূর্যালোক",product.sunlight],["পানি",product.watering],["ফুল ফোটার মৌসুম",product.flowering_season],["ডেলিভারি এলাকা",product.delivery_area]].filter((item)=>item[1]);
+  const specs=[["গাছের আকার",product.plant_size,Ruler],["টবের সাইজ",product.pot_size,Flower2],["গাছের বয়স",product.plant_age,Sprout],["সূর্যালোক",product.sunlight,Sun],["পানি",product.watering,Droplets],["ফুল ফোটার মৌসুম",product.flowering_season,Flower2],["ডেলিভারি এলাকা",product.delivery_area,Truck]].filter((item)=>item[1]);
   return (
     <main className="min-h-screen bg-[#f6f8f3] px-3 py-5 text-[#17351f] sm:px-6 sm:py-8">
       <ProductClickTracker market="plant-market" productId={product.id}/>
@@ -45,8 +46,8 @@ export default async function PlantMarketProductPage({params}:Props){
         <article className="mt-4 overflow-hidden rounded-[28px] border border-emerald-950/10 bg-white shadow-sm">
           <div className="grid lg:grid-cols-[1.05fr_.95fr]">
             <div className="relative flex min-h-[320px] items-center justify-center bg-gradient-to-br from-[#edf5e8] via-[#f7faf4] to-[#e1efdc] p-4 sm:min-h-[520px] sm:p-8">
-              <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm">🌿 Plant Market</div>
-              {product.image_url ? <img src={product.image_url} alt={product.image_alt||product.name} className="max-h-[520px] w-full object-contain drop-shadow-sm"/> : <span className="text-8xl">🪴</span>}
+              <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm"><Leaf size={14} aria-hidden="true" className="mr-1 inline-block" />Plant Market</div>
+              {product.image_url ? <img src={product.image_url} alt={product.image_alt||product.name} className="max-h-[520px] w-full object-contain drop-shadow-sm"/> : <Sprout size={88} strokeWidth={1.3} aria-hidden="true" className="text-emerald-600" />}
             </div>
             <div className="p-5 sm:p-8 lg:p-10">
               <p className="text-sm font-bold text-emerald-700">{product.category}</p>
@@ -60,16 +61,16 @@ export default async function PlantMarketProductPage({params}:Props){
                 <span className={Number(product.stock)>0?"h-2.5 w-2.5 rounded-full bg-green-500":"h-2.5 w-2.5 rounded-full bg-slate-400"}/>
                 <p className="text-sm font-semibold text-slate-600">{Number(product.stock)>0? `স্টকে আছে · ${Number(product.stock).toLocaleString("bn-BD")} ${displayUnit}`:"সাময়িকভাবে স্টক শেষ"}</p>
               </div>
-              {Array.isArray(product.highlights)&&product.highlights.length>0&&<ul className="mt-5 space-y-2">{product.highlights.slice(0,4).map((item:string)=><li key={item} className="flex gap-2 text-sm leading-6 text-slate-700"><span className="mt-0.5 text-emerald-700">✓</span><span>{item}</span></li>)}</ul>}
+              {Array.isArray(product.highlights)&&product.highlights.length>0&&<ul className="mt-5 space-y-2">{product.highlights.slice(0,4).map((item:string)=><li key={item} className="flex gap-2 text-sm leading-6 text-slate-700"><Check size={16} className="mt-0.5 shrink-0 text-emerald-700" aria-hidden="true" /><span>{item}</span></li>)}</ul>}
               <div className="mt-6 grid grid-cols-2 gap-2.5">
-                {specs.slice(0,4).map(([label,value],i)=><div key={label} className="rounded-2xl border border-emerald-100 bg-[#f7faf5] p-3"><div className="text-xs font-bold text-emerald-800">{["📏","🪴","🌱","☀️"][i]||"🌿"} {label}</div><div className="mt-1.5 text-sm font-semibold text-slate-700">{value}</div></div>)}
+                {specs.slice(0,4).map(([label,value,Icon])=><div key={label} className="rounded-2xl border border-emerald-100 bg-[#f7faf5] p-3"><div className="flex items-center gap-1.5 text-xs font-bold text-emerald-800"><Icon size={15} aria-hidden="true" />{label}</div><div className="mt-1.5 text-sm font-semibold text-slate-700">{value}</div></div>)}
               </div>
               <div className="mt-6 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
                 <h2 className="font-extrabold text-emerald-950">কেনার আগে নিশ্চিন্ত থাকুন</h2>
                 <div className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-2">
-                  <p className="flex gap-2"><span>🛒</span>Checkout-এ অর্ডার ও মোট মূল্য যাচাই</p>
-                  <p className="flex gap-2"><span>📦</span>অর্ডারের আগে স্টক পুনরায় যাচাই</p>
-                  {product.delivery_area&&<p className="flex gap-2 sm:col-span-2"><span>🚚</span>ডেলিভারি: {product.delivery_area}</p>}
+                  <p className="flex items-center gap-2"><ShoppingCart size={16} aria-hidden="true" />Checkout-এ অর্ডার ও মোট মূল্য যাচাই</p>
+                  <p className="flex items-center gap-2"><Package size={16} aria-hidden="true" />অর্ডারের আগে স্টক পুনরায় যাচাই</p>
+                  {product.delivery_area&&<p className="flex items-center gap-2 sm:col-span-2"><Truck size={16} aria-hidden="true" />ডেলিভারি: {product.delivery_area}</p>}
                 </div>
               </div>
               <div className="mt-5"><PlantMarketAddToCart productId={product.id} stock={Number(product.stock)} disabled={Number(product.stock)<1}/></div>
@@ -81,14 +82,14 @@ export default async function PlantMarketProductPage({params}:Props){
 
         <section className="mt-6 grid gap-4 md:grid-cols-[1fr_1fr]">
           <div className="rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
-            <h2 className="text-xl font-black text-emerald-950">🌱 এই গাছটি কোথায় ভালো মানাবে?</h2>
+            <h2 className="flex items-center gap-2 text-xl font-black text-emerald-950"><Sprout size={22} aria-hidden="true" />এই গাছটি কোথায় ভালো মানাবে?</h2>
             <p className="mt-3 text-sm leading-7 text-slate-700">{product.usage_instructions||"আপনার বাগান, বারান্দা বা ঘরের উপযোগী জায়গা বেছে নিন। গাছের নির্দিষ্ট আলো ও পানি দেওয়ার নির্দেশনা অনুসরণ করলে পরিচর্যা সহজ হবে।"}</p>
             {product.origin&&<p className="mt-3 text-sm text-slate-500">উৎপত্তিস্থল: {product.origin}</p>}
           </div>
           <div className="rounded-3xl border border-emerald-950/10 bg-white p-5 sm:p-7">
-            <h2 className="text-xl font-black text-emerald-950">🧑‍🌾 দ্রুত পরিচর্যা গাইড</h2>
+            <h2 className="flex items-center gap-2 text-xl font-black text-emerald-950"><UserRound size={22} aria-hidden="true" />দ্রুত পরিচর্যা গাইড</h2>
             <dl className="mt-3 space-y-3">
-              {[[ "সূর্যালোক",product.sunlight,"☀️"],["পানি",product.watering,"💧"],["ফুল/ফল আসার সময়",product.flowering_season,"🌸"]].filter((x)=>x[1]).map(([label,value,emoji])=><div key={label} className="flex gap-3 rounded-2xl bg-emerald-50/70 p-3"><span>{emoji}</span><div><dt className="text-sm font-bold text-emerald-900">{label}</dt><dd className="mt-1 text-sm leading-6 text-slate-700">{value}</dd></div></div>)}
+              {[[ "সূর্যালোক",product.sunlight,Sun],["পানি",product.watering,Droplets],["ফুল/ফল আসার সময়",product.flowering_season,Flower2]].filter((x)=>x[1]).map(([label,value,Icon])=><div key={label} className="flex gap-3 rounded-2xl bg-emerald-50/70 p-3"><Icon size={18} aria-hidden="true" className="mt-0.5 shrink-0 text-emerald-700" /><div><dt className="text-sm font-bold text-emerald-900">{label}</dt><dd className="mt-1 text-sm leading-6 text-slate-700">{value}</dd></div></div>)}
             </dl>
           </div>
         </section>
@@ -100,7 +101,7 @@ export default async function PlantMarketProductPage({params}:Props){
 
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<span className="text-5xl">🪴</span>}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<Sprout size={48} strokeWidth={1.5} aria-hidden="true" className="text-emerald-600" />}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
       </div>
     </main>

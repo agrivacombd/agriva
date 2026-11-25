@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BadgeCheck, Camera, Check, FileText, Flower2, House, Leaf, Search, ShieldCheck, Shovel, ShoppingBag, Sprout, TreeDeciduous, UserRound } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
@@ -29,19 +30,19 @@ export const metadata: Metadata = {
 };
 
 const categories = [
-  { icon: "🌳", title: "ফল ও বনজ গাছের চারা", detail: "আম, লিচু, পেয়ারা, লেবু ও অন্যান্য চারা", tone: "bg-[#edf4e7]" },
-  { icon: "🌺", title: "ফুল ও শোভাবর্ধক গাছ", detail: "ফুল, পাতাবাহার ও মৌসুমি গাছ", tone: "bg-[#f8efeb]" },
-  { icon: "🪴", title: "ইনডোর প্ল্যান্ট", detail: "ঘর, অফিস ও বারান্দার গাছ", tone: "bg-[#edf2ec]" },
-  { icon: "🌵", title: "ক্যাকটাস ও সাকুলেন্ট", detail: "ছোট ও সংগ্রহযোগ্য গাছ", tone: "bg-[#f5f1e7]" },
-  { icon: "🌱", title: "বীজ, কাটিং ও চারা", detail: "বীজ, rooted cutting ও planting material", tone: "bg-[#edf4e7]" },
-  { icon: "🧤", title: "টব ও বাগান সামগ্রী", detail: "টব, মাটি, potting mix ও প্রয়োজনীয় উপকরণ", tone: "bg-[#f3efea]" },
+  { icon: TreeDeciduous, title: "ফল ও বনজ গাছের চারা", detail: "আম, লিচু, পেয়ারা, লেবু ও অন্যান্য চারা", tone: "bg-[#edf4e7]" },
+  { icon: Flower2, title: "ফুল ও শোভাবর্ধক গাছ", detail: "ফুল, পাতাবাহার ও মৌসুমি গাছ", tone: "bg-[#f8efeb]" },
+  { icon: House, title: "ইনডোর প্ল্যান্ট", detail: "ঘর, অফিস ও বারান্দার গাছ", tone: "bg-[#edf2ec]" },
+  { icon: Sprout, title: "ক্যাকটাস ও সাকুলেন্ট", detail: "ছোট ও সংগ্রহযোগ্য গাছ", tone: "bg-[#f5f1e7]" },
+  { icon: Sprout, title: "বীজ, কাটিং ও চারা", detail: "বীজ, rooted cutting ও planting material", tone: "bg-[#edf4e7]" },
+  { icon: Shovel, title: "টব ও বাগান সামগ্রী", detail: "টব, মাটি, potting mix ও প্রয়োজনীয় উপকরণ", tone: "bg-[#f3efea]" },
 ];
 
 const steps = [
-  { number: "01", title: "অ্যাকাউন্টে লগইন করুন", detail: "আপনার AGRIVA account ব্যবহার করুন অথবা নতুন account তৈরি করুন।", icon: "👤" },
-  { number: "02", title: "Seller আবেদন জমা দিন", detail: "পরিচয় ও আপনার নার্সারি/ব্যবসার প্রয়োজনীয় তথ্য দিয়ে আবেদন সম্পন্ন করুন।", icon: "📝" },
-  { number: "03", title: "যাচাই ও অনুমোদন", detail: "AGRIVA টিম আবেদন পর্যালোচনা করবে। প্রয়োজন হলে অতিরিক্ত তথ্য চাইতে পারে।", icon: "✓" },
-  { number: "04", title: "পণ্য তালিকাভুক্ত করুন", detail: "অনুমোদনের পর Plant Seller Dashboard থেকে পণ্যের listing জমা দিন।", icon: "🪴" },
+  { number: "01", title: "অ্যাকাউন্টে লগইন করুন", detail: "আপনার AGRIVA account ব্যবহার করুন অথবা নতুন account তৈরি করুন।", icon: UserRound },
+  { number: "02", title: "Seller আবেদন জমা দিন", detail: "পরিচয় ও আপনার নার্সারি/ব্যবসার প্রয়োজনীয় তথ্য দিয়ে আবেদন সম্পন্ন করুন।", icon: FileText },
+  { number: "03", title: "যাচাই ও অনুমোদন", detail: "AGRIVA টিম আবেদন পর্যালোচনা করবে। প্রয়োজন হলে অতিরিক্ত তথ্য চাইতে পারে।", icon: BadgeCheck },
+  { number: "04", title: "পণ্য তালিকাভুক্ত করুন", detail: "অনুমোদনের পর Plant Seller Dashboard থেকে পণ্যের listing জমা দিন।", icon: Sprout },
 ];
 
 const preparation = [
@@ -158,9 +159,9 @@ export default function SellOnPlantMarketPage() {
               </Link>
             </div>
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[#536b5b]">
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> আলাদা Seller verification</span>
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> নিজস্ব Plant Seller Dashboard</span>
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> Review-এর পর listing প্রকাশ</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> আলাদা Seller verification</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> নিজস্ব Plant Seller Dashboard</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> Review-এর পর listing প্রকাশ</span>
             </div>
           </div>
 
@@ -180,20 +181,20 @@ export default function SellOnPlantMarketPage() {
                   <p className="mt-2 max-w-sm text-sm leading-6 text-white/85">গাছের সঠিক তথ্য ও বাস্তব ছবি দিয়ে তৈরি করুন আস্থার listing</p>
                 </div>
                 <div className="absolute right-4 top-4 rounded-full border border-white/50 bg-white/90 px-3 py-2 text-xs font-extrabold text-[#27543a] shadow-sm">
-                  🪴 Plant Seller Centre
+                  Plant Seller Centre
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 p-2 pt-4 sm:gap-3 sm:p-3">
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">🌿</span>
+                  <Leaf size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">গাছ ও চারা</p>
                 </div>
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">📷</span>
+                  <Camera size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">বাস্তব ছবি</p>
                 </div>
                 <div className="rounded-xl bg-[#f0f5ed] p-3 text-center">
-                  <span className="text-xl">🛒</span>
+                  <ShoppingBag size={22} aria-hidden="true" className="mx-auto text-emerald-700" />
                   <p className="mt-1 text-xs font-extrabold text-[#315b3d]">পণ্য listing</p>
                 </div>
               </div>
@@ -218,17 +219,17 @@ export default function SellOnPlantMarketPage() {
         </div>
         <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article className="rounded-2xl border border-[#e0e9dc] bg-white p-6 shadow-[0_8px_28px_rgba(30,67,41,.04)]">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf5e9] text-2xl">🌱</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf5e9] text-emerald-800"><Sprout size={25} aria-hidden="true" /></span>
             <h3 className="mt-4 text-lg font-extrabold">পণ্য সুন্দরভাবে উপস্থাপন</h3>
             <p className="mt-2 text-sm leading-6 text-[#66776a]">গাছের ছবি, নাম, আকার, দাম ও পরিচর্যার তথ্য দিয়ে পরিষ্কার listing তৈরি করুন।</p>
           </article>
           <article className="rounded-2xl border border-[#e0e9dc] bg-white p-6 shadow-[0_8px_28px_rgba(30,67,41,.04)]">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f0e8] text-2xl">🧑‍🌾</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#f7f0e8] text-emerald-800"><UserRound size={25} aria-hidden="true" /></span>
             <h3 className="mt-4 text-lg font-extrabold">নিজের Seller Dashboard</h3>
             <p className="mt-2 text-sm leading-6 text-[#66776a]">অনুমোদনের পর Plant Seller Dashboard থেকে পণ্য listing জমা দিন।</p>
           </article>
           <article className="rounded-2xl border border-[#e0e9dc] bg-white p-6 shadow-[0_8px_28px_rgba(30,67,41,.04)] sm:col-span-2 lg:col-span-1">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf2ed] text-2xl">✓</span>
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#edf2ed] text-emerald-800"><Check size={24} aria-hidden="true" /></span>
             <h3 className="mt-4 text-lg font-extrabold">যাচাইভিত্তিক প্রক্রিয়া</h3>
             <p className="mt-2 text-sm leading-6 text-[#66776a]">Seller আবেদন ও পণ্যের listing নির্ধারিত review প্রক্রিয়ার মধ্য দিয়ে যায়।</p>
           </article>
@@ -251,7 +252,7 @@ export default function SellOnPlantMarketPage() {
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {categories.map((category) => (
               <article key={category.title} className="group flex items-center gap-4 rounded-2xl border border-[#e0e9dc] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#b9d0b5] hover:shadow-md">
-                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-3xl ${category.tone}`} aria-hidden="true">{category.icon}</span>
+                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-emerald-800 ${category.tone}`} aria-hidden="true"><category.icon size={28} strokeWidth={1.8} /></span>
                 <div>
                   <h3 className="font-extrabold text-[#244b32]">{category.title}</h3>
                   <p className="mt-1 text-sm leading-5 text-[#718074]">{category.detail}</p>
@@ -274,7 +275,7 @@ export default function SellOnPlantMarketPage() {
             <article key={step.number} className="relative rounded-2xl border border-[#e0e9dc] bg-white p-5 shadow-[0_8px_25px_rgba(30,67,41,.035)]">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black tracking-[0.18em] text-[#7c9a7d]">{step.number}</span>
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf5e9] text-xl">{step.icon}</span>
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-[#edf5e9] text-emerald-800"><step.icon size={23} strokeWidth={1.8} aria-hidden="true" /></span>
               </div>
               <h3 className="mt-5 text-base font-extrabold">{step.title}</h3>
               <p className="mt-2 text-sm leading-6 text-[#68796b]">{step.detail}</p>
@@ -300,7 +301,7 @@ export default function SellOnPlantMarketPage() {
             <ul className="mt-7 space-y-5">
               {preparation.map(([title, detail]) => (
                 <li key={title} className="flex gap-3">
-                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#dcebd7] text-sm font-black text-[#326744]">✓</span>
+                  <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#dcebd7] text-[#326744]"><Check size={15} aria-hidden="true" /></span>
                   <div><h3 className="font-extrabold">{title}</h3><p className="mt-1 text-sm leading-6 text-[#68796b]">{detail}</p></div>
                 </li>
               ))}
@@ -315,7 +316,7 @@ export default function SellOnPlantMarketPage() {
             <div className="space-y-3 p-6 sm:p-7">
               {["AGRIVA account-এ প্রবেশ করতে পারছেন","পরিচয় ও ব্যবসার তথ্য প্রস্তুত","নার্সারি/ব্যবসার পরিচিতি দিতে পারবেন","পণ্যের ছবি ও বিবরণ প্রস্তুত রাখবেন"].map((item) => (
                 <div key={item} className="flex items-start gap-3 rounded-xl bg-[#f4f7f1] px-4 py-3 text-sm font-semibold leading-6 text-[#405b46]">
-                  <span className="mt-0.5 text-[#39804a]">✓</span>{item}
+                  <Check size={15} aria-hidden="true" className="mt-0.5 shrink-0 text-[#39804a]" />{item}
                 </div>
               ))}
               <p className="rounded-xl border border-[#e8dfc8] bg-[#fbf8ef] p-4 text-xs leading-6 text-[#6b5a35]">
@@ -343,12 +344,12 @@ export default function SellOnPlantMarketPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-              <span className="text-2xl">🔎</span>
+              <Search size={25} aria-hidden="true" className="text-white" />
               <h3 className="mt-3 font-extrabold">Seller verification</h3>
               <p className="mt-2 text-sm leading-6 text-white/70">পরিচয় ও ব্যবসার তথ্য পর্যালোচনা করা হয়।</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-              <span className="text-2xl">🪴</span>
+              <Sprout size={25} aria-hidden="true" className="text-white" />
               <h3 className="mt-3 font-extrabold">Product review</h3>
               <p className="mt-2 text-sm leading-6 text-white/70">জমা দেওয়া পণ্যের তথ্য review-এর পর প্রকাশিত হয়।</p>
             </div>
@@ -392,9 +393,9 @@ export default function SellOnPlantMarketPage() {
             <div className="mt-6 rounded-2xl border border-[#dce8d9] bg-white/85 p-5">
               <h3 className="font-extrabold">আবেদনের আগে জেনে নিন</h3>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-[#5e7062]">
-                <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>Plant Market-এর জন্য আলাদা seller permission প্রয়োজন।</span></li>
-                <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>আবেদন যাচাই ও অনুমোদনের আগে পণ্য যোগ করা যাবে না।</span></li>
-                <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>জমা দেওয়া listing review-এর পর প্রকাশিত হবে।</span></li>
+                <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>Plant Market-এর জন্য আলাদা seller permission প্রয়োজন।</span></li>
+                <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>আবেদন যাচাই ও অনুমোদনের আগে পণ্য যোগ করা যাবে না।</span></li>
+                <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>জমা দেওয়া listing review-এর পর প্রকাশিত হবে।</span></li>
               </ul>
             </div>
             <p className="mt-5 text-sm leading-6 text-[#647468]">
