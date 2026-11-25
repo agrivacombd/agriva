@@ -14,39 +14,48 @@ function isInvalidRefreshToken(error: unknown): boolean {
     /invalid refresh token|refresh token (not found|expired)/i.test(message);
 }
 
+function markAuthResponsePrivate(response: NextResponse): NextResponse {
+  // Never let a CDN cache a response that may contain refreshed or cleared
+  // Supabase session cookies and replay it to another visitor.
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.set("Expires", "0");
+  return response;
+}
+
 function clearSupabaseAuthCookies(request: NextRequest): NextResponse {
   const authCookieNames = request.cookies.getAll()
     .filter((cookie) => cookie.name.startsWith("sb-"))
     .map((cookie) => cookie.name);
 
   authCookieNames.forEach((name) => request.cookies.delete(name));
-  const response = NextResponse.next({ request });
+  const response = markAuthResponsePrivate(NextResponse.next({ request }));
   authCookieNames.forEach((name) => response.cookies.delete(name));
   return response;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const locale = request.nextUrl.pathname === "/en" || request.nextUrl.pathname.startsWith("/en/") ? "en" : "bn";
   request.headers.set("x-agriva-locale", locale);
 
-  // Most visitors are anonymous. Do not make a Supabase Auth network request
-  // when no Supabase session cookie exists; preserve locale headers in NextResponse.
+  // Most visitors are anonymous. Avoid a Supabase Auth network request when
+  // there is no session cookie; preserve locale headers in NextResponse.
   const hasAuthCookie = request.cookies.getAll().some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));
   if (!hasAuthCookie) return NextResponse.next({ request });
 
+  let response = markAuthResponsePrivate(NextResponse.next({ request }));
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) return NextResponse.next({ request });
+  if (!supabaseUrl || !supabaseKey) return response;
 
-  let response = NextResponse.next({ request });
   const supabase = createServerClient(supabaseUrl, supabaseKey, {
     cookies: {
       getAll: () => request.cookies.getAll(),
       setAll(cookiesToSet) {
-        // Keep the request cookie view in sync so server components in this
+        // Keep the request cookie view in sync so Server Components in this
         // request see the refreshed session.
         cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        response = NextResponse.next({ request });
+        response = markAuthResponsePrivate(NextResponse.next({ request }));
         cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
@@ -54,7 +63,7 @@ export async function middleware(request: NextRequest) {
 
   // Refresh expired auth tokens before Server Components render. A revoked or
   // malformed refresh token cannot be refreshed; clear only Supabase auth
-  // cookies so every subsequent request does not retry the same invalid token.
+  // cookies so subsequent requests do not retry the same invalid token.
   try {
     const { error } = await supabase.auth.getUser();
     if (isInvalidRefreshToken(error)) response = clearSupabaseAuthCookies(request);
@@ -62,7 +71,7 @@ export async function middleware(request: NextRequest) {
     if (isInvalidRefreshToken(error)) response = clearSupabaseAuthCookies(request);
   }
 
-  return response;
+  return markAuthResponsePrivate(response);
 }
 
 export const config = {
