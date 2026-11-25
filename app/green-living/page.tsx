@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Bug, Camera, Compass, Droplets, Flower2, House, Leaf, NotebookPen, Sprout, Sun } from "lucide-react";
+import { Bug, Camera, Compass, Droplets, Flower2, Leaf, NotebookPen, Sprout, Sun } from "lucide-react";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 const pageUrl = `${siteUrl}/green-living`;
