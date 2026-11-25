@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BadgeCheck, Banknote, Camera, Check, ClipboardList, FileText, Leaf, Package, Settings, ShieldCheck, Sprout, Wheat } from "lucide-react";
+import { Banknote, Camera, Check, ClipboardList, FileText, Leaf, Package, Settings, ShieldCheck, Sprout, Wheat } from "lucide-react";
 import SellerApplicationForm from "@/components/seller/SellerApplicationForm";
 
 const siteUrl = "https://agriva.com.bd";
@@ -209,7 +209,7 @@ export default function SellOnMarketplacePage() {
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[#526658]">
               <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-emerald-700" /> আলাদা Seller verification</span>
               <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-emerald-700" /> পণ্য জমার আগে নির্দেশনা</span>
-              <span className="inline-flex items-center gap-2"><span className="text-emerald-700">✓</span> Admin review-এর পর প্রকাশ</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-emerald-700" /> Admin review-এর পর প্রকাশ</span>
             </div>
           </div>
 
