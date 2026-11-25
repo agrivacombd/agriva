@@ -74,6 +74,13 @@ export function parseArticleMarkdown(body:string):ArticleBlock[]{
     }
     const heading=/^(#{1,3})\s+(.+)$/.exec(s);
     if(heading){flush();current=null;blocks.push({kind:heading[1].length>=3?"h3":"h2",lines:[heading[2]]});continue;}
+    const task=/^[-+*]\\s+\\[([ xX])\\]\\s+(.+)$/.exec(s);
+    if(task){
+      flush();
+      if(!current||current.kind!=="task"){current={kind:"task",lines:[],tasks:[]};blocks.push(current);}
+      current.tasks!.push({checked:task[1].toLowerCase()==="x",text:task[2]});
+      continue;
+    }
     const ul=/^[-+*]\s+(.+)$/.exec(s),ol=/^\d+[.)]\s+(.+)$/.exec(s);
     if(ul||ol){
       flush();const kind=ul?"ul":"ol";
