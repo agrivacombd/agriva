@@ -33,6 +33,7 @@ export default async function CategoryPage({ params }: Props) {
   const { categorySlug } = await params;
   const category = getCategory(categorySlug);
   if (!category) notFound();
+  const CategoryIcon = category.icon;
   let products: MarketplaceProduct[] = [];
   try {
     const supabase = await createSupabaseServerClient();
@@ -75,7 +76,7 @@ export default async function CategoryPage({ params }: Props) {
     <div className="mx-auto max-w-7xl">
       <nav aria-label="Breadcrumb" className="mb-6 text-sm text-slate-500"><Link href="/" className="hover:text-emerald-800">হোম</Link><span className="mx-2" aria-hidden="true">/</span><Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link><span className="mx-2" aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-slate-700">{category.name}</span></nav>
       <header className="rounded-3xl bg-gradient-to-br from-[#103f2b] to-[#24734a] p-6 text-white sm:p-10">
-        <category.icon size={52} strokeWidth={1.5} aria-hidden="true" className="text-lime-200" /><h1 className="mt-4 text-3xl font-black sm:text-5xl">{category.name}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base">{category.description}। AGRIVA Marketplace-এ এই ক্যাটাগরির পণ্য ও বিবরণ খুঁজুন।</p>
+        <CategoryIcon size={52} strokeWidth={1.5} aria-hidden="true" className="text-lime-200" /><h1 className="mt-4 text-3xl font-black sm:text-5xl">{category.name}</h1><p className="mt-3 max-w-2xl text-sm leading-7 text-emerald-50/85 sm:text-base">{category.description}। AGRIVA Marketplace-এ এই ক্যাটাগরির পণ্য ও বিবরণ খুঁজুন।</p>
       </header>
       <section className="mt-8"><h2 className="text-xl font-black">সাব-ক্যাটাগরি</h2><div className="mt-3 flex flex-wrap gap-2">{category.subcategories.map((sub) => <Link key={sub.slug} href={`/marketplace/category/${category.slug}/${sub.slug}`} className="rounded-full border border-emerald-900/15 bg-white px-4 py-2.5 text-sm font-bold transition hover:border-emerald-700 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-700">{sub.name}</Link>)}</div></section>
       {isSamplePreview && <p role="status" className="mt-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">প্রিভিউ মোড: নমুনা পণ্য — বাস্তব বিক্রির তালিকা নয়।</p>}<section className="mt-10"><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.15em] text-emerald-700">Category catalogue</p><h2 className="mt-2 text-2xl font-black">{category.name} — পণ্য তালিকা</h2></div><span className="text-sm text-slate-500">{products.length.toLocaleString("bn-BD")}টি</span></div>
