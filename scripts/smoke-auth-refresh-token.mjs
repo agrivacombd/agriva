@@ -11,6 +11,8 @@ assert.match(middleware, /cookie\.name\.startsWith\("sb-"\)/, "only Supabase aut
 assert.match(middleware, /request\.cookies\.delete\(name\)/, "cleared cookies must be removed from the request view");
 assert.match(middleware, /response\.cookies\.delete\(name\)/, "cleared cookies must be expired in the response");
 assert.match(middleware, /NextResponse\.next\(\{ request \}\)/, "downstream Server Components must receive the cleaned request cookie view");
+assert.match(middleware, /Cache-Control", "private, no-store/, "auth cookie responses must not be cached by a CDN");
+assert.match(middleware, /Pragma", "no-cache/, "auth cookie responses must include legacy no-cache protection");
 assert.doesNotMatch(middleware, /request\.cookies\.delete\([^)]*\*|response\.cookies\.delete\([^)]*\*/, "cookie clearing must not use broad wildcard deletion");
 
-console.log("Invalid Supabase refresh-token cookie regression checks passed.");
+console.log("Invalid Supabase refresh-token and auth response cache regression checks passed.");
