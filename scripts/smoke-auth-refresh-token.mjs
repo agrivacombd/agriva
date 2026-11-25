@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { strict as assert } from "node:assert";
 
 const proxy = readFileSync("proxy.ts", "utf8");
-assert.match(proxy, /export async function proxy\\(/, "Next.js 16 must invoke the proxy convention");
+assert.match(proxy, /export async function proxy/, "Next.js 16 must invoke the proxy convention");
 assert.match(proxy, /supabase\.auth\.getUser\(\)/, "proxy must continue refreshing the user session");
 assert.match(proxy, /refresh_token_not_found/, "known missing refresh-token errors must be recognized");
 assert.match(proxy, /invalid_refresh_token/, "invalid refresh-token errors must be recognized");
