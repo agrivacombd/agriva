@@ -1,0 +1,407 @@
+{
+  "classification": "API crop-name and geographic coverage audit; coverage clusters are not an official crop master list",
+  "capturedAtUtc": "2026-11-21T20:48:20Z",
+  "source": "https://api1.cropzoning.gov.bd",
+  "officialReference": {
+    "annualReport": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2026/9/cae1a14a-896a-4f97-b1c8-76a13fab40a6.pdf",
+    "annualReportPeriod": "2025-2026",
+    "annualReportPublished": "October 2026",
+    "annualReportCoverage": "BARC reports 76 crop suitability assessments completed in 30 additional upazilas during FY 2025-26, bringing cumulative coverage to 479 of 495 upazilas (annual report pp. 6 and 9).",
+    "projectPage": "https://portal.cropzoning.gov.bd/aboutProject",
+    "projectPageCoverage": "The project page currently states 76 crops across 464 of 495 upazilas.",
+    "economicReview2026": {
+      "url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-barc/2026/8/1dd01cf9-4ada-4159-9a2f-376f8beedbef.pdf",
+      "document": "BARC information for Bangladesh Economic Review 2026",
+      "printedPage": 3,
+      "claim": "Crop-zoning activities for 76 crops completed in 480 upazilas; work in remaining 15 upazilas ongoing.",
+      "distinction": "This wording is crop-zoning activities, whereas the FY 2025-26 Annual Report states suitability assessments completed in 30 additional upazilas, cumulative 479. The two counts should not be silently conflated."
+    },
+    "verificationRequest": "docs/research/barc-crop-suitability-verification-request.md"
+  },
+  "apiInventory": {
+    "distinctCropNameCount": 95,
+    "distinctCropIdCount": 140,
+    "upazilaDirectoryCount": 483,
+    "totalSuitabilityRecords": 50724
+  },
+  "areaUnitCrossCheck": {
+    "dashboardSource": "https://dashboard.cropzoning.gov.bd/",
+    "dashboardUnitLabel": "Area [ha]",
+    "crop": "Boro dhan",
+    "cropId": 1,
+    "situation": "Favourable Environment",
+    "season": "Rabi",
+    "apiRecordCount": 483,
+    "classFieldOrder": [
+      "vs",
+      "s",
+      "ms",
+      "ls",
+      "ns"
+    ],
+    "apiClassTotals": [
+      4135919,
+      2232017,
+      1209085,
+      213096,
+      2328551
+    ],
+    "apiTotal": 10118668,
+    "dashboardClassTotalsHa": [
+      4118560,
+      2224969,
+      1227522,
+      203541,
+      2316663
+    ],
+    "dashboardTotalHa": 10091255,
+    "totalDifference": 27413,
+    "totalDifferencePercent": 0.272,
+    "interpretation": "The API class totals are close to the official dashboard's hectare totals (0.272% total difference), strongly suggesting the API fields are area in hectares. However, the values do not match exactly and the API payload has no unit metadata; treat hectares as a high-confidence hypothesis, not a BARC-confirmed unit."
+  },
+  "largestIdenticalCoverageCluster": {
+    "cropCount": 76,
+    "upazilaCodeCount": 482,
+    "matchedAgrivaUpazilaCount": 480,
+    "unmatchedApiLocationCount": 2,
+    "unmatchedApiLocations": [
+      {
+        "code": "303331",
+        "district": "Gazipur",
+        "upazila": "Gazipur City Corporation"
+      },
+      {
+        "code": "558550",
+        "district": "Rangpur",
+        "upazila": "Rangpur City Corporation"
+      }
+    ],
+    "cropNames": [
+      "Aroid",
+      "Ash Gourd",
+      "B. Aus dhan",
+      "Banana",
+      "Barley",
+      "Betel leaf",
+      "Bitter Gourd",
+      "Bottle Gourd",
+      "Brinjal",
+      "Broccoli",
+      "Cabbage",
+      "Carrot",
+      "Cauliflower",
+      "Chilli",
+      "Coconut",
+      "Colocasia",
+      "Coriander",
+      "Cotton",
+      "Country Bean",
+      "Cowpea",
+      "Cucumber",
+      "Cucumber (Khira)",
+      "Date Palm",
+      "Garlic",
+      "Ginger",
+      "Golden Apple",
+      "Gram / Chickpea",
+      "Grass pea",
+      "Ground Nut",
+      "Guava",
+      "Indian Spinach",
+      "Jackfruit",
+      "Jujube",
+      "Jute (Deshi)",
+      "Jute (Tosa)",
+      "Kaon",
+      "Kenaf",
+      "Ladys Finger",
+      "Lemon",
+      "Lentil",
+      "Linseed",
+      "Litchi",
+      "Maize",
+      "Mango",
+      "Mungbean",
+      "Musk Melon",
+      "Mustard",
+      "Onion",
+      "Palmyra Palm",
+      "Papaya",
+      "Pineapple",
+      "Pointed Gourd",
+      "Potato",
+      "Proso millet",
+      "Pumpkin (Sweet gourd)",
+      "Radish",
+      "Red Amaranth",
+      "Ridge Gourd",
+      "Sesame",
+      "Snake Gourd",
+      "Soybean",
+      "Spinach",
+      "Sponge Gourd",
+      "Stem Amaranth",
+      "Sugarcane",
+      "Sunflower",
+      "Sweet Orange (Malta)",
+      "Sweet Potato",
+      "T. Aman dhan",
+      "T. Aus dhan",
+      "Teasle Gourd",
+      "Tomato",
+      "Turmeric",
+      "Water Melon",
+      "Wheat",
+      "Yard Long Bean"
+    ],
+    "caveat": "This 76-name cluster is identified only by identical API coverage in this capture. BARC has not confirmed that these names constitute the final 76-crop assessment inventory."
+  },
+  "coverageCountDistribution": {
+    "1": 1,
+    "2": 3,
+    "4": 7,
+    "56": 1,
+    "205": 1,
+    "207": 2,
+    "208": 1,
+    "482": 76,
+    "483": 3
+  },
+  "additionalCropLabels": [
+    {
+      "cropName": "Knolkhol",
+      "cropIds": [
+        "153"
+      ],
+      "upazilaCount": 1,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 1
+    },
+    {
+      "cropName": "Cashewnut",
+      "cropIds": [
+        "150"
+      ],
+      "upazilaCount": 2,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 2
+    },
+    {
+      "cropName": "Pummelo",
+      "cropIds": [
+        "151"
+      ],
+      "upazilaCount": 2,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 2
+    },
+    {
+      "cropName": "Rambutan",
+      "cropIds": [
+        "152"
+      ],
+      "upazilaCount": 2,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 2
+    },
+    {
+      "cropName": "Betel nut",
+      "cropIds": [
+        "146"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Dragon Fruit",
+      "cropIds": [
+        "144"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "French Bean",
+      "cropIds": [
+        "143"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Indian Dillenia (Chalta)",
+      "cropIds": [
+        "148"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Indian Olive",
+      "cropIds": [
+        "147"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Sapota",
+      "cropIds": [
+        "149"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Strawberry",
+      "cropIds": [
+        "145"
+      ],
+      "upazilaCount": 4,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 4
+    },
+    {
+      "cropName": "Mesta",
+      "cropIds": [
+        "141"
+      ],
+      "upazilaCount": 56,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 56
+    },
+    {
+      "cropName": "Capsicum (Sweet pepper)",
+      "cropIds": [
+        "139"
+      ],
+      "upazilaCount": 205,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 205
+    },
+    {
+      "cropName": "Black cumin",
+      "cropIds": [
+        "123"
+      ],
+      "upazilaCount": 207,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 207
+    },
+    {
+      "cropName": "Garden Pea",
+      "cropIds": [
+        "128"
+      ],
+      "upazilaCount": 207,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 207
+    },
+    {
+      "cropName": "B. Aman dhan",
+      "cropIds": [
+        "138"
+      ],
+      "upazilaCount": 208,
+      "seasons": [
+        "Kharif-2"
+      ],
+      "recordCount": 208
+    },
+    {
+      "cropName": "Black Gram",
+      "cropIds": [
+        "91",
+        "114",
+        "140"
+      ],
+      "upazilaCount": 483,
+      "seasons": [
+        "Kharif-1",
+        "Kharif-2",
+        "Rabi"
+      ],
+      "recordCount": 899
+    },
+    {
+      "cropName": "Boro dhan",
+      "cropIds": [
+        "1",
+        "2"
+      ],
+      "upazilaCount": 483,
+      "seasons": [
+        "Rabi"
+      ],
+      "recordCount": 586
+    },
+    {
+      "cropName": "Tea",
+      "cropIds": [
+        "108"
+      ],
+      "upazilaCount": 483,
+      "seasons": [
+        "Kharif-1"
+      ],
+      "recordCount": 483
+    }
+  ],
+  "apiDirectoryEntriesOutsideLargestCluster": [
+    {
+      "code": "201204",
+      "district": "Brahamanbaria",
+      "upazila": "Banchharampur"
+    }
+  ],
+  "reconciliation": {
+    "latestAnnualReportClaim": "479 upazilas (FY 2025-26 Annual Report; suitability assessments completed)",
+    "apiLargestClusterMappedToAgriva": 480,
+    "apiLargestClusterIncludesNonUpazilaEntries": 2,
+    "discrepancy": "The API's 76-label identical-coverage cluster maps to 480 AGRIVA upazila records plus two city-corporation entries. BARC's FY 2025-26 Annual Report reports 479 upazilas for completed suitability assessments, while BARC information for Bangladesh Economic Review 2026 says crop-zoning activities for 76 crops have been completed in 480 upazilas and work in 15 remains. The project page still says 464. These may reflect different cut-off dates or definitions (assessment completion versus crop-zoning activities); BARC must confirm the current canonical count and date.",
+    "additionalEconomicReviewClaim": "480 upazilas (BARC information for Bangladesh Economic Review 2026; crop-zoning activities completed)",
+    "currentConclusion": "The API's 480-upazila coverage is now corroborated by a separate BARC 2026 publication for crop-zoning activities, but not yet confirmed as the same milestone/definition as completed suitability assessment. Keep the discrepancy open."
+  },
+  "limitations": [
+    "Do not treat the largest coverage cluster as an official BARC crop master list until BARC confirms it.",
+    "The API returns 95 crop labels and 140 crop IDs; crop IDs are not one-to-one with crop names.",
+    "The fields vs, s, ms, ls and ns do not expose their unit in the inspected payload.",
+    "No suitability values are published by this audit; it only describes coverage and identifiers."
+  ]
+}

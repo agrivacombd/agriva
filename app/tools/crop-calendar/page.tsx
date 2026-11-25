@@ -5,12 +5,12 @@ import CropCalendar from "@/components/tools/CropCalendar";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "বাংলাদেশের ফসল ক্যালেন্ডার: বপন ও কাটার সময়",
-  description: "আউশ, আমন, বোরো, গম, রবি ভুট্টা ও আলুর বপন-রোপণ এবং ফসল সংগ্রহের জাতীয় সময়সীমা দেখুন। BBS ও BAMIS-এর উৎসসহ কৃষি পরিকল্পনা করুন।",
+  title: "বাংলাদেশের ফসল ক্যালেন্ডার: জেলা ও উপজেলা ভিত্তিক কৃষি পরিকল্পনা",
+  description: "বিভাগ, জেলা ও উপজেলা নির্বাচন করে বাংলাদেশের ফসল ক্যালেন্ডার, BAMIS জেলা-ভিত্তিক প্রধান ফসল এবং BARC ফসল উপযোগিতা যাচাই করুন।",
   alternates: { canonical: "/tools/crop-calendar" },
   openGraph: {
     title: "বাংলাদেশের ফসল ক্যালেন্ডার | AGRIVA",
-    description: "বাংলাদেশে প্রধান ফসলের বপন, রোপণ ও সংগ্রহের সময় জানুন; স্থানীয় BAMIS পরামর্শ দিয়ে সময় যাচাই করুন।",
+    description: "বিভাগ, জেলা ও উপজেলা অনুযায়ী ফসল পরিকল্পনা করুন; BBS, BAMIS ও BARC-এর সরকারি কৃষি তথ্যসূত্র দেখুন।",
     url: "/tools/crop-calendar",
     type: "website",
     locale: "bn_BD",
@@ -64,8 +64,8 @@ export default function CropCalendarPage() {
           <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Farmer Tools</p>
           <h1 className="mt-3 break-words text-3xl font-black leading-tight sm:text-4xl md:text-5xl">বাংলাদেশের ফসল ক্যালেন্ডার</h1>
           <p className="mt-4 max-w-3xl text-base leading-7 text-[#647468] sm:text-lg sm:leading-8">
-            আউশ, আমন, বোরো, গম, রবি ভুট্টা ও আলুর বপন বা রোপণ এবং ফসল সংগ্রহের সাধারণ সময়সীমা দেখুন।
-            ফসল ও মৌসুম নির্বাচন করে পরিকল্পনার তথ্য জানুন।
+            বিভাগ, জেলা ও উপজেলা নির্বাচন করে ২০২২/২৩ সালের জেলা-ভিত্তিক ফসল আবাদ-অংশ, প্রধান ফসলের পরিসংখ্যান এবং জাতীয় ফসল ক্যালেন্ডার দেখুন।
+            উপজেলা-ভিত্তিক ফসল উপযোগিতা যাচাইয়ের জন্য BARC-এর সরকারি তথ্যসূত্রও এখানে দেওয়া আছে।
           </p>
           <CropCalendar />
 
@@ -93,6 +93,20 @@ export default function CropCalendarPage() {
               <li><strong>রবি ভুট্টা:</strong> বপন অক্টোবরের মাঝামাঝি থেকে ডিসেম্বরের শেষ; সংগ্রহ এপ্রিলের শুরু থেকে মে মাসের শেষ।</li>
               <li><strong>আলু:</strong> রোপণ সেপ্টেম্বরের মাঝামাঝি থেকে নভেম্বর; সংগ্রহ জানুয়ারির মাঝামাঝি থেকে মার্চ।</li>
             </ul>
+
+            <h2>জেলা অনুযায়ী ফসলের আবাদ-অংশ কীভাবে বুঝবেন?</h2>
+            <p>
+              জেলা নির্বাচন করলে ২০২২/২৩ সালের মোট ফসলি জমির তুলনায় ধান, গম, ভুট্টা, আলু, ডাল,
+              তৈলবীজ, সবজি, মরিচ, পেঁয়াজ, আখ ও পাটের আবাদি অংশ দেখা যায়। এই পরিসংখ্যান IFPRI-এর
+              ২০২৪ সালের প্রতিবেদনের Table 3.7 থেকে নেওয়া; প্রতিবেদনে মূল তথ্যসূত্র হিসেবে BBS-এর
+              Yearbook of Agricultural Statistics 2023 উল্লেখ করা হয়েছে। এটি জেলা-স্তরের ঐতিহাসিক
+              আবাদ-পরিসংখ্যান—বর্তমান মৌসুমের পূর্বাভাস বা জমির উপযোগিতা স্কোর নয়।
+            </p>
+            <p>
+              একই জমিতে বছরে একাধিক ফসল চাষ হতে পারে, তাই প্রতিটি ফসলের আবাদি অংশ যোগ করলে ১০০
+              শতাংশের বেশি হতে পারে। এই অনুপাতকে সরাসরি জমির suitability বা লাভের নিশ্চয়তা হিসেবে
+              ব্যবহার করবেন না।
+            </p>
 
             <h2>জেলা অনুযায়ী ফসলের সময় কীভাবে যাচাই করবেন?</h2>
             <p>
@@ -162,6 +176,8 @@ export default function CropCalendarPage() {
             <ul>
               <li><a href="https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-bbs/2024/12/85216bc379fa443e837ffac3052a45dc.pdf" target="_blank" rel="noopener noreferrer">Bangladesh Bureau of Statistics (BBS), Yearbook of Agricultural Statistics 2022 — Crop Calendar of Bangladesh, পৃষ্ঠা ২৪</a>.</li>
               <li><a href="https://www.bamis.gov.bd/en/calendar/" target="_blank" rel="noopener noreferrer">Bangladesh Agro-Meteorological Information Service (BAMIS), Department of Agricultural Extension — Crop Weather Calendar</a>.</li>
+              <li><a href="https://bangladesh.ifpri.info/files/2024/11/IFPRI_Food-Security-in-Bangladesh_Report_November-2024.pdf" target="_blank" rel="noopener noreferrer">IFPRI (October 2024), Food Security and Nutrition in Bangladesh: Evidence-Based Strategies for Advancement — Table 3.7, district crop shares (2022/23); underlying source: BBS Yearbook of Agricultural Statistics 2023</a>.</li>
+              <li><a href="https://portal.cropzoning.gov.bd/aboutProject" target="_blank" rel="noopener noreferrer">Bangladesh Agricultural Research Council (BARC) — Upazila Land Suitability Assessment and Crop Zoning System</a>.</li>
               <li><a href="https://www.bamis.gov.bd/en/page/about-bamis-portal/" target="_blank" rel="noopener noreferrer">BAMIS Portal সম্পর্কে — কৃষি আবহাওয়া ও জেলা-ভিত্তিক পরামর্শ সেবা</a>.</li>
             </ul>
             <p><strong>তথ্য ব্যবহারের নোট:</strong> BBS-এর প্রকাশিত জাতীয় সময়সীমা পরিকল্পনার ভিত্তি হিসেবে ব্যবহৃত হয়েছে। নির্দিষ্ট জমিতে চাষের সিদ্ধান্তের আগে হালনাগাদ জেলা-ভিত্তিক কৃষি আবহাওয়া পরামর্শ যাচাই করুন।</p>
