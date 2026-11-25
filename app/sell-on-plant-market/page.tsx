@@ -159,9 +159,9 @@ export default function SellOnPlantMarketPage() {
               </Link>
             </div>
             <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-[#536b5b]">
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> আলাদা Seller verification</span>
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> নিজস্ব Plant Seller Dashboard</span>
-              <span className="inline-flex items-center gap-2"><span className="text-[#3c804c]">✓</span> Review-এর পর listing প্রকাশ</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> আলাদা Seller verification</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> নিজস্ব Plant Seller Dashboard</span>
+              <span className="inline-flex items-center gap-2"><Check size={15} aria-hidden="true" className="text-[#3c804c]" /> Review-এর পর listing প্রকাশ</span>
             </div>
           </div>
 
@@ -395,7 +395,7 @@ export default function SellOnPlantMarketPage() {
               <ul className="mt-3 space-y-2 text-sm leading-6 text-[#5e7062]">
                 <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>Plant Market-এর জন্য আলাদা seller permission প্রয়োজন।</span></li>
                 <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>আবেদন যাচাই ও অনুমোদনের আগে পণ্য যোগ করা যাবে না।</span></li>
-                <li className="flex gap-2"><span className="text-[#39804a]">✓</span><span>জমা দেওয়া listing review-এর পর প্রকাশিত হবে।</span></li>
+                <li className="flex gap-2"><Check size={15} aria-hidden="true" className="shrink-0 text-[#39804a]" /><span>জমা দেওয়া listing review-এর পর প্রকাশিত হবে।</span></li>
               </ul>
             </div>
             <p className="mt-5 text-sm leading-6 text-[#647468]">
