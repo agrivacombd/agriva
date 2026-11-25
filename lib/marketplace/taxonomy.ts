@@ -1,30 +1,32 @@
+import { Carrot, Leaf, Package, ShieldCheck, Sprout, Wheat, Wrench } from "lucide-react";
+
 export const MARKETPLACE_CATEGORIES = [
-  { slug: "seeds", name: "বীজ", description: "ধান, সবজি ও মৌসুমি ফসলের বীজ", icon: "🌱", match: ["বীজ", "seed", "seeds"], subcategories: [
+  { slug: "seeds", name: "বীজ", description: "ধান, সবজি ও মৌসুমি ফসলের বীজ", icon: Sprout, match: ["বীজ", "seed", "seeds"], subcategories: [
     { slug: "rice-seeds", name: "ধানের বীজ", description: "ধান চাষের জন্য বীজের পণ্য ও সংশ্লিষ্ট তথ্য দেখুন।", match: ["ধান", "rice"] },
     { slug: "vegetable-seeds", name: "সবজির বীজ", description: "বিভিন্ন সবজি চাষের বীজের তালিকা ও পণ্যের বিবরণ দেখুন।", match: ["সবজি", "vegetable"] },
   ] },
-  { slug: "fertilizer", name: "সার", description: "জৈব, রাসায়নিক ও মাটির পুষ্টি উপকরণ", icon: "🌿", match: ["সার", "fertilizer", "fertiliser"], subcategories: [
+  { slug: "fertilizer", name: "সার", description: "জৈব, রাসায়নিক ও মাটির পুষ্টি উপকরণ", icon: Leaf, match: ["সার", "fertilizer", "fertiliser"], subcategories: [
     { slug: "organic-fertilizer", name: "জৈব সার", description: "মাটির পরিচর্যা ও পুষ্টি ব্যবস্থাপনায় ব্যবহৃত জৈব সারের পণ্য দেখুন।", match: ["জৈব", "organic"] },
     { slug: "chemical-fertilizer", name: "রাসায়নিক সার", description: "ফসলের পুষ্টি ব্যবস্থাপনায় ব্যবহৃত রাসায়নিক সারের পণ্য ও তথ্য দেখুন।", match: ["রাসায়নিক", "chemical"] },
   ] },
-  { slug: "crop-protection", name: "ফসল সুরক্ষা", description: "ফসলের রোগবালাই ও পোকা ব্যবস্থাপনার উপকরণ", icon: "🛡️", match: ["কীটনাশক", "ছত্রাকনাশক", "ফসল সুরক্ষা", "pesticide", "crop protection"], subcategories: [
+  { slug: "crop-protection", name: "ফসল সুরক্ষা", description: "ফসলের রোগবালাই ও পোকা ব্যবস্থাপনার উপকরণ", icon: ShieldCheck, match: ["কীটনাশক", "ছত্রাকনাশক", "ফসল সুরক্ষা", "pesticide", "crop protection"], subcategories: [
     { slug: "pesticides", name: "কীটনাশক", description: "ফসলের পোকা ব্যবস্থাপনায় ব্যবহৃত কীটনাশকের পণ্য ও লেবেল-সংক্রান্ত তথ্য দেখুন।", match: ["কীটনাশক", "pesticide"] },
     { slug: "fungicides", name: "ছত্রাকনাশক", description: "ফসলের ছত্রাকজনিত রোগ ব্যবস্থাপনায় ব্যবহৃত পণ্যের তালিকা দেখুন।", match: ["ছত্রাকনাশক", "fungicide"] },
   ] },
-  { slug: "tools-equipment", name: "কৃষি যন্ত্রপাতি", description: "চাষাবাদ, সেচ ও ফসল সংগ্রহের যন্ত্র", icon: "🧰", match: ["যন্ত্র", "যন্ত্রপাতি", "equipment", "tools", "machinery"], subcategories: [
+  { slug: "tools-equipment", name: "কৃষি যন্ত্রপাতি", description: "চাষাবাদ, সেচ ও ফসল সংগ্রহের যন্ত্র", icon: Wrench, match: ["যন্ত্র", "যন্ত্রপাতি", "equipment", "tools", "machinery"], subcategories: [
     { slug: "irrigation", name: "সেচ সরঞ্জাম", description: "জমিতে পানি সরবরাহ ও সেচ ব্যবস্থাপনার সরঞ্জামের পণ্য দেখুন।", match: ["সেচ", "irrigation"] },
     { slug: "farm-tools", name: "চাষাবাদের সরঞ্জাম", description: "চাষাবাদ ও কৃষিকাজে ব্যবহৃত সরঞ্জামের পণ্য ও বিবরণ দেখুন।", match: ["সরঞ্জাম", "tools"] },
   ] },
-  { slug: "produce", name: "তাজা কৃষিপণ্য", description: "ধান, শস্য, সবজি, ফল ও মৌসুমি উৎপাদন", icon: "🥬", match: ["শস্য", "সবজি", "ফল", "ধান", "produce", "vegetable", "fruit", "grain"], subcategories: [
+  { slug: "produce", name: "তাজা কৃষিপণ্য", description: "ধান, শস্য, সবজি, ফল ও মৌসুমি উৎপাদন", icon: Carrot, match: ["শস্য", "সবজি", "ফল", "ধান", "produce", "vegetable", "fruit", "grain"], subcategories: [
     { slug: "vegetables", name: "সবজি", description: "তাজা সবজি ও উপলভ্য কৃষিপণ্যের তালিকা দেখুন।", match: ["সবজি", "vegetable"] },
     { slug: "fruits", name: "ফল", description: "মৌসুমি ফল ও উপলভ্য কৃষিপণ্যের তালিকা দেখুন।", match: ["ফল", "fruit"] },
     { slug: "grains", name: "শস্য ও ধান", description: "শস্য ও ধানজাত কৃষিপণ্যের তালিকা এবং পণ্যের বিবরণ দেখুন।", match: ["শস্য", "ধান", "grain", "rice"] },
   ] },
-  { slug: "animal-feed", name: "পশুখাদ্য", description: "গবাদিপশু ও পোলট্রির খাদ্য", icon: "🐄", match: ["পশুখাদ্য", "feed", "animal"], subcategories: [
+  { slug: "animal-feed", name: "পশুখাদ্য", description: "গবাদিপশু ও পোলট্রির খাদ্য", icon: Package, match: ["পশুখাদ্য", "feed", "animal"], subcategories: [
     { slug: "poultry-feed", name: "পোলট্রি ফিড", description: "পোলট্রি পালনে ব্যবহৃত ফিডের পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["পোলট্রি", "poultry"] },
     { slug: "cattle-feed", name: "গবাদিপশুর খাদ্য", description: "গবাদিপশুর খাদ্য পণ্য ও প্যাকেটের তথ্য দেখুন।", match: ["গবাদিপশু", "cattle"] },
   ] },
-  { slug: "premium-food-grains", name: "প্রিমিয়াম খাদ্য ও শস্য", description: "চিয়া সিড, কালো চাল, লাল চাল, ব্রাউন রাইস ও অন্যান্য প্রিমিয়াম খাদ্যশস্য", icon: "🌾", match: ["premium", "food grains", "food-grains", "superfood", "superfoods", "chia", "চিয়া", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
+  { slug: "premium-food-grains", name: "প্রিমিয়াম খাদ্য ও শস্য", description: "চিয়া সিড, কালো চাল, লাল চাল, ব্রাউন রাইস ও অন্যান্য প্রিমিয়াম খাদ্যশস্য", icon: Wheat, match: ["premium", "food grains", "food-grains", "superfood", "superfoods", "chia", "চিয়া", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "basmati", "বাসমতি", "কালিজিরা", "চিনিগুঁড়া", "বাদাম", "খেজুর", "মধু"], subcategories: [
     { slug: "premium-rice", name: "প্রিমিয়াম চাল", description: "কালো চাল, লাল চাল, ব্রাউন রাইস, বাসমতি ও অন্যান্য প্রিমিয়াম চালের পণ্য দেখুন।", match: ["rice", "চাল", "black rice", "কালো চাল", "red rice", "লাল চাল", "brown rice", "ব্রাউন রাইস", "বাসমতি", "basmati", "কালিজিরা", "চিনিগুঁড়া"] },
     { slug: "edible-seeds", name: "খাদ্যোপযোগী সিডস", description: "খাওয়ার উপযোগী চিয়া সিড ও অন্যান্য খাদ্যবীজের প্যাকেটজাত পণ্য দেখুন; বপনের বীজ থেকে আলাদা।", match: ["chia", "চিয়া", "edible seeds", "খাদ্যোপযোগী", "flax", "ফ্ল্যাক্স", "pumpkin", "সিড", "seed"] },
     { slug: "nuts-dried-fruit", name: "বাদাম ও শুকনো ফল", description: "বাদাম, খেজুর ও শুকনো ফলের প্যাকেটজাত পণ্য দেখুন।", match: ["বাদাম", "nuts", "almond", "cashew", "খেজুর", "dates", "dried fruit"] },
