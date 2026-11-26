@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
@@ -56,7 +57,7 @@ export default function AdminProductImages({ productId, initialUrls }: { product
   return <section className="mt-4 rounded-xl border border-[#e2e9df] bg-[#fbfcfa] p-4 md:col-span-2 xl:col-span-3">
     <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-bold">Product images ({urls.length}/4)</p><span className="text-xs text-[#748074]">JPG, PNG, WebP · MB app limit নেই</span></div>
     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      {previews.map((url, index) => <div key={url} className="relative"><img src={url} alt={"Product image " + (index + 1)} className="h-28 w-full rounded-lg border object-cover"/><button type="button" disabled={busy} onClick={() => setUrls(current => current.filter((_, i) => i !== index))} className="mt-1 text-xs font-bold text-red-700">ছবি সরান</button></div>)}
+      {previews.map((url, index) => <div key={url} className="relative"><OptimizedImage src={url} alt={"Product image " + (index + 1)} className="h-28 w-full rounded-lg border object-cover"/><button type="button" disabled={busy} onClick={() => setUrls(current => current.filter((_, i) => i !== index))} className="mt-1 text-xs font-bold text-red-700">ছবি সরান</button></div>)}
     </div>
     <div className="mt-3 flex flex-wrap items-center gap-3">
       <input type="file" multiple accept="image/jpeg,image/png,image/webp" disabled={busy || urls.length >= MAX_IMAGES} onChange={e => { void addFiles(e.target.files); e.currentTarget.value = ""; }} className="max-w-full text-sm"/>
