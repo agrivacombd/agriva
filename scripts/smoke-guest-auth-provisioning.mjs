@@ -15,7 +15,8 @@ assert.ok(auth.includes("signInAnonymously"), "Explicit guest cart flow must ret
 
 const cartPage = read("../app/cart/page.tsx");
 const checkoutPage = read("../app/checkout/page.tsx");
-for (const [name, source] of [["cart page", cartPage], ["checkout page", checkoutPage]]) {
+const orderTracking = read("../components/orders/OrderTracking.tsx");
+for (const [name, source] of [["cart page", cartPage], ["checkout page", checkoutPage], ["order tracking page", orderTracking]]) {
   assert.ok(source.includes("getExistingMarketplaceCartUser"), `${name} must only read an existing session on page load`);
   assert.ok(!source.includes("resolveMarketplaceCartUser"), `${name} must not provision anonymous users just by opening the page`);
 }
