@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -41,6 +42,7 @@ const taskTypes = [
 ];
 
 export default function GardenClient() {
+  const router = useRouter();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [tasks, setTasks] = useState<CareTask[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function GardenClient() {
     setLoading(true);
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) {
-      window.location.assign("/login?next=%2Fgarden");
+      router.push("/login?next=%2Fgarden");
       return;
     }
     const [plantResult, taskResult] = await Promise.all([
@@ -77,7 +79,7 @@ export default function GardenClient() {
       if (!taskPlantId && nextPlants[0]) setTaskPlantId(nextPlants[0].id);
     }
     setLoading(false);
-  }, [taskPlantId]);
+  }, [taskPlantId, router]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -86,7 +88,7 @@ export default function GardenClient() {
     setSaving(true);
     setNotice("");
     const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) { window.location.assign("/login?next=%2Fgarden"); return; }
+    if (!auth.user) { router.push("/login?next=%2Fgarden"); return; }
     const { error } = await supabase.from("garden_plants").insert({
       owner_id: auth.user.id, plant_name: plantName.trim(), nickname: nickname.trim() || null,
       plant_type: plantType, location_label: locationLabel.trim() || null,
@@ -103,7 +105,7 @@ export default function GardenClient() {
     if (!taskPlantId) return;
     setSaving(true); setNotice("");
     const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) { window.location.assign("/login?next=%2Fgarden"); return; }
+    if (!auth.user) { router.push("/login?next=%2Fgarden"); return; }
     const { error } = await supabase.from("garden_care_tasks").insert({
       owner_id: auth.user.id, plant_id: taskPlantId, title: taskTitle.trim(),
       task_type: taskType, due_on: dueOn,
