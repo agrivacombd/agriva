@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export default function PlantMarketAddToCart({
   productId, stock = 0, disabled = false,
@@ -35,6 +36,7 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
+      trackAnalyticsEvent("add_to_cart", { item_id: productId, quantity, item_category: "plant_market" });
       if (buyNow) {
         // Checkout deliberately shows the full existing cart and its total.
         router.push("/plant-market/checkout");

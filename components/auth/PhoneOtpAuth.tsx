@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export type PhoneAuthMode = "login" | "signup";
 
@@ -114,6 +115,7 @@ export default function PhoneOtpAuth({
           return;
         }
       }
+      if (mode === "signup") trackAnalyticsEvent("sign_up", { method: "phone_otp" });
       onAuthenticated();
     } catch {
       setError("OTP যাচাই করা যায়নি। আবার চেষ্টা করুন।");
