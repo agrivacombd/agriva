@@ -20,7 +20,8 @@ assert.match(helper, /if \(!hasMarketingConsent\(\)/, "Events must respect marke
 assert.match(helper, /eventID: eventId/, "Purchase events must carry idempotent order IDs");
 assert.match(direct, /trackMetaEvent\("Purchase"/, "Direct COD success must emit Purchase");
 assert.match(cart, /trackMetaEvent\("Purchase"/, "Cart COD success must emit Purchase");
-assert.match(direct, /if \(data\.orderId && Number\.isFinite\(orderTotal\)\)/, "Direct COD must require a saved order");
+assert.match(direct, /const confirmedId = String\(data\.orderId \|\| ""\)/, "Direct COD must normalize the server-confirmed order ID");
+assert.match(direct, /if \(confirmedId && Number\.isFinite\(orderTotal\)\)/, "Direct COD must require a saved order and finite total");
 assert.match(cart, /if \(result\.orderId && Number\.isFinite\(Number\(result\.total\)\)\)/, "Cart COD must require a saved order");
 assert.doesNotMatch(helper, /params\.phone|params\.email|params\.name|params\.address/, "Do not pass PII into Meta events");
 console.log("Meta conversions static regression checks passed.");
