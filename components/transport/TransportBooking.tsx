@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
@@ -28,6 +29,7 @@ const inputClass = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px
 const labelClass = "block text-sm font-semibold text-slate-700";
 
 export default function TransportBooking() {
+  const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [userId, setUserId] = useState<string | null>(null);
   const [partner, setPartner] = useState<Partner | null>(null);
@@ -97,7 +99,7 @@ export default function TransportBooking() {
 
   async function requireUser() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = "/login?next=%2Ftransport"; return null; }
+    if (!user) { router.push("/login?next=%2Ftransport"); return null; }
     return user;
   }
 

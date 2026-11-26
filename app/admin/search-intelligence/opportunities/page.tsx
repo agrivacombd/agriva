@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Opportunity = {
   id: string;
@@ -24,7 +24,7 @@ export default function Page() {
   const [filter, setFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -45,11 +45,11 @@ export default function Page() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filter]);
 
   useEffect(() => {
     void load();
-  }, [filter]);
+  }, [load]);
 
   async function setStatus(id: string, status: string) {
     setUpdatingId(id);

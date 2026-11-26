@@ -45,20 +45,21 @@ export default function ContentDraftsClient(){
     setLoading(false);
   }
   useEffect(()=>{void load();},[]);
+  const selectedId = selected?.id;
   useEffect(()=>{
     let stopped=false;
     async function history(){
-      if(!selected){setRevisions([]);return;}
+      if(!selectedId){setRevisions([]);return;}
       const s=client();
       if(!s)return;
       const {data,error:historyError}=await s.from("content_draft_revisions")
         .select("id,changed_at,changed_by,status_before,status_after,snapshot")
-        .eq("draft_id",selected.id).order("changed_at",{ascending:false}).limit(30);
+        .eq("draft_id",selectedId).order("changed_at",{ascending:false}).limit(30);
       if(stopped)return;
       if(historyError){setError(historyError.message);setRevisions([]);}else setRevisions((data||[]) as Revision[]);
     }
     void history();return()=>{stopped=true;};
-  },[selected?.id]);
+  },[selectedId]);
 
   const shown=useMemo(()=>drafts.filter(d=>
     (filter==="trash"?Boolean(d.deleted_at):!d.deleted_at&&(filter==="all"||d.status===filter))&&(typeFilter==="all"||d.content_type===typeFilter)&&

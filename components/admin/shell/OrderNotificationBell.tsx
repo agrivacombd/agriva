@@ -51,7 +51,7 @@ export default function OrderNotificationBell(){
         }
         if(!isFirst.current&&newForAlert.length&&alertsOn&&"Notification" in window&&Notification.permission==="granted"){
           const popup=new Notification("AGRIVA · নতুন অর্ডার",{body:newForAlert.length+"টি নতুন অর্ডার এসেছে।",tag:"agriva-new-orders"});
-          popup.onclick=()=>{window.focus();window.location.assign("/admin/orders");popup.close()};
+          popup.onclick=()=>{window.focus();router.push("/admin/orders");popup.close()};
         }
         if(!isFirst.current&&newForAlert.length)setLocal(notifyKey,current);
         else if(isFirst.current&&!alreadyAlerted)setLocal(notifyKey,current);
@@ -64,7 +64,7 @@ export default function OrderNotificationBell(){
     const focus=()=>void poll(),visible=()=>{if(!document.hidden)void poll()};
     window.addEventListener("focus",focus);document.addEventListener("visibilitychange",visible);
     return()=>{disposed=true;window.clearInterval(timer);window.removeEventListener("focus",focus);document.removeEventListener("visibilitychange",visible)};
-  },[]);
+  },[router]);
   const markRead=()=>{
     const value=orders[0]?.created_at||fetchedAt.current||new Date().toISOString();
     cursor.current=value;if(cursorKey.current)setLocal(cursorKey.current,value);setUnread(0);

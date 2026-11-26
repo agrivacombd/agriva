@@ -1,3 +1,4 @@
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Droplets, Flower2, Leaf, Package, Ruler, ShoppingCart, Sprout, Sun, Truck, UserRound } from "lucide-react";
@@ -47,7 +48,7 @@ export default async function PlantMarketProductPage({params}:Props){
           <div className="grid lg:grid-cols-[1.05fr_.95fr]">
             <div className="relative flex min-h-[320px] items-center justify-center bg-gradient-to-br from-[#edf5e8] via-[#f7faf4] to-[#e1efdc] p-4 sm:min-h-[520px] sm:p-8">
               <div className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/85 px-3 py-1.5 text-xs font-bold text-emerald-900 shadow-sm"><Leaf size={14} aria-hidden="true" className="mr-1 inline-block" />Plant Market</div>
-              {product.image_url ? <img src={product.image_url} alt={product.image_alt||product.name} className="max-h-[520px] w-full object-contain drop-shadow-sm"/> : <Sprout size={88} strokeWidth={1.3} aria-hidden="true" className="text-emerald-600" />}
+              {product.image_url ? <OptimizedImage src={product.image_url} alt={product.image_alt||product.name} className="max-h-[520px] w-full object-contain drop-shadow-sm"/> : <Sprout size={88} strokeWidth={1.3} aria-hidden="true" className="text-emerald-600" />}
             </div>
             <div className="p-5 sm:p-8 lg:p-10">
               <p className="text-sm font-bold text-emerald-700">{product.category}</p>
@@ -101,7 +102,7 @@ export default async function PlantMarketProductPage({params}:Props){
 
         {relatedProducts && relatedProducts.length>0 && <section aria-label="একই ধরনের আরও গাছ" className="mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-sm font-bold text-emerald-700">আরও পছন্দ</p><h2 className="mt-1 text-2xl font-black">একই ধরনের আরও গাছ ও চারা</h2></div><Link href="/plant-market" className="text-sm font-bold text-emerald-800 underline underline-offset-4">সব গাছ দেখুন →</Link></div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<img src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<Sprout size={48} strokeWidth={1.5} aria-hidden="true" className="text-emerald-600" />}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">{relatedProducts.map(item=><Link key={item.id} href={"/plant-market/"+encodeURIComponent(canonicalPlantProductSlug(item.slug))} className="overflow-hidden rounded-2xl border border-emerald-950/10 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex aspect-square items-center justify-center bg-emerald-50">{item.image_url?<OptimizedImage src={item.image_url} alt={item.name} loading="lazy" className="h-full w-full object-contain"/>:<Sprout size={48} strokeWidth={1.5} aria-hidden="true" className="text-emerald-600" />}</div><div className="p-3"><h3 className="line-clamp-2 text-sm font-extrabold">{item.name}</h3><p className="mt-2 font-black text-emerald-900">৳{Number(item.price).toLocaleString("bn-BD")} <span className="text-xs font-semibold text-slate-500">/ {unitLabels[String(item.unit||"piece").toLowerCase()]||item.unit||"পিস"}</span></p><p className="mt-1 text-xs text-slate-500">{Number(item.stock)>0?"স্টকে আছে":"স্টক শেষ"}</p></div></Link>)}</div>
         </section>}
       </div>
     </main>

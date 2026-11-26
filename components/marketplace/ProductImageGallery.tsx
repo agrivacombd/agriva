@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -98,7 +99,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
             aria-label={productName + " ছবিটি বড় করে দেখুন"}
             className="relative block aspect-[4/3] w-full touch-pan-y cursor-zoom-in overflow-hidden rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 sm:aspect-square sm:rounded-2xl"
           >
-            <img
+            <OptimizedImage
               src={activeImage}
               alt={imageAlt}
               width={900}
@@ -139,7 +140,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
                 aria-pressed={activeIndex === index}
                 className={"h-14 overflow-hidden rounded-lg border-2 bg-white transition sm:h-20 sm:rounded-xl lg:h-24 " + (activeIndex === index ? "border-emerald-700 ring-2 ring-emerald-100" : "border-emerald-900/10 hover:border-emerald-500")}
               >
-                <img src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full bg-white object-contain" />
+                <OptimizedImage src={src} alt={productName + " — ছবি " + (index + 1)} loading="lazy" decoding="async" className="h-full w-full bg-white object-contain" />
               </button>
             ))}
           </div>
@@ -167,7 +168,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
               </div>
             </div>
             <div className="relative flex min-h-0 w-full flex-1 items-center justify-center overflow-auto rounded-xl">
-              <img
+              <OptimizedImage
                 src={activeImage}
                 alt={activeIndex === 0 ? imageAlt : productName + " — ছবি " + (activeIndex + 1)}
                 className="max-h-[78vh] max-w-full object-contain transition-transform duration-150"
@@ -186,7 +187,7 @@ export default function ProductImageGallery({ images, productName, imageAlt }: P
               <div className="flex max-w-full gap-2 overflow-x-auto py-1" aria-label={"ছবি " + (activeIndex + 1) + " / " + images.length}>
                 {images.map((src, index) => (
                   <button key={src} type="button" onClick={() => { setActiveIndex(index); setScale(1); setHovering(false); }} aria-label={"ছবি " + (index + 1)} aria-pressed={activeIndex === index} className={"h-14 w-14 shrink-0 overflow-hidden rounded-lg border-2 " + (activeIndex === index ? "border-lime-300" : "border-white/30")}>
-                    <img src={src} alt="" className="h-full w-full bg-white object-contain" />
+                    <OptimizedImage src={src} alt="" className="h-full w-full bg-white object-contain" />
                   </button>
                 ))}
               </div>

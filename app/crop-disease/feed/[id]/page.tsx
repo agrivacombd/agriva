@@ -1,3 +1,4 @@
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -38,7 +39,7 @@ export default async function PublicCropDiagnosis({params}:{params:Promise<{id:s
   return <main className="mx-auto max-w-3xl px-4 py-10">
     <nav className="mb-5 text-sm text-emerald-800"><Link href="/crop-disease">ফসলের রোগ শনাক্তকরণ</Link> / অনুমোদিত বিশ্লেষণ</nav>
     <article className="overflow-hidden rounded-3xl border border-emerald-100 bg-white shadow-sm">
-      {img && <img src={img} alt={`${item.crop} ফসলের সম্ভাব্য ${item.disease} রোগের প্রকাশিত ছবি`} className="max-h-[480px] w-full bg-slate-50 object-contain" />}
+      {img && <OptimizedImage src={img} alt={`${item.crop} ফসলের সম্ভাব্য ${item.disease} রোগের প্রকাশিত ছবি`} className="max-h-[480px] w-full bg-slate-50 object-contain" />}
       <div className="p-6 sm:p-8">
         <p className="text-sm font-semibold text-emerald-700">AGRIVA Crop Health Feed · ব্যবহারকারীর অনুমোদিত পোস্ট</p>
         <h1 className="mt-3 text-2xl font-black leading-snug text-slate-900">{item.crop} ফসলের সম্ভাব্য সমস্যা: {item.disease}</h1>

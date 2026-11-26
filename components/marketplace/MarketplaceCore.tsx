@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { trackProductRankEvents } from "@/lib/marketplace/product-rank-tracking";
@@ -147,6 +148,7 @@ function ProductCard({
 }
 
 export default function MarketplaceCore({ products, showCategories = true, availableCategoriesOnly = false, initialQuery = "", emptyCatalogMessage, productHrefPrefix = "/marketplace" }: { products: MarketplaceProduct[]; showCategories?: boolean; availableCategoriesOnly?: boolean; initialQuery?: string; emptyCatalogMessage?: string; productHrefPrefix?: "/marketplace" | "/plant-market" }) {
+  const router = useRouter();
   const isPlantMarket = productHrefPrefix === "/plant-market";
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState("all");
@@ -250,7 +252,7 @@ export default function MarketplaceCore({ products, showCategories = true, avail
       if(!response.ok) {setCartError(typeof data.error==="string"?data.error:"স্টক বা সংযোগ যাচাই করুন।");return;}
       if(buyNow) {
         // Plant checkout displays every item already in the active cart.
-        window.location.assign("/plant-market/checkout");
+        router.push("/plant-market/checkout");
         return;
       }
       setCartNotice(product.name + " Plant Market কার্টে যোগ হয়েছে।");
