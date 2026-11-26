@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
@@ -47,6 +48,7 @@ const inputClass = "mt-1.5 w-full rounded-xl border border-slate-200 bg-white px
 const labelClass = "block text-sm font-semibold text-slate-700";
 
 export default function BuyerDemandBoard() {
+  const router = useRouter();
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   // A separate anonymous client means expired login sessions cannot break the public list.
   const publicSupabase = useMemo(() => createClient(
@@ -172,7 +174,7 @@ export default function BuyerDemandBoard() {
     event.preventDefault();
     setNotice("");
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = "/login?next=%2Fbuyer-demands"; return; }
+    if (!user) { router.push("/login?next=%2Fbuyer-demands"); return; }
     if (priceType === "fixed" && (!targetPrice || Number(targetPrice) <= 0)) { setNotice("নির্দিষ্ট দাম দিলে প্রতি এককের সঠিক দাম লিখুন।"); return; }
     if (phonePublic && contactPhone.trim().length < 6) { setNotice("নম্বর প্রকাশ করতে চাইলে ফোন নম্বর লিখুন।"); return; }
     if (needMode === "specific_date" && (!needDate || needDate < todayBD())) { setNotice("পণ্য লাগার তারিখ দিন।"); return; }
@@ -205,7 +207,7 @@ export default function BuyerDemandBoard() {
     if (!respondingTo) return;
     setNotice("");
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = "/login?next=%2Fbuyer-demands"; return; }
+    if (!user) { router.push("/login?next=%2Fbuyer-demands"); return; }
     if (user.id === respondingTo.buyer_id) { setNotice("নিজের পোস্টে আগ্রহ পাঠানো যাবে না।"); return; }
     if (!sharePhone || farmerPhone.trim().length < 6) { setNotice("ক্রেতার সঙ্গে যোগাযোগের জন্য ফোন নম্বর দিন এবং নম্বর শেয়ারের সম্মতি দিন।"); return; }
     if (Number(availableQuantity) <= 0) { setNotice("আপনার কাছে থাকা ফসলের পরিমাণ লিখুন।"); return; }
