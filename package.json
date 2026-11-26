@@ -67,7 +67,8 @@
     "test:fertilizer-calculator": "node --test scripts/test-fertilizer-calculator.mjs",
     "test:calculators": "npm run test:seed-calculator && npm run test:fertilizer-calculator",
     "test:legacy-marketplace-redirect": "node scripts/smoke-legacy-marketplace-redirect.mjs",
-    "test:marketplace-crop-guide-links": "node scripts/smoke-marketplace-crop-guide-links.mjs"
+    "test:marketplace-crop-guide-links": "node scripts/smoke-marketplace-crop-guide-links.mjs",
+    "test:seo-calendar-intent": "node scripts/smoke-seo-calendar-intent.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
