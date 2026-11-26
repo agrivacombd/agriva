@@ -10,5 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default function EnglishFarmingCostProfitCalculatorPage() {
-  return <StandaloneCalculator kind="profit" locale="en" />;
+  return <>
+    <StandaloneCalculator kind="profit" locale="en" />
+    <section className="mx-auto max-w-5xl px-4 pb-12 text-slate-800">
+      <h2 className="text-xl font-bold">What to include in a farm budget</h2>
+      <p className="mt-3 text-sm leading-7">List variable costs such as seed, fertilizer, labour, irrigation, crop protection, harvesting, packaging and transport. Add any land rent or equipment costs you need to account for. Estimate revenue using expected harvest quantity and a realistic farm-gate selling price.</p>
+      <p className="mt-3 text-sm leading-7 text-slate-600">This calculator provides an estimate from your inputs. Prices, yield, losses and market conditions vary by season and location; it is not a promise of profit.</p>
+      <a href="/en/crop-choice" className="mt-4 inline-block font-semibold underline">Compare crop choices →</a>
+    </section>
+  </>;
 }

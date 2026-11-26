@@ -6,9 +6,10 @@ const sources = [
 ];
 
 export const metadata: Metadata = {
-  title: "কৃষিপণ্যের বাজারদর",
+  title: "বাংলাদেশের কৃষিপণ্যের বাজারদর | সরকারি উৎস",
   description: "বাংলাদেশের কৃষিপণ্যের সর্বশেষ সরকারি বাজারদর দেখার জন্য নির্ভরযোগ্য উৎসের লিংক।",
   alternates: { canonical: "/market-prices" },
+  keywords: ["কৃষিপণ্যের বাজারদর", "বাংলাদেশ বাজারদর", "ফসলের দাম", "DAM বাজারদর"],
 };
 
 export default function MarketPricesPage() {
@@ -29,6 +30,16 @@ export default function MarketPricesPage() {
           <h2 className="text-xl font-black">{source.title}</h2><p className="mt-3 text-sm leading-6 text-slate-600">{source.description}</p>
           <a href={source.href} target="_blank" rel="noreferrer" className="mt-5 inline-flex rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-900">{source.label} ↗</a>
         </article>)}
+      </section>
+      <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="text-xl font-extrabold">বাজারদর তুলনা করার সময় কী দেখবেন?</h2>
+        <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+          <li>• একই পণ্য ও মান/গ্রেডের দাম তুলনা করুন।</li>
+          <li>• বাজারের নাম, জেলার অবস্থান ও তথ্য প্রকাশের তারিখ মিলিয়ে নিন।</li>
+          <li>• খুচরা ও পাইকারি দাম এক নয়; পরিবহন, বস্তা, কমিশন বা অন্যান্য খরচ আলাদা হিসাব করুন।</li>
+          <li>• বিক্রির সিদ্ধান্তের আগে স্থানীয় বাজারে ক্রেতার কাছ থেকে বর্তমান দর নিশ্চিত করুন।</li>
+        </ul>
+        <p className="mt-3 text-sm leading-6 text-slate-500">AGRIVA এখানে সরাসরি লাইভ দাম সরবরাহ করছে না; মূল সরকারি উৎসে গিয়ে তথ্য যাচাই করুন।</p>
       </section>
       <a href="/weather" className="mt-6 block rounded-2xl border border-emerald-100 bg-white p-5 font-bold text-emerald-900 hover:bg-emerald-50">আবহাওয়া দেখুন →</a>
       <p className="mt-8 text-center text-xs leading-5 text-slate-500">AGRIVA তথ্য সহায়ক। কেনাবেচার আগে স্থানীয় বাজারে দাম যাচাই করুন।</p>
