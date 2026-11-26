@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { productDescriptionToText } from "@/lib/marketplace/product-description";
@@ -84,7 +85,7 @@ export default function PlantMarketProductReview() {
     {message&&<p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">{message}</p>}
     {loading?<p className="rounded-xl bg-white p-6">পণ্য লোড হচ্ছে…</p>:items.length===0?<p className="rounded-xl border bg-white p-8 text-center">এই Filter-এ কোনো Plant Market পণ্য নেই।</p>:<div className="space-y-4">{items.map(product=><article key={product.id} className="rounded-2xl border bg-white p-4 shadow-sm sm:p-5">
       <div className="flex flex-wrap gap-4">
-        <div className="h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-emerald-50">{product.image_url?<img src={product.image_url} alt={product.name} className="h-full w-full object-contain"/>:<div className="grid h-full place-items-center text-4xl">🪴</div>}</div>
+        <div className="h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-emerald-50">{product.image_url?<OptimizedImage src={product.image_url} alt={product.name} className="h-full w-full object-contain"/>:<div className="grid h-full place-items-center text-4xl">🪴</div>}</div>
         <div className="min-w-0 flex-1"><div className="flex flex-wrap justify-between gap-2"><h2 className="text-lg font-black">{product.name}</h2><span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-900">{product.status}</span></div>
           <p className="mt-1 text-xs text-slate-500">{product.category} · {product.scientific_name||"—"}</p>
           <p className="mt-1 font-black text-emerald-900">৳{Number(product.price).toLocaleString("bn-BD")} · স্টক {product.stock} {product.unit}</p>
