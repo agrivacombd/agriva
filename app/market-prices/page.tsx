@@ -7,7 +7,7 @@ const sources = [
 
 export const metadata: Metadata = {
   title: "কৃষিপণ্যের বাজারদর",
-  description: "বাংলাদেশের কৃষিপণ্যের সর্বশেষ সরকারি বাজারদর দেখার জন্য নির্ভরযোগ্য উৎসের লিংক।",
+  description: "বাংলাদেশের কৃষিপণ্যের সরকারি বাজারদর যাচাই করুন; ফসল, বাজার, তারিখ ও একক মিলিয়ে বিক্রির সিদ্ধান্ত নিন।",
   alternates: { canonical: "/market-prices" },
 };
 
@@ -30,7 +30,24 @@ export default function MarketPricesPage() {
           <a href={source.href} target="_blank" rel="noreferrer" className="mt-5 inline-flex rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-900">{source.label} ↗</a>
         </article>)}
       </section>
-      <a href="/weather" className="mt-6 block rounded-2xl border border-emerald-100 bg-white p-5 font-bold text-emerald-900 hover:bg-emerald-50">আবহাওয়া দেখুন →</a>
+      <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="text-xl font-black">সরকারি বাজারদর কীভাবে যাচাই করবেন?</h2>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-slate-700">
+          <li>একই ফসলের জাত, মান/গ্রেড, পরিমাপের একক (কেজি, মণ বা বস্তা) এবং তথ্য প্রকাশের তারিখ মিলিয়ে নিন।</li>
+          <li>আপনার জেলা বা নিকটবর্তী বাজারের তথ্য খুঁজুন। অন্য অঞ্চলের দর সরাসরি আপনার বিক্রয়মূল্য হিসেবে ধরে নেবেন না।</li>
+          <li>একাধিক বাজারের দর তুলনা করে পরিবহন, শ্রম, প্যাকেজিং, বাজার ফি ও নষ্ট হওয়ার সম্ভাব্য খরচ বিবেচনা করুন।</li>
+          <li>সরকারি প্রকাশিত দর নির্দেশক তথ্য; ক্রেতার সঙ্গে চূড়ান্ত দাম, পণ্যের মান ও সরবরাহের শর্ত নিশ্চিত করুন।</li>
+        </ul>
+      </section>
+      <section className="mt-6 rounded-2xl border border-emerald-100 bg-white p-6">
+        <h2 className="text-xl font-black">বিক্রির আগে পরিকল্পনা</h2>
+        <p className="mt-3 text-sm leading-7 text-slate-600">দর যাচাইয়ের পাশাপাশি সম্ভাব্য ক্রেতা, পরিমাণ, সংগ্রহের সময় ও পরিবহনের ব্যবস্থা বিবেচনা করুন। AGRIVA-র বাজারে পণ্য বা ক্রেতার চাহিদা খুঁজে দেখতে পারেন।</p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <a href="/krishi-bazar" className="rounded-xl bg-emerald-800 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-900">কৃষি বাজার দেখুন</a>
+          <a href="/buyer-demands" className="rounded-xl border border-emerald-800/20 px-4 py-3 text-sm font-bold text-emerald-900 hover:bg-emerald-50">ক্রেতার চাহিদা দেখুন</a>
+          <a href="/weather" className="rounded-xl border border-emerald-800/20 px-4 py-3 text-sm font-bold text-emerald-900 hover:bg-emerald-50">আবহাওয়া দেখুন</a>
+        </div>
+      </section>
       <p className="mt-8 text-center text-xs leading-5 text-slate-500">AGRIVA তথ্য সহায়ক। কেনাবেচার আগে স্থানীয় বাজারে দাম যাচাই করুন।</p>
     </div>
   </main>;
