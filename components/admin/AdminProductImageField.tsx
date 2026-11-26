@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import { useId, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
@@ -59,7 +60,7 @@ export default function AdminProductImageField({ initialImages = [] }: { initial
     <input type="hidden" name="image_urls" value={JSON.stringify(images)}/>
     <p className="text-xs text-[#748074]">JPG, PNG বা WebP। প্রতিটি ছবির জন্য আলাদা MB limit নেই; Supabase project-এর global upload limit প্রযোজ্য।</p>
     {images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((src, index) => <div key={src} className="space-y-1">
-      <img src={src} alt={`পণ্যের ছবি ${index + 1}`} className="h-28 w-full rounded-xl border object-cover"/>
+      <OptimizedImage src={src} alt={`পণ্যের ছবি ${index + 1}`} className="h-28 w-full rounded-xl border object-cover"/>
       <button type="button" disabled={loading} onClick={() => setImages(current => current.filter(item => item !== src))} className="text-xs font-bold text-red-700">ছবি {index + 1} সরান</button>
     </div>)}</div>}
     {loading && <p className="text-xs font-semibold text-[#637266]">ছবি আপলোড হচ্ছে...</p>}
