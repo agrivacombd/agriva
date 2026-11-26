@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export default function PlantMarketAddToCart({
   productId, stock = 0, disabled = false,
