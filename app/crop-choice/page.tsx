@@ -9,7 +9,7 @@ const faqs = [
   ["জমির ভাড়া ও পরিবারের শ্রমের খরচ ধরতে হবে?", "হ্যাঁ। জমির ভাড়া, পরিবারের শ্রমের আনুমানিক মূল্য, পরিবহন, সেচ, সংরক্ষণ ও বাজারজাতকরণের খরচ ধরলে তুলনা বাস্তবসম্মত হয়।"],
 ];
 export const metadata: Metadata = {
-  title: "ফসল বাছাই ও লাভ তুলনা ক্যালকুলেটর | AGRIVA",
+  title: "ফসল বাছাই ও লাভ তুলনা ক্যালকুলেটর",
   description: "নিজের জমি, উৎপাদন খরচ, সম্ভাব্য ফলন ও বাজারদর দিয়ে তিনটি ফসলের আনুমানিক আয়-ব্যয় ও লাভ তুলনা করুন। ঝুঁকি ও হিসাবের সীমাবদ্ধতা জানুন।",
   alternates: { canonical: pageUrl, languages: { "bn-BD": pageUrl, en: "/en/crop-choice", "x-default": pageUrl } },
   openGraph: { title: "ফসল বাছাই ও লাভ তুলনা | AGRIVA", description: "নিজের দেওয়া তথ্য দিয়ে একাধিক ফসলের সম্ভাব্য লাভ-লোকসান তুলনা করুন।", url: pageUrl, type: "website", locale: "bn_BD" },
