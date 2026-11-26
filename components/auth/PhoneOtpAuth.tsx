@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 
 export type PhoneAuthMode = "login" | "signup";
 
