@@ -65,7 +65,8 @@
     "test:guest-auth-provisioning": "node scripts/smoke-guest-auth-provisioning.mjs",
     "test:seed-calculator": "node --test scripts/test-seed-rate-calculator.mjs",
     "test:fertilizer-calculator": "node --test scripts/test-fertilizer-calculator.mjs",
-    "test:calculators": "npm run test:seed-calculator && npm run test:fertilizer-calculator"
+    "test:calculators": "npm run test:seed-calculator && npm run test:fertilizer-calculator",
+    "test:legacy-marketplace-redirect": "node scripts/smoke-legacy-marketplace-redirect.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
