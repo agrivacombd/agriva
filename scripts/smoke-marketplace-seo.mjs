@@ -11,7 +11,7 @@ const indexability = readFileSync("lib/marketplace/indexability.ts", "utf8");
 const robots = readFileSync("app/robots.ts", "utf8");
 const searchLayout = readFileSync("app/search/layout.tsx", "utf8");
 const rootLayout = readFileSync("app/layout.tsx", "utf8");
-const middleware = readFileSync("middleware.ts", "utf8");
+const proxy = readFileSync("proxy.ts", "utf8");
 const englishLayout = readFileSync("app/en/layout.tsx", "utf8");
 const siteChrome = readFileSync("components/site/SiteChrome.tsx", "utf8");
 
@@ -52,8 +52,8 @@ assert.doesNotMatch(robots, /"\/search"/, "Robots must allow crawlers to read th
 
 assert.match(rootLayout, /const requestHeaders = await headers\(\)/, "Root layout must read locale from request headers");
 assert.match(rootLayout, /<html lang=\{locale\}>/, "Document language must be server-rendered for each locale");
-assert.match(middleware, /request\.headers\.set\("x-agriva-locale", locale\)/, "Middleware must pass the route locale to the root layout");
-assert.match(middleware, /request\.nextUrl\.pathname === "\/en" \|\| request\.nextUrl\.pathname\.startsWith\("\/en\/"\)/, "Middleware must identify English routes");
+assert.match(proxy, /request\.headers\.set\("x-agriva-locale", locale\)/, "Next.js proxy must pass the route locale to the root layout");
+assert.match(proxy, /request\.nextUrl\.pathname === "\/en" \|\| request\.nextUrl\.pathname\.startsWith\("\/en\/"\)/, "Next.js proxy must identify English routes");
 assert.match(siteChrome, /document\.documentElement\.lang = english \? "en" : "bn"/, "Client-side route transitions must keep document language in sync");
 assert.match(englishLayout, /twitter:\s*\{[\s\S]*title: "AGRIVA \| Digital Agriculture Platform"/, "English routes must not inherit Bangla Twitter metadata");
 
