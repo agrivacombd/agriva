@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import { calculateRequiredQuantity } from "@/lib/calculators/quantity.mjs";
 
 export type CalculatorKind = "fertilizer" | "seed" | "profit" | "calendar";
@@ -58,6 +59,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
   const [pricePerKg, setPricePerKg] = useState("35");
   const [checkedTasks, setCheckedTasks] = useState<number[]>([]);
   const [tasksLoaded, setTasksLoaded] = useState(false);
+  const hasTrackedUse = useRef(false);
   const taskStorageKey = "agriva-crop-checklist-v1";
 
   useEffect(() => {
@@ -90,10 +92,16 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
   const areaUnitLabel = areaUnit === "acre" ? t.acre : areaUnit === "hectare" ? t.hectare : t.decimal;
   const isBn = locale === "bn";
 
+  function markCalculatorUsed() {
+    if (hasTrackedUse.current) return;
+    hasTrackedUse.current = true;
+    trackAnalyticsEvent("calculator_use", { calculator_type: kind, language: locale });
+  }
+
   const field = (label: string, value: string, setValue: (next: string) => void, suffix: string, step = "any") => (
     <label className="block text-sm font-semibold text-slate-700">{label}
       <span className="mt-1 flex items-center rounded-xl border border-slate-200 bg-white focus-within:border-emerald-500">
-        <input type="number" min="0" step={step} value={value} onChange={(event) => setValue(event.target.value)} className="w-full min-w-0 rounded-xl bg-transparent px-3 py-3 text-base font-medium outline-none" />
+        <input type="number" min="0" step={step} value={value} onChange={(event) => { markCalculatorUsed(); setValue(event.target.value); }} className="w-full min-w-0 rounded-xl bg-transparent px-3 py-3 text-base font-medium outline-none" />
         <span className="whitespace-nowrap px-3 text-xs text-slate-500">{suffix}</span>
       </span>
     </label>
@@ -114,7 +122,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
             <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-black sm:text-2xl">{t.checklist}</h2><span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-900">{t.progress}: {checkedTasks.length}/{t.tasks.length}</span></div>
             <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600 transition-[width]" style={{ width: (checkedTasks.length / t.tasks.length * 100) + "%" }} /></div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {t.tasks.map((task, index) => <label key={task} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-4 transition hover:bg-emerald-50"><input type="checkbox" checked={checkedTasks.includes(index)} onChange={(event) => setCheckedTasks((old) => event.target.checked ? [...old, index] : old.filter((n) => n !== index))} className="mt-1 h-4 w-4 accent-emerald-700" /><span className={"text-sm leading-6 " + (checkedTasks.includes(index) ? "text-slate-400 line-through" : "text-slate-700")}>{task}</span></label>)}
+              {t.tasks.map((task, index) => <label key={task} className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-100 p-4 transition hover:bg-emerald-50"><input type="checkbox" checked={checkedTasks.includes(index)} onChange={(event) => { markCalculatorUsed(); setCheckedTasks((old) => event.target.checked ? [...old, index] : old.filter((n) => n !== index)); }} className="mt-1 h-4 w-4 accent-emerald-700" /><span className={"text-sm leading-6 " + (checkedTasks.includes(index) ? "text-slate-400 line-through" : "text-slate-700")}>{task}</span></label>)}
             </div>
             <button type="button" onClick={() => setCheckedTasks([])} className="mt-5 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50">{isBn ? "চেকলিস্ট রিসেট করুন" : "Reset checklist"}</button>
           </section>
@@ -123,7 +131,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
             <div className="grid gap-4 sm:grid-cols-3">
               {field(t.area, area, setArea, areaUnitLabel)}
               {field(kind === "seed" ? t.seedRate : t.rate, rate, setRate, t.kg)}
-              <label className="block text-sm font-semibold text-slate-700">{t.unit}<select value={areaUnit} onChange={(event) => setAreaUnit(event.target.value as typeof areaUnit)} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base"><option value="acre">{t.acre}</option><option value="hectare">{t.hectare}</option><option value="decimal">{t.decimal}</option></select></label>
+              <label className="block text-sm font-semibold text-slate-700">{t.unit}<select value={areaUnit} onChange={(event) => { markCalculatorUsed(); setAreaUnit(event.target.value as typeof areaUnit); }} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base"><option value="acre">{t.acre}</option><option value="hectare">{t.hectare}</option><option value="decimal">{t.decimal}</option></select></label>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-600">{kind === "seed" ? (isBn ? "বীজের হারটি আপনার ফসল, জাত ও বপন পদ্ধতির জন্য প্রযোজ্য নির্ভরযোগ্য সুপারিশ থেকে লিখুন।" : "Enter a seed rate from a reliable recommendation for your crop, variety and planting method.") : (isBn ? "সারের হারটি মাটি পরীক্ষার রিপোর্ট বা স্থানীয় কৃষি সুপারিশ থেকে লিখুন। এই টুল নিজে থেকে সারের মাত্রা নির্ধারণ করে না।" : "Enter a fertilizer rate from your soil-test report or local agricultural recommendation. This tool does not prescribe a fertilizer dose.")}</p>
             <div className="mt-5 rounded-2xl bg-emerald-50 p-5"><p className="text-sm font-semibold text-emerald-900">{t.result}</p><p className="mt-1 text-3xl font-black text-emerald-950">{number(totalRate)} {t.kg}</p></div>
@@ -131,7 +139,7 @@ export default function StandaloneCalculator({ kind, locale }: { kind: Calculato
           </section>
         ) : (
           <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
-            <div className="mb-5 max-w-sm"><label className="block text-sm font-semibold text-slate-700">{t.currency}<select value={currency} onChange={(event) => setCurrency(event.target.value as MoneyCode)} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base"><option value="BDT">{t.bdt}</option><option value="USD">{t.usd}</option><option value="INR">{t.inr}</option></select></label></div>
+            <div className="mb-5 max-w-sm"><label className="block text-sm font-semibold text-slate-700">{t.currency}<select value={currency} onChange={(event) => { markCalculatorUsed(); setCurrency(event.target.value as MoneyCode); }} className="mt-1 block w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base"><option value="BDT">{t.bdt}</option><option value="USD">{t.usd}</option><option value="INR">{t.inr}</option></select></label></div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {field(t.costSeed, costs.seed, (value) => setCosts((old) => ({ ...old, seed: value })), currency)}
               {field(t.costFertilizer, costs.fertilizer, (value) => setCosts((old) => ({ ...old, fertilizer: value })), currency)}
