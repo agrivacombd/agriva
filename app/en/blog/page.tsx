@@ -4,7 +4,7 @@ import {ENGLISH_BLOG_ARTICLES} from "@/lib/content/english-blog";
 
 const siteUrl=(process.env.NEXT_PUBLIC_SITE_URL||"https://agriva.com.bd").replace(/\/+$/,"");
 export const metadata:Metadata={
-  title:"Agriculture Blog: Crop Planning, Seed Rates & Farm Economics",
+  title:"Agriculture Blog: Crop Planning & Farm Economics",
   description:"Read practical English agriculture articles from AGRIVA on crop cost budgets, seed planning and field decisions, with sources and step-by-step examples.",
   alternates:{canonical:"/en/blog",languages:{en:"/en/blog","bn-BD":"/blog","x-default":"/blog"}},
   openGraph:{type:"website",url:"/en/blog",locale:"en_US",siteName:"AGRIVA",title:"AGRIVA English Agriculture Blog",description:"Evidence-informed farm planning, cost and seed requirement guides in English."},
