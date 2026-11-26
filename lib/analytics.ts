@@ -50,26 +50,28 @@ export function trackAnalyticsEvent(
 ) {
   if (!hasAnalyticsConsent() || typeof window.gtag !== "function") return;
 
-  const safeParams = Object.fromEntries(
-    Object.entries(params).flatMap(([key, value]) => {
-      if (value === undefined) return [];
-      if (["string", "number", "boolean"].includes(typeof value)) return [[key, value]];
-      if (key !== "items" || eventName !== "purchase" || !Array.isArray(value)) return [];
+  const safeParams: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined) continue;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      safeParams[key] = value;
+      continue;
+    }
+    if (key !== "items" || eventName !== "purchase" || !Array.isArray(value)) continue;
 
-      const items = value.flatMap((item) => {
-        if (!item || typeof item !== "object" || Array.isArray(item)) return [];
-        const candidate = item as Record<string, unknown>;
-        if (typeof candidate.item_id !== "string" || !candidate.item_id) return [];
-        const safeItem: AnalyticsItem = { item_id: candidate.item_id };
-        if (typeof candidate.item_name === "string") safeItem.item_name = candidate.item_name;
-        if (typeof candidate.price === "number" && Number.isFinite(candidate.price)) safeItem.price = candidate.price;
-        if (typeof candidate.quantity === "number" && Number.isFinite(candidate.quantity)) safeItem.quantity = candidate.quantity;
-        if (typeof candidate.item_category === "string") safeItem.item_category = candidate.item_category;
-        return [safeItem];
-      });
-      return items.length ? [[key, items]] : [];
-    }),
-  );
+    const items = value.flatMap((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+      const candidate = item as Record<string, unknown>;
+      if (typeof candidate.item_id !== "string" || !candidate.item_id) return [];
+      const safeItem: AnalyticsItem = { item_id: candidate.item_id };
+      if (typeof candidate.item_name === "string") safeItem.item_name = candidate.item_name;
+      if (typeof candidate.price === "number" && Number.isFinite(candidate.price)) safeItem.price = candidate.price;
+      if (typeof candidate.quantity === "number" && Number.isFinite(candidate.quantity)) safeItem.quantity = candidate.quantity;
+      if (typeof candidate.item_category === "string") safeItem.item_category = candidate.item_category;
+      return [safeItem];
+    });
+    if (items.length) safeParams.items = items;
+  }
 
   window.gtag("event", eventName, safeParams);
 }
