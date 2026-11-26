@@ -1,3 +1,4 @@
+import OptimizedImage from "@/components/ui/OptimizedImage";
 import Link from "next/link";
 import type { Metadata } from "next";
 import VisualSearchButton from "@/components/search/VisualSearchButton";
@@ -375,7 +376,7 @@ export default async function Home() {
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 text-sm text-slate-500 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <Link href="/" aria-label="AGRIVA home" className="flex items-center"><img src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width="320" height="85" className="h-10 w-36 object-contain object-left" /></Link>
+            <Link href="/" aria-label="AGRIVA home" className="flex items-center"><OptimizedImage src="/agriva-logo.svg" alt="AGRIVA — Growing a Better Tomorrow" width={320} height={85} className="h-10 w-36 object-contain object-left" /></Link>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-3">
               <Link href="/ai" className="hover:text-emerald-800">AI সহায়ক</Link>
               <Link href="/marketplace" className="hover:text-emerald-800">মার্কেটপ্লেস</Link>
