@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Wheat } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
-/* eslint-disable @next/next/no-img-element */
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CheckoutButton from "@/components/marketplace/CheckoutButton";
 import RelatedProductUpsell from "@/components/marketplace/RelatedProductUpsell";
