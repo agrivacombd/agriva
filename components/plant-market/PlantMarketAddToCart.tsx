@@ -36,6 +36,7 @@ export default function PlantMarketAddToCart({
       if (!response.ok) {
         setMessage(typeof data.error === "string" ? data.error : "স্টক যাচাই করে আবার চেষ্টা করুন।");return;
       }
+      trackAnalyticsEvent("add_to_cart", { item_id: productId, quantity, item_category: "plant_market" });
       if (buyNow) {
         // Checkout deliberately shows the full existing cart and its total.
         router.push("/plant-market/checkout");
