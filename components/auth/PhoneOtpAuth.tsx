@@ -115,6 +115,7 @@ export default function PhoneOtpAuth({
           return;
         }
       }
+      if (mode === "signup") trackAnalyticsEvent("sign_up", { method: "phone_otp" });
       onAuthenticated();
     } catch {
       setError("OTP যাচাই করা যায়নি। আবার চেষ্টা করুন।");
