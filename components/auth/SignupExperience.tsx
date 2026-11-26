@@ -6,6 +6,7 @@ import { FormEvent, useState } from "react";
 import { ArrowRight, Check, Globe2, Sprout, ShoppingCart, Truck, BriefcaseBusiness, GraduationCap, BookOpen, Flower2 } from "lucide-react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 import BrandLogo from "@/components/BrandLogo";
+import { trackAnalyticsEvent } from "@/lib/analytics";
 import PhoneOtpAuth from "@/components/auth/PhoneOtpAuth";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
 
@@ -133,6 +134,9 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
           data: { full_name: fullName.trim(), selected_roles: selectedRoles },
         },
       });
+      if (!error && data.user && (data.user.identities?.length ?? 0) > 0) {
+        trackAnalyticsEvent("sign_up", { method: "email" });
+      }
       if (!error && data.session && data.user) {
         setIsError(false);
         setMessage(language === "bn" ? "অ্যাকাউন্ট তৈরি হয়েছে। আপনার নির্বাচিত পণ্যে ফিরে যাচ্ছেন…" : "Account created. Returning to your product…");
