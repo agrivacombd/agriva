@@ -169,6 +169,7 @@ export default function SiteChrome() {
 
   useEffect(() => {
     if (!menuOpen) return;
+    const menuButton = menuButtonRef.current;
     const drawer = drawerRef.current;
     const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
     const getFocusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(focusableSelector) || [])
@@ -200,7 +201,7 @@ export default function SiteChrome() {
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
-      menuButtonRef.current?.focus();
+      menuButton?.focus();
     };
   }, [menuOpen]);
 
