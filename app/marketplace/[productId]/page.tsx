@@ -11,6 +11,7 @@ import ProductShareCard from "@/components/marketplace/ProductShareCard";
 import ProductDescription from "@/components/marketplace/ProductDescription";
 import SeedProductInformation from "@/components/marketplace/SeedProductInformation";
 import { getProductTaxonomy } from "@/lib/marketplace/taxonomy";
+import { getCropGuideLinks } from "@/lib/marketplace/crop-guide-links";
 import { getSampleProduct } from "@/lib/marketplace/sample-products";
 import { productDescriptionToText, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 
@@ -116,6 +117,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const taxonomy = getProductTaxonomy(product.category, product.category_slug, product.subcategory_slug);
   const category = taxonomy?.category;
+  const cropGuideLinks = getCropGuideLinks(product.slug);
   const subcategory = taxonomy?.subcategory;
   const canonicalPath = "/marketplace/" + product.slug;
   const base = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
@@ -367,6 +369,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
 
           {seedInformation && <SeedProductInformation sections={seedInformation.sections} details={seedInformation.details} />}
+
+          {cropGuideLinks.length > 0 && (
+            <section aria-labelledby="crop-guide-links-heading" className="rounded-2xl border border-emerald-100 bg-white p-4 shadow-sm sm:p-6">
+              <h2 id="crop-guide-links-heading" className="text-xl font-extrabold text-slate-950 sm:text-2xl">এই ফসলের সহায়ক গাইড</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">বীজ নির্বাচন ও চাষের পরিকল্পনার জন্য AGRIVA-র সংশ্লিষ্ট গাইডগুলো পড়ুন।</p>
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+                {cropGuideLinks.map((guide) => (
+                  <li key={guide.href} className="rounded-xl border border-slate-200 p-3">
+                    <Link href={guide.href} className="font-bold text-emerald-800 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-950">{guide.title}</Link>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{guide.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {relatedProducts.length > 0 && (
             <div id="related-marketplace-products" className="scroll-mt-28">

@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { getCropGuideLinks } from "../lib/marketplace/crop-guide-links.ts";
+const blackRice = getCropGuideLinks("black-rice-seeds");
+assert.equal(blackRice.length, 1);
+assert.equal(blackRice[0].href, "/blog/black-rice-seed-price-in-bangladesh");
+const tomato = getCropGuideLinks("shapla-tomato-seeds");
+assert.equal(tomato.length, 2);
+assert.ok(tomato.every((link) => link.href.startsWith("/blog/")));
+const cucumber = getCropGuideLinks("baromashi-cucumber-seeds");
+assert.equal(cucumber.length, 1);
+assert.equal(cucumber[0].href, "/blog/cucumber-flowers-no-fruit-causes");
+assert.deepEqual(getCropGuideLinks("unmapped-product"), []);
+console.log("Marketplace crop guide backlink mapping smoke test passed.");
