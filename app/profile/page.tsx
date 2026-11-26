@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ const roles = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(true);
@@ -33,7 +35,7 @@ export default function ProfilePage() {
         const supabase = createSupabaseBrowserClient();
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
-          window.location.href = "/login?next=/profile";
+          router.push("/login?next=/profile");
           return;
         }
         const [{ data: profile }, { data, error: rolesError }] = await Promise.all([
@@ -74,7 +76,7 @@ export default function ProfilePage() {
       }
     })();
     return () => { active = false; };
-  }, [language]);
+  }, [language, router]);
 
   function toggle(role: string) {
     setSelected((current) => current.includes(role) ? current.filter((item) => item !== role) : [...current, role]);
