@@ -44,7 +44,7 @@ export default function SoilFertilizerPlanner() {
       <Link href="/" className="text-sm font-bold text-emerald-800 hover:underline">← AGRIVA হোম</Link>
       <header className="mt-5 rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-teal-700 p-6 text-white sm:p-10">
         <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold">মাটি ও সার পরিকল্পনা</p>
-        <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight sm:text-5xl">মাটির সুপারিশ থেকে সারের পরিমাণ হিসাব করুন</h1>
+        <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight sm:text-5xl">মাটির সুপারিশ থেকে সারের পরিমাণ হিসাব করুন</h2>
         <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50 sm:text-base">মাটি পরীক্ষার রিপোর্ট বা কৃষি কর্মকর্তার সুপারিশে দেওয়া পুষ্টি উপাদানের হার লিখুন। জমির পরিমাণ অনুযায়ী আনুমানিক ইউরিয়া, TSP ও MOP-এর পরিমাণ হিসাব হবে।</p>
       </header>
 

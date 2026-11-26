@@ -50,7 +50,7 @@ export default function CropChoiceSimulator() {
         <Link href="/" className="text-sm font-bold text-emerald-800 hover:underline">← AGRIVA হোম</Link>
         <header className="mt-5 rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-teal-700 p-6 text-white sm:p-10">
           <p className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold">নতুন কৃষি টুল · Crop Choice Simulator</p>
-          <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight sm:text-5xl">কোন ফসল চাষ করবেন? হিসাব মিলিয়ে দেখুন</h1>
+          <h2 className="mt-4 max-w-3xl text-3xl font-black leading-tight sm:text-5xl">কোন ফসল চাষ করবেন? হিসাব মিলিয়ে দেখুন</h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-emerald-50 sm:text-base">আপনার এলাকার সম্ভাব্য খরচ, ফলন ও বিক্রির দাম বসিয়ে সর্বোচ্চ তিনটি ফসলের আয়, ব্যয়, সম্ভাব্য লাভ এবং লোকসান-সমতা মূল্য তুলনা করুন।</p>
         </header>
 

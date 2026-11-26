@@ -6,7 +6,7 @@ import KnowledgeNetwork from "@/components/learn/KnowledgeNetwork";
 
 const site=(process.env.NEXT_PUBLIC_SITE_URL||"https://agriva.com.bd").replace(/\/$/,"");
 const canonical=site+"/learn";
-const title="বাংলাদেশের কৃষি শেখার গাইড | ধান, সবজি, মাটি ও রোগবালাই";
+const title="বাংলাদেশের কৃষি শেখার গাইড | AGRIVA";
 const description="বাংলাদেশে ধান ও সবজি চাষ, মাটির স্বাস্থ্য, সমন্বিত বালাই ব্যবস্থাপনা এবং ফসলের রোগের লক্ষণ নিয়ে বাংলায় ধাপে ধাপে AGRIVA Learn গাইড ও কুইজ পড়ুন।";
 
 export const metadata:Metadata={
