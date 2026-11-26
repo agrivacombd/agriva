@@ -5,7 +5,7 @@ import CropCalendar from "@/components/tools/CropCalendar";
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://agriva.com.bd").replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "বাংলাদেশের ফসল ক্যালেন্ডার: বপন ও কাটার সময়",
+  title: "বাংলাদেশ Crop Calendar: ফসল বপন ও কাটার সময়",
   description: "আউশ, আমন, বোরো, গম, রবি ভুট্টা ও আলুর বপন-রোপণ এবং ফসল সংগ্রহের জাতীয় সময়সীমা দেখুন। BBS ও BAMIS-এর উৎসসহ কৃষি পরিকল্পনা করুন।",
   alternates: { canonical: "/tools/crop-calendar" },
   openGraph: {
