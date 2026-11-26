@@ -132,8 +132,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/land-calculator`, changeFrequency: "weekly", priority: 0.9 },
     { url: `${base}/tools`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/en/tools`, changeFrequency: "weekly", priority: 0.75 },
-    { url: `${base}/tools/fertilizer-calculator`, changeFrequency: "monthly", priority: 0.75 },
-    { url: `${base}/tools/seed-rate-calculator`, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/tools/irrigation-water-calculator`, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/tools/harvest-date-calculator`, changeFrequency: "monthly", priority: 0.75 },
     { url: `${base}/tools/farm-weather`, changeFrequency: "daily", priority: 0.75 },
