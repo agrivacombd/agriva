@@ -243,7 +243,13 @@ export default function CheckoutButton({
         item_id: productId,
         quantity,
       });
-      if (data.orderId && Number.isFinite(orderTotal)) {
+      if (confirmedId && Number.isFinite(orderTotal)) {
+        trackAnalyticsEvent("purchase", {
+          transaction_id: confirmedId,
+          value: orderTotal,
+          currency: "BDT",
+          items: [{ item_id: productId, item_name: productName, price: unitPrice, quantity, item_category: "marketplace" }],
+        });
         trackMetaEvent("Purchase", { currency: "BDT", value: orderTotal, content_type: "product", content_ids: [productId], num_items: quantity }, confirmedId);
       }
       setMessage("অর্ডার সফল হয়েছে। " + (Number.isFinite(orderTotal) ? "মোট মূল্য ৳" + numberBN(orderTotal) + "।" : "অর্ডার নম্বরটি সংরক্ষণ করুন।"));
