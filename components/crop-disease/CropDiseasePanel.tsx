@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 import Link from "next/link";
 import CropShareCardMaker from "./CropShareCardMaker";
@@ -150,7 +151,7 @@ function CropHealthFeed({ history }: { history: HistoryItem[] }) {
       <div className="mt-3 space-y-2">{history.filter((item) => ownPublishedIds.includes(item.id)).map((item) => <button type="button" key={item.id} disabled={pending} onClick={() => unpublish(item.id)} className="block text-sm font-semibold text-rose-700 underline">প্রকাশনা সরান: {item.crop} ({new Date(item.created_at).toLocaleDateString("bn-BD")})</button>)}</div>
     </div>}
     <div className="mt-5 grid gap-4 sm:grid-cols-2">{feed.map((item) => <article key={item.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      {item.imageUrl && <img src={item.imageUrl} alt={item.crop + " ফসলের প্রকাশিত ছবি"} loading="lazy" className="h-44 w-full bg-slate-50 object-contain" />}
+      {item.imageUrl && <OptimizedImage src={item.imageUrl} alt={item.crop + " ফসলের প্রকাশিত ছবি"} loading="lazy" className="h-44 w-full bg-slate-50 object-contain" />}
       <div className="p-4"><p className="text-sm font-bold text-emerald-800">{item.displayName}</p><p className="mt-1 text-xs text-slate-500">{item.crop}{item.district ? " · " + item.district : ""} · {new Date(item.publishedAt).toLocaleDateString("bn-BD")}</p><h3 className="mt-2 font-extrabold">{item.disease}</h3><p className="mt-1 text-xs text-slate-500">AGRIVA AI-এর প্রাথমিক বিশ্লেষণ · নিশ্চিত রোগ নির্ণয় নয়</p><Link href={`/crop-disease/feed/${item.slug}`} className="mt-3 inline-block text-sm font-bold text-emerald-800 underline underline-offset-4">প্রকাশিত বিশ্লেষণ বিস্তারিত দেখুন</Link></div>
     </article>)}</div>
     {!feed.length && <p className="mt-4 rounded-xl bg-white p-5 text-sm text-slate-600">এখনও কেউ প্রকাশের অনুমতি দেননি। প্রথম বিশ্লেষণটি স্বেচ্ছায় শেয়ার করতে পারেন।</p>}
@@ -268,7 +269,7 @@ export default function CropDiseasePanel() {
               <div>
                 <label htmlFor="photo" className="mb-2 block text-sm font-bold text-slate-800">ফসলের ছবি (১–৪টি; প্রতি ছবি সর্বোচ্চ ৫ MB)</label>
                 <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" onChange={choosePhoto} multiple required className="block w-full rounded-xl border border-slate-200 p-3 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-3 file:py-2 file:font-bold file:text-emerald-900" />
-                {previews.length ? <div className="mt-3 grid grid-cols-2 gap-3" aria-label="নির্বাচিত ছবির প্রিভিউ">{previews.map((url, index) => <div key={url} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"><img src={url} alt={`নির্বাচিত ফসলের ছবি ${index + 1}`} className="h-36 w-full object-contain" /><p className="truncate px-2 py-1 text-center text-xs text-slate-600">{index + 1}. {photos[index]?.name}</p></div>)}</div> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">একই সমস্যার সর্বোচ্চ ৪টি ছবি দিন—পুরো গাছ, আক্রান্ত অংশের ক্লোজআপ, পাতা এবং কাণ্ড বা শীষ। সব ছবি একসঙ্গে বিশ্লেষণ করা হবে।</div>}
+                {previews.length ? <div className="mt-3 grid grid-cols-2 gap-3" aria-label="নির্বাচিত ছবির প্রিভিউ">{previews.map((url, index) => <div key={url} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"><OptimizedImage src={url} alt={`নির্বাচিত ফসলের ছবি ${index + 1}`} className="h-36 w-full object-contain" /><p className="truncate px-2 py-1 text-center text-xs text-slate-600">{index + 1}. {photos[index]?.name}</p></div>)}</div> : <div className="mt-3 grid min-h-52 place-items-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 px-5 text-center text-sm leading-6 text-emerald-900">একই সমস্যার সর্বোচ্চ ৪টি ছবি দিন—পুরো গাছ, আক্রান্ত অংশের ক্লোজআপ, পাতা এবং কাণ্ড বা শীষ। সব ছবি একসঙ্গে বিশ্লেষণ করা হবে।</div>}
                 <p className="mt-2 text-xs text-slate-600">নির্বাচিত: {photos.length}/৪টি ছবি · JPG, PNG বা WebP</p>
               </div>
             </div>
