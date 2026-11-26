@@ -1,4 +1,5 @@
 "use client";
+import OptimizedImage from "@/components/ui/OptimizedImage";
 
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
@@ -452,7 +453,7 @@ export default function PlantSellerProductForm() {
             </div>
             <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
               {preview ? (
-                <img src={preview} alt="নির্বাচিত পণ্যের ছবির প্রিভিউ" className="h-full w-full object-contain" />
+                <OptimizedImage src={preview} alt="নির্বাচিত পণ্যের ছবির প্রিভিউ" className="h-full w-full object-contain" />
               ) : (
                 <div className="flex flex-col items-center px-4 text-center text-slate-400">
                   <ImagePlus size={38} aria-hidden="true" />
@@ -529,7 +530,7 @@ export default function PlantSellerProductForm() {
           <div className="bg-[#ecf5ec] px-5 py-3 text-xs font-black text-emerald-900">পণ্যের প্রিভিউ</div>
           <div className="flex items-start gap-3 p-4">
             <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-emerald-50 text-emerald-700">
-              {preview ? <img src={preview} alt="নির্বাচিত পণ্যের ছবির ক্ষুদ্র প্রিভিউ" className="h-full w-full object-contain" /> : <Leaf size={26} aria-hidden="true" />}
+              {preview ? <OptimizedImage src={preview} alt="নির্বাচিত পণ্যের ছবির ক্ষুদ্র প্রিভিউ" className="h-full w-full object-contain" /> : <Leaf size={26} aria-hidden="true" />}
             </div>
             <div className="min-w-0">
               <p className="text-xs font-semibold text-emerald-700">{categoryLabel}</p>
