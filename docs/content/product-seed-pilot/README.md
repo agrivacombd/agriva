@@ -31,6 +31,16 @@ This is a small observed overlap, not proof of harmful cannibalization. **Keep t
 
 Tomato and cucumber buying-guide query demand is **not yet proven by AGRIVA GSC**. The new drafts are hypotheses; keyword/SERP validation remains a publication gate.
 
+### Product URL indexing check (27 Nov 2026)
+
+Google Search Console URL Inspection:
+- Legacy black-rice product URL `/marketplace/agriva-black-rice-seed-ab21bee5`: **Not found (404)**; last crawl 25 Nov 2026; referring URLs include the marketplace and the indexed black-rice seller article.
+- Current black-rice product `/marketplace/black-rice-seeds`: **Discovered - currently not indexed**; sitemap listed; crawl not yet reported.
+- Tomato Shapla and Ratan product pages: both **Discovered - currently not indexed**; sitemap listed; crawl not yet reported.
+- Existing black-rice price article: **Submitted and indexed**, Google-selected canonical matches the declared canonical.
+
+**Action:** PR #398 adds a permanent redirect from the legacy black-rice slug to the current canonical product URL. After merge/deployment, re-inspect the old URL and submit the redirected/current URLs to IndexNow (which does not notify Google); Google indexing still needs Search Console monitoring. Publishing the buyer guides later will add contextual product links, but those drafts are not live yet.
+
 ## Pilot content
 
 1. **Refresh existing article** — [Black rice seed price in Bangladesh](black-rice-seed-price-update.md)  
