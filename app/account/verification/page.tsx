@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCallback,useEffect,useState } from "react";
 import type { FormEvent } from "react";
@@ -9,15 +10,16 @@ type Module="plant_market"|"marketplace"|"employer"|"transport"|"sell_harvest";
 type Application={id:string;module:Module;status:string;review_note:string|null;created_at:string};
 const statusLabel:Record<string,string>={pending:"পর্যালোচনার অপেক্ষায়",under_review:"পর্যালোচনা চলছে",approved:"অনুমোদিত",rejected:"সংশোধন প্রয়োজন",withdrawn:"প্রত্যাহার করা হয়েছে"};
 export default function IdentityVerificationPage(){
+  const router = useRouter();
  const [module,setModule]=useState<Module>("plant_market"),[applications,setApplications]=useState<Application[]>([]);
  const [files,setFiles]=useState<File[]>([]),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true);
  const [message,setMessage]=useState(""),[error,setError]=useState(false);
  const load=useCallback(async()=>{
   const response=await fetch("/api/identity/applications",{cache:"no-store"});
-  if(response.status===401){window.location.href="/login?next=/account/verification";return;}
+  if(response.status===401){router.push("/login?next=/account/verification");return;}
   const data=await response.json();if(!response.ok)throw new Error(data.error||"আবেদন লোড করা যায়নি");
   setApplications(data.applications||[]);
- },[]);
+ },[router]);
  useEffect(()=>{load().catch(e=>{setError(true);setMessage(e.message)}).finally(()=>setLoading(false));},[load]);
  useEffect(()=>{
   const requested=new URLSearchParams(window.location.search).get("module");
@@ -31,7 +33,7 @@ export default function IdentityVerificationPage(){
   const uploadedPaths:string[]=[];
   try{
    const supabase=supabaseClient=createSupabaseBrowserClient(),auth=await supabase.auth.getUser();
-   if(auth.error||!auth.data.user){window.location.href="/login?next=/account/verification";return;}
+   if(auth.error||!auth.data.user){router.push("/login?next=/account/verification");return;}
    const evidencePaths:string[]=[];
    for(const file of files){
     const ext=file.name.toLowerCase().split(".").pop()||"";
