@@ -192,6 +192,8 @@ jobs:
         run: node scripts/smoke-admin-ai-product-seo.mjs
       - name: Admin 2.0 command center regression test
         run: npm run test:admin-command-center
+      - name: Admin demand intelligence regression test
+        run: npm run test:admin-demand-intelligence
       - name: Production build
         run: npm run build
         env:
