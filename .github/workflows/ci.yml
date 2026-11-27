@@ -333,5 +333,3 @@ jobs:
         run: |
           if [ -f "$RUNNER_TEMP/agriva-next.pid" ]; then kill "$(cat "$RUNNER_TEMP/agriva-next.pid")" || true; fi
           supabase stop || true
-        if: always()
-        run: supabase stop || true
