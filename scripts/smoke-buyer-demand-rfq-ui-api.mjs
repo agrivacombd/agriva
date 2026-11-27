@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const route = read("../app/api/buyer-demands/convert-to-rfq/route.ts");
+const bodyReader = read("../lib/http/read-limited-body.mjs");
 const ui = read("../components/marketplace/BuyerDemandRfqConversion.tsx");
 const board = read("../components/marketplace/BuyerDemandBoard.tsx");
 
