@@ -100,6 +100,12 @@ Deno.serve(async (request: Request) => {
       const notification = notificationResult.data as NotificationRow | null;
       const subscriptions = (subscriptionResult.data ?? []) as PushSubscriptionRow[];
       if (!notification || !preferenceResult.data?.push_enabled || subscriptions.length === 0) {
+        if (notification && preferenceResult.data?.push_enabled && subscriptions.length === 0) {
+          const { error: preferenceUpdateError } = await supabase.from("notification_preferences")
+            .update({ push_enabled: false, updated_at: new Date().toISOString() })
+            .eq("user_id", job.user_id);
+          if (preferenceUpdateError) throw new Error("Could not disable push without active devices");
+        }
         const { error } = await supabase.rpc("complete_push_delivery", {
           p_queue_id: job.queue_id,
           p_success: true,
@@ -133,8 +139,9 @@ Deno.serve(async (request: Request) => {
             ? Number((error as { statusCode?: unknown }).statusCode)
             : 0;
           if (statusCode === 404 || statusCode === 410) {
-            await supabase.from("push_subscriptions").delete()
+            const { error: staleDeleteError } = await supabase.from("push_subscriptions").delete()
               .eq("id", subscription.id).eq("user_id", job.user_id);
+            if (staleDeleteError) transientErrors.push("Could not remove expired push endpoint");
           } else {
             transientErrors.push(error instanceof Error ? error.message : "Push provider error");
           }
@@ -142,6 +149,12 @@ Deno.serve(async (request: Request) => {
       }
 
       const succeeded = successfulSends > 0 || transientErrors.length === 0;
+      if (successfulSends === 0 && transientErrors.length === 0) {
+        const { error: preferenceUpdateError } = await supabase.from("notification_preferences")
+          .update({ push_enabled: false, updated_at: new Date().toISOString() })
+          .eq("user_id", job.user_id);
+        if (preferenceUpdateError) throw new Error("Could not disable push after all endpoints expired");
+      }
       const { error: completionError } = await supabase.rpc("complete_push_delivery", {
         p_queue_id: job.queue_id,
         p_success: succeeded,
