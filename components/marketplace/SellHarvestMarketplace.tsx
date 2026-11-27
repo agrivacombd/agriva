@@ -218,9 +218,9 @@ export default function SellHarvestMarketplace() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.id === item.owner_id) return;
     // Contact links remain usable if the optional inquiry-tracking migration is not yet enabled.
-    await supabase.from("harvest_listing_inquiries").upsert({
+    await supabase.from("harvest_listing_inquiries").insert({
       listing_id: item.id, buyer_id: user.id, seller_id: item.owner_id, channel, status: "new",
-    }, { onConflict: "listing_id,buyer_id,channel", ignoreDuplicates: true });
+    });
   }
 
   async function updateMyStatus(item: HarvestListing, status: "available" | "sold_out" | "paused") {
