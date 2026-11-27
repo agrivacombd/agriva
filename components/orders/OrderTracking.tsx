@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { resolveMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
+import { getExistingMarketplaceCartUser } from "@/lib/marketplace/cart-auth";
 
 type Order = {
   id: string;
@@ -37,9 +37,13 @@ export default function OrderTracking() {
     let active = true;
     (async () => {
       try {
-        // Reuse the browser's guest identity created during checkout, or the
-        // regular signed-in identity. Never create a second identity for a guest.
-        const { supabase, user } = await resolveMarketplaceCartUser();
+        // Order tracking must never create an anonymous account just by being opened.
+        // Reuse an existing regular or guest checkout session only.
+        const { supabase, user } = await getExistingMarketplaceCartUser();
+        if (!user) {
+          if (active) setNotice("অর্ডার দেখতে আগে লগইন করুন।");
+          return;
+        }
         const { data, error } = await supabase
           .from("marketplace_orders")
           .select("id,total_amount,status,payment_method,payment_status,created_at,attribution_code,products(name),quantity")

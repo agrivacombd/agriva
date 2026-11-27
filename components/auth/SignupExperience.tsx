@@ -1,5 +1,7 @@
 "use client";
 
+import { safeAuthNextPath } from "@/lib/auth/safe-next";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -88,7 +90,7 @@ export default function SignupExperience({ embedded = false, returnTo, onAuthent
   onSwitchToLogin?: () => void;
 }) {
   const router = useRouter();
-  const safeReturnTo = returnTo && returnTo.startsWith("/marketplace/") && !returnTo.startsWith("//") && !returnTo.includes("\\") ? returnTo : null;
+  const safeReturnTo = returnTo ? safeAuthNextPath(returnTo) : null;
   const [language, setLanguage] = useState<Language>("bn");
   const [method, setMethod] = useState<"email" | "phone">("email");
   const [fullName, setFullName] = useState("");
