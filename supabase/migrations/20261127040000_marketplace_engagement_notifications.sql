@@ -39,7 +39,7 @@ create policy notifications_mark_own_read on public.notifications
 
 
 -- Realtime is used only for the user's own notification rows; RLS remains authoritative.
-do $
+do $$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
      and not exists (
@@ -49,7 +49,7 @@ begin
     alter publication supabase_realtime add table public.notifications;
   end if;
 end
-$;
+$$;
 
 create table if not exists public.notification_preferences (
   user_id uuid primary key references auth.users(id) on delete cascade,
@@ -114,7 +114,8 @@ create index if not exists harvest_inquiries_buyer_idx
   on public.harvest_listing_inquiries(buyer_id, created_at desc);
 alter table public.harvest_listing_inquiries enable row level security;
 revoke all on public.harvest_listing_inquiries from anon, authenticated;
-grant select, insert on public.harvest_listing_inquiries to authenticated;\ngrant update(status) on public.harvest_listing_inquiries to authenticated;
+grant select, insert on public.harvest_listing_inquiries to authenticated;
+grant update(status) on public.harvest_listing_inquiries to authenticated;
 drop policy if exists harvest_inquiries_parties_read on public.harvest_listing_inquiries;
 create policy harvest_inquiries_parties_read on public.harvest_listing_inquiries
   for select to authenticated using (
@@ -201,7 +202,8 @@ begin
       when 'harvest_inquiry' then coalesce(inquiry_enabled, true)
       when 'bulk_request' then coalesce(wholesale_enabled, true)
       when 'bulk_invitation' then coalesce(wholesale_enabled, true)
-      when 'bulk_quote' then coalesce(wholesale_enabled, true)\n      when 'wholesaler_application' then coalesce(wholesale_enabled, true)
+      when 'bulk_quote' then coalesce(wholesale_enabled, true)
+      when 'wholesaler_application' then coalesce(wholesale_enabled, true)
       else true
     end
   into v_enabled, v_category_enabled
@@ -418,22 +420,22 @@ create trigger trg_notify_bulk_quote
 create or replace function private.sync_wholesaler_application_approval()
 returns trigger language plpgsql security definer
 set search_path = public, pg_temp
-as $
+as $$
 begin
   if new.status = 'approved' and old.status is distinct from new.status then
-    insert into public.bulk_wholesalers(user_id, status, verified_at, display_name)
-    values (new.user_id, 'verified', now(), new.business_name)
+    insert into public.bulk_wholesalers(user_id, status, verified_at)
+    values (new.user_id, 'verified', now())
     on conflict (user_id) do update
-      set status = 'verified', verified_at = now(), display_name = excluded.display_name;
+      set status = 'verified', verified_at = now();
   end if;
   return new;
 end;
-$;
+$$;
 
 create or replace function private.notify_wholesaler_application_status()
 returns trigger language plpgsql security definer
 set search_path = public, pg_temp
-as $
+as $$
 begin
   if new.status is distinct from old.status and new.status in ('approved', 'rejected', 'under_review') then
     perform private.enqueue_marketplace_notification(
@@ -454,7 +456,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 revoke all on function private.sync_wholesaler_application_approval() from public, anon, authenticated;
 revoke all on function private.notify_wholesaler_application_status() from public, anon, authenticated;
@@ -467,11 +469,11 @@ drop trigger if exists trg_notify_wholesaler_application_status on public.bulk_w
 create trigger trg_notify_wholesaler_application_status
   after update of status on public.bulk_wholesaler_applications
   for each row execute function private.notify_wholesaler_application_status();
-\n
+
 create or replace function private.notify_bulk_quote_approved()
 returns trigger language plpgsql security definer
 set search_path = public, pg_temp
-as $
+as $$
 declare v_product text;
 begin
   if new.status = 'approved' and old.status is distinct from new.status then
@@ -485,7 +487,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke all on function private.notify_bulk_quote_approved() from public, anon, authenticated;
 drop trigger if exists trg_notify_bulk_quote_approved on public.bulk_quotes;
 create trigger trg_notify_bulk_quote_approved
