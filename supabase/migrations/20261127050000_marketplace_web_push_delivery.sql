@@ -22,6 +22,12 @@ create index if not exists push_delivery_queue_ready_idx
   on public.push_delivery_queue(status, available_at, created_at)
   where status in ('pending', 'processing');
 
+-- Browser subscriptions are written only by authenticated server routes after
+-- validating the provider endpoint. Do not permit direct client writes that
+-- could turn the delivery worker into an SSRF proxy.
+revoke all on public.push_subscriptions from anon, authenticated;
+grant all on public.push_subscriptions to service_role;
+
 alter table public.push_delivery_queue enable row level security;
 revoke all on public.push_delivery_queue from anon, authenticated, public;
 grant all on public.push_delivery_queue to service_role;
