@@ -12,6 +12,8 @@ assert.match(page, /count: "exact", head: true/);
 assert.match(page, /Measurement gaps/);
 assert.match(page, /DAU\/MAU/);
 assert.match(page, /customer marketing push/);
+assert.match(page, /Draft PR #405/);
+assert.match(page, /pull\/405/);
 assert.match(page, /visitor tokens, phone numbers, order addresses/);
 assert.doesNotMatch(page, /visitor_token|\.select\(["']\*["']\)/);
 assert.match(shell, /Growth Intelligence/);
