@@ -82,8 +82,8 @@ begin
     raise exception 'Demand response deadline has expired' using errcode = '22023';
   end if;
 
-  if p_buyer_type not in ('individual', 'business')
-     or p_visibility not in ('public', 'private')
+  if p_buyer_type is null or p_buyer_type not in ('individual', 'business')
+     or p_visibility is null or p_visibility not in ('public', 'private')
      or p_quote_deadline is null
      or p_quote_deadline <= now()
      or p_quote_deadline > now() + interval '90 days' then
