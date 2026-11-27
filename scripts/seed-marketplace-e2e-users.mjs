@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !serviceKey) throw new Error("Local Supabase URL and service-role key are required.");
-if (!/127\\.0\\.0\\.1|localhost/.test(url)) throw new Error("Refusing to seed E2E accounts outside the isolated local Supabase instance.");
+if (!/127\.0\.0\.1|localhost/.test(url)) throw new Error("Refusing to seed E2E accounts outside the isolated local Supabase instance.");
 
 const supabase = createClient(url, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
 const password = "AGRIVA-E2E-Only-2026!";
