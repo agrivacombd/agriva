@@ -219,3 +219,54 @@ jobs:
       - name: Stop isolated Supabase stack
         if: always()
         run: supabase stop --no-backup
+
+  marketplace-browser-qa:
+    name: Marketplace browser QA (synthetic Farmer, Buyer and Wholesaler)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Install isolated Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.1
+      - name: Start disposable local Supabase and replay migrations
+        run: |
+          supabase start
+          supabase db reset
+          supabase status -o env > /tmp/supabase.env
+          set -a
+          source /tmp/supabase.env
+          set +a
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+      - name: Create synthetic-only Farmer, Buyer and Wholesaler accounts
+        run: node scripts/seed-marketplace-e2e-users.mjs
+      - name: Build app against disposable local Supabase
+        run: npm run build
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.58.2
+      - name: Install Chromium browser
+        run: npx playwright install --with-deps chromium
+      - name: Run authenticated marketplace notification browser journeys
+        run: npx playwright test
+      - name: Upload browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-browser-qa
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Stop disposable Supabase stack
+        if: always()
+        run: supabase stop --no-backup
