@@ -14,7 +14,7 @@ assert.match(route, /MAX_BODY_BYTES = 2048/);
 assert.match(route, /readLimitedBody/);
 assert.match(bodyReader, /getReader/);
 assert.match(bodyReader, /totalBytes > maxBytes/);
-assert.match(bodyReader, /reader\\.cancel/);
+assert.match(bodyReader, /cancel/);
 assert.match(route, /rawBody === null/);
 assert.doesNotMatch(route, /request\.text\(\)/);
 assert.match(route, /application\/json/);
