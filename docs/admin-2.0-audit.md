@@ -54,6 +54,7 @@ No production database changes were made during this audit.
 - Responsive and accessible navigation
 
 ### Phase 2 — Growth & engagement
+- Added read-only Demand & RFQ Intelligence at /admin/demand-intelligence, reusing bulk_requests, bulk_quotes and bulk_wholesalers with existing admin RLS.
 - Integrate existing notification delivery and growth tracking
 - Demand/supply matching visibility
 - Cohort and retention analytics where event data exists
@@ -74,5 +75,5 @@ No production database changes were made during this audit.
 - ESLint and TypeScript
 - Production build with CI placeholders only
 - Supabase security/performance advisor recheck after any database change
-- Browser QA on preview with synthetic test data
+- Browser QA on preview with synthetic test data (currently blocked: Vercel deployment API has reached its 100-deployments/day free quota; retry after quota reset or use team-approved CLI deployment).
 - No production deployment without explicit later instruction
