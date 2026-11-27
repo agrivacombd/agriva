@@ -8,7 +8,7 @@ create table if not exists public.notifications (
   user_id uuid not null references auth.users(id) on delete cascade,
   event_type text not null check (event_type in (
     'matching_harvest', 'matching_demand', 'demand_response',
-    'harvest_inquiry', 'bulk_request', 'bulk_invitation', 'bulk_quote'
+    'harvest_inquiry', 'bulk_request', 'bulk_invitation', 'bulk_quote', 'wholesaler_application'
   )),
   title text not null check (char_length(title) between 1 and 160),
   body text not null default '' check (char_length(body) <= 500),
@@ -187,7 +187,7 @@ begin
       when 'harvest_inquiry' then coalesce(inquiry_enabled, true)
       when 'bulk_request' then coalesce(wholesale_enabled, true)
       when 'bulk_invitation' then coalesce(wholesale_enabled, true)
-      when 'bulk_quote' then coalesce(wholesale_enabled, true)
+      when 'bulk_quote' then coalesce(wholesale_enabled, true)\n      when 'wholesaler_application' then coalesce(wholesale_enabled, true)
       else true
     end
   into v_enabled, v_category_enabled
@@ -400,7 +400,60 @@ create trigger trg_notify_bulk_quote
   after insert on public.bulk_quotes
   for each row execute function private.notify_bulk_quote();
 
-comment on table public.notifications is 'Private in-app marketplace notifications. Rows are created by trusted database triggers.';
+
+create or replace function private.sync_wholesaler_application_approval()
+returns trigger language plpgsql security definer
+set search_path = public, pg_temp
+as $
+begin
+  if new.status = 'approved' and old.status is distinct from new.status then
+    insert into public.bulk_wholesalers(user_id, status, verified_at, display_name)
+    values (new.user_id, 'verified', now(), new.business_name)
+    on conflict (user_id) do update
+      set status = 'verified', verified_at = now(), display_name = excluded.display_name;
+  end if;
+  return new;
+end;
+$;
+
+create or replace function private.notify_wholesaler_application_status()
+returns trigger language plpgsql security definer
+set search_path = public, pg_temp
+as $
+begin
+  if new.status is distinct from old.status and new.status in ('approved', 'rejected', 'under_review') then
+    perform private.enqueue_marketplace_notification(
+      new.user_id, 'wholesaler_application',
+      case new.status
+        when 'approved' then 'আপনার wholesaler আবেদন অনুমোদিত হয়েছে'
+        when 'rejected' then 'আপনার wholesaler আবেদন সম্পর্কে আপডেট'
+        else 'আপনার wholesaler আবেদন যাচাই চলছে'
+      end,
+      case new.status
+        when 'approved' then 'আপনি এখন verified wholesaler হিসেবে AGRIVA-র bulk demand-এ quotation দিতে পারবেন।'
+        when 'rejected' then 'আবেদনের বিষয়ে আরও তথ্যের জন্য AGRIVA support-এর সঙ্গে যোগাযোগ করুন।'
+        else 'AGRIVA টিম আপনার ব্যবসার তথ্য যাচাই করছে।'
+      end,
+      '/wholesaler/apply', 'wholesaler-application:' || new.id::text || ':' || new.status,
+      jsonb_build_object('application_id', new.id, 'status', new.status)
+    );
+  end if;
+  return new;
+end;
+$;
+
+revoke all on function private.sync_wholesaler_application_approval() from public, anon, authenticated;
+revoke all on function private.notify_wholesaler_application_status() from public, anon, authenticated;
+
+drop trigger if exists trg_sync_wholesaler_application_approval on public.bulk_wholesaler_applications;
+create trigger trg_sync_wholesaler_application_approval
+  after update of status on public.bulk_wholesaler_applications
+  for each row execute function private.sync_wholesaler_application_approval();
+drop trigger if exists trg_notify_wholesaler_application_status on public.bulk_wholesaler_applications;
+create trigger trg_notify_wholesaler_application_status
+  after update of status on public.bulk_wholesaler_applications
+  for each row execute function private.notify_wholesaler_application_status();
+\ncomment on table public.notifications is 'Private in-app marketplace notifications. Rows are created by trusted database triggers.';
 comment on table public.notification_preferences is 'Per-user in-app and push notification preferences.';
 comment on table public.push_subscriptions is 'Opt-in browser push endpoints; sending is handled server-side only.';
 comment on table public.harvest_listing_inquiries is 'Tracks buyer contact intent for harvest listings.';
