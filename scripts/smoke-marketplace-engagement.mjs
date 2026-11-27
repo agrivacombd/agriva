@@ -20,8 +20,10 @@ for (const table of [
 }
 
 assert.match(migration, /on public\.notifications\(user_id, dedupe_key\) where dedupe_key is not null/);
-assert.match(migration, /for select to authenticated using \(user_id = \(select auth\.uid\(\)\)\)/);
+assert.match(migration, /for select to authenticated using \(user_id = \(select auth\.uid\(\)\) and in_app_visible = true\)/);
 assert.match(migration, /grant update\(read_at\) on public\.notifications to authenticated/);
+assert.match(migration, /v_push_enabled boolean/);
+assert.match(migration, /in_app_visible\)\s*values[\s\S]{0,300}v_in_app_enabled/);
 assert.match(migration, /create schema if not exists private/);
 assert.match(migration, /alter publication supabase_realtime add table public\.notifications/);
 assert.match(migration, /trg_notify_matching_harvest_demands/);
