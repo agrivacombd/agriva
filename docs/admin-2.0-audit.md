@@ -55,7 +55,10 @@ No production database changes were made during this audit.
 
 ### Phase 2 — Growth & engagement
 - Added read-only Demand & RFQ Intelligence at /admin/demand-intelligence, reusing bulk_requests, bulk_quotes and bulk_wholesalers with existing admin RLS.
-- Integrate existing notification delivery and growth tracking
+- Added read-only Growth & Engagement Intelligence at /admin/growth-intelligence using exact 30-day and six-calendar-month counts from profiles, marketplace_orders, order_events and attribution_sessions; no user-level or visitor-token data is exposed.
+- Reuses the existing 30-second admin order notification feed; clearly distinguishes it from customer marketing push.
+- Records measurement gaps: no durable session/retention telemetry or push delivery/open telemetry is currently available, so DAU/MAU, retention and customer push performance are not fabricated.
+- Integrate customer notification delivery and privacy-safe engagement tracking after the event schema and delivery provider are reviewed
 - Demand/supply matching visibility
 - Cohort and retention analytics where event data exists
 - Campaign and conversion reporting
