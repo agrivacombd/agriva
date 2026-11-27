@@ -157,16 +157,19 @@ begin
   select decrypted_secret into v_project_url
   from vault.decrypted_secrets
   where name = 'agriva_push_delivery_project_url'
+  order by created_at desc
   limit 1;
 
   select decrypted_secret into v_service_role_key
   from vault.decrypted_secrets
   where name = 'agriva_push_delivery_service_role_key'
+  order by created_at desc
   limit 1;
 
   select decrypted_secret into v_dispatch_secret
   from vault.decrypted_secrets
   where name = 'agriva_push_delivery_secret'
+  order by created_at desc
   limit 1;
 
   if coalesce(v_project_url, '') = ''
