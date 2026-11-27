@@ -1,5 +1,23 @@
 -- Green Exchange: user-owned listings and exchange requests.
 -- Review and apply through the project's reconciled migration workflow; do not apply manually to production.
+
+-- The shared private admin helper is part of the security boundary used by RLS policies.
+create schema if not exists private;
+create or replace function private.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = pg_catalog, public, pg_temp
+as $
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  )
+$;
+revoke all on function private.is_admin() from public, anon;
+grant execute on function private.is_admin() to authenticated;
+
 create table if not exists public.green_exchange_listings (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users(id) on delete cascade,
