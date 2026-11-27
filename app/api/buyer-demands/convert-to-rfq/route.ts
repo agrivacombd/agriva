@@ -14,14 +14,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request origin" }, { status: 403 });
   }
 
-  const contentLength = Number(request.headers.get("content-length") || 0);
-  if (contentLength > 2048) {
-    return NextResponse.json({ error: "Request is too large" }, { status: 413 });
-  }
-
   if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
     return NextResponse.json({ error: "JSON body required" }, { status: 415 });
   }
+
+  const rawBody = await request.text();
+  if (rawBody.length > 2048) {
+    return NextResponse.json({ error: "Request is too large" }, { status: 413 });
+  }
+  const body = (() => {
+    try { return JSON.parse(rawBody); } catch { return null; }
+  })();
 
   const supabase = await createSupabaseServerClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -29,7 +32,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Login required" }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body) ||
       !UUID.test(body.demandId || "") ||
       !BUYER_TYPES.has(body.buyerType) ||
