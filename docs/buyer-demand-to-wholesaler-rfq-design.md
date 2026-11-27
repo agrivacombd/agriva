@@ -35,5 +35,13 @@ A future buyer-initiated conversion must:
 - `bulk_quotes` is unique per request/wholesaler and requires invitation-governed participation in the existing workflow.
 - `bulk_wholesalers` supports pending/verified/suspended status; conversion must not bypass verification.
 
+## Phase 1 implemented — safe draft mapping
+- Added a pure, side-effect-free RFQ draft mapper with explicit buyer type, visibility and quote-deadline choices.
+- It rejects inactive/expired demands and invalid RFQ field values.
+- It maps only crop, quantity/unit, district/upazila and a specific need date; all other need modes require a date to be selected separately.
+- It deliberately excludes notes, phone, target price and farmer responses from the resulting draft.
+- Synthetic regression tests cover the allowed mapping and privacy boundaries.
+- This is a preparation layer only: it does not create a bulk request, invite wholesalers, mutate demand status, or send notifications. The transactional RPC and isolated staging verification remain release gates.
+
 ## Security release gate
 The Buyer Demand phone-column migration is development-only. It has not been applied to the connected production project. Public phone display is disabled in the UI pending a safe, reviewed contact-sharing design. Staging privilege and PostgREST verification are still required.
