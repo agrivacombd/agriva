@@ -33,6 +33,8 @@ assert.match(ui, /buyerType/);
 assert.match(ui, /visibility/);
 assert.match(ui, /quoteDeadline/);
 assert.match(ui, /type="datetime-local"/);
+assert.match(ui, /function toLocalDateTime\(value: Date\)/);
+assert.match(ui, /const deadlineMin = useMemo\(\(\) => toLocalDateTime\(new Date\(Date\.now\(\) \+ 60_000\)\), \[\]\)/);
 assert.match(ui, /required checked={confirmed}/);
 assert.match(ui, /review queue-তে পাঠানো হয়েছে/);
 assert.match(ui, /ফোন নম্বর, ব্যক্তিগত নোট, target price ও কৃষকদের আগ্রহ\/প্রস্তাব RFQ-তে কপি হবে না/);
