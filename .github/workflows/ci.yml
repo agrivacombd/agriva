@@ -265,8 +265,8 @@ jobs:
           DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
           test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; docker ps -a; exit 1; }
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-buyer-demand-rfq-supabase-fixture.sql
-          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql
           docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
 
       - name: Verify real Auth and PostgREST behavior
