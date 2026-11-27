@@ -36,6 +36,11 @@ Observed findings (2026-11-28):
 
 No production database changes were made during this audit.
 
+### Follow-up security verification (2026-11-28)
+- Rechecked the four RLS-enabled/no-policy tables: `crop_health_feed_slug_registry`, `marketplace_order_idempotency`, `product_rank_daily_metrics`, and `product_rank_events` have no `anon` or `authenticated` table grants; only `postgres` and `service_role` grants were present. Treat these as intentional service-role-only internal tables; do not add client policies.
+- `public.crop_feed_make_slug(text,text,uuid)` is `SECURITY INVOKER` (not `SECURITY DEFINER`) but had no function-level fixed `search_path`. Added an additive development-branch migration to pin it to `pg_catalog, public, pg_temp`; no production migration was applied.
+- Added a regression smoke test and CI step for the search-path hardening.
+
 ## Admin 2.0 implementation principles
 
 1. Preserve the existing admin auth boundary. Every page, Server Action and Route Handler must authorize independently.
