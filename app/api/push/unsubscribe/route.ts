@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { isAllowedPushEndpoint } from "@/lib/push/validation";
 
@@ -20,9 +21,18 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid browser push endpoint." }, { status: 400 });
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const sessionClient = await createSupabaseServerClient();
+  const { data: { user }, error: authError } = await sessionClient.auth.getUser();
   if (authError || !user) return Response.json({ error: "Authentication required." }, { status: 401 });
+
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!serviceRoleKey || !supabaseUrl) {
+    return Response.json({ error: "Push subscription storage is not configured." }, { status: 503 });
+  }
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
   let deletion = supabase.from("push_subscriptions").delete().eq("user_id", user.id);
   if (typeof payload.endpoint === "string") deletion = deletion.eq("endpoint", payload.endpoint);
@@ -33,7 +43,7 @@ export async function POST(request: Request) {
     .select("id", { count: "exact", head: true }).eq("user_id", user.id);
   if (countError) return Response.json({ error: "Could not verify remaining devices." }, { status: 500 });
 
-  const { error: preferenceError } = await supabase.from("notification_preferences").upsert({
+  const { error: preferenceError } = await sessionClient.from("notification_preferences").upsert({
     user_id: user.id,
     push_enabled: (count ?? 0) > 0,
     updated_at: new Date().toISOString(),
