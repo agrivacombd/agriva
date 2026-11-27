@@ -1,7 +1,7 @@
 # Buyer Demand → Wholesaler RFQ conversion design
 
 ## Status
-Development design/audit only. No conversion mutation, database migration, production data write, or notification has been introduced by this phase.
+Development implementation only. The review UI and authenticated conversion endpoint call a development-only RPC migration. No migration has been applied to any database; no production data write or notification has occurred.
 
 ## Existing workflow boundaries
 - Farmer-facing demand board uses `buyer_demands` and `buyer_demand_responses`.
@@ -21,10 +21,10 @@ A future buyer-initiated conversion must:
 9. Record an immutable audit event linking the source demand and created RFQ, without copying private contact data.
 10. Notify only through an existing supported notification pipeline after the transaction commits; do not create a second notification channel.
 
-## Required implementation before enabling conversion
+## Remaining requirements before production enablement
 - Decide whether the source demand remains active, is marked fulfilled, or gains a distinct converted state. Do not mark it fulfilled merely because an RFQ was created.
 - Add a dedicated conversion-link table or equivalent durable source reference with a unique constraint and strict RLS; do not overload notes/specification with IDs.
-- Implement a server-side transaction/RPC with owner check, active/deadline check, idempotency, validated input and audit.
+- Run the migration and verify the server-side transaction/RPC with owner, active/deadline, idempotency and validation tests in isolated staging.
 - Add synthetic integration tests for owner mismatch, inactive/expired demand, duplicate retry, invalid buyer type/visibility, date mapping, private visibility, verified wholesaler invitation and quote isolation.
 - Verify all access through anonymous/authenticated PostgREST in an isolated staging database before release.
 
@@ -54,3 +54,13 @@ A future buyer-initiated conversion must:
 
 ## Security release gate
 The Buyer Demand phone-column migration is development-only. It has not been applied to the connected production project. Public phone display is disabled in the UI pending a safe, reviewed contact-sharing design. Staging privilege and PostgREST verification are still required.
+
+
+## Phase 3 implemented — buyer review UI and authenticated API (development only)
+- Added a conversion review panel to the buyer's own active demand cards. It requires explicit buyer type, visibility, quote deadline and a final consent checkbox; visibility defaults to private.
+- Shows exactly which demand fields are copied and clarifies that only a specific requested date is carried over. Urgent, range and flexible dates are not guessed.
+- Added same-origin, JSON-only, bounded-request API route using the authenticated Supabase server session. It validates the demand UUID and choices, enforces a future deadline within 90 days, then calls the transactional RPC; it does not use a service-role client.
+- The RPC remains the authorization authority: it verifies ownership, active status and source deadline, and returns the same RFQ ID on retries.
+- The new RFQ is pending review. The original demand remains active. No invitation, quote, publication or notification is created.
+- Added UI/API static regression coverage to repository CI and the targeted bulk-RFQ workflow.
+- This phase is not staging-verified. The database migration remains unapplied; the UI/API should not be enabled on production until the migration and authenticated/anonymous PostgREST tests pass in isolated staging.
