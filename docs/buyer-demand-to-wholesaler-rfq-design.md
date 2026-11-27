@@ -64,3 +64,11 @@ The Buyer Demand phone-column migration is development-only. It has not been app
 - The new RFQ is pending review. The original demand remains active. No invitation, quote, publication or notification is created.
 - Added UI/API static regression coverage to repository CI and the targeted bulk-RFQ workflow.
 - This phase is not staging-verified. The database migration remains unapplied; the UI/API should not be enabled on production until the migration and authenticated/anonymous PostgREST tests pass in isolated staging.
+
+
+## Phase 4 — isolated PostgreSQL migration integration tests (no hosted branch required)
+- Added a PostgreSQL 17 CI service with synthetic auth users and synthetic Buyer Demand rows only.
+- CI applies the buyer phone-column privilege migration and the Buyer Demand → RFQ transaction migration to a disposable local PostgreSQL database, then verifies column grants, RPC execute grants, RLS on conversion links, owner checks, expired/inactive demand rejection, idempotency, copied field allowlist, unchanged source status and immutable conversion records.
+- This test uses a minimal isolated PostgreSQL fixture and a test-only `auth.uid()` shim. It is a real PostgreSQL migration/transaction integration test, but it does not replace Supabase Auth/PostgREST integration testing on a dedicated staging branch.
+- The test is free of hosted Supabase branch compute charges and contains no production data or credentials.
+- Production and hosted Supabase project remain untouched.
