@@ -36,6 +36,7 @@ export default function NotificationPreferencesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
+  const [devicePushEnabled, setDevicePushEnabled] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
     let active = true;
@@ -52,6 +53,13 @@ export default function NotificationPreferencesPage() {
       } else {
         const { error: insertError } = await supabase.from("notification_preferences").insert({ user_id: user.id });
         if (insertError) setMessage("নোটিফিকেশন সেটিংস তৈরি করা যায়নি। আবার চেষ্টা করুন।");
+      }
+      try {
+        const registration = await navigator.serviceWorker.getRegistration("/");
+        const currentSubscription = await registration?.pushManager.getSubscription();
+        if (active) setDevicePushEnabled(Boolean(currentSubscription));
+      } catch {
+        if (active) setDevicePushEnabled(false);
       }
       setLoading(false);
     }
@@ -70,7 +78,7 @@ export default function NotificationPreferencesPage() {
     setPushBusy(true);
     setMessage("");
     try {
-      if (values.push_enabled) {
+      if (devicePushEnabled) {
         const registration = await navigator.serviceWorker.ready;
         const subscription = await registration.pushManager.getSubscription();
         const response = await fetch("/api/push/unsubscribe", {
@@ -79,8 +87,10 @@ export default function NotificationPreferencesPage() {
           body: JSON.stringify({ endpoint: subscription?.endpoint }),
         });
         if (!response.ok) throw new Error("Push বন্ধ করা যায়নি। আবার চেষ্টা করুন।");
+        const result = await response.json() as { pushEnabled?: boolean };
         await subscription?.unsubscribe();
-        setValues((current) => ({ ...current, push_enabled: false }));
+        setDevicePushEnabled(false);
+        setValues((current) => ({ ...current, push_enabled: Boolean(result.pushEnabled) }));
         setMessage("এই ডিভাইসে push notification বন্ধ হয়েছে।");
         return;
       }
@@ -123,6 +133,7 @@ export default function NotificationPreferencesPage() {
         await subscription.unsubscribe();
         throw new Error(result.error || "এই ডিভাইসটি register করা যায়নি।");
       }
+      setDevicePushEnabled(true);
       setValues((current) => ({ ...current, push_enabled: true }));
       setMessage("এই ডিভাইসে push notification চালু হয়েছে।");
     } catch (error) {
@@ -152,7 +163,7 @@ export default function NotificationPreferencesPage() {
             <p className="mt-1 text-xs leading-5 text-[#718174]">AGRIVA tab বন্ধ থাকলেও নতুন matching harvest, buyer demand ও wholesale update browser notification হিসেবে পেতে পারবেন। অনুমতি শুধু Enable বাটনে চাপলে চাওয়া হবে।</p>
           </div>
           <button type="button" onClick={() => void togglePush()} disabled={pushBusy} className="shrink-0 rounded-xl bg-[#126b4f] px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-50">
-            {pushBusy ? "অপেক্ষা করুন…" : values.push_enabled ? "Push বন্ধ করুন" : "Push চালু করুন"}
+            {pushBusy ? "অপেক্ষা করুন…" : devicePushEnabled ? "Push বন্ধ করুন" : "Push চালু করুন"}
           </button>
         </div>
         <p className="mt-3 text-xs font-semibold text-[#718174]">{values.push_enabled ? "এই account-এ push notification চালু আছে।" : "Push notification এখন বন্ধ আছে।"}</p>
