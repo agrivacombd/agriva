@@ -66,7 +66,16 @@ select vault.create_secret(
 );
 ```
 
-If you rotate a Vault value later, create a new secret with the same name; the dispatcher reads the newest created value for each name. Keep the Edge Function's `PUSH_DISPATCH_SECRET` in sync with the Vault value.
+If you rotate a Vault value later, update the existing named secret rather than creating a duplicate. For example:
+
+```sql
+select vault.update_secret(
+  (select id from vault.decrypted_secrets where name = 'agriva_push_delivery_secret'),
+  '<new-dispatch-secret>'
+);
+```
+
+Keep the Edge Function's `PUSH_DISPATCH_SECRET` in sync with the updated Vault value.
 
 The migration installs the one-minute cron schedule. Check it with:
 
