@@ -79,6 +79,8 @@ jobs:
         run: node --check scripts/smoke-visual-search-production.mjs
       - name: Validate browser worker module syntax
         run: node --check public/workers/agriva-semantic-vision.mjs
+      - name: Validate PWA service worker syntax
+        run: node --check public/sw.js
       - name: Category taxonomy SEO smoke test
         run: node scripts/smoke-taxonomy.mjs
       - name: Jobs application server-binding regression test
@@ -117,6 +119,8 @@ jobs:
         run: npm run test:sell-harvest-publication
       - name: Marketplace engagement, notification RLS and wholesaler onboarding regression
         run: node scripts/smoke-marketplace-engagement.mjs
+      - name: Marketplace Web Push delivery, subscription security and opt-in regression
+        run: node scripts/smoke-marketplace-push-delivery.mjs
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
       - name: Super Admin operational queue regression test
