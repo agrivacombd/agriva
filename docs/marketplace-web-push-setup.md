@@ -87,7 +87,9 @@ where jobname = 'agriva-marketplace-push-delivery';
 
 ## Next.js environment
 
-Set `NEXT_PUBLIC_VAPID_PUBLIC_KEY` to the matching public VAPID key in the Vercel Preview environment for the AGRIVA development branch. It is public by design. The authenticated subscribe routes also require the existing server-only `SUPABASE_SERVICE_ROLE_KEY`; never expose it to the browser.
+Set `NEXT_PUBLIC_VAPID_PUBLIC_KEY` to the matching public VAPID key only in the Vercel Preview environment scoped to the AGRIVA development branch. It is public by design. The authenticated subscribe routes also require the existing server-only `SUPABASE_SERVICE_ROLE_KEY`; never expose it to the browser.
+
+**Preview isolation gate:** before enabling that key or deploying a preview, make sure branch-scoped `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` all point to an isolated staging Supabase project. Do not let this feature branch inherit global Preview Supabase credentials that target Production. Until the branch-scoped staging credentials and VAPID key exist, the push subscribe/unsubscribe routes intentionally return `503` and browser push stays disabled.
 
 Only after preview QA passes should the same public key be added to Production and the production migration/function/secrets be configured. Do not run the production migration or deploy the production function as part of development QA.
 
