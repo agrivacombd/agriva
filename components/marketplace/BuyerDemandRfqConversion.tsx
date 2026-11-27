@@ -67,7 +67,7 @@ export default function BuyerDemandRfqConversion(props: Props) {
       <div role="status" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
         <p className="text-sm font-bold text-emerald-900">আপনার RFQ review queue-তে পাঠানো হয়েছে।</p>
         <p className="mt-1 text-xs text-emerald-800">এটি এখনো প্রকাশিত নয়; অনুমোদনের পর দৃশ্যমান হবে।</p>
-        <Link href="/bulk-orders" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-3 py-2 text-xs font-bold text-white">RFQ দেখুন</Link>
+        <Link href="/account/custom-orders" className="mt-3 inline-flex rounded-lg bg-emerald-800 px-3 py-2 text-xs font-bold text-white">RFQ দেখুন</Link>
       </div>
     );
   }
