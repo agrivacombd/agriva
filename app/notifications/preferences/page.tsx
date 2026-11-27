@@ -37,6 +37,7 @@ export default function NotificationPreferencesPage() {
   const [saving, setSaving] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [devicePushEnabled, setDevicePushEnabled] = useState(false);
+  const [vapidPublicKey, setVapidPublicKey] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   useEffect(() => {
     let active = true;
@@ -60,6 +61,13 @@ export default function NotificationPreferencesPage() {
         if (active) setDevicePushEnabled(Boolean(currentSubscription));
       } catch {
         if (active) setDevicePushEnabled(false);
+      }
+      try {
+        const keyResponse = await fetch("/api/push/subscribe", { cache: "no-store" });
+        const keyData = await keyResponse.json() as { publicKey?: string };
+        if (active) setVapidPublicKey(keyResponse.ok ? keyData.publicKey ?? null : null);
+      } catch {
+        if (active) setVapidPublicKey(null);
       }
       setLoading(false);
     }
@@ -99,18 +107,16 @@ export default function NotificationPreferencesPage() {
         throw new Error("এই browser-এ push notification সমর্থিত নয়।");
       }
 
-      // Permission is requested only from this explicit button click.
+      if (!vapidPublicKey) {
+        throw new Error("Web Push এখনো configure করা হয়নি।");
+      }
+
+      // Permission is requested directly from this explicit button click.
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
         throw new Error(permission === "denied"
           ? "Browser settings থেকে AGRIVA notification অনুমতি চালু করুন।"
           : "Push notification অনুমতি দেওয়া হয়নি।");
-      }
-
-      const keyResponse = await fetch("/api/push/subscribe", { cache: "no-store" });
-      const keyData = await keyResponse.json() as { publicKey?: string; error?: string };
-      if (!keyResponse.ok || !keyData.publicKey) {
-        throw new Error(keyData.error || "Push service এখনো configure করা হয়নি।");
       }
 
       const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
@@ -119,7 +125,7 @@ export default function NotificationPreferencesPage() {
       if (!subscription) {
         subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: decodeVapidKey(keyData.publicKey),
+          applicationServerKey: decodeVapidKey(vapidPublicKey),
         });
       }
 
@@ -162,11 +168,11 @@ export default function NotificationPreferencesPage() {
             <h2 className="font-extrabold">এই ডিভাইসে Web Push</h2>
             <p className="mt-1 text-xs leading-5 text-[#718174]">AGRIVA tab বন্ধ থাকলেও নতুন matching harvest, buyer demand ও wholesale update browser notification হিসেবে পেতে পারবেন। অনুমতি শুধু Enable বাটনে চাপলে চাওয়া হবে।</p>
           </div>
-          <button type="button" onClick={() => void togglePush()} disabled={pushBusy} className="shrink-0 rounded-xl bg-[#126b4f] px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-50">
+          <button type="button" onClick={() => void togglePush()} disabled={pushBusy || (!devicePushEnabled && !vapidPublicKey)} className="shrink-0 rounded-xl bg-[#126b4f] px-4 py-2.5 text-sm font-extrabold text-white disabled:opacity-50">
             {pushBusy ? "অপেক্ষা করুন…" : devicePushEnabled ? "Push বন্ধ করুন" : "Push চালু করুন"}
           </button>
         </div>
-        <p className="mt-3 text-xs font-semibold text-[#718174]">{devicePushEnabled ? "এই ডিভাইসে push notification চালু আছে।" : "এই ডিভাইসে push notification বন্ধ আছে।"}</p>
+        <p className="mt-3 text-xs font-semibold text-[#718174]">{!devicePushEnabled && !vapidPublicKey ? "Web Push configuration প্রস্তুত হলে এখানে চালু করতে পারবেন।" : devicePushEnabled ? "এই ডিভাইসে push notification চালু আছে।" : "এই ডিভাইসে push notification বন্ধ আছে।"}</p>
       </section>}
       {loading ? <p className="mt-8 text-sm">লোড হচ্ছে…</p> : <form onSubmit={save} className="mt-6 overflow-hidden rounded-2xl border border-[#e1e9df] bg-white">
         {options.map((option) => <label key={option.key} className="flex cursor-pointer items-start justify-between gap-4 border-b border-[#edf1eb] p-4 last:border-0 sm:p-5">
