@@ -37,6 +37,20 @@ create policy notifications_mark_own_read on public.notifications
   for update to authenticated using (user_id = (select auth.uid()))
   with check (user_id = (select auth.uid()));
 
+
+-- Realtime is used only for the user's own notification rows; RLS remains authoritative.
+do $
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'notifications'
+     ) then
+    alter publication supabase_realtime add table public.notifications;
+  end if;
+end
+$;
+
 create table if not exists public.notification_preferences (
   user_id uuid primary key references auth.users(id) on delete cascade,
   in_app_enabled boolean not null default true,
