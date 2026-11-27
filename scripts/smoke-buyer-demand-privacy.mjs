@@ -15,7 +15,7 @@ assert.match(source, /buyer_demand_responses"[\s\S]*?contact_phone/, "buyer may 
 
 console.log("AGRIVA buyer demand public-phone privacy regression checks passed.");
 
-const migration = readFileSync("supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql", "utf8");
 assert.match(migration, /revoke select on table public\.buyer_demands from public, anon, authenticated/i, "migration must remove broad table SELECT grants");
 assert.match(migration, /revoke select \(contact_phone\) on table public\.buyer_demands from public, anon, authenticated/i, "migration must explicitly revoke phone-column SELECT");
 assert.match(migration, /grant select \([\s\S]*?contact_phone_public[\s\S]*?\) on table public\.buyer_demands to anon, authenticated/i, "migration must restore only the reviewed non-phone read columns");
