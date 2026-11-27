@@ -38,7 +38,7 @@ async function createAuthenticatedUser(label) {
     token: serviceRoleKey,
     body: { email, password, email_confirm: true },
   });
-  assert.equal(created.response.status, 200, `Auth admin create failed: ${created.text}`);
+  assert.ok([200, 201].includes(created.response.status), `Auth admin create failed: ${created.text}`);
   assert.ok(created.data?.id, "Auth did not return a user id");
 
   const signedIn = await request("/auth/v1/token?grant_type=password", {
@@ -58,6 +58,16 @@ async function createAuthenticatedUser(label) {
   return { id: created.data.id, token: signedIn.data.access_token };
 }
 
+async function waitForPostgrestSchema() {
+  let last;
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    last = await request("/rest/v1/buyer_demands?select=crop_name&limit=0");
+    if (last.response.status === 200) return;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`PostgREST did not load the buyer_demands schema: ${last?.response.status} ${last?.text}`);
+}
+
 async function expectDenied(path, { token = anonKey, key = anonKey, method = "GET", body } = {}) {
   const result = await request(path, { method, key, token, body });
   assert.ok(
@@ -66,6 +76,8 @@ async function expectDenied(path, { token = anonKey, key = anonKey, method = "GE
   );
   return result;
 }
+
+await waitForPostgrestSchema();
 
 const buyer = await createAuthenticatedUser("buyer");
 const otherBuyer = await createAuthenticatedUser("other");
