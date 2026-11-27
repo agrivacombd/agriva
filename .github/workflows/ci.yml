@@ -222,7 +222,7 @@ jobs:
 
   marketplace-browser-qa:
     name: Marketplace browser QA (synthetic Farmer, Buyer and Wholesaler)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
