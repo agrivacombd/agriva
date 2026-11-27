@@ -5,7 +5,7 @@ const page = readFileSync("app/admin/command-center/page.tsx", "utf8");
 const shell = readFileSync("components/admin/shell/AdminShell.tsx", "utf8");
 assert.match(page, /requireAdminPage\("dashboard\.read"\)/);
 assert.match(page, /module_access_applications/);
-assert.match(page, /application_type/);
+assert.match(page, /eq\("module", "marketplace"\)/);
 assert.match(page, /—/);
 assert.match(page, /Live platform snapshot/);
 assert.match(page, /Read-only overview/);
