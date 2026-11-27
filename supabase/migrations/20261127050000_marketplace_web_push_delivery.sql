@@ -27,12 +27,12 @@ create index if not exists push_delivery_queue_ready_idx
 -- Browser subscriptions are written only by authenticated server routes after
 -- validating the provider endpoint. Do not permit direct client writes that
 -- could turn the delivery worker into an SSRF proxy.
-revoke all on public.push_subscriptions from anon, authenticated;
-grant all on public.push_subscriptions to service_role;
+revoke all on public.push_subscriptions from anon, authenticated, public, service_role;
+grant select, insert, update, delete on public.push_subscriptions to service_role;
+grant select on public.notifications, public.notification_preferences to service_role;
 
 alter table public.push_delivery_queue enable row level security;
-revoke all on public.push_delivery_queue from anon, authenticated, public;
-grant all on public.push_delivery_queue to service_role;
+revoke all on public.push_delivery_queue from anon, authenticated, public, service_role;
 
 create or replace function private.queue_marketplace_push_delivery()
 returns trigger
