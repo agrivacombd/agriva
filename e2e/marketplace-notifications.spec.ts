@@ -38,3 +38,21 @@ for (const persona of personas) {
     await expect(page.getByRole("status")).toContainText("সংরক্ষণ হয়েছে");
   });
 }
+
+test("Wholesaler applicant: submits a synthetic application without self-verification", async ({ page }) => {
+  await signIn(page, "e2e-wholesaler@example.test");
+  await page.goto("/wholesaler/apply");
+  await expect(page.getByRole("heading", { name: "AGRIVA Wholesaler Network" })).toBeVisible();
+
+  await page.getByLabel(/প্রতিষ্ঠান \/ ব্যবসার নাম/).fill("E2E Test Wholesale Ltd");
+  await page.getByLabel(/যোগাযোগকারীর নাম/).fill("Synthetic QA Contact");
+  await page.getByLabel(/মোবাইল নম্বর/).fill("01700000000");
+  await page.getByLabel(/ব্যবসার জেলা/).fill("Dhaka");
+  await page.getByLabel(/ব্যবসার ঠিকানা/).fill("Synthetic QA address, Dhaka");
+  await page.getByLabel(/কোন পণ্য \/ ফসল কেনেন/).fill("ধান, চাল");
+  await page.getByRole("button", { name: "যাচাইয়ের জন্য আবেদন জমা দিন" }).click();
+
+  await expect(page.getByRole("status")).toContainText("আবেদন জমা হয়েছে");
+  await expect(page.getByText("আবেদন জমা হয়েছে").first()).toBeVisible();
+  await expect(page.getByText(/অনুমোদন না হওয়া পর্যন্ত quotation/)).toBeVisible();
+});
