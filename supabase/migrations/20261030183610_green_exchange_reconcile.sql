@@ -15,7 +15,7 @@ as $$
     select 1 from public.profiles
     where id = auth.uid() and role = 'admin'
   )
-$;
+$$;
 revoke all on function private.is_admin() from public, anon;
 grant execute on function private.is_admin() to authenticated;
 
