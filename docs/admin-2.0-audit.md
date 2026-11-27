@@ -57,6 +57,7 @@ No production database changes were made during this audit.
 - Added read-only Demand & RFQ Intelligence at /admin/demand-intelligence, reusing bulk_requests, bulk_quotes and bulk_wholesalers with existing admin RLS.
 - Added read-only Growth & Engagement Intelligence at /admin/growth-intelligence using exact 30-day and six-calendar-month counts from profiles, marketplace_orders, order_events and attribution_sessions; no user-level or visitor-token data is exposed.
 - Reuses the existing 30-second admin order notification feed; clearly distinguishes it from customer marketing push.
+- Customer in-app/Web Push implementation is maintained separately in Draft PR #405; its latest CI run #3904 passed full quality, migrations/RLS integration and synthetic Farmer/Buyer/Wholesaler browser QA. Real VAPID delivery with isolated staging secrets remains a release gate; do not duplicate that work in Admin 2.0.
 - Records measurement gaps: no durable session/retention telemetry or push delivery/open telemetry is currently available, so DAU/MAU, retention and customer push performance are not fabricated.
 - Integrate customer notification delivery and privacy-safe engagement tracking after the event schema and delivery provider are reviewed
 - Demand/supply matching visibility
