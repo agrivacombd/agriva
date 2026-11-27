@@ -14,6 +14,8 @@ assert.match(page, /DAU\/MAU/);
 assert.match(page, /customer marketing push/);
 assert.match(page, /Draft PR #405/);
 assert.match(page, /pull\/405/);
+assert.match(page, /not unique visitors or verified conversions/);
+assert.match(page, /real VAPID delivery/);
 assert.match(page, /visitor tokens, phone numbers, order addresses/);
 assert.doesNotMatch(page, /visitor_token|\.select\(["']\*["']\)/);
 assert.match(shell, /Growth Intelligence/);
