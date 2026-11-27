@@ -23,7 +23,7 @@ on:
       - 'scripts/test-buyer-demand-rfq-postgres-setup.sql'
       - 'scripts/test-buyer-demand-rfq-postgres.sql'
       - 'scripts/test-buyer-demand-rfq-postgres.sh'
-      - 'supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql'
+      - 'supabase/migrations/20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql'
       - 'supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql'
       - '.github/workflows/bulk-rfq-autosuggest.yml'
   workflow_dispatch:
