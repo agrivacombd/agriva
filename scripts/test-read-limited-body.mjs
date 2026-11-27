@@ -5,6 +5,7 @@ const encoder = new TextEncoder();
 const requestWith = (chunks, headers = {}) => new Request("https://example.test", {
   method: "POST",
   headers,
+  duplex: "half",
   body: new ReadableStream({
     start(controller) {
       for (const chunk of chunks) controller.enqueue(chunk);
