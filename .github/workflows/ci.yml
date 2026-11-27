@@ -206,6 +206,12 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: 2.122.1
+      - name: Install Deno for Edge Function checks
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check the Web Push Edge Function
+        run: deno check supabase/functions/push-delivery/index.ts
       - name: Start isolated local Supabase stack
         run: supabase start
       - name: Apply every repository migration to isolated database
@@ -216,6 +222,8 @@ jobs:
           sudo apt-get install -y postgresql-client
       - name: Verify marketplace notification RLS, grants and admin-only approval
         run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f scripts/test-marketplace-engagement-rls.sql
+      - name: Verify Web Push outbox security, service-role RPC and cron
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f scripts/test-marketplace-push-delivery.sql
       - name: Stop isolated Supabase stack
         if: always()
         run: supabase stop --no-backup
