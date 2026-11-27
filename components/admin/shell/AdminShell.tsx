@@ -20,6 +20,7 @@ const groups: NavGroup[] = [
   { label: "Overview", items: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Command Center", href: "/admin/command-center", icon: Activity },
+    { label: "Demand & RFQ", href: "/admin/demand-intelligence", icon: Handshake },
     { label: "Module directory", href: "/super-admin", icon: Boxes },
   ]},
   { label: "Marketplace", items: [
