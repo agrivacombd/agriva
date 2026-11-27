@@ -8,6 +8,7 @@ const inbox = read("../app/notifications/page.tsx");
 const dashboard = read("../app/dashboard/page.tsx");
 const harvest = read("../components/marketplace/SellHarvestMarketplace.tsx");
 const wholesaler = read("../app/wholesaler/apply/page.tsx");
+const preferences = read("../app/notifications/preferences/page.tsx");
 
 for (const table of [
   "notifications", "notification_preferences", "push_subscriptions",
@@ -38,6 +39,9 @@ assert.match(center, /filter: `user_id=eq\.\$\{userId\}`/);
 assert.match(center, /\.eq\("user_id", user\.id\)/);
 assert.match(center, /\.update\(\{ read_at: readAt \}\)/);
 assert.match(inbox, /postgres_changes/);
+assert.match(preferences, /notification_preferences/);
+assert.match(preferences, /matching_harvest_enabled/);
+assert.match(preferences, /wholesale_enabled/);
 assert.match(dashboard, /<NotificationCenter \/>/);
 assert.match(dashboard, /\/wholesaler\/apply/);
 assert.match(harvest, /harvest_listing_inquiries/);
