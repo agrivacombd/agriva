@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import CookieSettingsButton from "@/components/analytics/CookieSettingsButton";
 
 export const metadata: Metadata = {
   title: "কুকি ও ট্র্যাকিং নীতি | AGRIVA",
@@ -50,8 +51,9 @@ export default function CookiePolicyPage() {
         </section>
         <section className="mt-9 border-t border-slate-100 pt-7">
           <h2 className="text-xl font-extrabold">২. কীভাবে আপনার পছন্দ পরিবর্তন করবেন</h2>
-          <p className="mt-3 leading-8 text-slate-600">ওয়েবসাইটের নিচের দিকে থাকা <strong>Cookie settings</strong> বাটনে চাপুন। সেখানে Analytics ও Marketing আলাদাভাবে চালু/বন্ধ করে <strong>পছন্দ সংরক্ষণ</strong> করুন। প্রথম ভিজিটে শুধু প্রয়োজনীয় কুকি গ্রহণের বিকল্পও রয়েছে।</p>
+          <p className="mt-3 leading-8 text-slate-600">এই পেজের <strong>Cookie settings পরিবর্তন করুন</strong> বাটনে চাপলে পছন্দের ডায়ালগ খুলবে। সেখানে Analytics ও Marketing আলাদাভাবে চালু/বন্ধ করে <strong>পছন্দ সংরক্ষণ</strong> করুন। প্রথম ভিজিটে শুধু প্রয়োজনীয় কুকি গ্রহণের বিকল্পও রয়েছে।</p>
           <p className="mt-3 leading-8 text-slate-600">আপনার অনুমতি ব্রাউজারের <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm">agriva_privacy_consent_v1</code> localStorage key-তে রাখা হয়, যাতে পরবর্তী ভিজিটে একই পছন্দ বজায় থাকে। ব্রাউজারের স্টোরেজ পরিষ্কার করলে আবার অনুমতি বেছে নিতে হতে পারে।</p>
+          <CookieSettingsButton />
         </section>
         <section className="mt-9 border-t border-slate-100 pt-7">
           <h2 className="text-xl font-extrabold">৩. Google Consent Mode v2</h2>

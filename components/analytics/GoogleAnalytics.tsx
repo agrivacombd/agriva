@@ -41,10 +41,20 @@ export default function GoogleAnalytics() {
       setMarketingChoice(Boolean(saved?.marketing));
       setConsentChecked(true);
     };
+    const openPreferences = () => {
+      const saved = readConsent();
+      setAnalyticsChoice(Boolean(saved?.analytics));
+      setMarketingChoice(Boolean(saved?.marketing));
+      setShowPreferences(true);
+    };
 
     syncConsent();
     window.addEventListener("storage", syncConsent);
-    return () => window.removeEventListener("storage", syncConsent);
+    window.addEventListener("agriva:open-cookie-settings", openPreferences);
+    return () => {
+      window.removeEventListener("storage", syncConsent);
+      window.removeEventListener("agriva:open-cookie-settings", openPreferences);
+    };
   }, []);
 
   // Respect changes made in another tab (or after revoking consent).
@@ -165,9 +175,7 @@ export default function GoogleAnalytics() {
         </div>
       )}
 
-      {consentChecked && !showBanner && !showPreferences && (
-        <button type="button" onClick={() => setShowPreferences(true)} className="fixed bottom-3 left-3 z-[90] rounded-full border border-[#d7e2d5] bg-white/95 px-3 py-2 text-[11px] font-bold text-[#365541] shadow-lg backdrop-blur sm:bottom-4 sm:left-4">Cookie settings</button>
-      )}
+
     </>
   );
 }
