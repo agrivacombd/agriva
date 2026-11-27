@@ -68,7 +68,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const { data: jobs, error: claimError } = await supabase.rpc("claim_push_delivery_batch", {
-    p_batch_size: 40,
+    p_batch_size: 20,
   });
   if (claimError) return json({ error: "Could not claim push jobs" }, 500);
 
