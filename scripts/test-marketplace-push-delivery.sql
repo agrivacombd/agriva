@@ -15,8 +15,10 @@ begin
 
   if has_table_privilege('anon', 'public.push_delivery_queue', 'SELECT')
      or has_table_privilege('authenticated', 'public.push_delivery_queue', 'SELECT')
+     or has_table_privilege('service_role', 'public.push_delivery_queue', 'SELECT')
      or has_table_privilege('anon', 'public.push_delivery_queue', 'INSERT')
-     or has_table_privilege('authenticated', 'public.push_delivery_queue', 'INSERT') then
+     or has_table_privilege('authenticated', 'public.push_delivery_queue', 'INSERT')
+     or has_table_privilege('service_role', 'public.push_delivery_queue', 'INSERT') then
     raise exception 'client roles must not access the push delivery queue';
   end if;
 
