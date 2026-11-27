@@ -3,6 +3,7 @@
 
 -- The shared private admin helper is part of the security boundary used by RLS policies.
 create schema if not exists private;
+grant usage on schema private to authenticated;
 create or replace function private.is_admin()
 returns boolean
 language sql
