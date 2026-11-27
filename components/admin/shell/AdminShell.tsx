@@ -19,6 +19,7 @@ type NavGroup = { label: string; items: NavItem[] };
 const groups: NavGroup[] = [
   { label: "Overview", items: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Command Center", href: "/admin/command-center", icon: Activity },
     { label: "Module directory", href: "/super-admin", icon: Boxes },
   ]},
   { label: "Marketplace", items: [
