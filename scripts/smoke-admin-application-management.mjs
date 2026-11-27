@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { strict as assert } from "node:assert";
+const read = (path) => readFileSync(path, "utf8");
+const ui = read("components/admin/ApplicationManagement.tsx");
+const action = read("lib/admin/application-review.ts");
+const identity = read("app/admin/identity-verification/page.tsx");
+const seller = read("app/admin/seller-applications/page.tsx");
+const migration = read("supabase/migrations/20261127190000_admin_application_history_indexes.sql");
+assert.match(ui, /STATUS_FILTERS/);
+assert.match(ui, /approved/);
+assert.match(ui, /rejected/);
+assert.match(ui, /under_review/);
+assert.match(ui, /reviewed_by/);
+assert.match(ui, /reviewed_at/);
+assert.match(ui, /module_access_application_events/);
+assert.match(ui, /createSignedUrl\(path, 300\)/);
+assert.match(ui, /startsWith\(app\.user_id \+ "\/"\)/);
+assert.match(ui, /limit\(500\)/);
+assert.match(action, /requireAdminPage\("identity\.review"\)/);
+assert.match(action, /admin_review_module_application/);
+assert.match(action, /decision === "rejected" && reviewNote\.length < 5/);
+assert.match(action, /revalidatePath\("\/admin\/seller-applications"\)/);
+assert.match(identity, /ApplicationManagement/);
+assert.match(seller, /ApplicationManagement/);
+assert.doesNotMatch(seller, /redirect\("\/admin\/identity-verification"\)/);
+assert.match(migration, /module_access_applications_review_history_idx/);
+console.log("AGRIVA admin application management regression checks passed.");
