@@ -192,6 +192,8 @@ jobs:
         run: node scripts/smoke-admin-ai-product-seo.mjs
       - name: Farmer demand matching regression test
         run: npm run test:farmer-demand-matching
+      - name: Wholesaler supply matching and engagement regression test
+        run: npm run test:wholesaler-matching
       - name: Admin 2.0 command center regression test
         run: npm run test:admin-command-center
       - name: Admin demand intelligence regression test
