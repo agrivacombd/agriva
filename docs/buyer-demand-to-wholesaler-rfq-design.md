@@ -43,5 +43,14 @@ A future buyer-initiated conversion must:
 - Synthetic regression tests cover the allowed mapping and privacy boundaries.
 - This is a preparation layer only: it does not create a bulk request, invite wholesalers, mutate demand status, or send notifications. The transactional RPC and isolated staging verification remain release gates.
 
+## Phase 2 implemented — transactional conversion boundary (development only)
+- Added `buyer_demand_rfq_conversions` with unique source-demand and RFQ references, restrictive foreign keys, RLS enabled, and no client table grants.
+- Added immutable conversion-link records and `convert_buyer_demand_to_bulk_rfq(...)`, a SECURITY DEFINER transaction with pinned search_path, authenticated owner check, row lock, active/deadline validation, explicit buyer type/visibility/deadline validation, and a 90-day quote-deadline ceiling.
+- The RPC creates the RFQ in `pending_review`; it does not auto-publish, invite wholesalers, create quotes, alter source demand status, or send notifications.
+- Retries for an already converted owned demand return the same RFQ ID. The source row lock and unique constraints prevent concurrent duplicate conversion.
+- Only crop, quantity/unit, district/upazila, and a specific need date are copied. Phone, public-phone flag, notes, target price, farmer responses, invitations, and quotes are excluded.
+- Added static migration-contract regression checks to both CI workflows. These checks are not a substitute for running the migration and PostgREST/RLS integration tests against isolated staging.
+- Migration is committed to the development branch only and has not been applied to production or any database.
+
 ## Security release gate
 The Buyer Demand phone-column migration is development-only. It has not been applied to the connected production project. Public phone display is disabled in the UI pending a safe, reviewed contact-sharing design. Staging privilege and PostgREST verification are still required.
