@@ -22,7 +22,7 @@ assert.equal(rankWholesalerSupplyMatches([listing()], [{ crop_name: "ধান",
 
 const page = readFileSync("app/wholesaler/requests/page.tsx", "utf8");
 assert.match(page, /from\("harvest_listings"\)/);
-assert.match(page, /moderation_status", "approved"/);
+assert.match(page, /moderation_status","approved"/);
 assert.match(page, /rankWholesalerSupplyMatches/);
 assert.match(page, /উত্তর দেওয়া বাকি/);
 assert.doesNotMatch(page, /contact_phone|pickup_details|bulk_quotes"\)\.select\("\*"/);
