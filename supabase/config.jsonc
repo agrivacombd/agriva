@@ -1,0 +1,7 @@
+{
+  "$schema": "https://supabase.com/schema/supabase-config.json",
+  "project_id": "agriva-local",
+  "experimental": {
+    "stack": true
+  }
+}
