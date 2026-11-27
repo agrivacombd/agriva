@@ -1,4 +1,4 @@
-const CACHE_NAME = "agriva-shell-v1";
+const CACHE_NAME = "agriva-shell-v2";
 const APP_SHELL = ["/offline"];
 
 self.addEventListener("install", (event) => {
@@ -15,6 +15,53 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((key) => key.startsWith("agriva-shell-") && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
+});
+
+
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    payload = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = typeof payload.title === "string" && payload.title.trim()
+    ? payload.title.slice(0, 120)
+    : "AGRIVA";
+  const options = {
+    body: typeof payload.body === "string" ? payload.body.slice(0, 300) : "",
+    icon: typeof payload.icon === "string" ? payload.icon : "/branding/agriva-app-icon-192.png",
+    badge: typeof payload.badge === "string" ? payload.badge : "/branding/agriva-app-icon-192.png",
+    tag: typeof payload.tag === "string" ? payload.tag.slice(0, 160) : "agriva-update",
+    data: { url: typeof payload.url === "string" ? payload.url : "/notifications" },
+    renotify: false,
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    let target = new URL("/notifications", self.location.origin);
+    try {
+      const candidate = new URL(event.notification.data?.url || "/notifications", self.location.origin);
+      if (candidate.origin === self.location.origin) target = candidate;
+    } catch {
+      // Keep the safe in-app notifications fallback.
+    }
+
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) {
+      if ("focus" in client) {
+        await client.focus();
+        if ("navigate" in client) await client.navigate(target.href);
+        return;
+      }
+    }
+    await self.clients.openWindow(target.href);
+  })());
 });
 
 self.addEventListener("fetch", (event) => {
