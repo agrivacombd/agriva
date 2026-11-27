@@ -168,7 +168,7 @@ export default function BuyerDemandBoard() {
       ]);
       if (!mine.error) {
         const merged = new Map(publicDemands.map((d) => [d.id, d]));
-        for (const demand of (mine.data ?? []) as Demand[]) merged.set(demand.id, demand);
+        for (const demand of (mine.data ?? []) as unknown as Demand[]) merged.set(demand.id, demand);
         setDemands([...merged.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)));
         setLoadError(false);
       }
