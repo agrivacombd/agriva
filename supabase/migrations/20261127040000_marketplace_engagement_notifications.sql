@@ -14,6 +14,7 @@ create table if not exists public.notifications (
   body text not null default '' check (char_length(body) <= 500),
   href text not null default '/dashboard' check (href like '/%'),
   data jsonb not null default '{}'::jsonb,
+  in_app_visible boolean not null default true,
   dedupe_key text,
   read_at timestamptz,
   created_at timestamptz not null default now()
@@ -31,11 +32,11 @@ grant select on public.notifications to authenticated;
 grant update(read_at) on public.notifications to authenticated;
 drop policy if exists notifications_read_own on public.notifications;
 create policy notifications_read_own on public.notifications
-  for select to authenticated using (user_id = (select auth.uid()));
+  for select to authenticated using (user_id = (select auth.uid()) and in_app_visible = true);
 drop policy if exists notifications_mark_own_read on public.notifications;
 create policy notifications_mark_own_read on public.notifications
-  for update to authenticated using (user_id = (select auth.uid()))
-  with check (user_id = (select auth.uid()));
+  for update to authenticated using (user_id = (select auth.uid()) and in_app_visible = true)
+  with check (user_id = (select auth.uid()) and in_app_visible = true);
 
 
 -- Realtime is used only for the user's own notification rows; RLS remains authoritative.
@@ -190,7 +191,8 @@ security definer
 set search_path = public, pg_temp
 as $$
 declare
-  v_enabled boolean;
+  v_in_app_enabled boolean;
+  v_push_enabled boolean;
   v_category_enabled boolean;
 begin
   if p_user_id is null then return; end if;
@@ -205,15 +207,20 @@ begin
       when 'bulk_quote' then coalesce(wholesale_enabled, true)
       when 'wholesaler_application' then coalesce(wholesale_enabled, true)
       else true
-    end
-  into v_enabled, v_category_enabled
+    end,
+    coalesce(push_enabled, false)
+  into v_in_app_enabled, v_category_enabled, v_push_enabled
   from public.notification_preferences where user_id = p_user_id;
-  if not found then v_enabled := true; v_category_enabled := true; end if;
-  if not v_enabled or not v_category_enabled then return; end if;
+  if not found then
+    v_in_app_enabled := true;
+    v_category_enabled := true;
+    v_push_enabled := false;
+  end if;
+  if not v_category_enabled or (not v_in_app_enabled and not v_push_enabled) then return; end if;
 
-  insert into public.notifications(user_id, event_type, title, body, href, dedupe_key, data)
+  insert into public.notifications(user_id, event_type, title, body, href, dedupe_key, data, in_app_visible)
   values (p_user_id, p_event_type, p_title, coalesce(p_body, ''), coalesce(p_href, '/dashboard'),
-          p_dedupe_key, coalesce(p_data, '{}'::jsonb))
+          p_dedupe_key, coalesce(p_data, '{}'::jsonb), v_in_app_enabled)
   on conflict (user_id, dedupe_key) where dedupe_key is not null do nothing;
 end;
 $$;
