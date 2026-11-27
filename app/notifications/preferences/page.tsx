@@ -166,7 +166,7 @@ export default function NotificationPreferencesPage() {
             {pushBusy ? "অপেক্ষা করুন…" : devicePushEnabled ? "Push বন্ধ করুন" : "Push চালু করুন"}
           </button>
         </div>
-        <p className="mt-3 text-xs font-semibold text-[#718174]">{values.push_enabled ? "এই account-এ push notification চালু আছে।" : "Push notification এখন বন্ধ আছে।"}</p>
+        <p className="mt-3 text-xs font-semibold text-[#718174]">{devicePushEnabled ? "এই ডিভাইসে push notification চালু আছে।" : "এই ডিভাইসে push notification বন্ধ আছে।"}</p>
       </section>}
       {loading ? <p className="mt-8 text-sm">লোড হচ্ছে…</p> : <form onSubmit={save} className="mt-6 overflow-hidden rounded-2xl border border-[#e1e9df] bg-white">
         {options.map((option) => <label key={option.key} className="flex cursor-pointer items-start justify-between gap-4 border-b border-[#edf1eb] p-4 last:border-0 sm:p-5">
