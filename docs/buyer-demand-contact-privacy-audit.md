@@ -48,3 +48,11 @@ The current product has two separate demand paths:
 There is no direct relation or conversion workflow between these paths. The Farmer dashboard matching panel currently reads only `buyer_demands`; the Wholesaler dashboard matching panel reads only invitation-scoped `bulk_requests` and approved `harvest_listings`.
 
 Do not auto-copy a farmer's interest into a wholesaler quote or silently convert a retail demand into an RFQ. They have different actors, verification, quote privacy and moderation rules. A future bridge should be an explicit buyer/admin action that creates a new RFQ with source-demand provenance, preserves the buyer as owner, requires moderation and invitation, and does not expose farmer response phone numbers to wholesalers. It needs its own authorization and idempotency tests.
+
+## Development remediation prepared — staging validation required
+
+- Added migration `20261128020000_restrict_buyer_demand_phone_column.sql` to revoke broad SELECT grants and re-grant only the reviewed non-phone columns to `anon` and `authenticated`.
+- The migration explicitly revokes SELECT on `contact_phone`; the public Buyer Demand Board no longer attempts a phone lookup, including for opted-in rows. Public phone display is disabled until a separately reviewed server-side contact-sharing path is available.
+- Buyer demand discovery retains its current non-phone field contract. Farmer response contact data remains a separate table and is still fetched through its existing party-scoped RLS query.
+- Static regression coverage now checks the migration's revoke/grant contract and ensures the board does not select buyer-demand phone values.
+- This migration has **not** been applied to production or any staging database. The only connected Supabase project is the production project; no billable Supabase branch was created. PostgREST anonymous/authenticated integration tests and post-migration privilege verification remain release gates.
