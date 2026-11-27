@@ -120,25 +120,11 @@ export default function BuyerDemandBoard() {
         publicFailed = true;
       } else {
         const rows = (result.data ?? []) as unknown as Omit<Demand, "contact_phone">[];
-        const optedInIds = rows.filter((demand) => demand.contact_phone_public).map((demand) => demand.id);
-        const publicPhones = new Map<string, string>();
-        if (optedInIds.length) {
-          const { data: phoneRows, error: phoneError } = await publicSupabase
-            .from("buyer_demands")
-            .select("id,contact_phone")
-            .in("id", optedInIds)
-            .eq("contact_phone_public", true);
-          if (phoneError) {
-            console.error("Buyer opted-in phone query failed", phoneError.code);
-          } else {
-            for (const row of phoneRows ?? []) {
-              if (row.contact_phone) publicPhones.set(row.id, row.contact_phone);
-            }
-          }
-        }
+        // Phone values are not available through the public board. Consent flags remain
+        // stored for future audited contact-sharing design, but are not a read grant.
         publicDemands = rows.map((demand) => ({
           ...demand,
-          contact_phone: publicPhones.get(demand.id) ?? null,
+          contact_phone: null,
         }));
       }
     } catch (error) {
