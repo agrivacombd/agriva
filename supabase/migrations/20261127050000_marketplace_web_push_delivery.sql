@@ -1,7 +1,9 @@
 -- Reliable Web Push delivery for marketplace notification rows.
 -- This migration is code-only until explicitly applied to a Supabase environment.
 
+create extension if not exists pg_cron;
 create extension if not exists pg_net;
+create extension if not exists supabase_vault with schema vault;
 
 create table if not exists public.push_delivery_queue (
   id uuid primary key default gen_random_uuid(),
