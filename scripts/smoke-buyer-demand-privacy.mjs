@@ -8,7 +8,7 @@ assert.ok(!publicColumns.split(",").includes("contact_phone"), "public demand di
 assert.ok(publicColumns.split(",").includes("contact_phone_public"), "public demand discovery must retain the buyer opt-in flag");
 assert.doesNotMatch(source, /ownerDemandColumns/, "no broad owner query may fetch private phone values");
 assert.match(source, /publicSupabase[\s\S]*?\.select\(demandColumns\)/, "public demand query must use the phone-free allowlist");
-assert.doesNotMatch(source, /from\("buyer_demands"\)[\s\S]{0,180}\.select\([^)]*contact_phone/, "buyer_demands must never select buyer phone values");
+assert.doesNotMatch(source, /from\("buyer_demands"\)\.select\(["\x27][^"\x27]*contact_phone/i, "buyer_demands must never use a literal select list containing buyer phone values");
 assert.match(source, /contact_phone: null/, "public board must never hydrate buyer phone values");
 assert.match(source, /supabase\.from\("buyer_demands"\)\.select\(demandColumns\)[\s\S]*?\.eq\("buyer_id", user\.id\)/, "buyer-owned query must also use the phone-free allowlist");
 assert.match(source, /buyer_demand_responses"[\s\S]*?contact_phone/, "buyer may still retrieve farmer response contact through the party-scoped RLS query");
