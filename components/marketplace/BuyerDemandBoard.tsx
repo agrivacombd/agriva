@@ -120,7 +120,7 @@ export default function BuyerDemandBoard() {
         console.error("Buyer demands public query failed", result.error.code);
         publicFailed = true;
       } else {
-        const rows = (result.data ?? []) as Omit<Demand, "contact_phone">[];
+        const rows = (result.data ?? []) as unknown as Omit<Demand, "contact_phone">[];
         const optedInIds = rows.filter((demand) => demand.contact_phone_public).map((demand) => demand.id);
         const publicPhones = new Map<string, string>();
         if (optedInIds.length) {
