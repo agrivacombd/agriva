@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
-const baseUrl = process.env.SUPABASE_URL;
-const anonKey = process.env.SUPABASE_ANON_KEY;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const unwrap = (value) => value?.replace(/^(['"])(.*)\\1$/s, "$2");
+const baseUrl = unwrap(process.env.SUPABASE_URL);
+const anonKey = unwrap(process.env.SUPABASE_ANON_KEY);
+const serviceRoleKey = unwrap(process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 for (const [name, value] of Object.entries({ baseUrl, anonKey, serviceRoleKey })) {
   assert.ok(value, `${name} must be set by supabase status`);
