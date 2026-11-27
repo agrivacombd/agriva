@@ -100,7 +100,7 @@ create index if not exists harvest_inquiries_buyer_idx
   on public.harvest_listing_inquiries(buyer_id, created_at desc);
 alter table public.harvest_listing_inquiries enable row level security;
 revoke all on public.harvest_listing_inquiries from anon, authenticated;
-grant select, insert, update on public.harvest_listing_inquiries to authenticated;
+grant select, insert on public.harvest_listing_inquiries to authenticated;\ngrant update(status) on public.harvest_listing_inquiries to authenticated;
 drop policy if exists harvest_inquiries_parties_read on public.harvest_listing_inquiries;
 create policy harvest_inquiries_parties_read on public.harvest_listing_inquiries
   for select to authenticated using (
@@ -453,7 +453,32 @@ drop trigger if exists trg_notify_wholesaler_application_status on public.bulk_w
 create trigger trg_notify_wholesaler_application_status
   after update of status on public.bulk_wholesaler_applications
   for each row execute function private.notify_wholesaler_application_status();
-\ncomment on table public.notifications is 'Private in-app marketplace notifications. Rows are created by trusted database triggers.';
+\n
+create or replace function private.notify_bulk_quote_approved()
+returns trigger language plpgsql security definer
+set search_path = public, pg_temp
+as $
+declare v_product text;
+begin
+  if new.status = 'approved' and old.status is distinct from new.status then
+    select product_name into v_product from public.bulk_requests where id = new.request_id;
+    perform private.enqueue_marketplace_notification(
+      new.wholesaler_id, 'bulk_quote', 'আপনার quotation ক্রেতা গ্রহণ করেছেন',
+      coalesce(v_product, 'আপনার quotation') || ' বিষয়ে ক্রেতা quotation অনুমোদন করেছেন।',
+      '/custom-order', 'bulk-quote-approved:' || new.id::text,
+      jsonb_build_object('request_id', new.request_id, 'quote_id', new.id)
+    );
+  end if;
+  return new;
+end;
+$;
+revoke all on function private.notify_bulk_quote_approved() from public, anon, authenticated;
+drop trigger if exists trg_notify_bulk_quote_approved on public.bulk_quotes;
+create trigger trg_notify_bulk_quote_approved
+  after update of status on public.bulk_quotes
+  for each row execute function private.notify_bulk_quote_approved();
+
+comment on table public.notifications is 'Private in-app marketplace notifications. Rows are created by trusted database triggers.';
 comment on table public.notification_preferences is 'Per-user in-app and push notification preferences.';
 comment on table public.push_subscriptions is 'Opt-in browser push endpoints; sending is handled server-side only.';
 comment on table public.harvest_listing_inquiries is 'Tracks buyer contact intent for harvest listings.';
