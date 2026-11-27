@@ -41,6 +41,21 @@ export default function NotificationCenter() {
   }, [supabase]);
 
   useEffect(() => {
+    if (!userId) return;
+    const channel = supabase.channel(`notifications:${userId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "notifications",
+        filter: `user_id=eq.${userId}`,
+      }, (payload) => {
+        const incoming = payload.new as Notification;
+        setItems((current) => current.some((item) => item.id === incoming.id)
+          ? current : [incoming, ...current].slice(0, 8));
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [supabase, userId]);
+
+  useEffect(() => {
     void load();
     const onFocus = () => { void load(); };
     window.addEventListener("focus", onFocus);
