@@ -102,7 +102,10 @@ export default function BuyerDemandBoard() {
     setLoading(true);
     setLoadError(false);
     setResponses([]);
-    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at";
+    // Public discovery must never fetch a buyer's private phone number.
+    // A second, narrowly filtered query retrieves numbers only when the buyer opted in.
+    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone_public,status,created_at";
+    const ownerDemandColumns = demandColumns + ",contact_phone";
     let publicDemands: Demand[] = [];
     let publicFailed = false;
 
@@ -117,7 +120,27 @@ export default function BuyerDemandBoard() {
         console.error("Buyer demands public query failed", result.error.code);
         publicFailed = true;
       } else {
-        publicDemands = (result.data ?? []) as Demand[];
+        const rows = (result.data ?? []) as Omit<Demand, "contact_phone">[];
+        const optedInIds = rows.filter((demand) => demand.contact_phone_public).map((demand) => demand.id);
+        const publicPhones = new Map<string, string>();
+        if (optedInIds.length) {
+          const { data: phoneRows, error: phoneError } = await publicSupabase
+            .from("buyer_demands")
+            .select("id,contact_phone")
+            .in("id", optedInIds)
+            .eq("contact_phone_public", true);
+          if (phoneError) {
+            console.error("Buyer opted-in phone query failed", phoneError.code);
+          } else {
+            for (const row of phoneRows ?? []) {
+              if (row.contact_phone) publicPhones.set(row.id, row.contact_phone);
+            }
+          }
+        }
+        publicDemands = rows.map((demand) => ({
+          ...demand,
+          contact_phone: publicPhones.get(demand.id) ?? null,
+        }));
       }
     } catch (error) {
       console.error("Buyer demands public query failed", error);
@@ -137,7 +160,7 @@ export default function BuyerDemandBoard() {
       }
       setUserId(user.id);
       const [mine, replies] = await Promise.all([
-        supabase.from("buyer_demands").select(demandColumns)
+        supabase.from("buyer_demands").select(ownerDemandColumns)
           .eq("buyer_id", user.id).order("created_at", { ascending: false }).limit(100),
         supabase.from("buyer_demand_responses")
           .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
