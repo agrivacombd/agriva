@@ -70,6 +70,15 @@ security definer
 set search_path = pg_catalog, public
 as $$
 begin
+  update public.push_delivery_queue q
+  set status = 'failed',
+      locked_at = null,
+      last_error = coalesce(q.last_error, 'Worker timed out after the maximum delivery attempts'),
+      updated_at = now()
+  where q.status = 'processing'
+    and q.attempt_count >= 5
+    and q.locked_at < now() - interval '5 minutes';
+
   return query
   with candidates as (
     select q.id
