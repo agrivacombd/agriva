@@ -23,6 +23,20 @@ export default function NotificationsPage() {
     else setItems((data ?? []) as Notification[]);
     setLoading(false);
   }, [supabase]);
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase.channel(`notification-inbox:${userId}`)
+      .on("postgres_changes", {
+        event: "INSERT", schema: "public", table: "notifications",
+        filter: `user_id=eq.${userId}`,
+      }, (payload) => {
+        const incoming = payload.new as Notification;
+        setItems((current) => current.some((item) => item.id === incoming.id)
+          ? current : [incoming, ...current].slice(0, 100));
+      })
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [supabase, userId]);
   useEffect(() => { void load(); }, [load]);
   const unread = items.filter((item) => !item.read_at).length;
   async function markAllRead() {
