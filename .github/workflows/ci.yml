@@ -190,6 +190,8 @@ jobs:
         run: npm run test:brand-assets
       - name: Admin AI product SEO security regression test
         run: node scripts/smoke-admin-ai-product-seo.mjs
+      - name: Admin 2.0 command center regression test
+        run: npm run test:admin-command-center
       - name: Production build
         run: npm run build
         env:
