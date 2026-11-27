@@ -62,6 +62,7 @@ export default async function DashboardPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <BrandLogo href="/" imageClassName="h-10 w-40 sm:w-48" priority />
           <div className="flex items-center gap-3">
+            <NotificationCenter />
             <Link href="/profile" className="hidden rounded-full border border-[#dce6da] px-4 py-2 text-sm font-semibold sm:block">প্রোফাইল সেটিংস</Link>
             <SignOutButton />
             <span className="max-w-[140px] truncate rounded-full bg-[#eaf4eb] px-4 py-2 text-sm font-bold text-[#126b4f] sm:max-w-[220px]">{name}</span>
