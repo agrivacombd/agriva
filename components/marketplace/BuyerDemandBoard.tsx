@@ -319,7 +319,7 @@ export default function BuyerDemandBoard() {
             <select aria-label="জেলা বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={districtFilter} onChange={(e) => setDistrictFilter(e.target.value)}><option>সব জেলা</option>{filterDistricts.map((d) => <option key={d}>{d}</option>)}</select>
             {userId && <button type="button" onClick={() => setMineOnly((v) => !v)} className={"rounded-xl px-4 py-3 text-sm font-bold " + (mineOnly ? "bg-emerald-700 text-white" : "border border-slate-200 text-slate-700")}>{mineOnly ? "সব চাহিদা দেখুন" : "আমার পোস্ট"}</button>}
           </div>
-          <p className="mt-3 text-xs text-slate-500">ফোন নম্বর শুধু ক্রেতা প্রকাশের সম্মতি দিলে দেখা যাবে। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
+          <p className="mt-3 text-xs text-slate-500">ক্রেতার ব্যক্তিগত ফোন নম্বর আপাতত নিরাপত্তার কারণে বোর্ডে দেখানো হয় না। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
         </div>
 
         {loading ? <div className="rounded-2xl bg-white p-10 text-center text-sm text-slate-500">চাহিদা লোড হচ্ছে...</div> : loadError ? (
