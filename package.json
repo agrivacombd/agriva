@@ -49,6 +49,7 @@
     "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs",
     "test:module-access": "node scripts/smoke-module-access-architecture.mjs",
     "test:identity-verification": "node scripts/smoke-identity-verification-workflow.mjs",
+    "test:admin-application-management": "node scripts/smoke-admin-application-management.mjs",
     "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs",
     "test:marketplace-purchase-options": "node scripts/smoke-marketplace-purchase-options.mjs",
     "test:plant-market-checkout": "node scripts/smoke-plant-market-checkout.mjs",
