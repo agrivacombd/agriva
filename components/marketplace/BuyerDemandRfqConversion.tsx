@@ -14,9 +14,12 @@ type Props = {
   needDate: string | null;
 };
 
+function toLocalDateTime(value: Date) {
+  return new Date(value.getTime() - value.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+}
+
 function defaultDeadline() {
-  const date = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  return toLocalDateTime(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000));
 }
 
 export default function BuyerDemandRfqConversion(props: Props) {
@@ -28,7 +31,7 @@ export default function BuyerDemandRfqConversion(props: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
-  const deadlineMin = useMemo(() => new Date(Date.now() + 60_000).toISOString().slice(0, 16), []);
+  const deadlineMin = useMemo(() => toLocalDateTime(new Date(Date.now() + 60_000)), []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
