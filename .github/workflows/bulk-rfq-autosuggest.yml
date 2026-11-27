@@ -17,6 +17,11 @@ on:
       - 'scripts/smoke-buyer-demand-rfq-conversion.mjs'
       - 'scripts/smoke-buyer-demand-rfq-transaction.mjs'
       - 'scripts/smoke-buyer-demand-rfq-ui-api.mjs'
+      - 'scripts/test-buyer-demand-rfq-postgres-setup.sql'
+      - 'scripts/test-buyer-demand-rfq-postgres.sql'
+      - 'scripts/test-buyer-demand-rfq-postgres.sh'
+      - 'supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql'
+      - 'supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql'
       - '.github/workflows/bulk-rfq-autosuggest.yml'
   workflow_dispatch:
 
@@ -57,3 +62,32 @@ jobs:
         run: npx eslint components/bulk-rfq/ProductNameAutocomplete.tsx components/bulk-rfq/MultiOrderForm.tsx lib/bulk-rfq/bangladesh-crop-suggestions.ts lib/bulk-rfq/units.ts lib/bulk-rfq/delivery-area.ts app/custom-order/page.tsx scripts/smoke-bulk-crop-suggestions.mjs scripts/smoke-bulk-order-custom-units.mjs
       - name: Production build compatibility
         run: npm run build
+
+  buyer-demand-rfq-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Apply buyer privacy and RFQ conversion migrations to isolated PostgreSQL
+        env:
+          PGHOST: localhost
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          PGDATABASE: postgres
+        run: npm run test:buyer-demand-rfq-postgres
