@@ -17,6 +17,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim()) {
+    return Response.json({ error: "Browser push is not enabled in this environment." }, { status: 503 });
+  }
+
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) {
     return Response.json({ error: "Invalid request origin." }, { status: 403 });
