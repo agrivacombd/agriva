@@ -156,7 +156,7 @@ const handler = createPushDeliveryHandler({
   createSupabase: (url, key) => createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
   }) as unknown as SupabaseLike,
-  webpush,
+  webpush: webpush as unknown as WebPushLike,
   env: (name) => Deno.env.get(name),
 });
 
