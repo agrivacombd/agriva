@@ -215,7 +215,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Type-check the Web Push Edge Function
-        run: deno check supabase/functions/push-delivery/index.ts
+        run: deno check --config supabase/functions/deno.json supabase/functions/push-delivery/index.ts
       - name: Start isolated local Supabase stack
         run: supabase start
       - name: Apply every repository migration to isolated database
