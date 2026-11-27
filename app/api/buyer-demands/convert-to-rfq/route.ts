@@ -58,5 +58,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Demand could not be converted. Check that it is active and belongs to your account." }, { status: 409 });
   }
 
-  return NextResponse.json({ requestId, status: "pending_review", href: "/bulk-orders" }, { status: 200 });
+  return NextResponse.json({ requestId, status: "pending_review", href: "/account/custom-orders" }, { status: 200 });
 }
