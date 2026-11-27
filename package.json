@@ -72,7 +72,8 @@
     "test:seo-calendar-intent": "node scripts/smoke-seo-calendar-intent.mjs",
     "test:admin-command-center": "node scripts/smoke-admin-command-center.mjs",
     "test:admin-demand-intelligence": "node scripts/smoke-admin-demand-intelligence.mjs",
-    "test:admin-growth-intelligence": "node scripts/smoke-admin-growth-intelligence.mjs"
+    "test:admin-growth-intelligence": "node scripts/smoke-admin-growth-intelligence.mjs",
+    "test:crop-feed-search-path": "node scripts/smoke-crop-feed-search-path.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
