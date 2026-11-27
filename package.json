@@ -73,7 +73,8 @@
     "test:admin-command-center": "node scripts/smoke-admin-command-center.mjs",
     "test:admin-demand-intelligence": "node scripts/smoke-admin-demand-intelligence.mjs",
     "test:admin-growth-intelligence": "node scripts/smoke-admin-growth-intelligence.mjs",
-    "test:crop-feed-search-path": "node scripts/smoke-crop-feed-search-path.mjs"
+    "test:crop-feed-search-path": "node scripts/smoke-crop-feed-search-path.mjs",
+    "test:farmer-demand-matching": "node --experimental-strip-types scripts/smoke-farmer-demand-matching.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
