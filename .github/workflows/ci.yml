@@ -194,6 +194,8 @@ jobs:
         run: npm run test:admin-command-center
       - name: Admin demand intelligence regression test
         run: npm run test:admin-demand-intelligence
+      - name: Admin growth intelligence regression test
+        run: npm run test:admin-growth-intelligence
       - name: Production build
         run: npm run build
         env:
