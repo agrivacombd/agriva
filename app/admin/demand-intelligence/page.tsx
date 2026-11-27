@@ -80,7 +80,7 @@ export default async function AdminDemandIntelligencePage() {
 
     <section className="mt-6" aria-label="Demand and supplier summary">
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <Metric label="Open RFQs" value={requestsResult.error ? null : openRequests} note="Currently open for supplier quotes" />
+        <Metric label="Open RFQs" value={requestsResult.error ? null : openRequests} note="Open among latest 100 RFQs" />
         <Metric label="Awaiting review" value={requestsResult.error ? null : pendingReview} note="Requests requiring moderation" />
         <Metric label="Quotes received" value={quotesResult.error ? null : quotes.length} note="Latest 500 quote records" />
         <Metric label="Verified wholesalers" value={wholesalersResult.error ? null : verifiedWholesalers} note="Latest 500 wholesaler records" />
