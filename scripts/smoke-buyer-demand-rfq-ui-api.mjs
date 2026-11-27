@@ -9,7 +9,7 @@ const board = read("../components/marketplace/BuyerDemandBoard.tsx");
 assert.match(route, /createSupabaseServerClient/);
 assert.match(route, /supabase\.auth\.getUser\(\)/);
 assert.match(route, /origin !== request\.nextUrl\.origin/);
-assert.match(route, /content-length/);
+assert.match(route, /rawBody\.length > 2048/);
 assert.match(route, /application\/json/);
 assert.match(route, /UUID\.test\(body\.demandId/);
 assert.match(route, /BUYER_TYPES\.has\(body\.buyerType\)/);
