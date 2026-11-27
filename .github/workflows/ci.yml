@@ -115,6 +115,8 @@ jobs:
         run: npm run test:admin-authorization
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
+      - name: Marketplace engagement, notification RLS and wholesaler onboarding regression
+        run: node scripts/smoke-marketplace-engagement.mjs
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
       - name: Super Admin operational queue regression test
