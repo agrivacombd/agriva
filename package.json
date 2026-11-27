@@ -79,7 +79,8 @@
     "test:buyer-demand-privacy": "node scripts/smoke-buyer-demand-privacy.mjs",
     "test:buyer-demand-rfq-conversion": "node scripts/smoke-buyer-demand-rfq-conversion.mjs",
     "test:buyer-demand-rfq-transaction": "node scripts/smoke-buyer-demand-rfq-transaction.mjs",
-    "test:buyer-demand-rfq-ui-api": "node scripts/smoke-buyer-demand-rfq-ui-api.mjs"
+    "test:buyer-demand-rfq-ui-api": "node scripts/smoke-buyer-demand-rfq-ui-api.mjs",
+    "test:buyer-demand-rfq-postgres": "bash scripts/test-buyer-demand-rfq-postgres.sh"
   },
   "dependencies": {
     "next": "16.4.5",
