@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { MapPin, PackageSearch, RefreshCw, Wheat } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { rankFarmerDemandMatches, type FarmerDemand } from "@/lib/growth/demand-matching";
+import { rankFarmerDemandMatches, type FarmerDemand } from "@/lib/growth/demand-matching.mjs";
 
 type Props = { productNames: string[]; district: string | null };
 const bn = (value: number) => new Intl.NumberFormat("bn-BD", { maximumFractionDigits: 2 }).format(value);
@@ -28,7 +28,7 @@ export default function FarmerDemandMatches({ productNames, district }: Props) {
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
 
-  async function load() {
+  const productNamesKey = productNames.join("|");\n\n  const load = useCallback(async () => {
     setLoading(true);
     setFailed(false);
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -43,7 +43,7 @@ export default function FarmerDemandMatches({ productNames, district }: Props) {
       setFailed(true);
       setMatches([]);
     } else {
-      setMatches(rankFarmerDemandMatches((data ?? []) as FarmerDemand[], productNames, district));
+      setMatches(rankFarmerDemandMatches((data ?? []) as FarmerDemand[], productNamesKey.split("|").filter(Boolean), district));
     }
     setLoading(false);
   }
