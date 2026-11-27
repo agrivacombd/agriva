@@ -9,6 +9,12 @@ const personas = [
 
 async function signIn(page: import("@playwright/test").Page, email: string) {
   await page.goto("/login");
+  // Fresh CI browser contexts have no saved consent; dismiss the privacy dialog
+  // with the essential-only option before interacting with the login form.
+  const essentialConsent = page.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true });
+  if (await essentialConsent.isVisible().catch(() => false)) {
+    await essentialConsent.click();
+  }
   await page.getByLabel("ইমেইল ঠিকানা").fill(email);
   await page.getByLabel("পাসওয়ার্ড", { exact: true }).fill(password);
   await page.getByRole("button", { name: "লগইন করুন", exact: true }).click();
