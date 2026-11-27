@@ -11,7 +11,7 @@ async function signIn(page: import("@playwright/test").Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("ইমেইল ঠিকানা").fill(email);
   await page.getByLabel("পাসওয়ার্ড", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "লগইন করুন" }).click();
+  await page.getByRole("button", { name: "লগইন করুন", exact: true }).click();
   await expect(page).toHaveURL(/\/dashboard(?:\?.*)?$/);
 }
 
