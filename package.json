@@ -77,7 +77,8 @@
     "test:farmer-demand-matching": "node scripts/smoke-farmer-demand-matching.mjs",
     "test:wholesaler-matching": "node scripts/smoke-wholesaler-matching.mjs",
     "test:buyer-demand-privacy": "node scripts/smoke-buyer-demand-privacy.mjs",
-    "test:buyer-demand-rfq-conversion": "node scripts/smoke-buyer-demand-rfq-conversion.mjs"
+    "test:buyer-demand-rfq-conversion": "node scripts/smoke-buyer-demand-rfq-conversion.mjs",
+    "test:buyer-demand-rfq-transaction": "node scripts/smoke-buyer-demand-rfq-transaction.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
