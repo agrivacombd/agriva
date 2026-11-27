@@ -246,7 +246,7 @@ jobs:
 
       - name: Start local Auth and PostgREST services
         run: |
-          supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,mailpit
+          supabase start -x studio,realtime,storage,functions,analytics,pooler,mail
 
       - name: Export local-only connection details
         run: |
