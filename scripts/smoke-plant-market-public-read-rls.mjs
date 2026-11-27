@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const migration = readFileSync(
-  "supabase/migrations/20261105180000_split_plant_market_public_read_policy.sql",
+  "supabase/migrations/20261105180001_split_plant_market_public_read_policy.sql",
   "utf8"
 );
 const lower = migration.toLowerCase();

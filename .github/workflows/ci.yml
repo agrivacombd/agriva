@@ -79,6 +79,8 @@ jobs:
         run: node --check scripts/smoke-visual-search-production.mjs
       - name: Validate browser worker module syntax
         run: node --check public/workers/agriva-semantic-vision.mjs
+      - name: Validate PWA service worker syntax
+        run: node --check public/sw.js
       - name: Category taxonomy SEO smoke test
         run: node scripts/smoke-taxonomy.mjs
       - name: Jobs application server-binding regression test
@@ -115,6 +117,10 @@ jobs:
         run: npm run test:admin-authorization
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
+      - name: Marketplace engagement, notification RLS and wholesaler onboarding regression
+        run: node scripts/smoke-marketplace-engagement.mjs
+      - name: Marketplace Web Push delivery, subscription security and opt-in regression
+        run: node scripts/smoke-marketplace-push-delivery.mjs
       - name: Admin product RPC contract regression test
         run: npm run test:admin-product-rpc-contract
       - name: Super Admin operational queue regression test
@@ -195,3 +201,88 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  database-migration-security:
+    name: Supabase migrations and marketplace RLS integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Supabase CLI v2
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.1
+      - name: Install Deno for Edge Function checks
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check the Web Push Edge Function
+        run: deno check --config supabase/functions/deno.json supabase/functions/push-delivery/index.ts
+      - name: Run mocked Web Push provider integration tests
+        run: deno test --allow-env=ECE_KEYLOG --config supabase/functions/deno.json supabase/functions/push-delivery/index.test.ts
+      - name: Start isolated local Supabase stack
+        run: supabase start
+      - name: Apply every repository migration to isolated database
+        run: supabase db reset
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Verify marketplace notification RLS, grants and admin-only approval
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f scripts/test-marketplace-engagement-rls.sql
+      - name: Verify Web Push outbox security, service-role RPC and cron
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f scripts/test-marketplace-push-delivery.sql
+      - name: Stop isolated Supabase stack
+        if: always()
+        run: supabase stop --no-backup
+
+  marketplace-browser-qa:
+    name: Marketplace browser QA (synthetic Farmer, Buyer and Wholesaler)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+      - name: Install isolated Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.1
+      - name: Start disposable local Supabase and replay migrations
+        run: |
+          supabase start
+          supabase db reset
+          supabase status -o env > /tmp/supabase.env
+          set -a
+          source /tmp/supabase.env
+          set +a
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+      - name: Create synthetic-only Farmer, Buyer and Wholesaler accounts
+        run: node scripts/seed-marketplace-e2e-users.mjs
+      - name: Build app against disposable local Supabase
+        run: npm run build
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.58.2
+      - name: Install Chromium browser
+        run: npx playwright install --with-deps chromium
+      - name: Run authenticated marketplace notification browser journeys
+        run: npx playwright test
+      - name: Upload browser QA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketplace-browser-qa
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Stop disposable Supabase stack
+        if: always()
+        run: supabase stop --no-backup

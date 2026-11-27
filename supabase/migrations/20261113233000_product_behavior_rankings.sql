@@ -4,6 +4,9 @@
 
 begin;
 
+-- Keep the soft-delete marker available for clean installs before the ranking RPC references it.
+alter table public.products add column if not exists deleted_at timestamptz;
+
 create table if not exists public.product_rank_events (
   market text not null check (market in ('marketplace', 'plant-market')),
   product_id uuid not null,

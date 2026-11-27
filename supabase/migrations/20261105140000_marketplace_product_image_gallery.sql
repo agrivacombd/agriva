@@ -1,5 +1,6 @@
 -- Support up to four Marketplace product photos and remove the bucket-specific 5 MiB cap.
 alter table public.products
+  add column if not exists image_url text,
   add column if not exists image_urls text[] not null default '{}'::text[];
 
 update public.products
