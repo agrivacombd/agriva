@@ -28,7 +28,7 @@ Effective privilege checks returned:
 2. After the updated app is confirmed live, apply `20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql`: remove table-level SELECT and grant only the reviewed non-sensitive columns.
 3. Keep public phone display disabled until a separately reviewed, consent-aware server-side contact path exists.
 4. Keep farmer response contact details behind the existing party-scoped RLS policy.
-5. Add authenticated and anonymous PostgREST integration tests proving that direct `contact_phone` selection is denied, opted-in public contact retrieval is limited to opted-in rows, and buyer response details remain visible only to the parties.
+5. Add authenticated and anonymous PostgREST integration tests proving that direct `contact_phone` selection is denied for both roles and buyer response details remain visible only to the parties. This release intentionally does not expose opted-in buyer phone values through the public board.
 6. Run Supabase security advisors and staging regression tests before considering any production rollout.
 
 ## Current boundary
