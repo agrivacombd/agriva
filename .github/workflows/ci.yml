@@ -200,6 +200,8 @@ jobs:
         run: npm run test:buyer-demand-rfq-transaction
       - name: Buyer demand RFQ review UI and API regression test
         run: npm run test:buyer-demand-rfq-ui-api
+      - name: Bounded HTTP request body streaming unit test
+        run: npm run test:read-limited-body
       - name: Wholesaler supply matching and engagement regression test
         run: npm run test:wholesaler-matching
       - name: Admin 2.0 command center regression test
