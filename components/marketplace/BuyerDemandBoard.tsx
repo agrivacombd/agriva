@@ -103,7 +103,7 @@ export default function BuyerDemandBoard() {
     setLoadError(false);
     setResponses([]);
     // Public discovery must never fetch a buyer's private phone number.
-    // A second, narrowly filtered query retrieves numbers only when the buyer opted in.
+    // Buyer phone values are intentionally unavailable on this board, including opted-in numbers.
     const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone_public,status,created_at";
     let publicDemands: Demand[] = [];
     let publicFailed = false;
