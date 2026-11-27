@@ -253,20 +253,16 @@ jobs:
           supabase status --env \
             --override-name API_URL=SUPABASE_URL \
             --override-name ANON_KEY=SUPABASE_ANON_KEY \
-            --override-name SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY \
-            --override-name DB_URL=SUPABASE_DB_URL >> "$GITHUB_ENV"
-
-      - name: Install PostgreSQL client
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+            --override-name SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY >> "$GITHUB_ENV"
 
       - name: Restore and prepare isolated synthetic schema
         run: |
           rm -rf supabase/migrations
           mv "$RUNNER_TEMP/agriva-migrations" supabase/migrations
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f scripts/test-buyer-demand-rfq-supabase-fixture.sql
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql
-          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+          supabase db query --local -f scripts/test-buyer-demand-rfq-supabase-fixture.sql
+          supabase db query --local -f supabase/migrations/20261128020000_restrict_buyer_demand_phone_column.sql
+          supabase db query --local -f supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql
+          supabase db query --local "NOTIFY pgrst, 'reload schema';"
 
       - name: Verify real Auth and PostgREST behavior
         run: node scripts/test-buyer-demand-rfq-supabase.mjs
