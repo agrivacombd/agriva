@@ -44,8 +44,8 @@ export default async function AdminCommandCenterPage() {
     supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "farmer"),
     supabase.from("products").select("id", { count: "exact", head: true }),
     supabase.from("marketplace_orders").select("id", { count: "exact", head: true }),
-    supabase.from("module_access_applications").select("id", { count: "exact", head: true }).eq("application_type", "identity").eq("status", "pending"),
-    supabase.from("module_access_applications").select("id", { count: "exact", head: true }).eq("application_type", "seller").eq("status", "pending"),
+    supabase.from("module_access_applications").select("id", { count: "exact", head: true }).in("status", ["pending", "under_review"]),
+    supabase.from("module_access_applications").select("id", { count: "exact", head: true }).eq("module", "marketplace").in("status", ["pending", "under_review"]),
   ]);
 
   const metricResults = [users, farmers, products, orders, pendingIdentity, pendingSeller];
@@ -86,7 +86,7 @@ export default async function AdminCommandCenterPage() {
         <div className="mb-3"><p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#8a968a]">Needs attention</p><h2 id="queues-heading" className="mt-1 text-lg font-black text-[#173b2d]">Approval queues</h2></div>
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/admin/identity-verification?status=pending" className="flex items-center justify-between gap-4 rounded-2xl border border-[#e5e9df] bg-white p-5 shadow-sm transition hover:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
-            <div><p className="text-sm font-bold text-[#173b2d]">Identity verification</p><p className="mt-1 text-xs text-[#829084]">Pending identity reviews</p></div>
+            <div><p className="text-sm font-bold text-[#173b2d]">Identity verification</p><p className="mt-1 text-xs text-[#829084]">Pending identity & module-access reviews</p></div>
             <span className="text-2xl font-black tabular-nums text-[#1e633d]">{pendingIdentity.error || pendingIdentity.count === null ? "—" : pendingIdentity.count}</span>
           </Link>
           <Link href="/admin/seller-applications?status=pending" className="flex items-center justify-between gap-4 rounded-2xl border border-[#e5e9df] bg-white p-5 shadow-sm transition hover:border-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
