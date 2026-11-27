@@ -1,6 +1,6 @@
 import { strict as assert } from "node:assert";
 import { readFileSync } from "node:fs";
-import { rankFarmerDemandMatches } from "../lib/growth/demand-matching.ts";
+import { rankFarmerDemandMatches } from "../lib/growth/demand-matching.mjs";
 
 const demand = (overrides = {}) => ({
   id: "d1", crop_name: "ধান", quantity: 100, unit: "maund", price_type: "negotiable",
