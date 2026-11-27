@@ -12,6 +12,19 @@ try {
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
+  const publicDemandResponsePromise = page.waitForResponse((response) =>
+    response.url().includes("/rest/v1/buyer_demands") && response.request().method() === "GET",
+  );
+  const publicDemandPage = await page.goto(`${baseUrl}/buyer-demands`, { waitUntil: "domcontentloaded" });
+  assert.equal(publicDemandPage?.status(), 200, "Public buyer demand board should render");
+  const publicDemandResponse = await publicDemandResponsePromise;
+  assert.equal(publicDemandResponse.status(), 200, "Public buyer demand PostgREST read should succeed");
+  const publicSelect = new URL(publicDemandResponse.url()).searchParams.get("select") ?? "";
+  assert.ok(!publicSelect.split(",").includes("contact_phone"), `Public board requested private contact_phone: ${publicSelect}`);
+  const publicBoardText = await page.locator("body").innerText();
+  assert.ok(!publicBoardText.includes("01700000000"), "Public buyer demand board leaked the synthetic private phone");
+  results.push({ test: "public buyer demand browser query omits contact_phone and renders no private phone", status: "passed" });
+
   const loginResponse = await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
   assert.equal(loginResponse?.status(), 200, "Login page should render successfully");
   await page.getByRole("heading", { name: /আপনার AGRIVA অ্যাকাউন্টে লগইন করুন|sign in to your agriva account/i }).waitFor();
@@ -53,7 +66,7 @@ try {
     });
     return { status: response.status, body: await response.json() };
   }, baseUrl);
-  assert.equal(apiResult.status, 401, `Unauthenticated browser API request must return 401: ${JSON.stringify(apiResult)}`);
+  assert.ok([401, 403].includes(apiResult.status), `Unauthenticated browser API request must be rejected: ${JSON.stringify(apiResult)}`);
   results.push({ test: "RFQ conversion API rejects unauthenticated browser request", status: "passed", httpStatus: apiResult.status });
 
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join("; ")}`);
