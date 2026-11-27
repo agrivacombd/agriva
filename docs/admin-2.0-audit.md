@@ -86,3 +86,10 @@ No production database changes were made during this audit.
 - Supabase security/performance advisor recheck after any database change
 - Browser QA on preview with synthetic test data (currently blocked: Vercel deployment API has reached its 100-deployments/day free quota; retry after quota reset or use team-approved CLI deployment).
 - No production deployment without explicit later instruction
+
+
+## RBAC & audit governance follow-up (2026-11-28)
+- Added [Admin RBAC & Audit Review](./admin-rbac-audit-review.md) after static review of the shared admin layout, legacy and delegated capability helpers, access-control page, audit page, and representative API handlers.
+- Main release gate: legacy `profiles.role = 'admin'` authorization and delegated `has_admin_permission` authorization are separate systems with different capability vocabularies. Do not enable delegated-admin rollout until the principal model, route/action capability matrix, expiry/scope behavior, and authorization tests are unified and verified.
+- Access-control remains read-only. Audit UI currently describes limited tracked event coverage; complete mutation-to-audit atomicity and metadata-redaction review before relying on it as a compliance-grade audit trail.
+- No production permissions, grants, roles, data, or deployment were changed.
