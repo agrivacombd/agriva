@@ -217,7 +217,7 @@ jobs:
       - name: Type-check the Web Push Edge Function
         run: deno check --config supabase/functions/deno.json supabase/functions/push-delivery/index.ts
       - name: Run mocked Web Push provider integration tests
-        run: deno test --config supabase/functions/deno.json supabase/functions/push-delivery/index.test.ts
+        run: deno test --allow-env=ECE_KEYLOG --config supabase/functions/deno.json supabase/functions/push-delivery/index.test.ts
       - name: Start isolated local Supabase stack
         run: supabase start
       - name: Apply every repository migration to isolated database
