@@ -60,9 +60,27 @@ insert into auth.users (
   '{}'::jsonb,now(),now()
 );
 
-insert into public.notifications(user_id,event_type,title,dedupe_key) values
-('10000000-0000-4000-8000-000000000001','matching_harvest','A user notification','rls-test-a'),
-('10000000-0000-4000-8000-000000000002','matching_harvest','B user notification','rls-test-b');
+insert into public.notification_preferences(user_id, in_app_enabled, push_enabled)
+values ('10000000-0000-4000-8000-000000000001', false, true);
+
+insert into public.notifications(user_id,event_type,title,dedupe_key,in_app_visible) values
+('10000000-0000-4000-8000-000000000001','matching_harvest','A user notification','rls-test-a',true),
+('10000000-0000-4000-8000-000000000002','matching_harvest','B user notification','rls-test-b',true),
+('10000000-0000-4000-8000-000000000001','matching_harvest','A push-only notification','rls-test-push-only',false);
+
+do $
+begin
+  if not exists (
+    select 1 from public.push_delivery_queue q
+    join public.notifications n on n.id = q.notification_id
+    where n.dedupe_key = 'rls-test-push-only'
+      and q.user_id = '10000000-0000-4000-8000-000000000001'
+      and q.status = 'pending'
+  ) then
+    raise exception 'Push-only notification was not queued for delivery';
+  end if;
+end
+$;
 
 insert into public.bulk_wholesaler_applications (
   user_id,business_name,contact_name,phone,business_address,district,product_categories
@@ -87,7 +105,12 @@ begin
   update public.notifications set read_at=now()
   where user_id='10000000-0000-4000-8000-000000000001';
   get diagnostics v_rows = row_count;
-  if v_rows <> 1 then raise exception 'Owner could not mark own notification read'; end if;
+  if v_rows <> 1 then raise exception 'Owner could not mark only the visible notification read'; end if;
+
+  update public.notifications set read_at=now()
+  where dedupe_key='rls-test-push-only';
+  get diagnostics v_rows = row_count;
+  if v_rows <> 0 then raise exception 'Push-only notification leaked into the in-app update policy'; end if;
 
   update public.notifications set read_at=now()
   where user_id='10000000-0000-4000-8000-000000000002';
@@ -121,5 +144,17 @@ begin
 end
 $$;
 
+reset role;
+
+set local role service_role;
+do $
+declare v_count integer;
+begin
+  select count(*) into v_count from public.notifications where dedupe_key='rls-test-push-only';
+  if v_count <> 1 then
+    raise exception 'Service worker role cannot read push-only notification payload';
+  end if;
+end
+$;
 reset role;
 rollback;
