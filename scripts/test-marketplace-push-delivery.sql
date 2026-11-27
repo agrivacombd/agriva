@@ -25,7 +25,10 @@ begin
   if has_table_privilege('anon', 'public.push_subscriptions', 'SELECT')
      or has_table_privilege('authenticated', 'public.push_subscriptions', 'SELECT')
      or has_table_privilege('anon', 'public.push_subscriptions', 'INSERT')
-     or has_table_privilege('authenticated', 'public.push_subscriptions', 'INSERT') then
+     or has_table_privilege('authenticated', 'public.push_subscriptions', 'INSERT')
+     or not has_table_privilege('service_role', 'public.push_subscriptions', 'SELECT')
+     or not has_table_privilege('service_role', 'public.push_subscriptions', 'INSERT')
+     or not has_table_privilege('service_role', 'public.push_subscriptions', 'DELETE') then
     raise exception 'browser push subscriptions must be server-managed only';
   end if;
 
