@@ -32,8 +32,12 @@ jobs:
         run: node scripts/smoke-bulk-crop-suggestions.mjs
       - name: Custom units and optional delivery regression checks
         run: node scripts/smoke-bulk-order-custom-units.mjs
+      - name: Wholesaler supply matching and privacy regression
+        run: npm run test:wholesaler-matching
       - name: TypeScript integrity
         run: npx tsc --noEmit
+      - name: Lint wholesaler Growth Engine
+        run: npx eslint app/wholesaler/requests/page.tsx lib/growth/wholesaler-matching.mjs scripts/smoke-wholesaler-matching.mjs
       - name: Lint new autocomplete code
         run: npx eslint components/bulk-rfq/ProductNameAutocomplete.tsx components/bulk-rfq/MultiOrderForm.tsx lib/bulk-rfq/bangladesh-crop-suggestions.ts lib/bulk-rfq/units.ts lib/bulk-rfq/delivery-area.ts app/custom-order/page.tsx scripts/smoke-bulk-crop-suggestions.mjs scripts/smoke-bulk-order-custom-units.mjs
       - name: Production build compatibility
