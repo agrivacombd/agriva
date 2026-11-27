@@ -26,7 +26,7 @@ create index if not exists notifications_unread_idx
   on public.notifications(user_id, created_at desc) where read_at is null;
 
 alter table public.notifications enable row level security;
-revoke all on public.notifications from anon;
+revoke all on public.notifications from anon, authenticated;
 grant select on public.notifications to authenticated;
 grant update(read_at) on public.notifications to authenticated;
 drop policy if exists notifications_read_own on public.notifications;
@@ -50,7 +50,7 @@ create table if not exists public.notification_preferences (
   updated_at timestamptz not null default now()
 );
 alter table public.notification_preferences enable row level security;
-revoke all on public.notification_preferences from anon;
+revoke all on public.notification_preferences from anon, authenticated;
 grant select, insert, update on public.notification_preferences to authenticated;
 drop policy if exists notification_preferences_read_own on public.notification_preferences;
 create policy notification_preferences_read_own on public.notification_preferences
@@ -76,7 +76,7 @@ create table if not exists public.push_subscriptions (
 );
 create index if not exists push_subscriptions_user_idx on public.push_subscriptions(user_id);
 alter table public.push_subscriptions enable row level security;
-revoke all on public.push_subscriptions from anon;
+revoke all on public.push_subscriptions from anon, authenticated;
 grant select, insert, update, delete on public.push_subscriptions to authenticated;
 drop policy if exists push_subscriptions_own_all on public.push_subscriptions;
 create policy push_subscriptions_own_all on public.push_subscriptions
@@ -99,7 +99,7 @@ create index if not exists harvest_inquiries_seller_idx
 create index if not exists harvest_inquiries_buyer_idx
   on public.harvest_listing_inquiries(buyer_id, created_at desc);
 alter table public.harvest_listing_inquiries enable row level security;
-revoke all on public.harvest_listing_inquiries from anon;
+revoke all on public.harvest_listing_inquiries from anon, authenticated;
 grant select, insert, update on public.harvest_listing_inquiries to authenticated;
 drop policy if exists harvest_inquiries_parties_read on public.harvest_listing_inquiries;
 create policy harvest_inquiries_parties_read on public.harvest_listing_inquiries
@@ -144,7 +144,7 @@ create table if not exists public.bulk_wholesaler_applications (
 create index if not exists bulk_wholesaler_applications_status_idx
   on public.bulk_wholesaler_applications(status, created_at desc);
 alter table public.bulk_wholesaler_applications enable row level security;
-revoke all on public.bulk_wholesaler_applications from anon;
+revoke all on public.bulk_wholesaler_applications from anon, authenticated;
 grant select, insert, update on public.bulk_wholesaler_applications to authenticated;
 drop policy if exists wholesaler_application_read_own on public.bulk_wholesaler_applications;
 create policy wholesaler_application_read_own on public.bulk_wholesaler_applications
