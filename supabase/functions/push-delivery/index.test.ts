@@ -41,7 +41,7 @@ function harness(subscriptions: Subscription[], send: (endpoint: string, payload
             calls.deleted.push(filters.id);
             result = { error: null };
           } else if (table === "push_subscriptions") {
-            result = { data: subscriptions.filter((item) => item.user_id === undefined || item.user_id === filters.user_id), error: null };
+            result = { data: subscriptions, error: null };
           } else if (table === "notification_preferences" && updateValues) {
             calls.preferenceUpdates.push(updateValues);
             if (updateValues.push_enabled === false) preference = false;
