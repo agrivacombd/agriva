@@ -44,3 +44,4 @@ create table public.bulk_requests (
 
 grant usage on schema public to anon, authenticated;
 grant select on public.buyer_demands to anon, authenticated;
+grant all on public.buyer_demands, public.bulk_requests to service_role;
