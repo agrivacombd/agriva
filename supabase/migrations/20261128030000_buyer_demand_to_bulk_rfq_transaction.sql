@@ -65,6 +65,14 @@ begin
     raise exception 'Demand not found or not owned by caller' using errcode = '42501';
   end if;
 
+  if p_buyer_type is null or p_buyer_type not in ('individual', 'business')
+     or p_visibility is null or p_visibility not in ('public', 'private')
+     or p_quote_deadline is null
+     or p_quote_deadline <= now()
+     or p_quote_deadline > now() + interval '90 days' then
+    raise exception 'Invalid RFQ options or quote deadline' using errcode = '22023';
+  end if;
+
   -- Idempotent retry: return the already-created RFQ for this owned demand.
   select c.request_id into v_existing_request_id
   from public.buyer_demand_rfq_conversions c
@@ -80,14 +88,6 @@ begin
 
   if v_demand.response_deadline is not null and v_demand.response_deadline < current_date then
     raise exception 'Demand response deadline has expired' using errcode = '22023';
-  end if;
-
-  if p_buyer_type is null or p_buyer_type not in ('individual', 'business')
-     or p_visibility is null or p_visibility not in ('public', 'private')
-     or p_quote_deadline is null
-     or p_quote_deadline <= now()
-     or p_quote_deadline > now() + interval '90 days' then
-    raise exception 'Invalid RFQ options or quote deadline' using errcode = '22023';
   end if;
 
   -- Source demand units are a strict subset of the current bulk_requests unit enum.
