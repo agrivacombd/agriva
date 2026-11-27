@@ -30,6 +30,7 @@ create index if not exists push_delivery_queue_ready_idx
 revoke all on public.push_subscriptions from anon, authenticated, public, service_role;
 grant select, insert, update, delete on public.push_subscriptions to service_role;
 grant select on public.notifications, public.notification_preferences to service_role;
+grant update(push_enabled, updated_at) on public.notification_preferences to service_role;
 
 alter table public.push_delivery_queue enable row level security;
 revoke all on public.push_delivery_queue from anon, authenticated, public, service_role;
