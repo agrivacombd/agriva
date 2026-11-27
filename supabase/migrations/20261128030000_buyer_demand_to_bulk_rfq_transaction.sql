@@ -1,5 +1,6 @@
 -- Transactional, owner-scoped Buyer Demand → Wholesaler RFQ conversion.
--- Development branch only. Apply to an isolated staging database after review.
+-- Apply only during the coordinated release after production schema preflight.
+-- The app returns a temporary 503 until this RPC is installed; no customer rows are changed.
 create table if not exists public.buyer_demand_rfq_conversions (
   id uuid primary key default gen_random_uuid(),
   demand_id uuid not null unique references public.buyer_demands(id) on delete restrict,
