@@ -36,3 +36,15 @@ Effective privilege checks returned:
 - No production grants, policies, migrations, or data were changed.
 - No production phone values or user records were queried.
 - This finding blocks release of the Buyer Demand workflow until database-level access is corrected and verified.
+
+
+## Workflow integration finding
+
+The current product has two separate demand paths:
+
+- Farmer-facing retail/produce demand: `buyer_demands` → `buyer_demand_responses` (buyer posts; farmers express interest).
+- Wholesale RFQ: `bulk_requests` → `bulk_invitations` → `bulk_quotes` / multi-item quote RPCs → buyer quote selection and fulfillment.
+
+There is no direct relation or conversion workflow between these paths. The Farmer dashboard matching panel currently reads only `buyer_demands`; the Wholesaler dashboard matching panel reads only invitation-scoped `bulk_requests` and approved `harvest_listings`.
+
+Do not auto-copy a farmer's interest into a wholesaler quote or silently convert a retail demand into an RFQ. They have different actors, verification, quote privacy and moderation rules. A future bridge should be an explicit buyer/admin action that creates a new RFQ with source-demand provenance, preserves the buyer as owner, requires moderation and invitation, and does not expose farmer response phone numbers to wholesalers. It needs its own authorization and idempotency tests.
