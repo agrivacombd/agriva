@@ -108,7 +108,7 @@ export default function NotificationCenter() {
                 </div>
               </div>)}
           </div>
-          <footer className="border-t border-[#e7eee4] px-4 py-3 text-center"><Link href="/notifications" onClick={() => setOpen(false)} className="text-sm font-bold text-emerald-800 hover:underline">সব নোটিফিকেশন দেখুন</Link></footer>
+          <footer className="flex items-center justify-between gap-3 border-t border-[#e7eee4] px-4 py-3"><Link href="/notifications" onClick={() => setOpen(false)} className="text-sm font-bold text-emerald-800 hover:underline">সব নোটিফিকেশন</Link><Link href="/notifications/preferences" onClick={() => setOpen(false)} className="text-xs font-semibold text-[#718174] hover:text-emerald-800">পছন্দ সেটিংস</Link></footer>
         </section>
       </>}
     </div>
