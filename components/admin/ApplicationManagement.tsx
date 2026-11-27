@@ -61,13 +61,15 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
   const ids = applications.map((item) => item.id);
   const userIds = [...new Set(applications.map((item) => item.user_id))];
 
-  const [pendingCount, approvedCount, rejectedCount, profilesResult, eventsResult] = await Promise.all([
+  const [pendingCount, approvedCount, rejectedCount, allCount, profilesResult, eventsResult] = await Promise.all([
     supabase.from("module_access_applications").select("id", { count: "exact", head: true })
       .in("status", ["pending", "under_review"]).match(moduleKey ? { module: moduleKey } : {}),
     supabase.from("module_access_applications").select("id", { count: "exact", head: true })
       .eq("status", "approved").match(moduleKey ? { module: moduleKey } : {}),
     supabase.from("module_access_applications").select("id", { count: "exact", head: true })
       .eq("status", "rejected").match(moduleKey ? { module: moduleKey } : {}),
+    supabase.from("module_access_applications").select("id", { count: "exact", head: true })
+      .match(moduleKey ? { module: moduleKey } : {}),
     userIds.length ? supabase.from("profiles").select("id,full_name").in("id", userIds) : Promise.resolve({ data: [], error: null }),
     ids.length ? supabase.from("module_access_application_events")
       .select("id,application_id,actor_id,event_type,note,created_at")
@@ -112,7 +114,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
     pending: pendingCount.count ?? 0,
     approved: approvedCount.count ?? 0,
     rejected: rejectedCount.count ?? 0,
-    all: (pendingCount.count ?? 0) + (approvedCount.count ?? 0) + (rejectedCount.count ?? 0),
+    all: allCount.count ?? 0,
   };
 
   return (
