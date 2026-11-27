@@ -63,12 +63,20 @@ insert into auth.users (
 insert into public.notification_preferences(user_id, in_app_enabled, push_enabled)
 values ('10000000-0000-4000-8000-000000000001', false, true);
 
-insert into public.notifications(user_id,event_type,title,dedupe_key,in_app_visible) values
-('10000000-0000-4000-8000-000000000001','matching_harvest','A user notification','rls-test-a',true),
-('10000000-0000-4000-8000-000000000002','matching_harvest','B user notification','rls-test-b',true),
-('10000000-0000-4000-8000-000000000001','matching_harvest','A push-only notification','rls-test-push-only',false);
+insert into public.notifications(user_id,event_type,title,dedupe_key,in_app_visible)
+values ('10000000-0000-4000-8000-000000000002','matching_harvest','B user notification','rls-test-b',true);
 
-do $
+select private.enqueue_marketplace_notification(
+  '10000000-0000-4000-8000-000000000001',
+  'matching_harvest',
+  'A push-only notification',
+  'Push-only message',
+  '/dashboard',
+  'rls-test-push-only',
+  '{}'::jsonb
+);
+
+do $$
 begin
   if not exists (
     select 1 from public.push_delivery_queue q
@@ -80,7 +88,7 @@ begin
     raise exception 'Push-only notification was not queued for delivery';
   end if;
 end
-$;
+$$;
 
 insert into public.bulk_wholesaler_applications (
   user_id,business_name,contact_name,phone,business_address,district,product_categories
@@ -98,24 +106,14 @@ declare
   v_rows integer;
 begin
   select count(*) into v_count from public.notifications;
-  if v_count <> 1 then
-    raise exception 'Notification RLS isolation failed: expected 1 row, got %', v_count;
+  if v_count <> 0 then
+    raise exception 'Push-only notification leaked into in-app inbox: expected 0 rows, got %', v_count;
   end if;
-
-  update public.notifications set read_at=now()
-  where user_id='10000000-0000-4000-8000-000000000001';
-  get diagnostics v_rows = row_count;
-  if v_rows <> 1 then raise exception 'Owner could not mark only the visible notification read'; end if;
 
   update public.notifications set read_at=now()
   where dedupe_key='rls-test-push-only';
   get diagnostics v_rows = row_count;
-  if v_rows <> 0 then raise exception 'Push-only notification leaked into the in-app update policy'; end if;
-
-  update public.notifications set read_at=now()
-  where user_id='10000000-0000-4000-8000-000000000002';
-  get diagnostics v_rows = row_count;
-  if v_rows <> 0 then raise exception 'User updated another user notification'; end if;
+  if v_rows <> 0 then raise exception 'User updated a push-only notification'; end if;
 
   select count(*) into v_count from public.bulk_wholesaler_applications;
   if v_count <> 1 then
@@ -145,9 +143,34 @@ end
 $$;
 
 reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
 
+do $$
+declare
+  v_count integer;
+  v_rows integer;
+begin
+  select count(*) into v_count from public.notifications;
+  if v_count <> 1 then
+    raise exception 'Visible notification isolation failed: expected 1 row, got %', v_count;
+  end if;
+
+  update public.notifications set read_at=now()
+  where dedupe_key='rls-test-b';
+  get diagnostics v_rows = row_count;
+  if v_rows <> 1 then raise exception 'Owner could not mark own visible notification read'; end if;
+
+  update public.notifications set read_at=now()
+  where dedupe_key='rls-test-push-only';
+  get diagnostics v_rows = row_count;
+  if v_rows <> 0 then raise exception 'Another user updated a push-only notification'; end if;
+end
+$$;
+
+reset role;
 set local role service_role;
-do $
+do $$
 declare v_count integer;
 begin
   select count(*) into v_count from public.notifications where dedupe_key='rls-test-push-only';
@@ -155,6 +178,6 @@ begin
     raise exception 'Service worker role cannot read push-only notification payload';
   end if;
 end
-$;
+$$;
 reset role;
 rollback;
