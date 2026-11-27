@@ -250,15 +250,14 @@ jobs:
 
       - name: Export local-only connection details
         run: |
-          supabase status --env \
-            --override-name API_URL=SUPABASE_URL \
-            --override-name ANON_KEY=SUPABASE_ANON_KEY \
-            --override-name SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY > "$RUNNER_TEMP/supabase.env"
-          cat "$RUNNER_TEMP/supabase.env" >> "$GITHUB_ENV"
+          supabase status --env > "$RUNNER_TEMP/supabase.env"
           source "$RUNNER_TEMP/supabase.env"
+          printf 'SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
+          printf 'SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
           SUPABASE_DB_PORT="${DB_URL##*:}"
           SUPABASE_DB_PORT="${SUPABASE_DB_PORT%%/*}"
-          echo "SUPABASE_DB_PORT=$SUPABASE_DB_PORT" >> "$GITHUB_ENV"
+          printf 'SUPABASE_DB_PORT=%s\n' "$SUPABASE_DB_PORT" >> "$GITHUB_ENV"
 
       - name: Install PostgreSQL client
         run: sudo apt-get update && sudo apt-get install -y postgresql-client
