@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "JSON body required" }, { status: 415 });
   }
 
-  const rawBody = await readLimitedBody(request);
+  const rawBody = await readLimitedBody(request, MAX_BODY_BYTES);
   if (rawBody === null) {
     return NextResponse.json({ error: "Request is too large" }, { status: 413 });
   }
