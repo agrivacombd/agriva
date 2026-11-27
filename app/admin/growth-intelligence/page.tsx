@@ -127,9 +127,10 @@ export default async function AdminGrowthIntelligencePage() {
         <h2 className="mt-2 font-black text-[#173b2d]">What is not measured yet</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-[#53675a]">
           <li>Durable user-session and app-activity events are not available for reliable DAU/MAU or retention cohorts.</li>
-          <li>Push subscription, delivery and open telemetry is not available to verify customer push performance.</li>
+          <li>Customer push is not active on mainline yet. Its implementation is tracked separately in Draft PR #405; real VAPID delivery with isolated staging secrets remains pending.</li>
           <li>Referral session counts are attribution records, not unique visitors or verified conversions.</li>
         </ul>
+        <Link href="https://github.com/agrivacombd/agriva/pull/405" className="mt-4 inline-flex rounded-xl border border-amber-200 bg-white px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-50">Review Web Push implementation ↗</Link>
       </article>
     </section>
 
