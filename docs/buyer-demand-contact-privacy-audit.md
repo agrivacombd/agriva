@@ -16,17 +16,17 @@ Effective privilege checks returned:
 ## Development mitigation in this PR
 
 - Public demand discovery no longer selects `contact_phone` as part of its broad row query.
-- The UI requests a number separately only for rows whose `contact_phone_public` opt-in flag is true.
-- The buyer-owned query retains the existing full demand shape until the database contract is changed.
+- Buyer phone values are no longer fetched by the board, even for opted-in rows; public phone display is disabled until a separately reviewed server-side contact-sharing path exists.
+- The buyer-owned query also uses the phone-free column allowlist.
 - A regression test protects this client-side data minimization.
 
 **This is not a complete security fix.** Direct API reads remain possible until database privileges are corrected.
 
 ## Required database remediation before release
 
-1. In a development/staging database, remove table-level SELECT from `anon` and `authenticated` on `buyer_demands`.
-2. Grant only the required non-sensitive columns to public/authenticated discovery clients; do not grant `contact_phone` directly.
-3. Preserve explicitly public phone sharing only through a narrowly scoped, reviewed data path that returns rows where `contact_phone_public = true` and the demand is active and not expired. If that cannot be safely implemented, disable public phone display.
+1. Deploy the updated app first. The current production app selects `contact_phone`; applying the restriction before the app update would break the live board.
+2. After the updated app is confirmed live, apply `20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql`: remove table-level SELECT and grant only the reviewed non-sensitive columns.
+3. Keep public phone display disabled until a separately reviewed, consent-aware server-side contact path exists.
 4. Keep farmer response contact details behind the existing party-scoped RLS policy.
 5. Add authenticated and anonymous PostgREST integration tests proving that direct `contact_phone` selection is denied, opted-in public contact retrieval is limited to opted-in rows, and buyer response details remain visible only to the parties.
 6. Run Supabase security advisors and staging regression tests before considering any production rollout.
@@ -51,8 +51,8 @@ Do not auto-copy a farmer's interest into a wholesaler quote or silently convert
 
 ## Development remediation prepared — staging validation required
 
-- Added migration `20261128020000_restrict_buyer_demand_phone_column.sql` to revoke broad SELECT grants and re-grant only the reviewed non-phone columns to `anon` and `authenticated`.
-- The migration explicitly revokes SELECT on `contact_phone`; the public Buyer Demand Board no longer attempts a phone lookup, including for opted-in rows. Public phone display is disabled until a separately reviewed server-side contact-sharing path is available.
+- Moved phone privilege restriction to `20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql` so it can be applied only after the updated app is live.
+- The migration explicitly revokes SELECT on `contact_phone`; the updated Buyer Demand Board never requests that column, including for opted-in rows. Public phone display is disabled until a separately reviewed server-side contact-sharing path is available.
 - Buyer demand discovery retains its current non-phone field contract. Farmer response contact data remains a separate table and is still fetched through its existing party-scoped RLS query.
 - Static regression coverage now checks the migration's revoke/grant contract and ensures the board does not select buyer-demand phone values.
 - This migration has **not** been applied to production or any staging database. The only connected Supabase project is the production project; no billable Supabase branch was created. PostgREST anonymous/authenticated integration tests and post-migration privilege verification remain release gates.
