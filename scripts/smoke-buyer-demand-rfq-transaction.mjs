@@ -12,6 +12,7 @@ assert.match(compact, /revoke all on table public\.buyer_demand_rfq_conversions 
 assert.match(compact, /security definer set search_path = pg_catalog, public, auth, pg_temp/);
 assert.match(compact, /where d\.id = p_demand_id for update/);
 assert.match(compact, /v_demand\.buyer_id is distinct from v_buyer_id/);
+assert.ok(compact.indexOf("if p_buyer_type is null") < compact.indexOf("select c.request_id into v_existing_request_id"), "validate retry options before returning an existing conversion");
 assert.match(compact, /select c\.request_id into v_existing_request_id/);
 assert.match(compact, /v_demand\.status <> 'active'/);
 assert.match(compact, /v_demand\.response_deadline < current_date/);
