@@ -66,6 +66,8 @@ select vault.create_secret(
 );
 ```
 
+If you rotate a Vault value later, create a new secret with the same name; the dispatcher reads the newest created value for each name. Keep the Edge Function's `PUSH_DISPATCH_SECRET` in sync with the Vault value.
+
 The migration installs the one-minute cron schedule. Check it with:
 
 ```sql
