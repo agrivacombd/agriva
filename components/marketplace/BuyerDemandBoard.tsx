@@ -105,7 +105,6 @@ export default function BuyerDemandBoard() {
     // Public discovery must never fetch a buyer's private phone number.
     // A second, narrowly filtered query retrieves numbers only when the buyer opted in.
     const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone_public,status,created_at";
-    const ownerDemandColumns = demandColumns + ",contact_phone";
     let publicDemands: Demand[] = [];
     let publicFailed = false;
 
@@ -160,7 +159,7 @@ export default function BuyerDemandBoard() {
       }
       setUserId(user.id);
       const [mine, replies] = await Promise.all([
-        supabase.from("buyer_demands").select(ownerDemandColumns)
+        supabase.from("buyer_demands").select(demandColumns)
           .eq("buyer_id", user.id).order("created_at", { ascending: false }).limit(100),
         supabase.from("buyer_demand_responses")
           .select("id,demand_id,farmer_id,available_quantity,unit,offered_price,available_date,location,contact_phone,message,status,created_at")
