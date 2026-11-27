@@ -56,9 +56,18 @@ export async function POST(request: NextRequest) {
     p_quote_deadline: new Date(deadline).toISOString(),
   });
 
-  if (error || typeof requestId !== "string" || !UUID.test(requestId)) {
+  if (error) {
+    // The app may be deployed just before the additive RPC migration is applied.
+    // Keep the rest of Buyer Demand usable during that short rollout window.
+    if (error.code === "PGRST202" || error.code === "42883") {
+      return NextResponse.json({ error: "RFQ is being enabled. Please try again shortly." }, { status: 503 });
+    }
     // Do not disclose whether another buyer owns the source demand or expose SQL details.
     return NextResponse.json({ error: "Demand could not be converted. Check that it is active and belongs to your account." }, { status: 409 });
+  }
+
+  if (typeof requestId !== "string" || !UUID.test(requestId)) {
+    return NextResponse.json({ error: "RFQ could not be created. Please try again." }, { status: 500 });
   }
 
   return NextResponse.json({ requestId, status: "pending_review", href: "/account/custom-orders" }, { status: 200 });
