@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { readLimitedBody } from "@/lib/http/read-limited-body.mjs";
 
 export const runtime = "nodejs";
 
@@ -9,35 +10,6 @@ const VISIBILITIES = new Set(["public", "private"]);
 const MAX_DEADLINE_MS = 90 * 24 * 60 * 60 * 1000;
 const MAX_BODY_BYTES = 2048;
 
-async function readLimitedBody(request: NextRequest): Promise<string | null> {
-  const contentLength = request.headers.get("content-length");
-  if (contentLength && /^\d+$/.test(contentLength) && Number(contentLength) > MAX_BODY_BYTES) {
-    return null;
-  }
-
-  if (!request.body) return "";
-  const reader = request.body.getReader();
-  const decoder = new TextDecoder();
-  let totalBytes = 0;
-  let rawBody = "";
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      totalBytes += value.byteLength;
-      if (totalBytes > MAX_BODY_BYTES) {
-        await reader.cancel();
-        return null;
-      }
-      rawBody += decoder.decode(value, { stream: true });
-    }
-    return rawBody + decoder.decode();
-  } finally {
-    reader.releaseLock();
-  }
-}
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
