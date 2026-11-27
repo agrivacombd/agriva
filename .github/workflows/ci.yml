@@ -195,3 +195,27 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  database-migration-security:
+    name: Supabase migrations and marketplace RLS integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Supabase CLI v2
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.1
+      - name: Start isolated local Supabase stack
+        run: supabase start
+      - name: Apply every repository migration to isolated database
+        run: supabase db reset
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Verify marketplace notification RLS, grants and admin-only approval
+        run: psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -f scripts/test-marketplace-engagement-rls.sql
+      - name: Stop isolated Supabase stack
+        if: always()
+        run: supabase stop --no-backup
