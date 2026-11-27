@@ -183,7 +183,7 @@ begin
       'x-push-dispatch-secret', v_dispatch_secret
     ),
     body := '{}'::jsonb,
-    timeout_milliseconds := 10000
+    timeout_milliseconds := 30000
   ) into v_request_id;
 
   return v_request_id;
