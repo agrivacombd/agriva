@@ -113,6 +113,8 @@ jobs:
         run: node scripts/smoke-blog-learn-feed.mjs
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
+      - name: Admin P0 delegated permission and audit regression test
+        run: npm run test:admin-p0-hardening
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
       - name: Admin product RPC contract regression test
