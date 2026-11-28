@@ -51,7 +51,7 @@ try {
   await page.goto(`${baseUrl}${route}?status=pending&category=nursery_owner`, { waitUntil: "domcontentloaded" });
   await page.getByRole("heading", { name: "Plant Market seller verification" }).waitFor();
   await page.getByRole("heading", { name: "Nursery & plant seller checks" }).waitFor();
-  await page.getByText("Synthetic Green Nursery", { exact: true }).waitFor();
+  await page.getByText("Synthetic Green Nursery", { exact: true }).first().waitFor();
   assert.equal(await page.getByText("Synthetic Plant Grower", { exact: true }).count(), 0, "Nursery category filter must exclude plant growers");
   await page.getByText("Nursery name & location").waitFor();
   await page.getByText("Seller policy consent").waitFor();
@@ -60,7 +60,7 @@ try {
   results.push({ test: "authenticated Plant Market queue renders nursery application, checklist, lifecycle history and private evidence link", status: "passed" });
 
   await page.goto(`${baseUrl}${route}?status=pending&category=plant_grower`, { waitUntil: "domcontentloaded" });
-  await page.getByText("Synthetic Plant Grower", { exact: true }).waitFor();
+  await page.getByText("Synthetic Plant Grower", { exact: true }).first().waitFor();
   assert.equal(await page.getByText("Synthetic Green Nursery", { exact: true }).count(), 0, "Plant grower category filter must exclude nursery owners");
   results.push({ test: "Plant Market category filter isolates plant growers from nursery owners", status: "passed" });
 
@@ -97,7 +97,7 @@ try {
   await nurseryCard.getByRole("button", { name: "Approve & grant access" }).click();
   await nurseryCard.waitFor({ state: "detached", timeout: 15000 });
   await page.goto(`${baseUrl}${route}?status=approved&category=nursery_owner`, { waitUntil: "domcontentloaded" });
-  await page.getByText("Synthetic Green Nursery", { exact: true }).waitFor();
+  await page.getByText("Synthetic Green Nursery", { exact: true }).first().waitFor();
   await page.getByText("approved", { exact: true }).waitFor();
   results.push({ test: "Admin confirms and approves a Plant Market nursery application", status: "passed" });
 
@@ -122,7 +122,7 @@ try {
   await growerCard.getByRole("button", { name: "Reject" }).click();
   await growerCard.waitFor({ state: "detached", timeout: 15000 });
   await page.goto(`${baseUrl}${route}?status=rejected&category=plant_grower`, { waitUntil: "domcontentloaded" });
-  await page.getByText("Synthetic Plant Grower", { exact: true }).waitFor();
+  await page.getByText("Synthetic Plant Grower", { exact: true }).first().waitFor();
   results.push({ test: "Admin rejects a Plant Market grower application with a mandatory review note", status: "passed" });
 
   const growerRows = await serviceRead(`/rest/v1/module_access_applications?id=eq.${growerAppId}&select=id,user_id,module,status,reviewed_by,review_note`);
