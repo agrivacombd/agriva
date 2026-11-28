@@ -65,9 +65,9 @@ BEGIN
 
   INSERT INTO public.bulk_requests(
     id, buyer_id, buyer_type, visibility, status, product_name, specification,
-    quantity, unit, district, upazila
+    quantity, unit, district, upazila, quote_deadline
   )
-  VALUES (v_request, v_buyer, 'business', 'public', 'pending_review', 'Rice', 'Synthetic', 100, 'kg', 'Dhaka', 'Savar');
+  VALUES (v_request, v_buyer, 'business', 'public', 'pending_review', 'Rice', 'Synthetic', 100, 'kg', 'Dhaka', 'Savar', now() + interval '2 days');
   INSERT INTO public.bulk_request_items(id, request_id, product_name)
   VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', v_request, 'Rice');
   PERFORM public.bulk_moderate_request(v_request, 'open');
