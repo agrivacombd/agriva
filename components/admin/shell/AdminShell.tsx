@@ -146,6 +146,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const currentItem = useMemo(() => groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)), [pathname]);
   const currentGroup = groups.find((group) => group.items.some((item) => item.href === currentItem?.href));
   const pageTitle = currentItem?.label ?? "Admin workspace";
+  const mobilePageTitle = pageTitle === "Command Center" ? "Command" : pageTitle === "Custom Orders & RFQ" ? "Custom RFQ" : pageTitle === "Identity verification" ? "Identity" : pageTitle === "Seller applications" ? "Sellers" : pageTitle === "Growth Intelligence" ? "Growth" : pageTitle;
   const commandItems = useMemo(() => groups.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })))
     .filter((item) => !commandQuery.trim() || `${item.label} ${item.group} ${item.href}`.toLowerCase().includes(commandQuery.trim().toLowerCase())), [commandQuery]);
 
@@ -197,7 +198,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
                 <p className="hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#91a094] sm:flex">
                   <span>AGRIVA</span><ChevronRight size={11}/><span>{currentGroup?.label ?? "Workspace"}</span>
                 </p>
-                <h1 className="truncate text-[15px] font-extrabold tracking-tight text-[#173b2d] sm:mt-1 sm:text-[17px]">{pageTitle}</h1>
+                <h1 className="truncate text-[15px] font-extrabold tracking-tight text-[#173b2d] sm:mt-1 sm:text-[17px]"><span className="sm:hidden">{mobilePageTitle}</span><span className="hidden sm:inline">{pageTitle}</span></h1>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
