@@ -47,6 +47,8 @@ assert.match(ui, /\.remove\(uploadedPaths\)/);
 assert.match(ui, /identity-verification/);
 
 assert.match(admin, /startsWith\(app\.user_id \+ "\/"\)/, "admin signed evidence remains applicant-path scoped");
+assert.match(admin, /SELLER_CATEGORY_LABELS/);
+assert.match(admin, /EVIDENCE_TYPE_LABELS/);
 assert.match(spec, /No database migration or production write/);
 assert.match(spec, /Do not reject an individual or small operator merely for not having a trade license/);
 assert.match(spec, /No structured NID number capture/);
