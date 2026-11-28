@@ -274,6 +274,24 @@ jobs:
       - name: Verify real Auth and PostgREST behavior
         run: node scripts/test-buyer-demand-rfq-supabase.mjs
 
+      - name: Prepare synthetic Admin P0 migration schema
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-fixture.sql
+
+      - name: Validate Admin P0 migrations against isolated Supabase
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          for migration in \
+            supabase/migrations/20261128160000_admin_p0_permission_hardening.sql \
+            supabase/migrations/20261128170000_admin_green_exchange_audit.sql \
+            supabase/migrations/20261128180000_admin_bulk_operations_audit.sql; do
+            echo "Applying $migration to disposable local Supabase"
+            docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$migration"
+          done
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-assertions.sql
+
       - name: Install Node.js and locked app dependencies
         uses: actions/setup-node@v4
         with:
