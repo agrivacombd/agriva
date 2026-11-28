@@ -59,8 +59,8 @@ assert.match(marketplaceDetail,/marketplace_channel", "marketplace"/,"Marketplac
 assert.match(marketplaceCategory,/marketplace_channel", "marketplace"/,"Marketplace category page is channel-scoped");
 assert.match(marketplaceSubcategory,/marketplace_channel", "marketplace"/,"Marketplace subcategory page is channel-scoped");
 assert.match(identityApi,/module_access_applications/,"both seller applications use the existing identity application table");
-assert.match(identityApi,/applicantType="business"/,"Marketplace application requires a business identity");
-assert.match(identityApi,/selectedModule==="plant_market"/,"Plant Market application is distinct");
+assert.match(identityApi,/applicantType\s*=\s*"business"/,"Marketplace application requires a business identity");
+assert.match(identityApi,/selectedModule\s*===\s*"plant_market"/,"Plant Market application is distinct");
 assert.match(identityAdmin,/admin_review_module_application/,"admin review grants only the selected module");
 assert.match(moduleAccess,/rpc\("has_module_access"/,"server authorization uses existing module grants");
 assert.match(plantApi,/checkModuleAccess/,"Plant Market API requires its own module grant");

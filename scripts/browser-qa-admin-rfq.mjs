@@ -91,6 +91,8 @@ try {
   const navigationSearch = page.getByRole("textbox", { name: "Search admin pages" });
   await navigationSearch.fill("Seller applications");
   await mobileNavigation.locator('a[href="/admin/seller-applications"]').waitFor({ state: "visible" });
+  await navigationSearch.fill("Plant Market verification");
+  await mobileNavigation.locator('a[href="/admin/plant-market-applications"]').waitFor({ state: "visible" });
   await navigationSearch.fill("");
   await mobileNavigation.getByRole("complementary").getByRole("button", { name: "Close navigation" }).click();
   results.push({ test: "mobile admin drawer opens, page search filters links, and drawer closes", status: "passed" });
@@ -122,6 +124,7 @@ try {
     "/admin/custom-orders", "/admin/demand-intelligence", "/admin/finance",
     "/admin/green-exchange", "/admin/growth-intelligence", "/admin/harvest",
     "/admin/identity-verification", "/admin/jobs", "/admin/opportunities",
+    "/admin/plant-market-applications",
     "/admin/orders", "/admin/plant-market-products", "/admin/products", "/admin/reports",
     "/admin/search-intelligence", "/admin/search-intelligence/opportunities",
     "/admin/seed-information", "/admin/seller-applications", "/admin/seo",

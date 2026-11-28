@@ -29,6 +29,7 @@ const groups: NavGroup[] = [
     { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { label: "Harvest", href: "/admin/harvest", icon: Sprout },
     { label: "Plant Market", href: "/admin/plant-market-products", icon: Leaf },
+    { label: "Plant Market verification", href: "/admin/plant-market-applications", icon: ShieldCheck },
     { label: "Green Exchange", href: "/admin/green-exchange", icon: Leaf },
     { label: "Custom Orders & RFQ", href: "/admin/custom-orders", icon: Handshake },
   ]},
@@ -170,7 +171,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const currentItem = useMemo(() => groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)), [pathname]);
   const currentGroup = groups.find((group) => group.items.some((item) => item.href === currentItem?.href));
   const pageTitle = currentItem?.label ?? "Admin workspace";
-  const mobilePageTitle = pageTitle === "Command Center" ? "Command" : pageTitle === "Custom Orders & RFQ" ? "Custom RFQ" : pageTitle === "Identity verification" ? "Identity" : pageTitle === "Seller applications" ? "Sellers" : pageTitle === "Growth Intelligence" ? "Growth" : pageTitle;
+  const mobilePageTitle = pageTitle === "Command Center" ? "Command" : pageTitle === "Custom Orders & RFQ" ? "Custom RFQ" : pageTitle === "Identity verification" ? "Identity" : pageTitle === "Seller applications" ? "Sellers" : pageTitle === "Plant Market verification" ? "Plant verification" : pageTitle === "Growth Intelligence" ? "Growth" : pageTitle;
   const commandItems = useMemo(() => groups.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })))
     .filter((item) => !commandQuery.trim() || `${item.label} ${item.group} ${item.href}`.toLowerCase().includes(commandQuery.trim().toLowerCase())), [commandQuery]);
 

@@ -18,7 +18,29 @@ export async function reviewModuleApplication(formData: FormData) {
     throw new Error("Please provide a rejection reason (at least 5 characters).");
   }
 
+  const expectedModule = String(formData.get("expectedModule") || "").trim();
+  if (expectedModule && !["marketplace", "plant_market"].includes(expectedModule)) {
+    throw new Error("Invalid seller module scope.");
+  }
+
   const { supabase } = await requireAdminPage("identity.review");
+  if (expectedModule) {
+    const { data: application, error: lookupError } = await supabase
+      .from("module_access_applications")
+      .select("module,status")
+      .eq("id", applicationId)
+      .maybeSingle();
+    if (lookupError || !application) {
+      throw new Error("Application could not be verified. No decision was recorded.");
+    }
+    if (application.module !== expectedModule) {
+      throw new Error("This application belongs to a different seller module.");
+    }
+    if (!["pending", "under_review"].includes(application.status)) {
+      throw new Error("This application has already been reviewed or is no longer pending.");
+    }
+  }
+
   const { error } = await supabase.rpc("admin_review_module_application", {
     p_application_id: applicationId,
     p_decision: decision,
@@ -34,5 +56,6 @@ export async function reviewModuleApplication(formData: FormData) {
 
   revalidatePath("/admin/identity-verification");
   revalidatePath("/admin/seller-applications");
+  revalidatePath("/admin/plant-market-applications");
   revalidatePath("/admin/audit");
 }

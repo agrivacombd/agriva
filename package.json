@@ -51,6 +51,7 @@
     "test:analytics-instrumentation": "node scripts/smoke-analytics-instrumentation.mjs",
     "test:module-access": "node scripts/smoke-module-access-architecture.mjs",
     "test:identity-verification": "node scripts/smoke-identity-verification-workflow.mjs",
+    "test:seller-verification-phase1": "node scripts/smoke-seller-verification-phase1.mjs",
     "test:admin-application-management": "node scripts/smoke-admin-application-management.mjs",
     "test:cod-cart": "node scripts/smoke-cod-cart-workflow.mjs",
     "test:marketplace-purchase-options": "node scripts/smoke-marketplace-purchase-options.mjs",
@@ -84,7 +85,10 @@
     "test:buyer-demand-rfq-ui-api": "node scripts/smoke-buyer-demand-rfq-ui-api.mjs",
     "test:buyer-demand-rfq-postgres": "bash scripts/test-buyer-demand-rfq-postgres.sh",
     "test:read-limited-body": "node scripts/test-read-limited-body.mjs",
-    "test:admin-sensitive-actions": "node scripts/smoke-admin-sensitive-actions.mjs"
+    "test:admin-sensitive-actions": "node scripts/smoke-admin-sensitive-actions.mjs",
+    "test:plant-market-seller-review": "node scripts/smoke-plant-market-seller-review.mjs",
+    "test:plant-market-seller-review-supabase": "node scripts/test-plant-market-seller-review-supabase.mjs",
+    "test:plant-market-seller-review-browser": "node scripts/browser-qa-plant-market-seller-review.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
