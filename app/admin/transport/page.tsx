@@ -91,7 +91,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
         </nav>
 
         {error && <div className="mt-5"><AdminErrorState title="আবেদন লোড করা যায়নি" description="নতুন migration প্রয়োগ হয়েছে কি না যাচাই করুন।"/></div>}
-        {!error && partners.length === 0 && <div className="mt-5 rounded-2xl border border-dashed border-[#cbdcc7] bg-white p-10 text-center"><h2 className="text-xl font-black">কোনো আবেদন নেই</h2><p className="mt-2 text-sm text-[#68786b]">এই ক্যাটাগরিতে এখনো কোনো পরিবহন পার্টনার নেই।</p></div>}
+        {!error && partners.length === 0 && <div className="mt-5"><AdminEmptyState title="কোনো আবেদন নেই" description="এই ক্যাটাগরিতে এখনো কোনো পরিবহন পার্টনার নেই।"/></div>}
 
         <section className="mt-5 grid gap-4 lg:grid-cols-2">
           {partners.map(partner => <article key={partner.user_id} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
