@@ -1,0 +1,6 @@
+{
+  "project_id": "agriva-local",
+  "experimental": {
+    "stack": true
+  }
+}

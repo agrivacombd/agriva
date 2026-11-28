@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
+import BuyerDemandRfqConversion from "@/components/marketplace/BuyerDemandRfqConversion";
 import { CalendarDays, CheckCircle2, Clock3, MapPin, PackageSearch, Phone, Plus, Search, Wheat, X } from "lucide-react";
 
 type Unit = "kg" | "maund" | "ton" | "bag";
@@ -102,7 +103,9 @@ export default function BuyerDemandBoard() {
     setLoading(true);
     setLoadError(false);
     setResponses([]);
-    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone,contact_phone_public,status,created_at";
+    // Public discovery must never fetch a buyer's private phone number.
+    // Buyer phone values are intentionally unavailable on this board, including opted-in numbers.
+    const demandColumns = "id,buyer_id,crop_name,variety,quantity,unit,price_type,target_price,district,upazila,delivery_method,need_mode,need_date,need_start_date,need_end_date,response_deadline,allow_partial,notes,contact_phone_public,status,created_at";
     let publicDemands: Demand[] = [];
     let publicFailed = false;
 
@@ -117,7 +120,13 @@ export default function BuyerDemandBoard() {
         console.error("Buyer demands public query failed", result.error.code);
         publicFailed = true;
       } else {
-        publicDemands = (result.data ?? []) as Demand[];
+        const rows = (result.data ?? []) as unknown as Omit<Demand, "contact_phone">[];
+        // Phone values are not available through the public board. Consent flags remain
+        // stored for future audited contact-sharing design, but are not a read grant.
+        publicDemands = rows.map((demand) => ({
+          ...demand,
+          contact_phone: null,
+        }));
       }
     } catch (error) {
       console.error("Buyer demands public query failed", error);
@@ -145,7 +154,7 @@ export default function BuyerDemandBoard() {
       ]);
       if (!mine.error) {
         const merged = new Map(publicDemands.map((d) => [d.id, d]));
-        for (const demand of (mine.data ?? []) as Demand[]) merged.set(demand.id, demand);
+        for (const demand of (mine.data ?? []) as unknown as Demand[]) merged.set(demand.id, demand);
         setDemands([...merged.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)));
         setLoadError(false);
       }
@@ -311,7 +320,7 @@ export default function BuyerDemandBoard() {
             <select aria-label="জেলা বাছুন" className={inputClass.replace("mt-1.5 ", "")} value={districtFilter} onChange={(e) => setDistrictFilter(e.target.value)}><option>সব জেলা</option>{filterDistricts.map((d) => <option key={d}>{d}</option>)}</select>
             {userId && <button type="button" onClick={() => setMineOnly((v) => !v)} className={"rounded-xl px-4 py-3 text-sm font-bold " + (mineOnly ? "bg-emerald-700 text-white" : "border border-slate-200 text-slate-700")}>{mineOnly ? "সব চাহিদা দেখুন" : "আমার পোস্ট"}</button>}
           </div>
-          <p className="mt-3 text-xs text-slate-500">ফোন নম্বর শুধু ক্রেতা প্রকাশের সম্মতি দিলে দেখা যাবে। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
+          <p className="mt-3 text-xs text-slate-500">ক্রেতার ব্যক্তিগত ফোন নম্বর আপাতত নিরাপত্তার কারণে বোর্ডে দেখানো হয় না। কৃষকের আগ্রহের ফোন নম্বর শুধু সংশ্লিষ্ট ক্রেতা দেখতে পাবেন।</p>
         </div>
 
         {loading ? <div className="rounded-2xl bg-white p-10 text-center text-sm text-slate-500">চাহিদা লোড হচ্ছে...</div> : loadError ? (
@@ -334,6 +343,7 @@ export default function BuyerDemandBoard() {
                 {d.notes && <p className="mt-4 whitespace-pre-wrap rounded-xl bg-slate-50 p-3 text-sm leading-6 text-slate-600">{d.notes}</p>}
                 {d.contact_phone_public && d.contact_phone && <a href={"tel:" + d.contact_phone} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-emerald-800"><Phone size={16} /> ক্রেতার ফোন: {d.contact_phone}</a>}
                 <p className="mt-4 text-xs text-slate-400">পোস্ট: {dateLabel(d.created_at.slice(0, 10))}{d.response_deadline ? " · আগ্রহ জানানোর শেষ তারিখ: " + dateLabel(d.response_deadline) : ""}</p>
+                {own && d.status === "active" && <BuyerDemandRfqConversion demandId={d.id} cropName={d.crop_name} quantity={Number(d.quantity)} unit={unitLabel(d.unit)} district={d.district} upazila={d.upazila} needMode={d.need_mode} needDate={d.need_date} />}
                 {own ? <div className="mt-4 border-t border-slate-100 pt-4"><div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-extrabold text-slate-800">কৃষকের আগ্রহ ({bn(replies.length)})</p>{d.status === "active" && <div className="flex gap-2"><button type="button" disabled={busy} onClick={() => void closeDemand(d, "fulfilled")} className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800 disabled:opacity-60">পূরণ হয়েছে</button><button type="button" disabled={busy} onClick={() => void closeDemand(d, "cancelled")} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-60">চাহিদা বন্ধ</button></div>}</div>{replies.length > 0 && <div className="mt-3 space-y-3">{replies.map((r) => <div key={r.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3"><div className="flex flex-wrap items-center justify-between gap-2"><strong className="text-sm">{bn(Number(r.available_quantity))} {unitLabel(r.unit)} মজুদ আছে</strong><span className="text-xs text-slate-500">{r.offered_price ? "প্রস্তাব: ৳" + bn(Number(r.offered_price)) + "/" + unitLabel(r.unit) : "দাম আলোচনা সাপেক্ষে"}</span></div><p className="mt-1 text-xs text-slate-500">{r.location}{r.available_date ? " · দিতে পারবেন " + dateLabel(r.available_date) : ""}</p>{r.message && <p className="mt-2 text-sm text-slate-600">{r.message}</p>}<a href={"tel:" + r.contact_phone} className="mt-2 inline-flex items-center gap-2 text-sm font-bold text-emerald-800"><Phone size={15} /> {r.contact_phone}</a></div>)}</div>}{replies.length === 0 && <p className="mt-2 text-sm text-slate-500">এখনো কেউ আগ্রহ জানাননি।</p>}</div> : d.status === "active" && <div className="mt-5 flex flex-wrap gap-3 border-t border-slate-100 pt-4"><button type="button" disabled={alreadyResponded} onClick={() => { setShowForm(false); setRespondingTo(d); setAvailableUnit(d.unit); }} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-3 text-sm font-extrabold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:bg-slate-400"><CheckCircle2 size={16} /> {alreadyResponded ? "আগ্রহ পাঠানো হয়েছে" : "আমার ফসল আছে"}</button>{!userId && <Link href={"/login?next=%2Fbuyer-demands"} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-600">লগইন করে আগ্রহ জানান</Link>}</div>}
               </article>;
             })}

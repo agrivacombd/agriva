@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import { readFileSync } from "node:fs";
+import { strict as assert } from "node:assert";
+const page = readFileSync("app/admin/growth-intelligence/page.tsx", "utf8");
+const shell = readFileSync("components/admin/shell/AdminShell.tsx", "utf8");
+assert.match(page, /requireAdminPage\("dashboard\.read"\)/);
+assert.match(page, /from\("profiles"\)/);
+assert.match(page, /from\("marketplace_orders"\)/);
+assert.match(page, /from\("order_events"\)/);
+assert.match(page, /from\("attribution_sessions"\)/);
+assert.match(page, /count: "exact", head: true/);
+assert.match(page, /Measurement gaps/);
+assert.match(page, /DAU\/MAU/);
+assert.match(page, /customer marketing push/);
+assert.match(page, /Draft PR #405/);
+assert.match(page, /pull\/405/);
+assert.match(page, /not unique visitors or verified conversions/);
+assert.match(page, /real VAPID delivery/);
+assert.match(page, /visitor tokens, phone numbers, order addresses/);
+assert.doesNotMatch(page, /visitor_token|\.select\(["']\*["']\)/);
+assert.match(shell, /Growth Intelligence/);
+assert.match(shell, /\/admin\/growth-intelligence/);
+console.log("AGRIVA Admin growth intelligence regression checks passed.");

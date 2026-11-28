@@ -190,8 +190,137 @@ jobs:
         run: npm run test:brand-assets
       - name: Admin AI product SEO security regression test
         run: node scripts/smoke-admin-ai-product-seo.mjs
+      - name: Farmer demand matching regression test
+        run: npm run test:farmer-demand-matching
+      - name: Buyer demand public phone privacy regression
+        run: npm run test:buyer-demand-privacy
+      - name: Buyer demand to wholesaler RFQ draft privacy regression
+        run: npm run test:buyer-demand-rfq-conversion
+      - name: Buyer demand to wholesaler RFQ transaction security regression
+        run: npm run test:buyer-demand-rfq-transaction
+      - name: Buyer demand RFQ review UI and API regression test
+        run: npm run test:buyer-demand-rfq-ui-api
+      - name: Bounded HTTP request body streaming unit test
+        run: npm run test:read-limited-body
+      - name: Wholesaler supply matching and engagement regression test
+        run: npm run test:wholesaler-matching
+      - name: Admin 2.0 command center regression test
+        run: npm run test:admin-command-center
+      - name: Admin demand intelligence regression test
+        run: npm run test:admin-demand-intelligence
+      - name: Admin growth intelligence regression test
+        run: npm run test:admin-growth-intelligence
+      - name: Crop health feed slug search_path hardening regression
+        run: npm run test:crop-feed-search-path
       - name: Production build
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-build-placeholder-key
+
+  local-supabase-auth-postgrest:
+    name: Local Supabase Auth + PostgREST integration
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 3.4.0
+
+      - name: Initialize and validate local Supabase config
+        env:
+          SUPABASE_EXPERIMENTAL_STACK: "1"
+        run: |
+          supabase --version
+          supabase init --force
+          supabase config validate
+
+      - name: Keep project migrations out of stack bootstrap
+        run: |
+          mv supabase/migrations "$RUNNER_TEMP/agriva-migrations"
+          mkdir -p supabase/migrations
+
+      - name: Start local Auth and PostgREST services
+        run: |
+          supabase start -x studio,realtime,storage,functions,analytics,pooler,mail
+
+      - name: Export local-only connection details
+        run: |
+          supabase status --env > "$RUNNER_TEMP/supabase.env"
+          source "$RUNNER_TEMP/supabase.env"
+          printf 'SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
+          printf 'SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+
+      - name: Restore and prepare isolated synthetic schema
+        run: |
+          rm -rf supabase/migrations
+          mv "$RUNNER_TEMP/agriva-migrations" supabase/migrations
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; docker ps -a; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-buyer-demand-rfq-supabase-fixture.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261128030000_buyer_demand_to_bulk_rfq_transaction.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261128040000_restrict_buyer_demand_phone_column_after_app_rollout.sql
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+
+      - name: Verify real Auth and PostgREST behavior
+        run: node scripts/test-buyer-demand-rfq-supabase.mjs
+
+      - name: Install Node.js and locked app dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+
+      - name: Install ephemeral Playwright browser tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Build app against isolated local Supabase
+        run: npm run build
+
+      - name: Start app for browser QA
+        run: |
+          npm run start -- --hostname 127.0.0.1 > "$RUNNER_TEMP/agriva-next.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/agriva-next.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then
+              echo "AGRIVA app is ready for browser QA"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/agriva-next.log"
+          exit 1
+
+      - name: Run desktop and mobile browser QA
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+        run: node scripts/browser-qa-admin-rfq.mjs
+
+      - name: Upload browser QA screenshots and server logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agriva-browser-qa-evidence
+          path: |
+            test-results/
+            ${{ runner.temp }}/agriva-next.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop local app and Supabase stack
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/agriva-next.pid" ]; then kill "$(cat "$RUNNER_TEMP/agriva-next.pid")" || true; fi
+          supabase stop || true

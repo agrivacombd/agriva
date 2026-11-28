@@ -9,7 +9,7 @@ import {
   Activity, ArrowUpRight, Banknote, BookOpen, Boxes, BriefcaseBusiness,
   ClipboardCheck, FileText, FlaskConical, FolderKanban, Handshake,
   LayoutDashboard, Leaf, Menu, Package, Search, Settings, ShieldCheck,
-  ShoppingCart, Sprout, Truck, Users, Wallet, X, ChevronRight,
+  ShoppingCart, Sprout, TrendingUp, Truck, Users, Wallet, X, ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,6 +19,8 @@ type NavGroup = { label: string; items: NavItem[] };
 const groups: NavGroup[] = [
   { label: "Overview", items: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Command Center", href: "/admin/command-center", icon: Activity },
+    { label: "Demand & RFQ", href: "/admin/demand-intelligence", icon: Handshake },
     { label: "Module directory", href: "/super-admin", icon: Boxes },
   ]},
   { label: "Marketplace", items: [
@@ -46,6 +48,7 @@ const groups: NavGroup[] = [
     { label: "Content Studio", href: "/admin/content-studio", icon: FlaskConical },
     { label: "AI Content", href: "/admin/ai-content", icon: Activity },
     { label: "Content drafts", href: "/admin/content-drafts", icon: FileText },
+    { label: "Growth Intelligence", href: "/admin/growth-intelligence", icon: TrendingUp },
     { label: "SEO Dashboard", href: "/admin/seo", icon: Search },
     { label: "SEO pages", href: "/admin/seo-pages", icon: Search },
     { label: "Search intelligence", href: "/admin/search-intelligence", icon: Search },
