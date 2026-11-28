@@ -147,11 +147,14 @@ UI requirements:
 
 - Keep existing `ApplicationManagement` shared component and `identity.review` permission.
 - Preserve current Marketplace seller queue and identity queue behavior.
-- The shared Identity queue can filter Plant Market and Marketplace; a dedicated Plant Market queue navigation item is a follow-up after confirming Admin route/menu RBAC.
-- Render `seller_category`, contact, location, source declaration and typed evidence metadata safely from JSONB.
-- Never expose raw NID or add identity data not collected.
-- Signed evidence URLs remain short-lived and applicant-path-scoped.
-- Decisions remain only Approve / Reject through `admin_review_module_application`; rejection requires a reason.
+- Keep the shared `ApplicationManagement` component and `identity.review` capability as the server-side authorization boundary.
+- Keep the Marketplace seller queue scoped to `module = marketplace` and the Plant Market queue scoped to `module = plant_market`; the general Identity queue remains available for legacy and other module applications.
+- Provide a dedicated `/admin/plant-market-applications` route and Admin navigation entry with seller-category filters, status counts, applicant search and a Plant Market-specific review panel.
+- Surface nursery name/location, operating model, plant/gardening types, experience, source declaration, seller consent, contact and delivery coverage as a review checklist.
+- Preserve application history and short-lived, applicant-path-scoped private evidence links.
+- Seller decision forms include an expected module scope; the server action re-reads the application and rejects a cross-module decision before calling the existing transactional review RPC.
+- Decisions remain only Approve / Reject through `admin_review_module_application`; rejection requires a reason and existing confirmation/double-submit protection.
+- Do not expose raw NID or add identity data not collected.
 
 ## 8. Acceptance criteria
 
