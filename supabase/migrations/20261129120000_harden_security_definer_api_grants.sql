@@ -48,3 +48,14 @@ REVOKE ALL ON FUNCTION public.get_green_impact_metrics()
   FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.get_green_impact_metrics()
   TO anon, authenticated;
+
+-- Internal ranking telemetry and idempotency/conversion registries are not
+-- browser-facing APIs. Explicitly remove inherited/default API grants as well
+-- as direct grants; RLS remains enabled as defense in depth.
+REVOKE ALL PRIVILEGES ON TABLE
+  public.buyer_demand_rfq_conversions,
+  public.crop_health_feed_slug_registry,
+  public.marketplace_order_idempotency,
+  public.product_rank_daily_metrics,
+  public.product_rank_events
+FROM PUBLIC, anon, authenticated;
