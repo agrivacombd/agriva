@@ -1,7 +1,8 @@
 # Admin Interaction & Visual Review
 
 **Reviewed candidate:** `feat/admin-dashboard-premium-redesign`  
-**Latest tested source candidate:** `5177880c2f76bf16a4993c3ce0458f502016e78e`  
+**Latest previously tested visual candidate:** `5177880c2f76bf16a4993c3ce0458f502016e78e`  
+**Current interaction-fix candidate:** `806f98bdef79f662c3a6310f88f45aeca4c6d3db` (new CI verification pending)  
 **Latest CI:** AGRIVA CI #4154 — PASS; Plant Market Release Gate #232 — PASS.
 
 ## Evidence boundary
@@ -38,8 +39,8 @@ This document separates source inspection and isolated CI browser evidence from 
 | Transport | Partner review actions (approve/reject/suspend), status navigation, error/empty states | Direct mutation actions have no explicit confirmation. Check status filter retention and application card wrapping. |
 | Jobs | Status filter navigation; moderation note; publish/reject/pause/filled actions; error/empty states | Direct moderation actions have no confirmation. List is capped at 100 and has no visible pagination. Verify notes and action buttons wrap on 390px. |
 | Content Drafts | Status/type filters, keyword search, editor, revision timeline, loading/error/notice states | Publish uses a native confirmation; other workflow transitions do not. Review editor focus, timeline expansion, filter persistence and disabled/busy behavior. |
-| SEO Landing Pages | Create/edit form, FAQ add, draft/review/approve/publish/unpublish actions | **P1 source gap:** initial load has no explicit loading state; network exceptions in load/save/workflow calls are not caught consistently, so the busy state may remain stuck. Workflow actions have no confirmation, including publish/unpublish. |
-| Seed Information | Common section, crop guide and product seed-detail forms; delete actions | **P1 source gap:** no explicit error/loading/empty states found; delete actions have no confirmation. Review large rich-text forms and mobile field order. |
+| SEO Landing Pages | Create/edit form, FAQ add, draft/review/approve/publish/unpublish actions | **Addressed in current candidate:** explicit initial loading and empty states, refresh/retry, safe JSON/error handling, caught network failures, `finally` cleanup for busy state, success notices, and confirmation before publish/unpublish. Exact-SHA Preview interaction verification remains pending. |
+| Seed Information | Common section, crop guide and product seed-detail forms; delete actions | **Partially addressed in current candidate:** destructive delete actions now require a native confirmation, and explicit empty states explain how to create the first common section or crop guide. Existing query-error warning remains. Mutation feedback and exact-SHA Preview verification remain pending. |
 | Settings / Growth Tracking | Site settings forms and integration ID/token forms with validation notices | No confirmation before toggling a provider to enabled. The privacy copy correctly states configuration-only behavior; verify saved/disabled states and error recovery. |
 | Reports | Aggregated report cards and export links; error notice | Data is limited to the latest 5,000 rows; errors collapse report metrics into a warning. Verify export filename/content and partial-data messaging. |
 | Finance | Read-only payout queue and commission ledger; error/empty states | Metrics are based on limited recent records and are labelled as non-reconciled. Verify table overflow, currency formatting and empty/loading states. |
@@ -49,8 +50,8 @@ This document separates source inspection and isolated CI browser evidence from 
 ## Prioritized follow-up
 
 ### P1 — fix before release sign-off
-- Add robust loading/error/retry states to SEO Landing Pages; catch network failures and always clear busy state.
-- Add explicit delete confirmation plus visible mutation feedback to Seed Information.
+- **Implemented, pending CI/Preview verification:** robust loading/error/retry states and publish/unpublish confirmation for SEO Landing Pages.
+- **Implemented, pending CI/Preview verification:** delete confirmation and explicit empty states for Seed Information; add clearer per-action busy/success feedback if the Preview walkthrough exposes ambiguity.
 - Add confirmation/anti-double-submit UX for COD collection and sensitive order/fulfillment/moderation transitions.
 - Make rejection reason requirements visible and validated inline before submitting application rejection.
 - Add explicit empty states to Custom Orders and consistent loading feedback to server-action-heavy workflows.
@@ -70,4 +71,4 @@ The source audit is useful for finding likely UX risks, but it is not a substitu
 4. Authenticated browser walkthrough of filters, forms, dialogs/confirmations, timelines, empty/error/loading states and bulk RFQ transitions using synthetic staging data.
 5. Independent reviewer approval on the same exact SHA.
 
-No production data or production schema was changed during this review.
+No production data or production schema was changed during this review. The current interaction-fix candidate is not yet CI-verified or deployed.
