@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 import { reviewModuleApplication } from "@/lib/admin/application-review";
+import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
 
 type Scope = "identity" | "seller";
 type StatusFilter = "pending" | "approved" | "rejected" | "all";
@@ -119,7 +120,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
   const hasCountErrors = Object.values(counts).some((count) => count === null);
 
   return (
-    <main className="mx-auto w-full max-w-7xl p-4 text-[#173b2d] sm:p-6">
+    <AdminPage className="!max-w-7xl !p-4 text-[#173b2d] sm:!p-6">
       <header className="relative isolate overflow-hidden rounded-[26px] border border-[#e2ebe0] bg-gradient-to-br from-white via-[#fbfdf9] to-[#eef6e9] p-5 shadow-[0_8px_28px_rgba(23,59,45,0.045)] sm:rounded-[28px] sm:p-7">
         <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full border-[28px] border-[#d9ead3]/55" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
@@ -223,6 +224,6 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
         })}
       </div>
       {!filteredItems.length && !error && <p className="mt-6 rounded-2xl border border-[#e1e9df] bg-white p-8 text-center text-sm text-[#6a7b6e]">No applications found for this filter.</p>}
-    </main>
+    </AdminPage>
   );
 }
