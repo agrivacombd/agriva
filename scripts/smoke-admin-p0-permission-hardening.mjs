@@ -58,4 +58,32 @@ assert.match(greenMigration, /green_exchange\.listing_moderated/, "Green Exchang
 assert.match(greenMigration, /previous_moderation_status/, "Green Exchange audit must capture the previous status");
 assert.match(greenMigration, /new_moderation_status/, "Green Exchange audit must capture the new status");
 
+const bulkAuditMigration = read("supabase/migrations/20261128180000_admin_bulk_operations_audit.sql");
+for (const action of [
+  "product.shipping_updated",
+  "bulk.quote_moderated",
+  "bulk.request_moderated",
+  "bulk.fulfillment_transitioned",
+  "bulk.item_fulfillment_transitioned",
+  "bulk.wholesaler_verified",
+  "bulk.wholesaler_status_changed",
+]) {
+  assert.ok(bulkAuditMigration.includes(action), `Privileged mutation must have a central audit event: ${action}`);
+}
+for (const fn of [
+  "admin_set_product_shipping",
+  "bulk_moderate_quote",
+  "bulk_moderate_request",
+  "bulk_transition_fulfillment",
+  "bulk_transition_item_fulfillment",
+  "bulk_verify_named_wholesaler",
+  "bulk_verify_wholesaler",
+]) {
+  const fnBody = bulkAuditMigration.split(`FUNCTION public.${fn}`)[1]?.split("$function$;")[0] ?? "";
+  assert.match(fnBody, /SECURITY DEFINER/, `${fn} must remain an explicitly privileged database function`);
+  assert.match(fnBody, /bulk_is_admin\(\)|is_admin\(\)/, `${fn} must retain a server-side admin guard`);
+  assert.match(fnBody, /admin_audit_log/, `${fn} must write a transactional central audit event`);
+}
+assert.doesNotMatch(bulkAuditMigration, /v_selection\.id|v_award\.id/, "bulk audit entity IDs must use real primary keys from the existing schema");
+
 console.log("Admin P0 delegated permissions, scoped seller revocation, and transactional audit regression checks passed.");
