@@ -1,3 +1,11 @@
+-- Tighten inherited SECURITY DEFINER search paths before the replacement routines.
+ALTER FUNCTION public.admin_create_agri_product(jsonb)
+  SET search_path TO 'pg_catalog', 'public', 'pg_temp';
+ALTER FUNCTION public.bulk_create_multi_request(text, text, text, text, jsonb)
+  SET search_path TO 'pg_catalog', 'public', 'pg_temp';
+ALTER FUNCTION public.bulk_is_admin()
+  SET search_path TO 'pg_catalog', 'public', 'pg_temp';
+
 -- Add transactional audit coverage and safer validation to privileged Admin operations.
 -- Repository-only migration; it must be validated in an isolated local database
 -- before any production rollout.
