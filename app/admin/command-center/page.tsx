@@ -125,7 +125,7 @@ export default async function AdminCommandCenterPage() {
         </div>
       </section>
 
-      <p className="mt-8 border-t border-[#e2e9df] pt-4 text-[11px] leading-5 text-[#91a094]">Read-only overview · High-risk changes remain inside their existing permission-checked workflows · Signed in as {user.email ?? "administrator"}</p>
+      <p className="mt-8 border-t border-[#e2e9df] pt-4 text-[11px] leading-5 text-[#91a094]">Read-only overview · High-risk changes remain inside their existing permission-checked workflows · Secure Admin workspace</p>
     </AdminPageLayout>
   );
 }
