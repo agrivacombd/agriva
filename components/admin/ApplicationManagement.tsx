@@ -203,7 +203,6 @@ export default async function ApplicationManagement({ scope, status, q = "", cat
 
       <form method="get" className="mt-5 flex flex-col gap-2 rounded-2xl border border-[#e1e9df] bg-white p-3 shadow-[0_2px_12px_rgba(23,59,45,0.025)] sm:flex-row">
         <input type="hidden" name="status" value={activeStatus}/>
-        {activeCategory && <input type="hidden" name="category" value={activeCategory}/>}
         <input name="q" defaultValue={q} aria-label="Search applications" placeholder="Search applicant, business, user ID or application ID…"
           className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#16835f] focus:ring-2 focus:ring-emerald-100"/>
         <button className="min-h-11 rounded-xl bg-[#126b4f] px-5 text-sm font-bold text-white">Search</button>
