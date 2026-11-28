@@ -264,6 +264,7 @@ jobs:
           source "$RUNNER_TEMP/supabase.env"
           printf 'SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
           printf 'SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
           printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
           printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
           printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
@@ -439,7 +440,7 @@ jobs:
           name: agriva-plant-market-seller-review-e2e
           path: |
             test-results/plant-market-seller-review/
-            \${{ runner.temp }}/plant-market-seller-review-next.log
+            ${{ runner.temp }}/plant-market-seller-review-next.log
           if-no-files-found: ignore
           retention-days: 14
 
