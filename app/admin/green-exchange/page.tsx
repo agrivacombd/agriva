@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -52,7 +53,7 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
     .limit(100);
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6">
+    <AdminPageLayout className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6">
       <div className="mx-auto max-w-6xl">
         <Link href="/admin" className="text-sm font-bold text-emerald-800 underline underline-offset-4">← Admin Dashboard</Link>
         <header className="mt-5">
@@ -102,6 +103,6 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
           </div>
         )}
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }
