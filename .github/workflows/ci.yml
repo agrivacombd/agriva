@@ -59,6 +59,8 @@ jobs:
         run: node scripts/smoke-article-quality.mjs
       - name: Safe Markdown editor and publication integrity regression
         run: node scripts/smoke-article-markdown-editor.mjs
+      - name: SECURITY DEFINER grants and search_path regression
+        run: npm run test:security-definer-api-grants
       - name: Content Trash, Restore and permanent deletion security regression
         run: node scripts/smoke-content-removal.mjs
       - name: Admin Article Queue filters and retired-table regression
