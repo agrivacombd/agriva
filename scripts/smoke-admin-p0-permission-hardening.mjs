@@ -46,4 +46,16 @@ const authz = read("lib/admin/authz.ts");
 const legacy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
 assert.doesNotMatch(legacy, /payments\.reconcile/, "COD reconciliation must remain outside the broad legacy admin allow-list");
 
+const greenExchange = read("app/admin/green-exchange/page.tsx");
+const greenAction = greenExchange.split("async function moderateListing")[1]?.split("const statusLabels")[0] ?? "";
+assert.match(greenAction, /requireAdmin\("content\.publish"\)/, "Green Exchange moderation action must require the publishing capability");
+assert.match(greenAction, /admin_moderate_green_exchange_listing/, "Green Exchange moderation must use the audited database RPC");
+const greenMigration = read("supabase/migrations/20261128170000_admin_green_exchange_audit.sql");
+assert.match(greenMigration, /public\.profiles[\s\S]*p\.role = 'admin'/, "Green Exchange moderation RPC must preserve the existing server-side admin boundary");
+assert.match(greenMigration, /p_moderation_status IS NULL/, "Green Exchange moderation must reject null status explicitly");
+assert.match(greenMigration, /FOR UPDATE/, "Green Exchange moderation must lock the listing before changing state");
+assert.match(greenMigration, /green_exchange\.listing_moderated/, "Green Exchange moderation must write a central audit event");
+assert.match(greenMigration, /previous_moderation_status/, "Green Exchange audit must capture the previous status");
+assert.match(greenMigration, /new_moderation_status/, "Green Exchange audit must capture the new status");
+
 console.log("Admin P0 delegated permissions, scoped seller revocation, and transactional audit regression checks passed.");
