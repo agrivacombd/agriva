@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import OrderNotificationBell from "./OrderNotificationBell";
 import SignOutButton from "@/components/SignOutButton";
 import {
-  Activity, ArrowUpRight, Banknote, BookOpen, Boxes, BriefcaseBusiness,
+  Activity, ArrowUpRight, Banknote, BookOpen, BriefcaseBusiness,
   ClipboardCheck, FileText, FlaskConical, FolderKanban, Handshake,
   LayoutDashboard, Leaf, Menu, Package, Search, Settings, ShieldCheck,
   ShoppingCart, Sprout, TrendingUp, Truck, Users, Wallet, X, ChevronRight,
@@ -21,7 +21,6 @@ const groups: NavGroup[] = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Command Center", href: "/admin/command-center", icon: Activity },
     { label: "Demand Intelligence", href: "/admin/demand-intelligence", icon: Handshake },
-    { label: "Growth Intelligence", href: "/admin/growth-intelligence", icon: TrendingUp },
   ]},
   { label: "Marketplace", items: [
     { label: "Products", href: "/admin/products", icon: Package },
