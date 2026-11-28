@@ -86,7 +86,9 @@
     "test:buyer-demand-rfq-postgres": "bash scripts/test-buyer-demand-rfq-postgres.sh",
     "test:read-limited-body": "node scripts/test-read-limited-body.mjs",
     "test:admin-sensitive-actions": "node scripts/smoke-admin-sensitive-actions.mjs",
-    "test:plant-market-seller-review": "node scripts/smoke-plant-market-seller-review.mjs"
+    "test:plant-market-seller-review": "node scripts/smoke-plant-market-seller-review.mjs",
+    "test:plant-market-seller-review-supabase": "node scripts/test-plant-market-seller-review-supabase.mjs",
+    "test:plant-market-seller-review-browser": "node scripts/browser-qa-plant-market-seller-review.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
