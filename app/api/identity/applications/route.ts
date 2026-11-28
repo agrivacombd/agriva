@@ -125,9 +125,9 @@ export async function POST(request: NextRequest) {
     const gardeningTypes = Array.isArray(input.gardeningTypes)
       ? input.gardeningTypes.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean).slice(0, 8)
       : [];
-    const allowedGardeningTypes = new Set(PLANT_GARDENING_TYPES.map((item) => item.value));
+    const allowedGardeningTypes = new Set<string>(PLANT_GARDENING_TYPES.map((item) => item.value));
     if (!experience || experience.length < 20 || !gardeningTypes.length ||
-      gardeningTypes.some((item) => !allowedGardeningTypes.has(item as never))) {
+      gardeningTypes.some((item) => !allowedGardeningTypes.has(item))) {
       return NextResponse.json({ error: "Select at least one plant/product type and describe your growing or selling experience (at least 20 characters)." }, { status: 400 });
     }
 
