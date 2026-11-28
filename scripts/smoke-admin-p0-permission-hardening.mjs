@@ -39,6 +39,7 @@ assert.match(migration, /has_admin_permission\('seller_access\.revoke'\)/, "sell
 assert.match(migration, /seller_access\.revoked/, "seller revoke must write a central audit event");
 assert.match(migration, /FOR UPDATE/, "COD collection must lock the checkout row");
 assert.match(migration, /ON CONFLICT \(role_id, capability\) DO NOTHING/, "permission seed must be idempotent");
+assert.match(migration, /REVOKE ALL ON FUNCTION public\.rls_auto_enable\(\) FROM PUBLIC, anon, authenticated/, "RLS event-trigger function must not be callable by client roles");
 
 const authz = read("lib/admin/authz.ts");
 const legacy = authz.split("const LEGACY_ADMIN_CAPABILITIES")[1]?.split("]);")[0] ?? "";
