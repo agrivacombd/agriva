@@ -33,7 +33,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'pg_cata
 AS $$ SELECT public.is_admin() $$;
 CREATE OR REPLACE FUNCTION public.has_admin_permission(p_capability text)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'pg_catalog','public','pg_temp'
-AS $function$ SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') AND p_capability IN ('payments.reconcile','seller_access.revoke','seller_access.read') $function$;
+AS $function$ SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') AND p_capability IN ('payments.reconcile','seller_access.revoke','seller_access.read','payments.read','roles.grant') $function$;
 CREATE OR REPLACE FUNCTION public.rls_auto_enable()
 RETURNS event_trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'pg_catalog'
 AS $$ BEGIN NULL; END; $$;
@@ -202,4 +202,26 @@ CREATE TABLE IF NOT EXISTS public.bulk_item_awards (
   fulfillment_status text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+
+-- Minimal synthetic Finance tables for authenticated Admin route QA.
+CREATE TABLE IF NOT EXISTS public.commission_payouts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reseller_id uuid NOT NULL,
+  amount numeric(12,2) NOT NULL DEFAULT 0,
+  status text NOT NULL DEFAULT 'requested',
+  payment_method text,
+  requested_at timestamptz NOT NULL DEFAULT now(),
+  approved_at timestamptz,
+  paid_at timestamptz
+);
+CREATE TABLE IF NOT EXISTS public.reseller_commissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reseller_id uuid NOT NULL,
+  order_id uuid NOT NULL,
+  amount numeric(12,2) NOT NULL DEFAULT 0,
+  paid_amount numeric(12,2) NOT NULL DEFAULT 0,
+  status text NOT NULL DEFAULT 'pending',
+  created_at timestamptz NOT NULL DEFAULT now()
 );
