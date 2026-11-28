@@ -1,10 +1,8 @@
 # Admin Interaction & Visual Review
 
 **Reviewed candidate:** `feat/admin-dashboard-premium-redesign`  
-**Source review base:** `6aa61586885ce741af4471b3547019d606484e67`  
-**QA expansion:** `fb3adbbf3e1ae5a1986b3c4d60d96a2de022a85f`  
-**Latest source fix:** `637f2b01faf672853dbf3ac297f8aa2271dd0446`  
-**Latest test fix:** `146a0b5d60d150cdef5671ea94d74520be7313f1`
+**Latest tested source candidate:** `5177880c2f76bf16a4993c3ce0458f502016e78e`  
+**Latest CI:** AGRIVA CI #4154 — PASS; Plant Market Release Gate #232 — PASS.
 
 ## Evidence boundary
 
@@ -12,16 +10,17 @@ This document separates source inspection and isolated CI browser evidence from 
 
 - CI run #4148 passed on the earlier candidate and uploaded only login plus Command Center screenshots.
 - Those Command Center screenshots were visually inspected at 390px and 1440px.
-- A new browser QA capture loop now saves full-page screenshots for every authenticated Admin route at 390, 768, 1024 and 1440px, while asserting no horizontal overflow. This expanded test is running against the newer candidate; its artifacts must be inspected after CI completes.
-- The exact latest commit does not yet have a READY Vercel Preview. Vercel Git deployment checks have reported the free build-rate limit; the direct deployment API also returned `api-deployments-free-per-day` HTTP 402. Therefore there is no claim of live Preview visual review or production-like authenticated visual sign-off.
+- Latest CI #4154 completed successfully and generated 124 full-page route screenshots: 31 rendered Admin pages × 4 widths (390, 768, 1024, 1440px). All responsive overflow assertions passed. The 32nd route entry is the legacy article detail URL, which correctly canonical-redirects to the article queue.
+- The latest exact commit does not have a READY Vercel Preview. The prior Preview at `fb3adbbf` reached READY, but it is not the latest source SHA. Vercel Git deployment checks for the latest SHA report the free build-rate limit; the direct deployment API also returned `api-deployments-free-per-day` HTTP 402. No exact-SHA Preview visual sign-off is claimed.
+- Important fixture limitation: CI starts an isolated Supabase stack and applies only the buyer-demand/RFQ fixture plus Admin P0 fixture/migrations; it does not apply the full AGRIVA application schema or seed realistic rows for every Admin module. Consequently, several screenshots intentionally show module-level schema/permission error states or empty lists. These screenshots validate layout and error presentation, not populated production-like records, event timelines, or full mutation workflows.
 
 ## Visual observations from available Command Center screenshots
 
 1. At 390px the content stacks cleanly, KPI cards remain two columns, approval queues stack, and workspace shortcut cards wrap without horizontal overflow.
 2. At 1440px the left navigation and content workspace form a coherent two-column shell; dashboard cards and shortcut groups align consistently.
-3. **Fixed in source:** the hero greeting previously used the email local-part, which exposed a long synthetic/internal identifier in the screenshot. The page now prefers `user_metadata.full_name` and falls back to the neutral label `Admin`.
-4. **Still open:** at 390px the topbar page title is ellipsized to `Comman...`. This is not an overflow defect, but it weakens page orientation on mobile.
-5. Small metadata/helper text is visually low-emphasis. Contrast should be checked against WCAG 2.2 AA in the exact Preview, not inferred from the screenshot alone.
+3. **Fixed in source:** the hero greeting and footer previously exposed the email local-part, which appeared as a long synthetic/internal identifier. The greeting now uses `user_metadata.full_name` or `Admin`, and the footer no longer prints the email.
+4. **Fixed in source:** long topbar labels are abbreviated at mobile widths (for example, “Command Center” becomes “Command”) instead of truncating to `Comman...`.
+5. Small metadata/helper text is visually low-emphasis. Contrast should be checked against WCAG 2.2 AA in the exact Preview, not inferred from screenshots alone.
 
 ## Workflow-by-workflow source review
 
