@@ -106,7 +106,7 @@ try {
   assert.equal(nurseryRows[0].module, "plant_market");
   assert.equal(nurseryRows[0].reviewed_by, adminId);
   const nurseryGrants = await serviceRead(`/rest/v1/user_module_grants?user_id=eq.${nurseryUserId}&module=eq.plant_market&select=permission,status,scope_type,scope_id`);
-  assert.deepEqual(new Set(nurseryGrants.filter((grant) => grant.status === "active").map((grant) => grant.permission)), new Set(["read", "create"]));
+  assert.deepEqual(new Set(nurseryGrants.filter((grant) => grant.status === "active").map((grant) => grant.permission)), new Set(["read", "create", "update"]));
   assert.ok(nurseryGrants.filter((grant) => grant.status === "active").every((grant) => grant.scope_type === "global" && grant.scope_id === null), "Plant Market grants must remain global");
   const nurseryProfile = await serviceRead(`/rest/v1/gardener_profiles?user_id=eq.${nurseryUserId}&select=verification_status,district`);
   assert.equal(nurseryProfile[0]?.verification_status, "verified");
