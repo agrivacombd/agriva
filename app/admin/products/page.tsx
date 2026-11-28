@@ -1,4 +1,4 @@
-import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -118,7 +118,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
     <div className="min-w-0">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">পণ্য ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">নাম, বিবরণ, মূল্য, স্টক, রিসেলার কমিশন, ছবি ও পণ্যের অবস্থা পরিবর্তন করুন। পরিবর্তনগুলো audit log-এ সংরক্ষিত হবে।</p></div><Link href="/admin/products" className="hidden text-xs font-semibold text-[#54705b] sm:inline-flex">সব পণ্য দেখুন</Link></div>
       {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{params.notice === "saved" ? "পণ্যের তথ্য আপডেট হয়েছে।" : params.notice === "invalid" ? "সঠিক তথ্য দিন; কমিশন ০ থেকে ১০০-এর মধ্যে হতে হবে এবং সর্বোচ্চ ৪টি ছবি দিন।" : params.notice === "description-too-long" ? "বিবরণ ২,৫০,০০০ অক্ষরের বেশি। কোনো লেখা কেটে সেভ হয়নি; বিবরণ ভাগ করে আবার চেষ্টা করুন।" : "আপডেট করা যায়নি। Product schema ও storage যাচাই করুন।"}</p>}
-      {error && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">পণ্য তালিকা পড়া যায়নি। Database migration এবং product schema যাচাই করুন।</p>}
+      {error && <div className="mt-5"><AdminErrorState title="পণ্য তালিকা পড়া যায়নি" description="Database migration এবং product schema যাচাই করুন।"/></div>}
       <details className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-4"><summary className="cursor-pointer font-extrabold text-[#17452c]">＋ নতুন পণ্য যোগ করুন</summary><AdminCreateProductForm /></details>
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{[{ label: "Total products", value: totalCount ?? "—" }, { label: "Current page", value: page }, { label: "Showing", value: products?.length ?? 0 }, { label: "Page size", value: pageSize }].map(item => <div key={item.label} className="rounded-2xl border border-[#dfe8dc] bg-white p-4"><p className="text-xs font-semibold text-[#637266]">{item.label}</p><p className="mt-2 text-2xl font-black">{item.value}</p></div>)}</div>
       <form method="get" className="mt-6 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 sm:flex-row">
@@ -153,7 +153,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
         </div>
         <p className="mt-3 text-xs text-[#7b887d]">Last updated: {new Date(p.updated_at).toLocaleDateString("en-GB")} {p.sku ? `· SKU ${p.sku}` : ""}</p>
       </form>)}
-      {!products?.length && !error && <div className="rounded-2xl border border-dashed bg-white p-10 text-center"><p className="font-bold">Database-এ এখনো কোনো পণ্য নেই।</p><p className="mt-2 text-sm text-[#748074]">Sample preview products বাস্তব database পণ্য নয়।</p></div>}</div>
+      {!products?.length && !error && <AdminEmptyState title="Database-এ এখনো কোনো পণ্য নেই" description="Sample preview products বাস্তব database পণ্য নয়।"/>}</div>
     </div>
   </AdminPageLayout>;
 }
