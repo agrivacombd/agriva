@@ -9,6 +9,7 @@ const shell = read("components/admin/shell/AdminShell.tsx");
 const action = read("lib/admin/application-review.ts");
 const api = read("app/api/identity/applications/route.ts");
 const migration = read("supabase/migrations/20261030110000_identity_verification_workflow.sql");
+const foundation = read("supabase/migrations/20261030100000_module_access_foundation.sql");
 
 assert.match(page, /ApplicationManagement/);
 assert.match(page, /scope="plant"/);
@@ -51,6 +52,6 @@ assert.match(action, /revalidatePath\("\/admin\/plant-market-applications"\)/);
 assert.match(api, /category === "nursery_owner" && \(!nurseryName \|\| !nurseryAddress\)/);
 assert.match(api, /evidence_types: types/);
 assert.match(migration, /module_access_applications/);
-assert.match(migration, /admin_review_module_application/);
+assert.match(foundation, /admin_review_module_application/);
 
 console.log("AGRIVA Plant Market seller verification workspace contract checks passed.");
