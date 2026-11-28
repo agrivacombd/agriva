@@ -11,7 +11,7 @@ import {
 
 export const runtime = "nodejs";
 const MODULES = ["plant_market", "marketplace", "employer", "transport", "sell_harvest"] as const;
-const SUBMIT_MODULES = ["plant_market", "marketplace"] as const;
+const SUBMIT_MODULES = ["plant_market","marketplace"] as const;
 type NewApplicationModule = (typeof SUBMIT_MODULES)[number];
 
 const clean = (value: unknown, max: number) =>
