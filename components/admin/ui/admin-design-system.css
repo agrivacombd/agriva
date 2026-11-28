@@ -44,3 +44,22 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-shell *, .admin-shell *::before, .admin-shell *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Workspace-wide defaults: existing modules inherit the same responsive canvas. */
+.admin-workspace { min-width: 0; background: var(--admin-canvas); }
+.admin-workspace > main { width: 100%; max-width: var(--admin-content-width); margin-inline: auto; padding: clamp(1rem, 2vw, 2rem); }
+.admin-workspace :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 2.75rem; border-color: var(--admin-border-strong); border-radius: var(--admin-radius-sm);
+}
+.admin-workspace :where(input, select, textarea):focus-visible {
+  outline: 3px solid rgb(23 99 63 / 22%); outline-offset: 1px; border-color: var(--admin-primary);
+}
+.admin-workspace :where(button, a) { -webkit-tap-highlight-color: transparent; }
+.admin-workspace :where(table) { width: 100%; border-collapse: separate; border-spacing: 0; }
+.admin-workspace :where(th) { color: var(--admin-ink-muted); font-size: .6875rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.admin-workspace :where(td, th) { padding: .75rem 1rem; border-bottom: 1px solid var(--admin-border); text-align: left; vertical-align: middle; }
+.admin-workspace :where(tr:last-child td) { border-bottom: 0; }
+@media (max-width: 640px) {
+  .admin-workspace > main { padding: 1rem; }
+  .admin-workspace :where(button, a, input, select) { scroll-margin-block: 1rem; }
+}
