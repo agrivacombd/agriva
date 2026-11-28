@@ -2,6 +2,7 @@
 -- Run after migrations in disposable local Supabase. This file performs no writes.
 -- Wrap role-switching checks in one transaction so SET LOCAL ROLE is effective.
 BEGIN;
+DO $test$
 DECLARE
   fn record;
   v_count integer := 0;
