@@ -65,6 +65,9 @@
 - `npm run test:admin-application-management`
 - `npm run test:seller-marketplace-submission`
 - `npm run test:seller-verification-phase1`
+- `npm run test:plant-market-seller-review`
+- `npm run test:plant-market-seller-review-supabase` (isolated Supabase E2E job)
+- `npm run test:plant-market-seller-review-browser` (authenticated Playwright E2E job)
 - `npm run lint`
 - `npx tsc --noEmit`
 - `npm run build`
