@@ -14,7 +14,7 @@ DECLARE
   v_wholesaler uuid;
   v_revoked_user uuid := '55555555-5555-4555-8555-555555555555';
   v_scope uuid := '66666666-6666-4666-8666-666666666666';
-  v_cod_role uuid := 'a1100000-0000-4000-8000-000000000003';
+  v_cod_role uuid;
 BEGIN
   SELECT id INTO v_admin
   FROM public.profiles
@@ -42,9 +42,13 @@ BEGIN
   VALUES ('33333333-3333-4333-8333-333333333333', 'super_admin')
   ON CONFLICT (role_key) DO NOTHING;
 
-  INSERT INTO public.admin_roles(id, role_key)
-  VALUES (v_cod_role, 'ci_existing_p0_assertion_cod')
+  INSERT INTO public.admin_roles(role_key)
+  VALUES ('ci_existing_p0_assertion_cod')
   ON CONFLICT (role_key) DO NOTHING;
+  SELECT id INTO v_cod_role FROM public.admin_roles WHERE role_key = 'ci_existing_p0_assertion_cod';
+  IF v_cod_role IS NULL THEN
+    RAISE EXCEPTION 'Synthetic COD permission role could not be created';
+  END IF;
   INSERT INTO public.admin_role_permissions(role_id, capability)
   VALUES (v_cod_role, 'payments.reconcile')
   ON CONFLICT (role_id, capability) DO NOTHING;
