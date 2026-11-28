@@ -324,7 +324,10 @@ BEGIN
   IF p_user IS NULL OR p_status IS NULL OR p_status NOT IN ('verified', 'suspended') THEN
     RAISE EXCEPTION 'Invalid user or status' USING ERRCODE = '22023';
   END IF;
-  IF p_status = 'verified' AND (char_length(v_display_name) < 2 OR char_length(v_display_name) > 120) THEN
+  IF char_length(v_display_name) > 120 THEN
+    RAISE EXCEPTION 'Business name must be 120 characters or less' USING ERRCODE = '22023';
+  END IF;
+  IF p_status = 'verified' AND char_length(v_display_name) < 2 THEN
     RAISE EXCEPTION 'Verified business name required' USING ERRCODE = '22023';
   END IF;
 
