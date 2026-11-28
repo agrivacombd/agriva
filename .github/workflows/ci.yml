@@ -372,7 +372,14 @@ jobs:
           supabase --version
           supabase init --force
           supabase config validate
-          supabase start -x studio,realtime,functions,analytics,pooler,mail
+
+      - name: Keep repository migrations out of local stack bootstrap
+        run: |
+          mv supabase/migrations "$RUNNER_TEMP/agriva-seller-review-migrations"
+          mkdir -p supabase/migrations
+
+      - name: Start isolated Supabase Auth, PostgREST and Storage
+        run: supabase start -x studio,realtime,functions,analytics,pooler,mail
 
       - name: Export isolated Supabase connection details
         run: |
@@ -386,6 +393,8 @@ jobs:
 
       - name: Prepare production-shaped seller verification schema
         run: |
+          rm -rf supabase/migrations
+          mv "$RUNNER_TEMP/agriva-seller-review-migrations" supabase/migrations
           DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
           test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; docker ps -a; exit 1; }
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-plant-market-seller-review-fixture.sql
