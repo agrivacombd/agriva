@@ -30,6 +30,33 @@ const MODULE_LABELS: Record<string, string> = {
   sell_harvest: "Harvest",
   farm_management: "Farm management",
 };
+const SELLER_CATEGORY_LABELS: Record<string, string> = {
+  retailer: "Retailer / shop",
+  wholesaler: "Wholesaler",
+  authorized_dealer: "Authorized dealer",
+  manufacturer: "Manufacturer / brand",
+  cooperative: "Cooperative",
+  agri_service_provider: "Agricultural service provider",
+  other_business: "Other business",
+  nursery_owner: "Nursery owner / operator",
+  plant_grower: "Plant grower",
+  fruit_sapling_grower: "Fruit sapling grower",
+  ornamental_plant_seller: "Ornamental plant seller",
+  seed_cutting_seller: "Seeds / cuttings seller",
+  plant_reseller: "Plant reseller",
+  gardening_supplies: "Gardening supplies",
+  hobby_gardener: "Hobby gardener",
+};
+const EVIDENCE_TYPE_LABELS: Record<string, string> = {
+  identity_support: "Identity supporting document",
+  business_registration: "Business registration",
+  dealer_authorization: "Dealer authorization",
+  supplier_invoice: "Supplier / purchase proof",
+  nursery_photos: "Nursery / plant photos",
+  nursery_registration: "Nursery registration",
+  product_license: "Product authorization",
+  other: "Other supporting document",
+};
 
 function textValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
@@ -93,15 +120,20 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
       ? details.evidence_paths.filter((path): path is string =>
           typeof path === "string" && path.startsWith(app.user_id + "/")).slice(0, 5)
       : [];
-    const signed = await Promise.all(paths.map(async (path) => {
+    const evidenceTypes = Array.isArray(details.evidence_types)
+      ? details.evidence_types.filter((type): type is string => typeof type === "string")
+      : [];
+    const signed = await Promise.all(paths.map(async (path, index) => {
       const { data: object } = await supabase.storage.from("identity-verification").createSignedUrl(path, 300);
-      return object?.signedUrl || null;
+      return object?.signedUrl
+        ? { url: object.signedUrl, type: evidenceTypes[index] || "other" }
+        : null;
     }));
     return {
       ...app,
       details,
       applicantName: String(details.organization_name || profileNames.get(app.user_id) || app.applicant_type),
-      evidence: signed.filter((url): url is string => Boolean(url)),
+      evidence: signed.filter((item): item is { url: string; type: string } => Boolean(item)),
       events: eventsByApplication.get(app.id) || [],
     };
   }));
@@ -184,17 +216,23 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
               </div>
 
               <dl className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {Object.entries(app.details).filter(([key]) => key !== "evidence_paths").map(([key, value]) => (
+                {Object.entries(app.details).filter(([key]) => key !== "evidence_paths" && key !== "schema_version").map(([key, value]) => (
                   <div key={key} className="min-w-0 rounded-xl bg-[#f8faf6] p-3">
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-[#718174]">{key.replaceAll("_", " ")}</dt>
-                    <dd className="mt-1 break-words text-sm font-medium">{textValue(value)}</dd>
+                    <dt className="text-[11px] font-bold uppercase tracking-wide text-[#718174]">{key === "seller_category" ? "Seller category" : key.replaceAll("_", " ")}</dt>
+                    <dd className="mt-1 break-words text-sm font-medium">
+                      {key === "seller_category"
+                        ? SELLER_CATEGORY_LABELS[String(value)] || textValue(value)
+                        : key === "evidence_types" && Array.isArray(value)
+                          ? value.map((type) => EVIDENCE_TYPE_LABELS[String(type)] || String(type)).join(", ")
+                          : textValue(value)}
+                    </dd>
                   </div>
                 ))}
               </dl>
 
               {app.evidence.length > 0 && <div className="mt-4 flex flex-wrap gap-2">
-                {app.evidence.map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer"
-                  className="rounded-lg border border-[#dce7d9] px-3 py-2 text-xs font-bold text-[#126b4f]">Private evidence {index + 1} ↗</a>)}
+                {app.evidence.map((item, index) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer"
+                  className="rounded-lg border border-[#dce7d9] px-3 py-2 text-xs font-bold text-[#126b4f]">{EVIDENCE_TYPE_LABELS[item.type] || "Supporting document"} · {index + 1} ↗</a>)}
               </div>}
 
               {app.review_note && <div className="mt-4 rounded-xl border border-rose-100 bg-rose-50 p-3">
