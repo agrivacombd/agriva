@@ -86,3 +86,35 @@ export function AdminEmptyState({ title, description, action }: {
 export function AdminTableFrame({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`admin-panel overflow-hidden ${className}`}><div className="admin-scrollbar overflow-x-auto">{children}</div></div>;
 }
+
+
+export function AdminErrorState({ title = "তথ্য লোড করা যায়নি", description, action }: {
+  title?: string; description?: string; action?: ReactNode;
+}) {
+  return (
+    <div role="alert" className="flex flex-col gap-3 rounded-[var(--admin-radius-md)] border border-rose-200 bg-rose-50 px-4 py-4 text-sm text-rose-950 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0"><p className="font-bold">{title}</p>{description && <p className="mt-1 leading-5 text-rose-800">{description}</p>}</div>
+      {action && <div className="shrink-0">{action}</div>}
+    </div>
+  );
+}
+
+export function AdminLoadingState({ label = "তথ্য লোড হচ্ছে…" }: { label?: string }) {
+  return (
+    <div role="status" aria-live="polite" aria-busy="true" className="flex min-h-32 items-center justify-center gap-3 rounded-[var(--admin-radius-md)] border border-[var(--admin-border)] bg-[var(--admin-surface)] px-5 py-8 text-sm font-semibold text-[var(--admin-ink-muted)]">
+      <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--admin-border-strong)] border-t-[var(--admin-primary)] motion-reduce:animate-none" />
+      {label}
+    </div>
+  );
+}
+
+export function AdminNotice({ children, tone = "info" }: { children: ReactNode; tone?: Tone }) {
+  const classes: Record<Tone, string> = {
+    neutral: "border-slate-200 bg-slate-50 text-slate-800",
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
+    warning: "border-amber-200 bg-amber-50 text-amber-950",
+    danger: "border-rose-200 bg-rose-50 text-rose-950",
+    info: "border-blue-200 bg-blue-50 text-blue-950",
+  };
+  return <div role="status" className={`rounded-[var(--admin-radius-md)] border px-4 py-3 text-sm leading-6 ${classes[tone]}`}>{children}</div>;
+}
