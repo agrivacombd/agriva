@@ -215,3 +215,8 @@ FROM public.admin_roles
 CROSS JOIN (VALUES ('seller_access.read'), ('seller_access.revoke')) AS requested(capability)
 WHERE role_key = 'super_admin'
 ON CONFLICT (role_id, capability) DO NOTHING;
+
+-- Event-trigger functions are invoked by PostgreSQL's DDL event trigger, not by
+-- browser clients. Remove the inherited API execution surface while leaving the
+-- existing event-trigger binding intact.
+REVOKE ALL ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
