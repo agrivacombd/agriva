@@ -16,6 +16,7 @@ const expectations = [
   ["app/admin/green-exchange/page.tsx", ["Green Exchange listing"]],
   ["app/admin/transport/page.tsx", ["transport partner"]],
   ["app/admin/jobs/page.tsx", ["job post"]],
+  ["app/admin/settings/page.tsx", ["platform setting", "Save configuration"]],
 ];
 for (const [path, phrases] of expectations) {
   const source = read(path);
