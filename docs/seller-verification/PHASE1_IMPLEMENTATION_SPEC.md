@@ -177,7 +177,8 @@ UI requirements:
 2. Add shared typed category definitions and server validators.
 3. Upgrade applicant UI to category-driven wizard.
 4. Upgrade API to validate and persist versioned additive payload keys.
-5. Add Admin read-only category/declaration display if safe and compatible.
-6. Run identity workflow, module access, Admin application and seller submission regression scripts.
+5. Add the dedicated Plant Market Admin queue, category filters, verification checklist, evidence review and module-scoped decision guard.
+6. Run identity workflow, module access, Admin application, seller submission and Plant Market review contract regressions.
 7. Run lint, TypeScript, production build and CI.
-8. Keep the PR draft until review, exact-SHA Preview and isolated authenticated workflow QA pass.
+8. Run authenticated isolated-Supabase E2E: seed synthetic Admin and Plant Market applicants, verify category filtering and private evidence, approve a nursery, reject a grower, and assert gardener profile, module grants and lifecycle audit events.
+9. Keep the PR draft until independent review and exact-SHA Preview are available; no Production deployment is implied by local E2E passing.
