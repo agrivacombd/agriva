@@ -136,7 +136,7 @@ export default async function ApplicationManagement({ scope, status, q = "", cat
     return {
       ...app,
       details,
-      applicantName: String(details.organization_name || profileNames.get(app.user_id) || app.applicant_type),
+      applicantName: String(details.nursery_name || details.organization_name || profileNames.get(app.user_id) || app.applicant_type),
       evidence: signed.filter((item): item is { url: string; type: string } => Boolean(item)),
       events: eventsByApplication.get(app.id) || [],
     };
@@ -259,7 +259,7 @@ export default async function ApplicationManagement({ scope, status, q = "", cat
                   {[["Nursery name",app.details.nursery_name],["Nursery location",app.details.nursery_address],["Operating model",app.details.operating_model],["Product / plant types",app.details.gardening_types],["Growing / selling experience",app.details.experience_note],["Product source declaration",app.details.source_declaration]].map(([label,value]) => <div key={String(label)} className="min-w-0 rounded-xl border border-[#e6eee3] bg-white p-3"><p className="text-[10px] font-extrabold uppercase tracking-wide text-[#829084]">{label}</p><p className="mt-1 whitespace-pre-wrap break-words text-sm text-[#294d39]">{textValue(value)}</p></div>)}
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2 text-[11px]">{[
-                  ["Seller category",Boolean(app.details.seller_category)],["Contact & district",Boolean(app.details.contact_name && app.details.contact_phone && app.details.district)],["Delivery coverage",Boolean(app.details.delivery_coverage)],["Source declaration",String(app.details.source_declaration || "").trim().length >= 20],["Supporting evidence",app.evidence.length > 0],["Seller policy consent",app.details.policy_accepted === true],
+                  ["Seller category",Boolean(app.details.seller_category)],["Contact & district",Boolean(app.details.contact_name && app.details.contact_phone && app.details.district)],["Delivery coverage",Boolean(app.details.delivery_coverage)],["Nursery name & location",app.details.seller_category !== "nursery_owner" || Boolean(app.details.nursery_name && app.details.nursery_address)],["Source declaration",String(app.details.source_declaration || "").trim().length >= 20],["Supporting evidence",app.evidence.length > 0],["Seller policy consent",app.details.policy_accepted === true],
                 ].map(([label,ok]) => <span key={String(label)} className={`rounded-full px-2.5 py-1 font-bold ${ok ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{ok ? "✓" : "!"} {label}</span>)}</div>
               </section>}
 
