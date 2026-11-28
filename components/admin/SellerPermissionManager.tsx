@@ -114,7 +114,7 @@ export default function SellerPermissionManager() {
             {confirming === key && <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
               <p className="font-bold text-rose-950">এই seller-এর {market === "marketplace" ? "Marketplace" : "Plant Market"} access বাতিল করবেন?</p>
               <p className="mt-1 text-xs leading-5 text-rose-800">শুধু নির্বাচিত module ও scope-এর grant বাতিল হবে। অন্য module-এর access পরিবর্তন হবে না। এই action audit log-এ রেকর্ড হবে।</p>
-              <label className="mt-3 block text-sm font-semibold text-rose-950">বাতিলের কারণ (১০–৫০০ অক্ষর)
+              <label className="mt-3 block text-sm font-semibold text-rose-950">Permission বাতিলের কারণ (১০–৫০০ অক্ষর)
                 <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} className="mt-2 w-full rounded-lg border border-rose-200 bg-white p-3 text-sm text-slate-900" placeholder="কেন এই seller-এর access বাতিল করা হচ্ছে তা লিখুন"/>
               </label>
               <div className="mt-3 flex flex-wrap gap-2">
