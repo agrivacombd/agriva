@@ -128,6 +128,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const [commandQuery, setCommandQuery] = useState("");
   const drawerTriggerRef = useRef<HTMLButtonElement>(null);
   const drawerCloseRef = useRef<HTMLButtonElement>(null);
+  const commandPreviousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!drawerOpen) return;
@@ -141,10 +142,20 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   }, [drawerOpen]);
 
   useEffect(() => {
+    if (commandOpen) return;
+    const previousFocus = commandPreviousFocusRef.current;
+    if (previousFocus?.isConnected) previousFocus.focus();
+    commandPreviousFocusRef.current = null;
+  }, [commandOpen]);
+
+  useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setCommandOpen((open) => !open);
+        setCommandOpen((open) => {
+          if (!open) commandPreviousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          return !open;
+        });
         setCommandQuery("");
       }
       if (event.key === "Escape") {
@@ -208,14 +219,14 @@ export default function AdminShell({ children, adminName }: { children: React.Re
                 <Menu size={19} />
               </button>
               <div className="min-w-0">
-                <p className="hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#91a094] sm:flex">
+                <p className="hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#64766a] sm:flex">
                   <span>AGRIVA</span><ChevronRight size={11}/><span>{currentGroup?.label ?? "Workspace"}</span>
                 </p>
                 <h1 className="truncate text-[15px] font-extrabold tracking-tight text-[#173b2d] sm:mt-1 sm:text-[17px]"><span className="sm:hidden">{mobilePageTitle}</span><span className="hidden sm:inline">{pageTitle}</span></h1>
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-              <button type="button" onClick={() => { setCommandOpen(true); setCommandQuery(""); }} className="hidden min-h-9 items-center gap-2 rounded-xl border border-[#e4ebe1] bg-[#f8faf6] px-3 text-xs font-semibold text-[#607266] transition hover:border-[#b9d2b4] hover:bg-white md:inline-flex" aria-label="Open command palette">
+              <button type="button" onClick={() => { commandPreviousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; setCommandOpen(true); setCommandQuery(""); }} className="hidden min-h-9 items-center gap-2 rounded-xl border border-[#e4ebe1] bg-[#f8faf6] px-3 text-xs font-semibold text-[#607266] transition hover:border-[#b9d2b4] hover:bg-white md:inline-flex" aria-label="Open command palette">
                 <Search size={14} /> <span>Quick jump</span><kbd className="rounded-md border border-[#dce6d9] bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
               </button>
               <OrderNotificationBell />
@@ -235,11 +246,11 @@ export default function AdminShell({ children, adminName }: { children: React.Re
         <div className="fixed inset-0 z-[70] flex items-start justify-center bg-[#0b2118]/55 px-3 pt-[12vh] backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="admin-command-title" onKeyDown={keepFocusInside} className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce7d8] bg-white shadow-2xl">
             <div className="border-b border-[#e8eee5] p-4">
-              <p id="admin-command-title" className="mb-2 text-[10px] font-extrabold uppercase tracking-[.16em] text-[#718174]">AGRIVA Control Center · Quick navigation</p>
+              <p id="admin-command-title" className="mb-2 text-[10px] font-extrabold uppercase tracking-[.16em] text-[#64766a]">AGRIVA Control Center · Quick navigation</p>
               <div className="flex items-center gap-3">
-                <Search size={18} className="shrink-0 text-[#718174]" />
-                <input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} placeholder="Search any admin module…" aria-label="Search admin modules" className="min-h-11 min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold text-[#173b2d] outline-none placeholder:text-[#9aa69c]" />
-                <kbd className="rounded-md border border-[#e1e9de] bg-[#f7faf5] px-2 py-1 text-[10px] text-[#718174]">ESC</kbd>
+                <Search size={18} className="shrink-0 text-[#64766a]" />
+                <input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} placeholder="Search any admin module…" aria-label="Search admin modules" className="min-h-11 min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold text-[#173b2d] outline-none placeholder:text-[#64766a]" />
+                <kbd className="rounded-md border border-[#e1e9de] bg-[#f7faf5] px-2 py-1 text-[10px] text-[#64766a]">ESC</kbd>
               </div>
             </div>
             <div className="admin-scrollbar max-h-[55vh] overflow-y-auto p-2">
@@ -247,13 +258,13 @@ export default function AdminShell({ children, adminName }: { children: React.Re
                 const Icon = item.icon;
                 return <Link key={item.href} href={item.href} onClick={() => setCommandOpen(false)} className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#294d39] transition hover:bg-[#f1f7ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
                   <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#edf5e9] text-[#276442]"><Icon size={16} /></span>
-                  <span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="block truncate text-[10px] font-medium text-[#829084]">{item.group}</span></span>
-                  <span className="text-[10px] text-[#9aa69c]">{item.href}</span>
+                  <span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="block truncate text-[10px] font-medium text-[#64766a]">{item.group}</span></span>
+                  <span className="text-[10px] text-[#64766a]">{item.href}</span>
                 </Link>;
               })}
-              {commandItems.length === 0 && <p className="px-4 py-8 text-center text-sm text-[#718174]">কোনো module পাওয়া যায়নি। অন্য keyword দিয়ে খুঁজুন।</p>}
+              {commandItems.length === 0 && <p className="px-4 py-8 text-center text-sm text-[#64766a]">কোনো module পাওয়া যায়নি। অন্য keyword দিয়ে খুঁজুন।</p>}
             </div>
-            <div className="flex items-center justify-between border-t border-[#e8eee5] bg-[#fbfcfa] px-4 py-3 text-[10px] text-[#879488]"><span>Navigate to a module</span><span>Ctrl / ⌘ + K · Esc to close</span></div>
+            <div className="flex items-center justify-between border-t border-[#e8eee5] bg-[#fbfcfa] px-4 py-3 text-[10px] text-[#64766a]"><span>Navigate to a module</span><span>Ctrl / ⌘ + K · Esc to close</span></div>
           </section>
         </div>
       )}
