@@ -91,3 +91,12 @@ The route-level frame is now unified, but not every module's inner data table, f
 
 The PR is CI-green on the verified application SHA, but is **not yet release-approved**. The route screenshots and regression tests do not replace the outstanding Preview, populated workflow, accessibility and independent-review gates.
 
+
+
+## Custom Orders queue usability follow-up
+
+- `app/admin/custom-orders/page.tsx` now uses the shared `AdminEmptyState` for a successful zero-row RFQ queue, with Bengali guidance describing where requests appear and the next operator workflow.
+- The query-error path remains a distinct `AdminErrorState`; an empty list is not conflated with a failed query.
+- Regression assertion added to `test:admin-sensitive-actions`.
+- Application/test commits: `73d672c07f403061dee542306cb548495e00c928` / `98bb2b5f7a1220d314986d63521aa790eac5d51d`.
+- This is a post-CI follow-up. Fresh CI and Plant Market gate results are still required for the latest branch head.
