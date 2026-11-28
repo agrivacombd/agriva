@@ -110,38 +110,44 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
     textValue(app.details.district), textValue(app.details.business_address),
   ].join(" ").toLocaleLowerCase().includes(needle)) : items;
 
-  const counts = {
-    pending: pendingCount.count ?? 0,
-    approved: approvedCount.count ?? 0,
-    rejected: rejectedCount.count ?? 0,
-    all: allCount.count ?? 0,
+  const counts: Record<StatusFilter, number | null> = {
+    pending: pendingCount.error ? null : pendingCount.count,
+    approved: approvedCount.error ? null : approvedCount.count,
+    rejected: rejectedCount.error ? null : rejectedCount.count,
+    all: allCount.error ? null : allCount.count,
   };
+  const hasCountErrors = Object.values(counts).some((count) => count === null);
 
   return (
     <main className="mx-auto w-full max-w-7xl p-4 text-[#173b2d] sm:p-6">
-      <header className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#779080]">AGRIVA / Admin</p>
-          <h1 className="mt-1 text-2xl font-black">{title}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637568]">{description}</p>
+      <header className="relative isolate overflow-hidden rounded-[26px] border border-[#e2ebe0] bg-gradient-to-br from-white via-[#fbfdf9] to-[#eef6e9] p-5 shadow-[0_8px_28px_rgba(23,59,45,0.045)] sm:rounded-[28px] sm:p-7">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full border-[28px] border-[#d9ead3]/55" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-3xl">
+            <p className="text-[10px] font-extrabold uppercase tracking-[.18em] text-[#779080]">AGRIVA / Admin workspace</p>
+            <h1 className="mt-2 text-2xl font-black tracking-tight text-[#173b2d] sm:text-[30px]">{title}</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637568]">{description}</p>
+          </div>
+          <Link href="/admin/audit" className="inline-flex min-h-10 items-center rounded-xl border border-[#dce7dc] bg-white/90 px-4 text-xs font-extrabold text-[#126b4f] shadow-sm transition hover:border-[#9ab99a] hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">View admin audit log ↗</Link>
         </div>
-        <Link href="/admin/audit" className="rounded-xl border border-[#dce7dc] bg-white px-4 py-2 text-sm font-bold text-[#126b4f]">View admin audit log ↗</Link>
       </header>
 
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STATUS_FILTERS.map((key) => (
           <Link key={key} href={`${basePath}?status=${key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
             aria-current={activeStatus === key ? "page" : undefined}
-            className={`rounded-2xl border p-4 transition ${activeStatus === key ? "border-[#126b4f] bg-[#eaf4eb] ring-1 ring-[#126b4f]" : "border-[#e1e9df] bg-white hover:border-[#9bb8a3]"}`}>
+            className={`group rounded-2xl border p-4 shadow-[0_2px_12px_rgba(23,59,45,0.025)] transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${activeStatus === key ? "border-[#126b4f] bg-[#eaf4eb] ring-1 ring-[#126b4f]" : "border-[#e1e9df] bg-white hover:border-[#9bb8a3]"}`}>
             <span className="text-xs font-bold text-[#637568]">{STATUS_LABELS[key]}</span>
-            <span className="mt-1 block text-2xl font-black tabular-nums">{counts[key].toLocaleString("en-US")}</span>
+            <span className="mt-1 block text-2xl font-black tabular-nums">{counts[key] === null ? "—" : counts[key]!.toLocaleString("en-BD")}</span>
           </Link>
         ))}
       </section>
 
-      <form method="get" className="mt-5 flex flex-col gap-2 rounded-2xl border border-[#e1e9df] bg-white p-3 sm:flex-row">
+      {hasCountErrors && <p role="status" className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-5 text-amber-950">এক বা একাধিক status count লোড করা যায়নি। “—” মানে unavailable; এটিকে শূন্য হিসেবে গণ্য করবেন না।</p>}
+
+      <form method="get" className="mt-5 flex flex-col gap-2 rounded-2xl border border-[#e1e9df] bg-white p-3 shadow-[0_2px_12px_rgba(23,59,45,0.025)] sm:flex-row">
         <input type="hidden" name="status" value={activeStatus}/>
-        <input name="q" defaultValue={q} placeholder="Search applicant, business, user ID or application ID…"
+        <input name="q" defaultValue={q} aria-label="Search applications" placeholder="Search applicant, business, user ID or application ID…"
           className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#16835f] focus:ring-2 focus:ring-emerald-100"/>
         <button className="min-h-11 rounded-xl bg-[#126b4f] px-5 text-sm font-bold text-white">Search</button>
         {q && <Link href={`${basePath}?status=${activeStatus}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Clear</Link>}
@@ -157,7 +163,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
         {filteredItems.map((app) => {
           const canReview = app.status === "pending" || app.status === "under_review";
           return (
-            <article key={app.id} className="rounded-2xl border border-[#e1e9df] bg-white p-4 shadow-sm sm:p-5">
+            <article key={app.id} className="rounded-2xl border border-[#e3ebe0] bg-white p-4 shadow-[0_3px_16px_rgba(23,59,45,0.035)] transition-shadow hover:shadow-[0_8px_24px_rgba(23,59,45,0.06)] sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">

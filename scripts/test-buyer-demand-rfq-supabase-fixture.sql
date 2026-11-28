@@ -1,5 +1,16 @@
--- Synthetic schema fixture for the local Supabase Auth + PostgREST integration.
--- Auth's auth.users table and Supabase roles are provided by the real local stack.
+-- Synthetic schema fixture for local Supabase Auth + PostgREST and Admin UI integration.
+create table public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  role text not null default 'user',
+  full_name text
+);
+alter table public.profiles enable row level security;
+create policy "test users can read own profile" on public.profiles
+  for select to authenticated using (id = auth.uid());
+grant usage on schema public to anon, authenticated;
+grant select on public.profiles to authenticated;
+grant all on public.profiles to service_role;
+
 create table public.buyer_demands (
   id uuid primary key default gen_random_uuid(),
   buyer_id uuid not null references auth.users(id),

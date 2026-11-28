@@ -28,6 +28,11 @@ try {
   const loginResponse = await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
   assert.equal(loginResponse?.status(), 200, "Login page should render successfully");
   await page.getByRole("heading", { name: /আপনার AGRIVA অ্যাকাউন্টে লগইন করুন|sign in to your agriva account/i }).waitFor();
+  const consentDialog = page.getByRole("dialog", { name: "কুকি ও গোপনীয়তা পছন্দ" });
+  if (await consentDialog.count()) {
+    await consentDialog.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click();
+    await consentDialog.waitFor({ state: "hidden" });
+  }
   await page.screenshot({ path: "test-results/login-mobile.png", fullPage: true });
   const mobileLayout = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -53,9 +58,63 @@ try {
     results.push({ test: `${path} redirects unauthenticated browser to /login`, status: "passed", httpStatus: response?.status() ?? null });
   }
 
+
+  const adminEmail = process.env.AGRIVA_QA_ADMIN_EMAIL;
+  const adminPassword = process.env.AGRIVA_QA_ADMIN_PASSWORD;
+  assert.ok(adminEmail && adminPassword, "Synthetic admin credentials must be provisioned by the isolated Supabase fixture");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${baseUrl}/login?next=%2Fadmin%2Fcommand-center`, { waitUntil: "networkidle" });
+  await page.getByLabel("ইমেইল ঠিকানা").fill(adminEmail);
+  await page.locator('input[autocomplete="current-password"]').fill(adminPassword);
+  await page.getByRole("button", { name: "লগইন করুন", exact: true }).click();
+  await page.waitForURL((url) => url.pathname.startsWith("/admin"), { timeout: 15_000 });
+  await page.goto(`${baseUrl}/admin/command-center`, { waitUntil: "domcontentloaded" });
+  await page.getByRole("heading", { name: "Business Command Center" }).waitFor();
+
+  const assertNoHorizontalOverflow = async (label) => {
+    const dimensions = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      document: document.documentElement.scrollWidth,
+    }));
+    assert.ok(dimensions.document <= dimensions.viewport + 1, `${label} admin layout overflows: ${JSON.stringify(dimensions)}`);
+    results.push({ test: `${label} Admin Command Center has no horizontal overflow`, status: "passed", ...dimensions });
+  };
+
+  await assertNoHorizontalOverflow("mobile 390px");
+  await page.screenshot({ path: "test-results/admin-command-center-mobile.png", fullPage: true });
+  const openMenu = page.getByRole("button", { name: "Open admin navigation" });
+  await openMenu.waitFor({ state: "visible" });
+  await openMenu.click();
+  const mobileNavigation = page.getByRole("dialog", { name: "Admin navigation" });
+  await mobileNavigation.waitFor({ state: "visible" });
+  const navigationSearch = page.getByRole("textbox", { name: "Search admin pages" });
+  await navigationSearch.fill("Seller applications");
+  await mobileNavigation.locator('a[href="/admin/seller-applications"]').waitFor({ state: "visible" });
+  await navigationSearch.fill("");
+  await mobileNavigation.getByRole("complementary").getByRole("button", { name: "Close navigation" }).click();
+  results.push({ test: "mobile admin drawer opens, page search filters links, and drawer closes", status: "passed" });
+
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.waitForTimeout(100);
+  await assertNoHorizontalOverflow("tablet 768px");
+  await page.screenshot({ path: "test-results/admin-command-center-tablet.png", fullPage: true });
+  await page.getByRole("button", { name: "Open admin navigation" }).waitFor({ state: "visible" });
+  results.push({ test: "tablet navigation uses mobile drawer breakpoint", status: "passed" });
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(100);
+  await assertNoHorizontalOverflow("desktop 1440px");
+  await page.screenshot({ path: "test-results/admin-command-center-desktop.png", fullPage: true });
+  await page.getByRole("navigation", { name: "Admin navigation" }).waitFor({ state: "visible" });
+  await page.getByRole("textbox", { name: "Search admin pages" }).waitFor({ state: "visible" });
+  await page.getByRole("button", { name: "Open admin navigation" }).waitFor({ state: "hidden" });
+  results.push({ test: "desktop sidebar and navigation search are visible at 1440px", status: "passed" });
+
   const apiResult = await page.evaluate(async (base) => {
     const response = await fetch(`${base}/api/buyer-demands/convert-to-rfq`, {
       method: "POST",
+      credentials: "omit",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         demandId: "11111111-1111-4111-8111-111111111111",
