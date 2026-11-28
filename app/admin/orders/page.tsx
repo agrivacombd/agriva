@@ -35,7 +35,7 @@ async function recordCodCollection(formData: FormData) {
   const checkoutId = String(formData.get("checkoutId") ?? "").trim();
   const amount = Number(formData.get("collectedAmount"));
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
-  if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0) redirect("/admin/orders?notice=invalid");
+  if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0 || amount > 9999999999.99 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) redirect("/admin/orders?notice=invalid");
   const permission = await checkAdminPermission("payments.reconcile");
   if (!permission.allowed) redirect(`/admin/orders?notice=${permission.reason === "authorization_unavailable" ? "authorization-unavailable" : "collection-forbidden"}`);
   const { error } = await permission.supabase.rpc("record_cod_collection", {
