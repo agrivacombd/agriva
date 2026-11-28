@@ -1,4 +1,4 @@
-import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -70,15 +70,9 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
           ))}
         </nav>
         {error ? (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-white p-6">
-            <h2 className="font-bold">মডারেশন ডেটা লোড করা যায়নি</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Green Exchange migration এখনো প্রয়োগ না হলে এই পেজ কাজ করবে না। নিরাপদ migration reconciliation শেষ করে পুনরায় চেষ্টা করুন।</p>
-          </div>
+          <div className="mt-6"><AdminErrorState title="মডারেশন ডেটা লোড করা যায়নি" description="Green Exchange migration ও database permissions যাচাই করুন।"/></div>
         ) : !listings?.length ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-emerald-200 bg-white p-10 text-center">
-            <h2 className="text-lg font-bold">এই তালিকায় কোনো পোস্ট নেই</h2>
-            <p className="mt-2 text-sm text-slate-600">নতুন পোস্ট জমা হলে এখানে দেখা যাবে।</p>
-          </div>
+          <div className="mt-6"><AdminEmptyState title="এই তালিকায় কোনো পোস্ট নেই" description="নতুন পোস্ট জমা হলে এখানে দেখা যাবে।"/></div>
         ) : (
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             {listings.map((item) => (
