@@ -76,12 +76,16 @@ export default function IdentityVerificationPage() {
   }
 
   function changeFiles(selected: FileList | null) {
-    const next = Array.from(selected || []).slice(0, 5).map((file) => ({ file, type: "other" }));
-    setFiles(next);
-    if ((selected?.length || 0) > 5) {
+    const chosen = Array.from(selected || []);
+    if (chosen.length > 5) {
+      setFiles([]);
       setError(true);
       setMessage("সর্বোচ্চ ৫টি সহায়ক নথি আপলোড করতে পারবেন।");
-    } else {
+      return;
+    }
+    const next = chosen.map((file) => ({ file, type: "other" }));
+    setFiles(next);
+    if (chosen.length <= 5) {
       setError(false);
       setMessage("");
     }
