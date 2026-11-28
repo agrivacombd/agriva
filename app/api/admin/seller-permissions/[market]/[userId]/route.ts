@@ -34,6 +34,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const { data, error } = await access.supabase.rpc("admin_revoke_market_access", {
     p_user_id: userId, p_module: moduleKey, p_scope_id: scopeId, p_reason: reason,
   });
+  if (error?.code === "P0002") return NextResponse.json({ error: "এই scope-এ কোনো active permission পাওয়া যায়নি।" }, { status: 404 });
   if (error) return NextResponse.json({ error: "Permission বাতিল করা যায়নি। Admin access ও module migration যাচাই করুন।" }, { status: 400 });
   if (!Number.isInteger(data) || data < 1) return NextResponse.json({ error: "এই scope-এ কোনো active permission পাওয়া যায়নি।" }, { status: 404 });
   return NextResponse.json({ revoked: data, module: moduleKey });
