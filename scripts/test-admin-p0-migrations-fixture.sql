@@ -102,6 +102,20 @@ CREATE TABLE IF NOT EXISTS public.products (
   shipping_weight_grams integer,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE OR REPLACE FUNCTION public.admin_create_agri_product(p_product jsonb)
+RETURNS public.products
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$ SELECT NULL::public.products $function$;
+CREATE OR REPLACE FUNCTION public.bulk_create_multi_request(
+  p_buyer_type text, p_visibility text, p_district text, p_upazila text, p_items jsonb
+)
+RETURNS uuid
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$ SELECT NULL::uuid $function$;
 
 CREATE TABLE IF NOT EXISTS public.bulk_requests (
   id uuid PRIMARY KEY,
