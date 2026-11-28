@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 import { checkAdminPermission, type AdminCapability as DelegatedAdminCapability } from "@/lib/admin/permission-service";
 import LearningCorrectionInbox from "@/components/admin/LearningCorrectionInbox";
-import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 
 async function requireAdmin(capability: AdminCapability = "dashboard.read") {
   const { supabase, user } = await requireAdminPage(capability);
@@ -155,7 +155,7 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
   ].some((result) => Boolean(result.error));
 
   return (
-    <AdminPage className="!max-w-[1680px] !px-4 !py-5 sm:!px-6 sm:!py-7 xl:!px-9">
+    <AdminPageLayout className="!max-w-[1680px] !px-4 !py-5 sm:!px-6 sm:!py-7 xl:!px-9">
       <section className="relative isolate overflow-hidden rounded-[28px] bg-[#123b2b] px-5 py-6 text-white shadow-[0_18px_55px_rgba(18,59,43,.16)] sm:px-8 sm:py-8">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-28 h-80 w-80 rounded-full border-[38px] border-white/[0.045]" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-40 right-1/4 h-72 w-72 rounded-full bg-[#b8e986]/[0.08] blur-3xl" />
@@ -262,6 +262,6 @@ export default async function AdminPage({ searchParams }: { searchParams?: { not
       <section className="mt-5 flex flex-col gap-3 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5"><div><h2 className="text-lg font-black text-[#173b2d]">AGRIVA Jobs moderation</h2><p className="mt-1 text-xs text-[#748074] sm:text-sm">কৃষি চাকরির পোস্ট যাচাই ও প্রকাশের জন্য</p></div><Link href="/admin/jobs" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#17452c] px-4 py-2 text-sm font-bold text-white">চাকরি যাচাই করুন ↗</Link></section>
       <div className="mt-5"><LearningCorrectionInbox /></div>
       <footer className="py-8 text-center text-xs text-[#879187]">AGRIVA Admin · Protected by server-side role checks and Supabase RPC authorization.</footer>
-    </AdminPage>
+    </AdminPageLayout>
   );
 }
