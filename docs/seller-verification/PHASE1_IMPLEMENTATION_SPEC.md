@@ -89,6 +89,7 @@ The API stores the following additive keys in existing `applicant_data`. Existin
 - `delivery_coverage: string`
 - `source_declaration: string`
 - `policy_accepted: true`
+- `policy_version: "seller-v1"` and server-generated `policy_accepted_at`
 - `evidence_paths: string[]` (existing security contract; do not rename)
 - `evidence_types: string[]` (parallel metadata for newly submitted evidence, optional for legacy records)
 
