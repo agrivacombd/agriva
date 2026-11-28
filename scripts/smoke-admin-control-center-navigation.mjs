@@ -83,6 +83,9 @@ assert.match(shell, /document\.body\.style\.overflow\s*=\s*"hidden"/, "Mobile na
 assert.match(shell, /aria-controls="admin-mobile-navigation"/, "Mobile navigation trigger must identify its controlled dialog");
 assert.match(shell, /id="admin-mobile-navigation"\s+role="dialog"\s+aria-modal="true"/, "Mobile navigation must expose a named modal dialog");
 assert.match(shell, /onKeyDown=\{keepFocusInside\}/, "Mobile navigation must keep keyboard focus inside the dialog");
+assert.match(shell, /commandPreviousFocusRef\.current = document\.activeElement/, "Command palette must remember the invoking focus target");
+assert.match(shell, /previousFocus\.focus\(\)/, "Closing command palette must restore focus to its invoking control");
+assert.doesNotMatch(shell, /text-\[#(?:91a094|9aa69c|829084|718174|879488)\]/, "Admin shell muted text must not use known low-contrast foreground colors");
 assert.doesNotMatch(shell, /href:\s*"\/super-admin"/, "Admin navigation must not expose an unverified external module route");
 
 const layout = readFileSync("app/admin/layout.tsx", "utf8");
