@@ -53,7 +53,8 @@ export default async function AdminCommandCenterPage() {
 
   const metricResults = [users, farmers, products, orders, pendingIdentity, pendingSeller];
   const hasErrors = metricResults.some((item) => Boolean(item.error));
-  const firstName = user.email?.split("@")[0] ?? "Admin";
+  const metadataName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
+  const firstName = metadataName ? metadataName.split(/\\s+/)[0] : "Admin";
 
   return (
     <AdminPageLayout className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
