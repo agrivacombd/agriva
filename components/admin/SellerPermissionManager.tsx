@@ -109,7 +109,7 @@ export default function SellerPermissionManager() {
                 {item.expires_at && <p className="mt-1 text-xs text-[var(--admin-ink-muted)]">Expires {new Date(item.expires_at).toLocaleString("en-GB")}</p>}
                 {item.reason && <p className="mt-2 text-xs text-[var(--admin-ink-muted)]">Grant reason: {item.reason}</p>}
               </div>
-              <button type="button" disabled={loading} onClick={() => { setConfirming(key); setReason(""); }} className="min-h-10 rounded-lg border border-rose-200 px-4 text-sm font-bold text-rose-800 hover:bg-rose-50 disabled:opacity-50">Revoke access</button>
+              <button type="button" disabled={loading} onClick={() => { setConfirming(key); setReason(""); }} className="min-h-10 rounded-lg border border-rose-200 px-4 text-sm font-bold text-rose-800 hover:bg-rose-50 disabled:opacity-50">এই মার্কেটের Permission বাতিল</button>
             </div>
             {confirming === key && <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
               <p className="font-bold text-rose-950">এই seller-এর {market === "marketplace" ? "Marketplace" : "Plant Market"} access বাতিল করবেন?</p>
