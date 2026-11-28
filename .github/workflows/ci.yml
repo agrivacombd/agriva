@@ -117,6 +117,8 @@ jobs:
         run: npm run test:admin-p0-hardening
       - name: AGRIVA Control Center route and navigation regression
         run: npm run test:admin-control-center-navigation
+      - name: Admin sensitive action confirmation and duplicate-submit regression
+        run: npm run test:admin-sensitive-actions
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
       - name: Admin product RPC contract regression test
