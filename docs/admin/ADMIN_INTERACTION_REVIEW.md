@@ -72,3 +72,21 @@ The source audit is useful for finding likely UX risks, but it is not a substitu
 5. Independent reviewer approval on the same exact SHA.
 
 No production data or production schema was changed during this review. The current interaction-fix candidate is not yet CI-verified or deployed.
+
+
+## Sensitive-action confirmation and duplicate-submit hardening — current candidate
+
+**Candidate:** `c8fbd67f30d9c08788d03f86ac8d72912689c20c` (CI / exact Preview verification pending).
+
+- Added shared `AdminConfirmSubmitButton` for privileged state-changing forms. It preserves submitter name/value, runs native form validation, asks for explicit confirmation, locks repeat clicks with a ref, disables while busy, and displays a processing label.
+- Orders: order delivery status transitions and COD collection ledger writes now require confirmation and are guarded against repeated clicks.
+- Custom Orders/RFQ: request open/close/cancel, quote approve/reject, wholesaler verification/invitation and fulfillment transitions require confirmation and single-submit locking.
+- Seller Applications and Identity Verification: approve/grant and reject actions require confirmation; rejection requires a non-empty review note inline before confirmation.
+- Green Exchange: approve/reject/return-to-review actions require confirmation.
+- Transport: verify/reject/suspend actions require confirmation.
+- Jobs: publish/reject/pause/filled moderation actions require confirmation.
+- Added `scripts/smoke-admin-sensitive-actions.mjs` and `test:admin-sensitive-actions`, wired into CI.
+
+**Scope note:** This is client-side duplicate-click protection and explicit confirmation UX. Server-side authorization, RPC transition validation, and transactional audit remain the security boundary; no new idempotency-key/database schema was introduced. Full authenticated workflow QA remains required.
+
+**Verification:** The current SHA has no PR-triggered GitHub Actions run reported yet. The only combined status currently reported is Vercel `build-rate-limit`; that is a deployment quota blocker, not a successful build or test. Earlier green CI applies only to the earlier SHA. No production migration, merge or deployment was performed.
