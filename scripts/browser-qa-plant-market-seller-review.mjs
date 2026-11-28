@@ -117,7 +117,7 @@ try {
 
   await page.goto(`${baseUrl}${route}?status=pending&category=plant_grower`, { waitUntil: "networkidle" });
   const growerCard = page.locator("article").filter({ hasText: "Synthetic Plant Grower" });
-  await growerCard.getByRole("textbox", { name: "Review note (required when rejecting)" }).fill("Synthetic review rejected: supplier provenance evidence is incomplete.");
+  await growerCard.getByRole("textbox", { name: "Review note" }).fill("Synthetic review rejected: supplier provenance evidence is incomplete.");
   page.once("dialog", (dialog) => dialog.accept());
   await growerCard.getByRole("button", { name: "Reject" }).click();
   await page.waitForLoadState("networkidle");
