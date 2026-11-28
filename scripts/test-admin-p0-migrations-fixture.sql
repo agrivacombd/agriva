@@ -33,7 +33,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'pg_cata
 AS $$ SELECT public.is_admin() $$;
 CREATE OR REPLACE FUNCTION public.has_admin_permission(p_capability text)
 RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'pg_catalog','public','pg_temp'
-AS $$ SELECT auth.uid() IS NOT NULL AND p_capability IN ('payments.reconcile','seller_access.revoke','seller_access.read') $$;
+AS $ SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') AND p_capability IN ('payments.reconcile','seller_access.revoke','seller_access.read') $;
 CREATE OR REPLACE FUNCTION public.rls_auto_enable()
 RETURNS event_trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'pg_catalog'
 AS $$ BEGIN NULL; END; $$;
