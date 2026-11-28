@@ -6,8 +6,8 @@
   --admin-sidebar: #102f25;
   --admin-sidebar-elevated: #173d2f;
   --admin-ink: #173b2d;
-  --admin-ink-muted: #64766a;
-  --admin-ink-subtle: #64766a;
+  --admin-ink-muted: #536457;
+  --admin-ink-subtle: #536457;
   --admin-border: #e2eae0;
   --admin-border-strong: #cbdacb;
   --admin-primary: #17633f;
@@ -105,3 +105,19 @@
 @media (prefers-reduced-motion: reduce) {
   .admin-workspace :where(tbody tr) { transition: none; }
 }
+
+
+/* WCAG AA contrast normalization for legacy Admin module text. */
+.admin-shell :where(
+  [class~="text-[#718174]"], [class~="text-[#748074]"], [class~="text-[#879187]"],
+  [class~="text-[#91a094]"], [class~="text-[#728274]"], [class~="text-[#718072]"],
+  [class~="text-[#9caca3]"], [class~="text-[#64766a]"], [class~="text-[#829084]"],
+  [class~="text-[#8a968a]"], [class~="text-[#637568]"], [class~="text-[#7b887d]"],
+  [class~="text-[#718071]"], [class~="text-[#6d7b6e]"], [class~="text-[#849084]"],
+  [class~="text-[#788579]"]
+) { color: #536457 !important; }
+.admin-shell :where(
+  [class~="text-[#b58b28]"], [class~="text-[#a47b20]"], [class~="text-[#a77d2f]"],
+  [class~="text-[#a47a20]"], [class~="text-[#9a7624]"]
+) { color: #6b4b00 !important; }
+.admin-sidebar [class~="text-emerald-100/45"] { color: #a9c6b8 !important; }
