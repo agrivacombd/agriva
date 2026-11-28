@@ -77,7 +77,7 @@ BEGIN
   WHERE q.id = p_quote
     AND q.status IN ('pending', 'approved')
     AND r.status = 'open'
-  FOR UPDATE OF q;
+  FOR UPDATE OF q, r;
 
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Quote not eligible' USING ERRCODE = 'P0002';
