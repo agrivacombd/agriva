@@ -12,7 +12,7 @@ assert.match(control, /disabled=\{disabled \|\| busy\}/);
 const expectations = [
   ["app/admin/orders/page.tsx", ["COD collection amount", "delivery status"]],
   ["app/admin/custom-orders/page.tsx", ["bulk request", "Fulfillment status", "wholesaler"]],
-  ["components/admin/ApplicationManagement.tsx", ["application প্রত্যাখ্যান", "seller access grant"]],
+  ["components/admin/ApplicationManagement.tsx", ["application প্রত্যাখ্যান", "seller access grant", "requiredFieldName=\"reviewNote\""]],
   ["app/admin/green-exchange/page.tsx", ["Green Exchange listing"]],
   ["app/admin/transport/page.tsx", ["transport partner"]],
   ["app/admin/jobs/page.tsx", ["job post"]],
