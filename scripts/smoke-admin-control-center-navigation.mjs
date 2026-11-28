@@ -39,6 +39,23 @@ const pageRoutes = [
 
 for (const route of pageRoutes) assert.ok(existsSync(route), `Admin page route missing: ${route}`);
 
+for (const route of pageRoutes) {
+  const source = readFileSync(route, "utf8");
+  if (route.endsWith("articles/[id]/page.tsx")) {
+    assert.match(source, /redirect\(/, "Legacy article detail route must preserve its redirect workflow");
+  } else if (route.endsWith("identity-verification/page.tsx") || route.endsWith("seller-applications/page.tsx")) {
+    assert.match(source, /ApplicationManagement/, `Application workflow must use the shared page component: ${route}`);
+  } else if (route.endsWith("content-drafts/page.tsx")) {
+    assert.match(source, /ContentDraftsClient/, "Content drafts must retain its interactive workflow component");
+    assert.match(readFileSync("app/admin/content-drafts/ContentDraftsClient.tsx", "utf8"), /AdminPageLayout/, "Content drafts client must use AdminPage");
+  } else if (route.endsWith("seo-pages/page.tsx")) {
+    assert.match(source, /SeoPagesClient/, "SEO pages must retain its interactive workflow component");
+    assert.match(readFileSync("app/admin/seo-pages/seo-pages-client.tsx", "utf8"), /AdminPageLayout/, "SEO pages client must use AdminPage");
+  } else {
+    assert.match(source, /AdminPageLayout/, `Admin route must adopt the shared AdminPage primitive: ${route}`);
+  }
+}
+
 const shell = readFileSync("components/admin/shell/AdminShell.tsx", "utf8");
 const requiredNavigation = [
   "/admin", "/admin/command-center", "/admin/products", "/admin/categories",
