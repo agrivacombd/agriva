@@ -161,6 +161,8 @@ jobs:
         run: npm run test:seller-verification-phase1
       - name: Admin application history and seller approval regression test
         run: npm run test:admin-application-management
+      - name: Plant Market seller verification workspace regression test
+        run: npm run test:plant-market-seller-review
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
       - name: Green Exchange security and route regression test
