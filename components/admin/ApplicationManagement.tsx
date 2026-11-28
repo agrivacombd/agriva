@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 import { reviewModuleApplication } from "@/lib/admin/application-review";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import { AdminPage, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 
 type Scope = "identity" | "seller";
@@ -216,8 +217,8 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
                 <input type="hidden" name="applicationId" value={app.id}/>
                 <input name="reviewNote" maxLength={1000} placeholder="Review note (required when rejecting)" aria-label="Review note"
                   className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"/>
-                <button name="decision" value="rejected" formNoValidate className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</button>
-                <button name="decision" value="approved" className="min-h-11 rounded-xl bg-[#126b4f] px-4 text-sm font-bold text-white hover:bg-[#0f5942]">Approve & grant access</button>
+                <AdminConfirmSubmitButton name="decision" value="rejected" confirmMessage="এই application প্রত্যাখ্যান করবেন? Rejection note যাচাই করুন।" className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</AdminConfirmSubmitButton>
+                <AdminConfirmSubmitButton name="decision" value="approved" confirmMessage="এই application approve করে seller access grant করবেন?" className="min-h-11 rounded-xl bg-[#126b4f] px-4 text-sm font-bold text-white hover:bg-[#0f5942]">Approve & grant access</AdminConfirmSubmitButton>
               </form>}
             </article>
           );
