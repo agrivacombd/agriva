@@ -1,6 +1,7 @@
 -- Catalog-level regression assertions for security hardening migration.
 -- Run after migrations in disposable local Supabase. This file performs no writes.
-DO $test$
+-- Wrap role-switching checks in one transaction so SET LOCAL ROLE is effective.
+BEGIN;
 DECLARE
   fn record;
   v_count integer := 0;
@@ -152,3 +153,4 @@ END
 $negative_authenticated$;
 RESET ROLE;
 
+COMMIT;
