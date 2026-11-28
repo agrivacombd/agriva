@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS public.bulk_requests (
 ALTER TABLE public.bulk_requests ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 CREATE TABLE IF NOT EXISTS public.bulk_request_items (
   id uuid PRIMARY KEY,
-  request_id uuid NOT NULL,
+  request_id uuid NOT NULL REFERENCES public.bulk_requests(id),
   product_name text NOT NULL DEFAULT 'Crop'
 );
 CREATE TABLE IF NOT EXISTS public.bulk_public_listings (
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS public.bulk_public_listings (
   item_count integer NOT NULL
 );
 CREATE TABLE IF NOT EXISTS public.bulk_wholesalers (
-  user_id uuid PRIMARY KEY,
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id),
   status text NOT NULL,
   display_name text NOT NULL DEFAULT '',
   verified_at timestamptz,
@@ -142,14 +142,14 @@ CREATE TABLE IF NOT EXISTS public.bulk_wholesalers (
 );
 CREATE TABLE IF NOT EXISTS public.bulk_invitations (
   id uuid PRIMARY KEY,
-  request_id uuid NOT NULL,
-  wholesaler_id uuid NOT NULL,
+  request_id uuid NOT NULL REFERENCES public.bulk_requests(id),
+  wholesaler_id uuid NOT NULL REFERENCES public.bulk_wholesalers(user_id),
   revoked_at timestamptz
 );
 CREATE TABLE IF NOT EXISTS public.bulk_quotes (
   id uuid PRIMARY KEY,
-  request_id uuid NOT NULL,
-  wholesaler_id uuid NOT NULL,
+  request_id uuid NOT NULL REFERENCES public.bulk_requests(id),
+  wholesaler_id uuid NOT NULL REFERENCES public.bulk_wholesalers(user_id),
   unit_price numeric NOT NULL,
   shipping_fee numeric NOT NULL,
   extra_fee numeric NOT NULL,
@@ -160,18 +160,27 @@ CREATE TABLE IF NOT EXISTS public.bulk_quotes (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE TABLE IF NOT EXISTS public.bulk_selections (
-  request_id uuid PRIMARY KEY,
-  quote_id uuid NOT NULL,
-  buyer_id uuid NOT NULL,
+  request_id uuid PRIMARY KEY REFERENCES public.bulk_requests(id),
+  quote_id uuid NOT NULL REFERENCES public.bulk_quotes(id),
+  buyer_id uuid NOT NULL REFERENCES auth.users(id),
   created_at timestamptz NOT NULL DEFAULT now(),
   fulfillment_status text NOT NULL,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS public.bulk_item_offers (
+  id uuid PRIMARY KEY,
+  request_id uuid NOT NULL REFERENCES public.bulk_requests(id),
+  quote_id uuid NOT NULL REFERENCES public.bulk_quotes(id),
+  item_id uuid NOT NULL REFERENCES public.bulk_request_items(id),
+  unit_price numeric NOT NULL,
+  shipping_fee numeric NOT NULL,
+  extra_fee numeric NOT NULL
+);
 CREATE TABLE IF NOT EXISTS public.bulk_item_awards (
-  item_id uuid PRIMARY KEY,
-  offer_id uuid NOT NULL,
-  request_id uuid NOT NULL,
-  buyer_id uuid NOT NULL,
+  item_id uuid PRIMARY KEY REFERENCES public.bulk_request_items(id),
+  offer_id uuid NOT NULL REFERENCES public.bulk_item_offers(id),
+  request_id uuid NOT NULL REFERENCES public.bulk_requests(id),
+  buyer_id uuid NOT NULL REFERENCES auth.users(id),
   fulfillment_status text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
