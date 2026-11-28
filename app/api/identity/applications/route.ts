@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
   const selectedModule = input.module as NewApplicationModule;
   const { data: openApplication, error: openError } = await supabase.from("module_access_applications")
     .select("id,status").eq("user_id", user.id).eq("module", selectedModule)
-    .in("status", ["pending", "under_review", "approved"]).limit(1).maybeSingle();
+    .in("status",["pending","under_review","approved"]).limit(1).maybeSingle();
 
   if (openError) return NextResponse.json({ error: "Application status unavailable" }, { status: 503 });
   if (openApplication?.status === "approved") {
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
     applicant_type: applicantType,
     organization_id: organizationId,
     applicant_data: applicantData,
-    status: "pending",
+    status:"pending",
   }).select("id,module,status,created_at").single();
 
   if (error || !application) {
