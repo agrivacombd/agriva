@@ -18,6 +18,7 @@ const codAction = orders.split("async function recordCodCollection")[1]?.split("
 assert.match(codAction, /checkAdminPermission\("payments\.reconcile"\)/, "COD Server Action must require the dedicated delegated permission");
 assert.match(codAction, /permission\.supabase\.rpc\("record_cod_collection"/, "COD action must call the RPC with the same authorized session");
 assert.doesNotMatch(codAction, /requireAdmin\("orders\.transition"\)/, "COD reconciliation must not inherit ordinary order transition access");
+assert.match(codAction, /!amountText/, "COD action must reject a missing amount instead of coercing it to zero");
 assert.match(orders, /canReconcileCod && <form action=\{recordCodCollection\}/, "COD collection controls must only render for authorized finance admins");
 
 const sellerRead = read("app/api/admin/seller-permissions/[market]/route.ts");
