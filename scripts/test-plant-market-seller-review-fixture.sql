@@ -8,8 +8,6 @@ CREATE TABLE public.profiles (
   full_name text
 );
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY profiles_select_self_or_admin ON public.profiles
-  FOR SELECT TO authenticated USING (id = (SELECT auth.uid()) OR public.is_admin());
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT SELECT ON public.profiles TO authenticated;
 GRANT ALL ON public.profiles TO service_role;
@@ -24,6 +22,9 @@ AS $function$
     WHERE id = auth.uid() AND role = 'admin'
   );
 $function$;
+
+CREATE POLICY profiles_select_self_or_admin ON public.profiles
+  FOR SELECT TO authenticated USING (id = (SELECT auth.uid()) OR public.is_admin());
 
 CREATE TABLE public.farms (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
