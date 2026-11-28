@@ -1,4 +1,5 @@
 import { AdminPage as AdminPageLayout, AdminErrorState } from "@/components/admin/ui/AdminPrimitives";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -89,7 +90,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
     <label className="grid gap-1 text-sm font-semibold">Wholesaler Account UUID<input required name="user_id" list="bulk-wholesaler-accounts" placeholder="অ্যাকাউন্ট খুঁজুন বা ID লিখুন" className={field}/></label>
     <label className="grid gap-1 text-sm font-semibold">পাইকারের ব্যবসায়িক নাম<input name="display_name" required maxLength={120} placeholder="যেমন: কৃষি ট্রেডার্স" className={field}/></label>
     <label className="grid gap-1 text-sm font-semibold">Verification<select name="status" className={field}><option value="verified">Verify</option><option value="suspended">Suspend</option></select></label>
-    <button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">Save Verification</button>
+    <AdminConfirmSubmitButton confirmMessage="এই wholesaler verification status সংরক্ষণ করবেন?" className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">Save Verification</AdminConfirmSubmitButton>
    </form>
   {error?<div className="mt-6"><AdminErrorState title="RFQ তালিকা লোড করা যায়নি" description="Migration বা authorization যাচাই করুন।"/></div>:<div className="mt-7 grid gap-4">{requests?.map(r=><section key={r.id} className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm">
    <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="text-lg font-bold">{r.product_name}</h2><span className="rounded-full bg-slate-100 px-3 py-1 text-xs">{r.status}</span></div>
@@ -103,23 +104,23 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
       {award&&<><p className="mt-1 text-xs text-emerald-800">পাইকার নির্বাচিত · {fulfillmentBn[award.fulfillment_status]??award.fulfillment_status}</p>
        <div className="mt-2 flex flex-wrap gap-2">{(fulfillmentNext[award.fulfillment_status]??[]).map(status=><form key={status} action={transitionItem}>
         <input type="hidden" name="item_id" value={it.id}/><input type="hidden" name="status" value={status}/>
-        <button className="rounded-lg border px-3 py-2 text-xs font-semibold">{fulfillmentBn[status]??status}</button>
+        <AdminConfirmSubmitButton confirmMessage={`Fulfillment status “${fulfillmentBn[status]??status}” এ পরিবর্তন করবেন?`} className="rounded-lg border px-3 py-2 text-xs font-semibold">{fulfillmentBn[status]??status}</AdminConfirmSubmitButton>
        </form>)}</div></>}
      </div>;
     })}
    </div>}
-   <div className="mt-4 flex flex-wrap gap-2">{(["open","closed","cancelled"] as const).map(status=><form key={status} action={changeRequest}><input type="hidden" name="id" value={r.id}/><input type="hidden" name="status" value={status}/><button disabled={r.status===status||r.status==="selected"} className="rounded-xl border border-emerald-700 px-3 py-2 text-sm font-bold disabled:opacity-40">{status==="open"?"অনুমোদন / Open":status==="closed"?"বন্ধ করুন":"বাতিল করুন"}</button></form>)}</div>
+   <div className="mt-4 flex flex-wrap gap-2">{(["open","closed","cancelled"] as const).map(status=><form key={status} action={changeRequest}><input type="hidden" name="id" value={r.id}/><input type="hidden" name="status" value={status}/><AdminConfirmSubmitButton disabled={r.status===status||r.status==="selected"} confirmMessage={status==="cancelled"?"এই bulk request বাতিল করবেন?":"এই bulk request-এর status পরিবর্তন করবেন?"} className="rounded-xl border border-emerald-700 px-3 py-2 text-sm font-bold disabled:opacity-40">{status==="open"?"অনুমোদন / Open":status==="closed"?"বন্ধ করুন":"বাতিল করুন"}</AdminConfirmSubmitButton></form>)}</div>
    <div className="mt-5 rounded-xl bg-emerald-50 p-3 text-sm">
      <p className="font-bold">পাইকারের জন্য নিরাপদ আমন্ত্রণ লিংক</p>
      <p className="mt-1 text-slate-600">প্রথমে যাচাইকৃত পাইকারের অ্যাকাউন্টে আমন্ত্রণ যুক্ত করুন, তারপর নিচের লিংক পাঠান। লগইন ছাড়া লিংকটি অফার জমার অনুমতি দেয় না।</p>
      <input aria-label="পাইকারের আমন্ত্রণ লিংক" readOnly value={`https://agriva.com.bd/wholesaler/requests?request=${encodeURIComponent(r.id)}`} className="mt-2 w-full rounded-lg border bg-white px-3 py-2 text-sm"/>
     </div>
-   <form action={inviteWholesaler} className="mt-5 flex flex-wrap gap-2"><input type="hidden" name="request_id" value={r.id}/><label className="sr-only" htmlFor={`wholesaler-${r.id}`}>পাইকারের অ্যাকাউন্ট ID</label><input id={`wholesaler-${r.id}`} required name="wholesaler_id" list="bulk-wholesaler-accounts" placeholder="যাচাইকৃত পাইকার নির্বাচন করুন" className={field}/><button className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white">পাইকারকে আমন্ত্রণ</button></form>
+   <form action={inviteWholesaler} className="mt-5 flex flex-wrap gap-2"><input type="hidden" name="request_id" value={r.id}/><label className="sr-only" htmlFor={`wholesaler-${r.id}`}>পাইকারের অ্যাকাউন্ট ID</label><input id={`wholesaler-${r.id}`} required name="wholesaler_id" list="bulk-wholesaler-accounts" placeholder="যাচাইকৃত পাইকার নির্বাচন করুন" className={field}/><AdminConfirmSubmitButton confirmMessage="এই verified wholesaler-কে request-এ invitation পাঠাবেন?" className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-semibold text-white">পাইকারকে আমন্ত্রণ</AdminConfirmSubmitButton></form>
    {selections?.filter(sel=>sel.request_id===r.id).map(sel=><div key={sel.request_id} className="mt-4 rounded-xl border border-emerald-200 p-3">
      <p className="font-bold">নির্বাচিত অর্ডার: {fulfillmentBn[sel.fulfillment_status]??sel.fulfillment_status}</p>
      <div className="mt-2 flex flex-wrap gap-2">{(fulfillmentNext[sel.fulfillment_status]??[]).map(status=><form key={status} action={transitionFulfillment}>
       <input type="hidden" name="request_id" value={r.id}/><input type="hidden" name="status" value={status}/>
-      <button className="rounded-lg border border-emerald-800 px-3 py-2 text-sm font-semibold">{fulfillmentBn[status]??status}</button>
+      <AdminConfirmSubmitButton confirmMessage={`Item fulfillment “${fulfillmentBn[status]??status}” এ পরিবর্তন করবেন?`} className="rounded-lg border border-emerald-800 px-3 py-2 text-sm font-semibold">{fulfillmentBn[status]??status}</AdminConfirmSubmitButton>
      </form>)}</div>
     </div>)}
    <div className="mt-5 space-y-2">{quotes?.filter(q=>q.request_id===r.id).map(q=><div key={q.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-3 text-sm">
@@ -127,7 +128,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
      {(multiOffers??[]).some(o=>o.quote_id===q.id)?(multiOffers??[]).filter(o=>o.quote_id===q.id).map(o=><p key={o.id} className="mt-1 text-xs">{(multiItems??[]).find(i=>i.id===o.item_id)?.product_name??"পণ্য"}: ৳{o.unit_price}/একক + ডেলিভারি ৳{o.shipping_fee} + ফি ৳{o.extra_fee}</p>):
       <p>প্রতি একক ৳{q.unit_price} + পরিবহন ৳{q.shipping_fee} + অন্যান্য ৳{q.extra_fee}</p>}
      <p className="text-xs text-slate-500">{q.status}</p></div>
-    <div className="flex gap-2">{(["approved","rejected"] as const).map(status=><form key={status} action={moderateQuote}><input type="hidden" name="id" value={q.id}/><input type="hidden" name="status" value={status}/><button disabled={q.status===status} className="rounded-lg border border-emerald-800 px-3 py-2 font-semibold disabled:opacity-40">{status==="approved"?"অনুমোদন":"বাতিল"}</button></form>)}</div>
+    <div className="flex gap-2">{(["approved","rejected"] as const).map(status=><form key={status} action={moderateQuote}><input type="hidden" name="id" value={q.id}/><input type="hidden" name="status" value={status}/><AdminConfirmSubmitButton disabled={q.status===status} confirmMessage={status==="rejected"?"এই quote প্রত্যাখ্যান করবেন?":"এই quote অনুমোদন করবেন?"} className="rounded-lg border border-emerald-800 px-3 py-2 font-semibold disabled:opacity-40">{status==="approved"?"অনুমোদন":"বাতিল"}</AdminConfirmSubmitButton></form>)}</div>
    </div>)}</div>
   </section>)}</div>}
  </div></AdminPageLayout>;
