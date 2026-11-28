@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
@@ -159,7 +160,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                       <option value="processing">প্রসেসিং / নতুন</option><option value="shipped">শিপড</option><option value="delivered">ডেলিভারি সম্পন্ন</option><option value="completed">সম্পন্ন</option><option value="cancelled">বাতিল</option>
                     </select>
                   </label>
-                  <button className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</button>
+                  <AdminConfirmSubmitButton confirmMessage="এই অর্ডারের delivery status পরিবর্তন করবেন? পরিবর্তনটি customer-facing workflow-তে প্রভাব ফেলতে পারে।" className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</AdminConfirmSubmitButton>
                 </form>
                 <p className="mt-3 text-xs leading-5 text-[#748074]">Status update database authorization মেনে চলে। বাতিল করলে বর্তমান database RPC stock ফেরত দেওয়ার চেষ্টা করে।</p>
               </div>
@@ -174,7 +175,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                   <input type="hidden" name="checkoutId" value={checkout.id}/>
                   <label className="text-xs font-bold">এবার আদায় (৳)<input required name="collectedAmount" type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="0.00"/></label>
                   <label className="text-xs font-bold">নোট / পার্থক্যের কারণ<input name="note" maxLength={500} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="ঐচ্ছিক"/></label>
-                  <button className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</button>
+                  <AdminConfirmSubmitButton confirmMessage="এই COD collection amount audit ledger-এ স্থায়ীভাবে রেকর্ড করবেন? Amount ও note যাচাই করুন।" className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</AdminConfirmSubmitButton>
                 </form>}
                 {checkout.payment_status !== "paid" && !canReconcileCod && <p className="mt-3 text-xs text-amber-900">COD collection action-এর জন্য delegated <strong>payments.reconcile</strong> permission প্রয়োজন।</p>}
               </div>}
