@@ -1,4 +1,4 @@
-import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -90,7 +90,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
           ].map(([value, label]) => <Link key={value} href={`/admin/transport?status=${value}`} className={`rounded-full border px-4 py-2 text-sm font-bold ${selectedStatus === value ? "border-[#17452c] bg-[#17452c] text-white" : "border-[#d9e3d5] bg-white text-[#34543b] hover:border-[#36764a]"}`}>{label}</Link>)}
         </nav>
 
-        {error && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">আবেদন লোড করা যায়নি। নতুন migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
+        {error && <div className="mt-5"><AdminErrorState title="আবেদন লোড করা যায়নি" description="নতুন migration প্রয়োগ হয়েছে কি না যাচাই করুন।"/></div>}
         {!error && partners.length === 0 && <div className="mt-5 rounded-2xl border border-dashed border-[#cbdcc7] bg-white p-10 text-center"><h2 className="text-xl font-black">কোনো আবেদন নেই</h2><p className="mt-2 text-sm text-[#68786b]">এই ক্যাটাগরিতে এখনো কোনো পরিবহন পার্টনার নেই।</p></div>}
 
         <section className="mt-5 grid gap-4 lg:grid-cols-2">
