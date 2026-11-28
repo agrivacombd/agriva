@@ -38,10 +38,9 @@ try {
 
   await page.goto(`${baseUrl}/login?next=%2Fadmin%2Fplant-market-applications`, { waitUntil: "domcontentloaded" });
   const consentDialog = page.getByRole("dialog", { name: "কুকি ও গোপনীয়তা পছন্দ" });
-  if (await consentDialog.count()) {
-    await consentDialog.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click();
-    await consentDialog.waitFor({ state: "hidden" });
-  }
+  await consentDialog.waitFor({ state: "visible", timeout: 10000 });
+  await consentDialog.getByRole("button", { name: "শুধু প্রয়োজনীয়", exact: true }).click();
+  await consentDialog.waitFor({ state: "hidden" });
   await page.getByLabel("ইমেইল ঠিকানা").fill(adminEmail);
   await page.locator('input[autocomplete="current-password"]').fill(adminPassword);
   await page.getByRole("button", { name: "লগইন করুন", exact: true }).click();
