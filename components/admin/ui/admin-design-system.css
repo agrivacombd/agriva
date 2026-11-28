@@ -1,0 +1,46 @@
+/* AGRIVA Admin Design System — shared tokens and primitives */
+:root {
+  --admin-canvas: #f4f7f2;
+  --admin-surface: #ffffff;
+  --admin-surface-muted: #f7faf6;
+  --admin-sidebar: #102f25;
+  --admin-sidebar-elevated: #173d2f;
+  --admin-ink: #173b2d;
+  --admin-ink-muted: #64766a;
+  --admin-ink-subtle: #8a998e;
+  --admin-border: #e2eae0;
+  --admin-border-strong: #cbdacb;
+  --admin-primary: #17633f;
+  --admin-primary-hover: #104d32;
+  --admin-accent: #c6ef72;
+  --admin-accent-ink: #173b2d;
+  --admin-success: #167447;
+  --admin-success-bg: #eaf6ee;
+  --admin-warning: #9a6412;
+  --admin-warning-bg: #fff6df;
+  --admin-danger: #b42318;
+  --admin-danger-bg: #fff0ee;
+  --admin-info: #245c9b;
+  --admin-info-bg: #edf5ff;
+  --admin-radius-sm: 0.625rem;
+  --admin-radius-md: 0.875rem;
+  --admin-radius-lg: 1.125rem;
+  --admin-radius-xl: 1.375rem;
+  --admin-shadow-card: 0 1px 2px rgb(20 45 30 / 4%), 0 8px 24px rgb(20 45 30 / 4%);
+  --admin-shadow-popover: 0 16px 48px rgb(12 35 24 / 16%);
+  --admin-content-width: 1600px;
+}
+.admin-shell { background: var(--admin-canvas); color: var(--admin-ink); }
+.admin-sidebar { background: var(--admin-sidebar); color: #fff; }
+.admin-topbar { background: rgb(255 255 255 / 94%); border-color: var(--admin-border); }
+.admin-page { width: 100%; max-width: var(--admin-content-width); margin-inline: auto; padding: clamp(1rem, 2vw, 2rem); }
+.admin-panel { min-width: 0; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-lg); background: var(--admin-surface); box-shadow: var(--admin-shadow-card); }
+.admin-panel-muted { background: var(--admin-surface-muted); }
+.admin-eyebrow { color: var(--admin-ink-muted); font-size: .6875rem; font-weight: 800; letter-spacing: .14em; line-height: 1.4; text-transform: uppercase; }
+.admin-focus-ring:focus-visible { outline: 3px solid rgb(23 99 63 / 35%); outline-offset: 2px; }
+.admin-scrollbar { scrollbar-color: #9bb49f transparent; scrollbar-width: thin; }
+.admin-scrollbar::-webkit-scrollbar { width: 7px; height: 7px; }
+.admin-scrollbar::-webkit-scrollbar-thumb { border-radius: 999px; background: #9bb49f; }
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *, .admin-shell *::before, .admin-shell *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
