@@ -75,6 +75,14 @@ assert.match(shell, /event\.metaKey\s*\|\|\s*event\.ctrlKey/, "Command palette m
 assert.match(shell, /event\.key\.toLowerCase\(\)\s*===\s*"k"/, "Command palette must open on Ctrl/Cmd+K");
 assert.match(shell, /role="dialog"\s+aria-modal="true"/, "Command palette must expose an accessible modal dialog");
 assert.match(shell, /event\.key\s*===\s*"Escape"/, "Command palette must close on Escape");
+assert.match(shell, /drawerTriggerRef\s*=\s*useRef<HTMLButtonElement>\(null\)/, "Mobile navigation must retain its trigger for focus restoration");
+assert.match(shell, /drawerCloseRef\s*=\s*useRef<HTMLButtonElement>\(null\)/, "Mobile navigation must expose a focus target on open");
+assert.match(shell, /drawerCloseRef\.current\?\.focus\(\)/, "Opening mobile navigation must move focus into the dialog");
+assert.match(shell, /drawerTriggerRef\.current\?\.focus\(\)/, "Closing mobile navigation must restore focus to its trigger");
+assert.match(shell, /document\.body\.style\.overflow\s*=\s*"hidden"/, "Mobile navigation must prevent background scrolling while open");
+assert.match(shell, /aria-controls="admin-mobile-navigation"/, "Mobile navigation trigger must identify its controlled dialog");
+assert.match(shell, /id="admin-mobile-navigation"\s+role="dialog"\s+aria-modal="true"/, "Mobile navigation must expose a named modal dialog");
+assert.match(shell, /onKeyDown=\{keepFocusInside\}/, "Mobile navigation must keep keyboard focus inside the dialog");
 assert.doesNotMatch(shell, /href:\s*"\/super-admin"/, "Admin navigation must not expose an unverified external module route");
 
 const layout = readFileSync("app/admin/layout.tsx", "utf8");
