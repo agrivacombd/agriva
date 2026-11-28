@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
@@ -98,7 +98,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     return acc;
   }, {});
 
-  return <AdminPage className="min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
+  return <AdminPageLayout className="min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <div className="min-w-0">
       <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">COD order operations · বাংলাদেশ</p>
       <h1 className="mt-2 text-2xl font-black sm:text-3xl">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
@@ -186,5 +186,5 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       </section>
 
     </div>
-  </AdminPage>;
+  </AdminPageLayout>;
 }
