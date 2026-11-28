@@ -111,6 +111,52 @@ try {
   await page.getByRole("button", { name: "Open admin navigation" }).waitFor({ state: "hidden" });
   results.push({ test: "desktop sidebar and navigation search are visible at 1440px", status: "passed" });
 
+
+  // Authenticated Admin route smoke + responsive overflow matrix.
+  // A route may redirect when the synthetic role lacks a delegated capability;
+  // server failures are never accepted as an expected permission boundary.
+  const adminRoutes = [
+    "/admin", "/admin/command-center", "/admin/access-control", "/admin/ai-content",
+    "/admin/articles", "/admin/articles/11111111-1111-4111-8111-111111111111",
+    "/admin/audit", "/admin/categories", "/admin/content-drafts", "/admin/content-studio",
+    "/admin/custom-orders", "/admin/demand-intelligence", "/admin/finance",
+    "/admin/green-exchange", "/admin/growth-intelligence", "/admin/harvest",
+    "/admin/identity-verification", "/admin/jobs", "/admin/opportunities",
+    "/admin/orders", "/admin/plant-market-products", "/admin/products", "/admin/reports",
+    "/admin/search-intelligence", "/admin/search-intelligence/opportunities",
+    "/admin/seed-information", "/admin/seller-applications", "/admin/seo",
+    "/admin/seo-pages", "/admin/settings", "/admin/transport", "/admin/users",
+  ];
+  const responsiveWidths = [390, 768, 1024, 1440];
+  const routeResults = [];
+  for (const route of adminRoutes) {
+    const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    const status = response?.status() ?? 0;
+    assert.ok(status < 500, `Authenticated Admin route returned server error: ${route} (${status})`);
+    const landedPath = new URL(page.url()).pathname;
+    const redirected = landedPath !== route;
+    if (!redirected && status !== 404) {
+      for (const width of responsiveWidths) {
+        await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+        const dimensions = await page.evaluate(() => ({
+          viewport: document.documentElement.clientWidth,
+          document: document.documentElement.scrollWidth,
+        }));
+        assert.ok(dimensions.document <= dimensions.viewport + 1, `${route} overflows at ${width}px: ${JSON.stringify(dimensions)}`);
+      }
+    }
+    routeResults.push({ route, status, landedPath, permissionRedirect: redirected });
+  }
+  results.push({
+    test: "authenticated Admin route matrix and 390/768/1024/1440 responsive overflow",
+    status: "passed",
+    routes: routeResults.length,
+    responsiveWidths,
+    permissionRedirects: routeResults.filter(item => item.permissionRedirect).map(item => item.route),
+    routeResults,
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   const apiResult = await page.evaluate(async (base) => {
     const response = await fetch(`${base}/api/buyer-demands/convert-to-rfq`, {
       method: "POST",
