@@ -48,6 +48,7 @@ BEGIN
   PERFORM public.record_cod_collection(v_checkout, 50.00, 'first collection');
   PERFORM public.record_cod_collection(v_checkout, 50.00, 'final collection');
 
+  INSERT INTO public.organizations(id, name) VALUES (v_scope, 'Synthetic seller organization');
   INSERT INTO public.user_module_grants(user_id, module, status, scope_type, scope_id)
   VALUES (v_revoked_user, 'marketplace', 'active', 'organization', v_scope);
   INSERT INTO public.module_access_applications(user_id, module, status, organization_id)
