@@ -198,6 +198,29 @@ Admin data currently spans these existing domains; Phase 1 must reuse them befor
 7. Seller access revoke must target only the selected module and scope; no broad user-wide role mutation.
 8. Integration configuration must not activate analytics/marketing scripts before consent and event QA; never store arbitrary executable scripts.
 
+### Admin Server Action/API RPC dependency inventory (24 unique RPCs)
+
+The Admin source calls the following 24 RPC names. Read-only catalog inspection confirmed that the inspected signatures do not grant `EXECUTE` to `anon`; authenticated execution is granted and therefore depends on the function's own identity/role/capability checks. This is the expected pattern for a user-session Supabase client, but every entry still needs a negative test.
+
+- **Catalogue:** `admin_save_product_category`, `admin_create_marketplace_product`, `admin_update_product`, `admin_set_product_taxonomy`, `admin_set_product_shipping`, `admin_update_product_images`, `admin_update_product_seo`.
+- **Moderation / operations:** `admin_moderate_green_exchange_listing`, `admin_moderate_harvest_listing`, `admin_moderate_job_post`, `admin_set_transport_partner_verification`.
+- **People / access / settings:** `admin_set_user_role`, `admin_revoke_market_access`, `admin_update_site_setting`.
+- **Orders / COD:** `set_marketplace_order_status`, `record_cod_collection`.
+- **Bulk RFQ:** `bulk_moderate_request`, `bulk_transition_fulfillment`, `bulk_transition_item_fulfillment`, `bulk_verify_named_wholesaler`, `bulk_moderate_quote`.
+- **Finance:** `approve_reseller_commission`, `approve_commission_payout`, `complete_commission_payout`.
+
+Key database observations from function definitions:
+
+- Catalogue, category, user-role, site-setting and seller-access functions have explicit admin identity checks; catalogue/category/user-role/site-setting functions inspected also write `admin_audit_log`.
+- Harvest moderation checks admin identity and writes `admin_audit_log`; Job moderation checks the profile admin role and writes `job_moderation_events`; Green Exchange moderation checks the profile admin role but does not append a central admin audit row.
+- Transport verification checks non-null `auth.uid()` and `profiles.role = 'admin'`, and records reviewer/time/note on `transport_partners`.
+- Bulk RFQ SECURITY DEFINER functions call `bulk_is_admin()`; that helper checks the current `auth.uid()` against `profiles.role = 'admin'`. These workflows enforce state transitions but do not currently write a common central admin audit event.
+- `record_cod_collection` locks the checkout row, appends a `cod_collection_events` record, updates cumulative collection/payment status and records `collected_by`. Its DB function checks authenticated admin identity, but the Server Action currently uses `orders.transition`; the route capability should be split to `payments.reconcile`.
+- `set_marketplace_order_status` enforces admin or valid seller organization access and state transitions, with inventory and commission side effects.
+- The three finance functions live in `private`, use fixed `search_path`, and enforce separate delegated capabilities. They lock rows and enforce payout approval before completion, but do not append a central `admin_audit_log` event.
+
+This inventory is a function-name and definition review of the RPCs called by Admin source; it is not a substitute for full execution tests, grant/revoke tests, concurrency tests or review of every other SECURITY DEFINER function reported by the project advisor.
+
 ## 7. Risk register
 
 Severity is a prioritization, not a claim that an exploit was reproduced. Findings below are source/advisor observations and require controlled verification before remediation.
