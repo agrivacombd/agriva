@@ -175,8 +175,11 @@ try {
     routeResults.push({ route, status, landedPath, permissionRedirect: redirected });
   }
   const expectedCanonicalRedirect = "/admin/articles/11111111-1111-4111-8111-111111111111";
-  const unexpectedPermissionRedirects = routeResults.filter(item => item.permissionRedirect && item.route !== expectedCanonicalRedirect);
-  assert.deepEqual(unexpectedPermissionRedirects, [], `Synthetic full-access Admin unexpectedly lacked route permissions: ${JSON.stringify(unexpectedPermissionRedirects)}`);
+  const expectedCapabilityGatedRoutes = new Set(["/admin/access-control", "/admin/finance"]);
+  const unexpectedPermissionRedirects = routeResults.filter(item => item.permissionRedirect && item.route !== expectedCanonicalRedirect && !expectedCapabilityGatedRoutes.has(item.route));
+  const missingCapabilityRedirects = routeResults.filter(item => expectedCapabilityGatedRoutes.has(item.route) && !item.permissionRedirect);
+  assert.deepEqual(unexpectedPermissionRedirects, [], `Unexpected Admin route permission redirects: ${JSON.stringify(unexpectedPermissionRedirects)}`);
+  assert.deepEqual(missingCapabilityRedirects, [], `Capability-gated Admin routes failed to enforce access: ${JSON.stringify(missingCapabilityRedirects)}`);
   results.push({
     test: "authenticated Admin route matrix and 390/768/1024/1440 responsive overflow",
     status: "passed",
