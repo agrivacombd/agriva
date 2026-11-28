@@ -11,7 +11,7 @@ DECLARE
   v_product uuid := '88888888-8888-4888-8888-888888888888';
   v_request uuid := '99999999-9999-4999-8999-999999999999';
   v_quote uuid := 'dddddddd-dddd-4ddd-8ddd-dddddddddddd';
-  v_wholesaler uuid := 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+  v_wholesaler uuid;
   v_revoked_user uuid := '55555555-5555-4555-8555-555555555555';
   v_scope uuid := '66666666-6666-4666-8666-666666666666';
 BEGIN
@@ -34,6 +34,7 @@ BEGIN
   VALUES (v_buyer, 'user', 'Synthetic CI Buyer')
   ON CONFLICT (id) DO UPDATE SET role = 'user';
 
+  v_wholesaler := v_buyer;
   PERFORM set_config('request.jwt.claim.sub', v_admin::text, true);
 
   INSERT INTO public.admin_roles(id, role_key)
@@ -82,14 +83,16 @@ BEGIN
   PERFORM public.bulk_moderate_quote(v_quote, 'approved');
 
   INSERT INTO public.bulk_selections(request_id, quote_id, buyer_id, fulfillment_status)
-  VALUES ('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', v_quote, v_buyer, 'pending_confirmation');
-  PERFORM public.bulk_transition_fulfillment('eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', 'confirmed');
+  VALUES (v_request, v_quote, v_buyer, 'pending_confirmation');
+  PERFORM public.bulk_transition_fulfillment(v_request, 'confirmed');
 
+  INSERT INTO public.bulk_item_offers(id, request_id, quote_id, item_id, unit_price, shipping_fee, extra_fee)
+  VALUES ('abababab-abab-4bab-8bab-abababababab', v_request, v_quote, 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 10, 0, 0);
   INSERT INTO public.bulk_item_awards(item_id, offer_id, request_id, buyer_id, fulfillment_status)
-  VALUES ('ffffffff-ffff-4fff-8fff-ffffffffffff', v_quote, v_request, v_buyer, 'pending_confirmation');
-  PERFORM public.bulk_transition_item_fulfillment('ffffffff-ffff-4fff-8fff-ffffffffffff', 'confirmed');
-  PERFORM public.bulk_verify_named_wholesaler('12121212-1212-4121-8121-121212121212', 'verified', 'Verified synthetic wholesaler');
-  PERFORM public.bulk_verify_wholesaler('12121212-1212-4121-8121-121212121212', 'suspended');
+  VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'abababab-abab-4bab-8bab-abababababab', v_request, v_buyer, 'pending_confirmation');
+  PERFORM public.bulk_transition_item_fulfillment('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'confirmed');
+  PERFORM public.bulk_verify_named_wholesaler(v_wholesaler, 'verified', 'Verified synthetic wholesaler');
+  PERFORM public.bulk_verify_wholesaler(v_wholesaler, 'suspended');
 
   IF (SELECT payment_status FROM public.marketplace_checkouts WHERE id = v_checkout) <> 'paid' THEN
     RAISE EXCEPTION 'COD reconciliation did not mark the checkout paid';
