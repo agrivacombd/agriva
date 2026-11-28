@@ -88,7 +88,8 @@
     "test:admin-sensitive-actions": "node scripts/smoke-admin-sensitive-actions.mjs",
     "test:plant-market-seller-review": "node scripts/smoke-plant-market-seller-review.mjs",
     "test:plant-market-seller-review-supabase": "node scripts/test-plant-market-seller-review-supabase.mjs",
-    "test:plant-market-seller-review-browser": "node scripts/browser-qa-plant-market-seller-review.mjs"
+    "test:plant-market-seller-review-browser": "node scripts/browser-qa-plant-market-seller-review.mjs",
+    "test:security-definer-api-grants": "node scripts/smoke-security-definer-api-grants.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
