@@ -69,3 +69,25 @@ The route-level frame is now unified, but not every module's inner data table, f
 - No production database migration, merge, or production deployment has been performed.
 
 **Next release gates:** independent approval; exact-SHA Preview; authenticated synthetic-data walkthrough; complete responsive and accessibility review; production migration/rollback review; then explicit release authorization.
+
+
+## Latest exact-head verification — 2026-11-29
+
+**Verified application SHA:** `efdb78b2d5df9685256a3239c32833aa32622eca`
+
+- AGRIVA CI #4188 (`46181308056`) completed successfully. Both `quality` and isolated Supabase Auth + PostgREST integration jobs passed. The quality job includes lint, TypeScript, Admin authorization/P0/Control Center/sensitive-action regression suites and production build.
+- Plant Market Release Gate #257 (`46181308073`) completed successfully: release contract smoke, TypeScript and production build passed.
+- The CI browser artifact contains 124 responsive route screenshots (31 rendered Admin pages × 390/768/1024/1440px). All route-matrix horizontal-overflow assertions passed. First-pass screenshot contact-sheet review found the shared shell/canvas consistent across mobile and desktop.
+- The CI database remains intentionally partial: it validates isolated Auth/PostgREST and selected Admin P0/RFQ fixtures, not a fully populated AGRIVA production-like dataset. Several pages therefore display empty/query/schema/permission states. Do not interpret these screenshots as proof of populated workflows.
+- Settings configuration and platform-setting confirmation guards are included in the verified SHA and covered by the sensitive-action regression.
+
+## Remaining release gates
+
+1. Vercel Preview READY for this exact SHA, with deployment metadata proving the commit. No deployment record exists for `efdb78b...`; the previously reported free daily deployment quota is still the blocker.
+2. Authenticated synthetic populated-data walkthroughs for every high-risk workflow and module-level filter/drawer/timeline/bulk action. Use Preview or dedicated staging only; never substitute live customer records.
+3. Formal WCAG 2.2 AA review: keyboard-only operation, focus order/restoration, dialog and mobile-drawer semantics, screen-reader announcements, contrast measurements and reduced motion.
+4. Independent security/UX approval on the final PR head. No review submission is currently recorded.
+5. Production migration and rollback review, then explicit release authorization. No production migration, data mutation, merge or deployment has been performed for PR #410.
+
+The PR is CI-green on the verified application SHA, but is **not yet release-approved**. The route screenshots and regression tests do not replace the outstanding Preview, populated workflow, accessibility and independent-review gates.
+
