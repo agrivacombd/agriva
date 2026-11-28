@@ -67,6 +67,23 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+function keepFocusInside(event: React.KeyboardEvent<HTMLElement>) {
+  if (event.key !== "Tab") return;
+  const focusable = event.currentTarget.querySelectorAll<HTMLElement>(
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  );
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!first || !last) return;
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function Navigation({ onNavigate, pathname, query }: { onNavigate?: () => void; pathname: string; query: string }) {
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const visibleGroups = groups.map((group) => ({
@@ -120,6 +137,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
       if (event.key === "Escape") {
         setCommandOpen(false);
         setCommandQuery("");
+        setDrawerOpen(false);
       }
     };
     window.addEventListener("keydown", handleShortcut);
@@ -201,7 +219,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
 
       {commandOpen && (
         <div className="fixed inset-0 z-[70] flex items-start justify-center bg-[#0b2118]/55 px-3 pt-[12vh] backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}>
-          <section role="dialog" aria-modal="true" aria-labelledby="admin-command-title" className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce7d8] bg-white shadow-2xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="admin-command-title" onKeyDown={keepFocusInside} className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce7d8] bg-white shadow-2xl">
             <div className="border-b border-[#e8eee5] p-4">
               <p id="admin-command-title" className="mb-2 text-[10px] font-extrabold uppercase tracking-[.16em] text-[#718174]">AGRIVA Control Center · Quick navigation</p>
               <div className="flex items-center gap-3">
@@ -229,7 +247,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
           <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/65 backdrop-blur-[2px]" />
-          <aside className="admin-sidebar relative flex h-full w-[min(88vw,340px)] flex-col text-white shadow-2xl">
+          <aside onKeyDown={keepFocusInside} className="admin-sidebar relative flex h-full w-[min(88vw,340px)] flex-col text-white shadow-2xl">
             <div className="absolute right-3 top-5 z-10">
               <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={18} /></button>
             </div>
