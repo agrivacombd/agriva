@@ -406,7 +406,7 @@ export default function IdentityVerificationPage() {
                     {busy ? <LoaderCircle className="animate-spin" size={18}/> : <ShieldCheck size={18}/>}
                     {busy ? "আবেদন জমা হচ্ছে…" : "আবেদন জমা দিন"}
                   </button>
-                  <p className="text-center text-xs text-[#7a897e]">Admin review সম্পন্ন না হওয়া পর্যন্ত seller access সক্রিয় হবে না।</p>
+                  <p className="text-center text-xs text-[#7a897e]">Admin review শেষ না হওয়া পর্যন্ত seller access সক্রিয় হবে না।</p>
                 </form>
               )}
             </>
