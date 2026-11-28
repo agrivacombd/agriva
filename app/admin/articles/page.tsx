@@ -147,9 +147,9 @@ export default async function AdminArticlesPage({searchParams}:{searchParams?:Pr
       {!articles?.length&&<div className="p-8 text-center text-sm text-slate-600">এই Search/Filter-এ কোনো Article পাওয়া যায়নি। <Link className="font-bold underline" href="/admin/articles">সব নিবন্ধ দেখুন</Link></div>}
     </section>}
     <nav aria-label="Article pagination" className="mt-4 flex items-center justify-between gap-3">
-      {page>1?<Link href={link({page:page-1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">← Previous</Link>:<span className="rounded-xl border px-4 py-2 text-sm opacity-40">← Previous</span>}
+      {page>1?<Link href={link({page:page-1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">← Previous</Link>:<span aria-disabled="true" className="rounded-xl border bg-[#edf2ec] px-4 py-2 text-sm text-[#536457]">← Previous</span>}
       <span className="text-sm text-[#637266]">Page {page} / {Math.max(1,Math.ceil(total/pageSize))}</span>
-      {page*pageSize<total?<Link href={link({page:page+1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">Next →</Link>:<span className="rounded-xl border px-4 py-2 text-sm opacity-40">Next →</span>}
+      {page*pageSize<total?<Link href={link({page:page+1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">Next →</Link>:<span aria-disabled="true" className="rounded-xl border bg-[#edf2ec] px-4 py-2 text-sm text-[#536457]">Next →</span>}
     </nav>
     <p className="mt-5 text-xs leading-6 text-slate-600">Trash থেকে Restore করা যায়; Permanently Delete ফিরিয়ে আনা যায় না। SEO Meta OK শুধু title/description-এর দৈর্ঘ্য যাচাই করে—উৎস ও তথ্য সম্পাদকীয়ভাবে যাচাই করতে হবে।</p>
   </AdminPageLayout>;
