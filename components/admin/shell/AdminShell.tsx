@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import OrderNotificationBell from "./OrderNotificationBell";
 import SignOutButton from "@/components/SignOutButton";
 import {
@@ -66,12 +66,18 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function Navigation({ onNavigate, pathname, compact = false }: { onNavigate?: () => void; pathname: string; compact?: boolean }) {
+function Navigation({ onNavigate, pathname, query }: { onNavigate?: () => void; pathname: string; query: string }) {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const visibleGroups = groups.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => !normalizedQuery || item.label.toLocaleLowerCase().includes(normalizedQuery) || group.label.toLocaleLowerCase().includes(normalizedQuery)),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <nav aria-label="Admin navigation" className="space-y-6">
-      {groups.map((group) => (
+      {visibleGroups.map((group) => (
         <section key={group.label}>
-          <h2 className={`mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100/55 xl:text-[11px] ${compact ? "hidden xl:block" : ""}`}>{group.label}</h2>
+          <h2 className="mb-2 px-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-emerald-100/45">{group.label}</h2>
           <ul className="space-y-1">
             {group.items.map((item) => {
               const active = isActive(pathname, item.href);
@@ -79,10 +85,11 @@ function Navigation({ onNavigate, pathname, compact = false }: { onNavigate?: ()
               return (
                 <li key={item.href}>
                   <Link href={item.href} onClick={onNavigate} aria-current={active ? "page" : undefined} title={item.label}
-                    className={`group flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 ${active ? "bg-lime-300 text-[#173b2d] shadow-sm" : "text-emerald-50/85 hover:bg-white/10 hover:text-white"}`}>
-                    <Icon aria-hidden="true" size={18} className="shrink-0" />
-                    <span className={compact ? "hidden min-w-0 flex-1 truncate xl:block" : "min-w-0 flex-1 truncate"}>{item.label}</span>
-                    {active && <ChevronRight aria-hidden="true" size={15} className="hidden xl:block" />}
+                    className={`group relative flex min-h-11 items-center gap-3 rounded-xl px-3 text-[13px] font-semibold transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300 ${active ? "bg-lime-300 text-[#173b2d] shadow-[0_5px_18px_rgba(190,242,100,0.12)]" : "text-emerald-50/75 hover:bg-white/[0.08] hover:text-white"}`}>
+                    {active && <span aria-hidden="true" className="absolute bottom-2 left-0 top-2 w-[3px] rounded-r-full bg-[#173b2d]" />}
+                    <Icon aria-hidden="true" size={17} className="shrink-0" />
+                    <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                    {active && <ChevronRight aria-hidden="true" size={15} />}
                   </Link>
                 </li>
               );
@@ -90,6 +97,7 @@ function Navigation({ onNavigate, pathname, compact = false }: { onNavigate?: ()
           </ul>
         </section>
       ))}
+      {visibleGroups.length === 0 && <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-4 text-xs leading-5 text-emerald-50/65">কোনো matching page পাওয়া যায়নি। অন্য নামে search করুন।</p>}
     </nav>
   );
 }
@@ -97,65 +105,84 @@ function Navigation({ onNavigate, pathname, compact = false }: { onNavigate?: ()
 export default function AdminShell({ children, adminName }: { children: React.ReactNode; adminName: string }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const currentItem = groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href));
+  const [navQuery, setNavQuery] = useState("");
+  const currentItem = useMemo(() => groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)), [pathname]);
+  const currentGroup = groups.find((group) => group.items.some((item) => item.href === currentItem?.href));
   const pageTitle = currentItem?.label ?? "Admin workspace";
+
+  const sidebarContent = (mobile = false) => (
+    <>
+      <div className="border-b border-white/[0.08] px-4 pb-4 pt-5">
+        <Link href="/admin" onClick={mobile ? () => setDrawerOpen(false) : undefined} className="flex items-center gap-3" aria-label="AGRIVA Admin home">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-lime-300 text-sm font-black tracking-tight text-[#173b2d] shadow-sm">A</span>
+          <span className="min-w-0">
+            <span className="block text-[17px] font-black tracking-[0.12em] text-white">AGRIVA</span>
+            <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-100/45">Admin workspace</span>
+          </span>
+        </Link>
+      </div>
+      <div className="px-3 pb-3 pt-4">
+        <label className="flex h-10 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-3 text-emerald-100/55 focus-within:border-lime-300/60 focus-within:ring-2 focus-within:ring-lime-300/15">
+          <Search size={15} aria-hidden="true" />
+          <input value={navQuery} onChange={(event) => setNavQuery(event.target.value)} placeholder="Find a page..." aria-label="Search admin pages"
+            className="min-w-0 flex-1 bg-transparent text-xs font-medium text-white outline-none placeholder:text-emerald-100/40" />
+          
+        </label>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-5 pt-2">
+        <Navigation pathname={pathname} query={navQuery} onNavigate={mobile ? () => setDrawerOpen(false) : undefined} />
+      </div>
+      <div className="border-t border-white/[0.08] p-3">
+        <Link href="/dashboard" onClick={mobile ? () => setDrawerOpen(false) : undefined} className="flex min-h-11 items-center gap-2 rounded-xl px-3 text-xs font-semibold text-emerald-50/70 transition hover:bg-white/[0.08] hover:text-white">
+          <ArrowUpRight size={16} /> User dashboard <span className="ml-auto text-emerald-100/35">↗</span>
+        </Link>
+      </div>
+    </>
+  );
 
   return (
     <div className="min-h-screen bg-[#f4f7f2] text-[#173b2d]">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[76px] flex-col border-r border-white/10 bg-[#123b2d] text-white lg:flex xl:w-[264px]">
-        <Link href="/admin" className="flex h-[76px] items-center justify-center border-b border-white/10 px-4 xl:justify-start xl:px-6" aria-label="AGRIVA Admin home">
-          <span className="text-xl font-black tracking-[0.14em] text-white">AG<span className="text-lime-300">R</span>IVA</span>
-          <span className="ml-2 hidden text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100/65 xl:block">Admin</span>
-        </Link>
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 py-5 xl:px-3"><Navigation pathname={pathname} compact /></div>
-        <div className="border-t border-white/10 p-3">
-          <Link href="/dashboard" className="flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold text-emerald-50/80 hover:bg-white/10 hover:text-white xl:justify-start xl:text-sm">
-            <ArrowUpRight size={17} /><span className="hidden xl:inline">User dashboard</span>
-          </Link>
-        </div>
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-white/[0.08] bg-[#102f25] text-white shadow-[8px_0_32px_rgba(16,47,37,0.06)] lg:flex">
+        {sidebarContent()}
       </aside>
 
-      <div className="min-w-0 lg:pl-[76px] xl:pl-[264px]">
-        <header className="sticky top-0 z-20 border-b border-[#e2e9df] bg-white/95 backdrop-blur">
-          <div className="flex min-h-[68px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-7">
+      <div className="min-w-0 lg:pl-[248px]">
+        <header className="sticky top-0 z-20 border-b border-[#e4ebe1] bg-white/90 backdrop-blur-xl">
+          <div className="flex min-h-[72px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open admin navigation" aria-expanded={drawerOpen}
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#e0e8dd] text-[#17452f] hover:bg-[#f1f6ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden">
-                <Menu size={20} />
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#e0e8dd] text-[#17452f] transition hover:bg-[#f1f6ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden">
+                <Menu size={19} />
               </button>
               <div className="min-w-0">
-                <p className="hidden text-[10px] font-bold uppercase tracking-[0.16em] text-[#829084] sm:block">AGRIVA / ADMIN</p>
-                <h1 className="truncate text-sm font-bold text-[#173b2d] sm:mt-0.5 sm:text-base">{pageTitle}</h1>
+                <p className="hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#91a094] sm:flex">
+                  <span>AGRIVA</span><ChevronRight size={11}/><span>{currentGroup?.label ?? "Workspace"}</span>
+                </p>
+                <h1 className="truncate text-[15px] font-extrabold tracking-tight text-[#173b2d] sm:mt-1 sm:text-[17px]">{pageTitle}</h1>
               </div>
             </div>
-            <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
               <OrderNotificationBell />
-              <SignOutButton />
-              <Link href="/dashboard" className="hidden min-h-10 items-center gap-2 rounded-xl border border-[#e0e8dd] px-3 text-xs font-semibold text-[#365747] hover:bg-[#f4f7f2] sm:inline-flex">User dashboard <ArrowUpRight size={14} /></Link>
-              <div className="flex min-w-0 items-center gap-2 rounded-xl bg-[#f2f6ef] px-2.5 py-2 sm:px-3">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#dcebd8] text-xs font-black text-[#17452f]">{adminName.trim().charAt(0).toUpperCase() || "A"}</span>
-                <span className="hidden max-w-36 truncate text-xs font-semibold text-[#365747] sm:block">{adminName}</span>
+              <div className="hidden h-8 w-px bg-[#e7ede4] sm:block" />
+              <div className="flex items-center gap-2 rounded-xl border border-[#e8eee5] bg-[#f8faf6] px-2 py-1.5 sm:px-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#dcebd8] text-xs font-black text-[#17452f]">{adminName.trim().charAt(0).toUpperCase() || "A"}</span>
+                <span className="hidden max-w-36 truncate text-xs font-bold text-[#365747] sm:block">{adminName}</span>
               </div>
+              <SignOutButton />
             </div>
           </div>
         </header>
-        <div className="min-h-[calc(100vh-68px)] min-w-0">{children}</div>
+        <div className="min-h-[calc(100vh-72px)] min-w-0">{children}</div>
       </div>
 
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
-          <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/60" />
-          <aside className="relative flex h-full w-[min(86vw,320px)] flex-col bg-[#123b2d] text-white shadow-2xl">
-            <div className="flex h-[68px] items-center justify-between border-b border-white/10 px-5">
-              <Link href="/admin" onClick={() => setDrawerOpen(false)} className="text-xl font-black tracking-[0.14em]">AG<span className="text-lime-300">R</span>IVA <span className="text-xs font-bold tracking-normal text-emerald-100/70">Admin</span></Link>
-              <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-10 w-10 place-items-center rounded-xl hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={20} /></button>
+          <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/65 backdrop-blur-[2px]" />
+          <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#102f25] text-white shadow-2xl">
+            <div className="absolute right-3 top-5 z-10">
+              <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={18} /></button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto px-3 py-5"><Navigation pathname={pathname} onNavigate={() => setDrawerOpen(false)} /></div>
-            <div className="border-t border-white/10 p-4">
-              <p className="truncate text-xs font-semibold text-emerald-100/75">{adminName}</p>
-              <Link href="/dashboard" onClick={() => setDrawerOpen(false)} className="mt-2 flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-white hover:bg-white/10"><ArrowUpRight size={17} /> User dashboard</Link>
-              <div className="mt-3"><SignOutButton /></div>
-            </div>
+            {sidebarContent(true)}
           </aside>
         </div>
       )}

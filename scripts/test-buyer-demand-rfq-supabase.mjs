@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { appendFile } from "node:fs/promises";
 
 const unwrap = (value) => value?.replace(/^(['"])(.*)\1$/s, "$2");
 const baseUrl = unwrap(process.env.SUPABASE_URL);
@@ -56,7 +57,7 @@ async function createAuthenticatedUser(label) {
   assert.equal(identity.response.status, 200, `Auth user endpoint failed: ${identity.text}`);
   assert.equal(identity.data.id, created.data.id, "Auth token identity mismatch");
 
-  return { id: created.data.id, token: signedIn.data.access_token };
+  return { id: created.data.id, token: signedIn.data.access_token, email };
 }
 
 async function waitForPostgrestSchema() {
@@ -82,6 +83,19 @@ await waitForPostgrestSchema();
 
 const buyer = await createAuthenticatedUser("buyer");
 const otherBuyer = await createAuthenticatedUser("other");
+const admin = await createAuthenticatedUser("admin");
+const profile = await request("/rest/v1/profiles", {
+  method: "POST",
+  key: serviceRoleKey,
+  token: serviceRoleKey,
+  headers: { Prefer: "return=representation" },
+  body: { id: admin.id, role: "admin", full_name: "Synthetic CI Admin" },
+});
+assert.equal(profile.response.status, 201, `Could not create synthetic admin profile: ${profile.text}`);
+if (process.env.GITHUB_ENV) {
+  process.stdout.write("::add-mask::" + password + "\n");
+  await appendFile(process.env.GITHUB_ENV, "AGRIVA_QA_ADMIN_EMAIL=" + admin.email + "\nAGRIVA_QA_ADMIN_PASSWORD=" + password + "\n");
+}
 
 const inserted = await request("/rest/v1/buyer_demands?select=id", {
   method: "POST",

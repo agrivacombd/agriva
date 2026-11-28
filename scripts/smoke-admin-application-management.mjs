@@ -25,4 +25,4 @@ assert.match(identity, /ApplicationManagement/);
 assert.match(seller, /ApplicationManagement/);
 assert.doesNotMatch(seller, /redirect\("\/admin\/identity-verification"\)/);
 assert.match(migration, /module_access_applications_review_history_idx/);
-console.log("AGRIVA admin application management regression checks passed.");
+console.log("AGRIVA admin application management and responsive review UI regression checks passed.");
