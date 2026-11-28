@@ -1,4 +1,4 @@
-import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
@@ -32,7 +32,7 @@ export default async function AdminCategoriesPage({searchParams}:{searchParams?:
   return <AdminPageLayout className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8"><div className="min-w-0">
     <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace catalogue</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">ক্যাটাগরি ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">ক্যাটাগরি তৈরি/সম্পাদনা, URL slug, প্রদর্শনের ক্রম ও active status নিয়ন্ত্রণ করুন।</p>
     {searchParams?.notice&&<p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${searchParams.notice==="saved"?"border-emerald-200 bg-emerald-50 text-emerald-900":"border-red-200 bg-red-50 text-red-800"}`}>{searchParams.notice==="saved"?"ক্যাটাগরি সংরক্ষণ হয়েছে।":searchParams.notice==="invalid"?"নাম, slug ও sort order যাচাই করুন।":"ক্যাটাগরি সংরক্ষণ হয়নি। Migration 025 এবং duplicate slug/name যাচাই করুন।"}</p>}
-    {error&&<p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">Category table পড়া যায়নি। Migration 025 প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
+    {error&&<div className="mt-5"><AdminErrorState title="Category table পড়া যায়নি" description="Migration 025 প্রয়োগ হয়েছে কি না যাচাই করুন।"/></div>}
     <form action={saveCategory} className="mt-5 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-5"><h2 className="text-lg font-black">নতুন ক্যাটাগরি যোগ করুন</h2><input type="hidden" name="id" value=""/><div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       <label className="text-sm font-bold">নাম<input name="name" required maxLength={100} placeholder="যেমন: Seeds" className="mt-1.5 min-h-11 w-full min-w-0 rounded-xl border border-[#d9e3d5] px-3 py-2.5 font-normal"/></label>
       <label className="text-sm font-bold">Slug<input name="slug" required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxLength={120} placeholder="seeds" className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
@@ -47,6 +47,6 @@ export default async function AdminCategoriesPage({searchParams}:{searchParams?:
       <label className="text-sm font-bold md:col-span-2">বিবরণ<textarea name="description" rows={2} maxLength={1000} defaultValue={category.description} className="mt-1.5 w-full rounded-xl border px-3 py-2.5 font-normal"/></label>
       <label className="text-sm font-bold">অবস্থা<select name="is_active" defaultValue={String(category.is_active)} className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="true">Active</option><option value="false">Inactive</option></select></label>
     </div><div className="mt-4 flex justify-end"><button className="rounded-xl border border-[#17452c] px-5 py-2.5 text-sm font-extrabold text-[#17452c]">Save category</button></div></form>)}
-    {!categories?.length&&!error&&<p className="rounded-2xl border border-dashed bg-white p-8 text-sm text-[#748074]">এখনো কোনো category নেই। প্রথমটি উপরের form থেকে তৈরি করুন।</p>}</div>
+    {!categories?.length&&!error&&<AdminEmptyState title="এখনো কোনো category নেই" description="প্রথমটি উপরের form থেকে তৈরি করুন।"/>}</div>
   </div></AdminPageLayout>;
 }
