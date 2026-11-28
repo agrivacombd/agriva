@@ -18,6 +18,7 @@
 - [ ] Seller category is allowlisted per module.
 - [ ] Required/conditional fields are validated server-side.
 - [ ] Organization type mapping uses existing database enum values only.
+- [ ] Authorized dealer category requires a typed dealer-authorization evidence item.
 - [ ] Website accepts HTTPS only when provided.
 - [ ] Contact phone, district and source declaration are normalized/length-limited.
 - [ ] Consent must be true.
