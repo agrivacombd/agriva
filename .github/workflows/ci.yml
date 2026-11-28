@@ -117,6 +117,8 @@ jobs:
         run: npm run test:admin-authorization
       - name: Admin P0 delegated permission and audit regression test
         run: npm run test:admin-p0-hardening
+      - name: Admin security regression contracts
+        run: npm run test:admin-security-regression
       - name: AGRIVA Control Center route and navigation regression
         run: npm run test:admin-control-center-navigation
       - name: Admin sensitive action confirmation and duplicate-submit regression
@@ -291,15 +293,17 @@ jobs:
           DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
           test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; exit 1; }
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-fixture.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-delegated-permission-fixture.sql
 
       - name: Validate Admin P0 migrations against isolated Supabase
         run: |
           DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
-          for migration in supabase/migrations/20261128160000_admin_p0_permission_hardening.sql supabase/migrations/20261128170000_admin_green_exchange_audit.sql supabase/migrations/20261128180000_admin_bulk_operations_audit.sql; do
+          for migration in supabase/migrations/20261128160000_admin_p0_permission_hardening.sql supabase/migrations/20261128170000_admin_green_exchange_audit.sql supabase/migrations/20261128180000_admin_bulk_operations_audit.sql supabase/migrations/20261129010000_admin_security_definer_search_path_hardening.sql; do
             echo "Applying $migration to disposable local Supabase"
             docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$migration"
           done
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-assertions.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-delegated-permission-assertions.sql
 
       - name: Validate SECURITY DEFINER API grants and search_path hardening
         run: |
