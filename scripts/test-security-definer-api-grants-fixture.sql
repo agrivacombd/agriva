@@ -5,11 +5,11 @@ SET search_path TO pg_catalog AS $fixture$
 BEGIN NULL; END;
 $fixture$;
 
-CREATE TABLE public.buyer_demand_rfq_conversions (id bigint primary key);
-CREATE TABLE public.crop_health_feed_slug_registry (id bigint primary key);
-CREATE TABLE public.marketplace_order_idempotency (id bigint primary key);
-CREATE TABLE public.product_rank_daily_metrics (id bigint primary key);
-CREATE TABLE public.product_rank_events (id bigint primary key);
+CREATE TABLE IF NOT EXISTS public.buyer_demand_rfq_conversions (id bigint primary key);
+CREATE TABLE IF NOT EXISTS public.crop_health_feed_slug_registry (id bigint primary key);
+CREATE TABLE IF NOT EXISTS public.marketplace_order_idempotency (id bigint primary key);
+CREATE TABLE IF NOT EXISTS public.product_rank_daily_metrics (id bigint primary key);
+CREATE TABLE IF NOT EXISTS public.product_rank_events (id bigint primary key);
 ALTER TABLE public.buyer_demand_rfq_conversions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.crop_health_feed_slug_registry ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.marketplace_order_idempotency ENABLE ROW LEVEL SECURITY;
