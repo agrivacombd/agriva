@@ -9,6 +9,10 @@ assert.match(control, /form\.reportValidity\(\)/);
 assert.match(control, /form\.requestSubmit\(button\)/);
 assert.match(control, /disabled=\{disabled \|\| busy\}/);
 
+const customOrders = read("app/admin/custom-orders/page.tsx");
+assert.match(customOrders, /AdminEmptyState/);
+assert.match(customOrders, /এখনো কোনো bulk request নেই/);
+
 const expectations = [
   ["app/admin/orders/page.tsx", ["COD collection amount", "delivery status"]],
   ["app/admin/custom-orders/page.tsx", ["bulk request", "Fulfillment status", "wholesaler"]],
