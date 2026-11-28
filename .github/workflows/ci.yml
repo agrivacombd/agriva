@@ -59,6 +59,8 @@ jobs:
         run: node scripts/smoke-article-quality.mjs
       - name: Safe Markdown editor and publication integrity regression
         run: node scripts/smoke-article-markdown-editor.mjs
+      - name: SECURITY DEFINER grants and search_path regression
+        run: npm run test:security-definer-api-grants
       - name: Content Trash, Restore and permanent deletion security regression
         run: node scripts/smoke-content-removal.mjs
       - name: Admin Article Queue filters and retired-table regression
@@ -113,6 +115,12 @@ jobs:
         run: node scripts/smoke-blog-learn-feed.mjs
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
+      - name: Admin P0 delegated permission and audit regression test
+        run: npm run test:admin-p0-hardening
+      - name: AGRIVA Control Center route and navigation regression
+        run: npm run test:admin-control-center-navigation
+      - name: Admin sensitive action confirmation and duplicate-submit regression
+        run: npm run test:admin-sensitive-actions
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
       - name: Admin product RPC contract regression test
@@ -151,8 +159,12 @@ jobs:
         run: npm run test:module-access
       - name: Identity verification workflow regression test
         run: npm run test:identity-verification
+      - name: Seller verification Phase 1 contract regression test
+        run: npm run test:seller-verification-phase1
       - name: Admin application history and seller approval regression test
         run: npm run test:admin-application-management
+      - name: Plant Market seller verification workspace regression test
+        run: npm run test:plant-market-seller-review
       - name: Client TRUNCATE privilege regression test
         run: npm run test:truncate-privileges
       - name: Green Exchange security and route regression test
@@ -254,6 +266,7 @@ jobs:
           source "$RUNNER_TEMP/supabase.env"
           printf 'SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
           printf 'SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
           printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
           printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
           printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
@@ -272,6 +285,30 @@ jobs:
       - name: Verify real Auth and PostgREST behavior
         run: node scripts/test-buyer-demand-rfq-supabase.mjs
 
+
+      - name: Prepare synthetic Admin P0 migration schema
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-fixture.sql
+
+      - name: Validate Admin P0 migrations against isolated Supabase
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          for migration in supabase/migrations/20261128160000_admin_p0_permission_hardening.sql supabase/migrations/20261128170000_admin_green_exchange_audit.sql supabase/migrations/20261128180000_admin_bulk_operations_audit.sql; do
+            echo "Applying $migration to disposable local Supabase"
+            docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < "$migration"
+          done
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-assertions.sql
+
+      - name: Validate SECURITY DEFINER API grants and search_path hardening
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-security-definer-api-grants-fixture.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261129120000_harden_security_definer_api_grants.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/security_definer_api_grants.sql
+
       - name: Install Node.js and locked app dependencies
         uses: actions/setup-node@v4
         with:
@@ -283,7 +320,7 @@ jobs:
 
       - name: Install ephemeral Playwright browser tooling
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm install --no-save --package-lock=false playwright@1.56.1 axe-core@4.10.3
           npx playwright install --with-deps chromium
 
       - name: Build app against isolated local Supabase
@@ -323,4 +360,111 @@ jobs:
         if: always()
         run: |
           if [ -f "$RUNNER_TEMP/agriva-next.pid" ]; then kill "$(cat "$RUNNER_TEMP/agriva-next.pid")" || true; fi
+          supabase stop || true
+
+  plant-market-seller-verification-e2e:
+    name: Authenticated Plant Market seller verification E2E
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: 3.4.0
+
+      - name: Initialize and start isolated Supabase
+        env:
+          SUPABASE_EXPERIMENTAL_STACK: "1"
+        run: |
+          supabase --version
+          supabase init --force
+          supabase config validate
+
+      - name: Keep repository migrations out of local stack bootstrap
+        run: |
+          mv supabase/migrations "$RUNNER_TEMP/agriva-seller-review-migrations"
+          mkdir -p supabase/migrations
+
+      - name: Start isolated Supabase Auth, PostgREST and Storage
+        run: supabase start -x studio,realtime,functions,analytics,pooler,mail
+
+      - name: Export isolated Supabase connection details
+        run: |
+          supabase status --env > "$RUNNER_TEMP/seller-review-supabase.env"
+          source "$RUNNER_TEMP/seller-review-supabase.env"
+          printf 'SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
+          printf 'SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+          printf 'SUPABASE_SERVICE_ROLE_KEY=%s\n' "$SERVICE_ROLE_KEY" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_SUPABASE_URL=%s\n' "$API_URL" >> "$GITHUB_ENV"
+          printf 'NEXT_PUBLIC_SUPABASE_ANON_KEY=%s\n' "$ANON_KEY" >> "$GITHUB_ENV"
+
+      - name: Prepare production-shaped seller verification schema
+        run: |
+          rm -rf supabase/migrations
+          mv "$RUNNER_TEMP/agriva-seller-review-migrations" supabase/migrations
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; docker ps -a; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-plant-market-seller-review-fixture.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261030100000_module_access_foundation.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261030110000_identity_verification_workflow.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261127190000_admin_application_history_indexes.sql
+          docker exec "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "NOTIFY pgrst, 'reload schema';"
+
+      - name: Install Node.js and locked application dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install application dependencies
+        run: npm ci --no-audit --no-fund --fetch-retries=2 --fetch-timeout=120000
+
+      - name: Install ephemeral Playwright browser tooling
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Seed authenticated synthetic Admin and Plant Market applicants
+        run: npm run test:plant-market-seller-review-supabase
+
+      - name: Build application against isolated seller verification schema
+        run: npm run build
+
+      - name: Start application for seller review browser QA
+        run: |
+          npm run start -- --hostname 127.0.0.1 > "$RUNNER_TEMP/plant-market-seller-review-next.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/plant-market-seller-review-next.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/login > /dev/null; then
+              echo "AGRIVA seller verification app is ready for browser QA"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/plant-market-seller-review-next.log"
+          exit 1
+
+      - name: Run authenticated Plant Market seller verification E2E
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
+        run: npm run test:plant-market-seller-review-browser
+
+      - name: Upload Plant Market seller review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agriva-plant-market-seller-review-e2e
+          path: |
+            test-results/plant-market-seller-review/
+            ${{ runner.temp }}/plant-market-seller-review-next.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop seller verification app and Supabase stack
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/plant-market-seller-review-next.pid" ]; then kill "$(cat "$RUNNER_TEMP/plant-market-seller-review-next.pid")" || true; fi
           supabase stop || true

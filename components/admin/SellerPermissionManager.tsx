@@ -1,11 +1,130 @@
 "use client";
-import {useCallback,useEffect,useState} from "react";
-type Market="marketplace"|"plant-market";
-type Permission={user_id:string;scope_id:string|null;scope_type:string;granted_at:string;expires_at:string|null;reason:string|null};
-export default function SellerPermissionManager(){
- const [market,setMarket]=useState<Market>("marketplace"),[items,setItems]=useState<Permission[]>([]),[loading,setLoading]=useState(false),[message,setMessage]=useState("");
- const load=useCallback(async()=>{setLoading(true);setMessage("");try{const response=await fetch(`/api/admin/seller-permissions/${market}`,{cache:"no-store"});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"Permission তালিকা লোড করা যায়নি।");setItems(data.permissions||[]);}catch(error){setMessage(error instanceof Error?error.message:"নেটওয়ার্ক সমস্যা হয়েছে।");}finally{setLoading(false);}},[market]);
- useEffect(()=>{void load();},[load]);
- async function revoke(item:Permission){setLoading(true);setMessage("");try{const response=await fetch(`/api/admin/seller-permissions/${market}/${item.user_id}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({scope_id:item.scope_id})});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"Permission বাতিল করা যায়নি।");setItems(current=>current.filter(x=>!(x.user_id===item.user_id&&x.scope_id===item.scope_id)));setMessage("শুধু নির্বাচিত module-এর access বাতিল হয়েছে; অন্য মার্কেটের grant অক্ষত আছে।");}catch(error){setMessage(error instanceof Error?error.message:"নেটওয়ার্ক সমস্যা হয়েছে।");}finally{setLoading(false);}}
- return <section className="mt-10"><h2 className="text-2xl font-black">Seller Module Access</h2><p className="mt-2 text-sm text-slate-600">Permission existing user_module_grants থেকে পড়া হয়। Marketplace grant organization-scoped, Plant Market grant global-scoped।</p><div className="mt-4 flex flex-wrap gap-2"><button onClick={()=>setMarket("marketplace")} className={market==="marketplace"?"rounded-xl bg-emerald-900 px-4 py-3 text-sm font-bold text-white":"rounded-xl border bg-white px-4 py-3 text-sm font-bold"}>Marketplace</button><button onClick={()=>setMarket("plant-market")} className={market==="plant-market"?"rounded-xl bg-emerald-900 px-4 py-3 text-sm font-bold text-white":"rounded-xl border bg-white px-4 py-3 text-sm font-bold"}>Plant Market</button><button onClick={()=>void load()} disabled={loading} className="rounded-xl border bg-white px-4 py-3 text-sm font-bold">রিফ্রেশ</button></div>{message&&<p role="status" className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-950">{message}</p>}{loading?<p className="mt-5 text-sm text-slate-600">লোড হচ্ছে…</p>:items.length===0?<p className="mt-5 rounded-2xl border border-dashed bg-white p-6 text-sm text-slate-600">এই মার্কেটে কোনো active create grant নেই।</p>:<div className="mt-5 space-y-2">{items.map(item=><article key={item.user_id+":"+(item.scope_id||"global")} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white p-4"><div><p className="text-sm font-bold">{item.user_id}</p><p className="mt-1 text-xs text-slate-500">{item.scope_type==="organization"?"Organization: "+item.scope_id:"Global Plant Market access"} · {new Date(item.granted_at).toLocaleString("bn-BD")}</p>{item.expires_at&&<p className="mt-1 text-xs text-slate-500">মেয়াদ: {new Date(item.expires_at).toLocaleDateString("bn-BD")}</p>}</div><button disabled={loading} onClick={()=>void revoke(item)} className="rounded-xl border border-red-200 px-4 py-2 text-sm font-bold text-red-800 disabled:opacity-50">এই মার্কেটের Permission বাতিল</button></article>)}</div>}</section>;
+
+import { useCallback, useEffect, useState } from "react";
+import {
+  AdminEmptyState,
+  AdminErrorState,
+  AdminLoadingState,
+  AdminNotice,
+  AdminPanel,
+  AdminSectionHeader,
+  AdminStatusBadge,
+} from "@/components/admin/ui/AdminPrimitives";
+
+type Market = "marketplace" | "plant-market";
+type Permission = {
+  user_id: string;
+  scope_id: string | null;
+  scope_type: string;
+  granted_at: string;
+  expires_at: string | null;
+  reason: string | null;
+};
+type Feedback = { tone: "success" | "error"; text: string } | null;
+const itemKey = (item: Permission) => item.user_id + ":" + (item.scope_id || "global");
+
+export default function SellerPermissionManager() {
+  const [market, setMarket] = useState<Market>("marketplace");
+  const [items, setItems] = useState<Permission[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const [reason, setReason] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setFeedback(null);
+    setLoadFailed(false);
+    try {
+      const response = await fetch(`/api/admin/seller-permissions/${market}`, { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Permission তালিকা লোড করা যায়নি।");
+      setItems(Array.isArray(data.permissions) ? data.permissions : []);
+    } catch (error) {
+      setItems([]);
+      setLoadFailed(true);
+      setFeedback({ tone: "error", text: error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে।" });
+    } finally {
+      setLoading(false);
+    }
+  }, [market]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  async function revoke(item: Permission) {
+    const trimmedReason = reason.trim();
+    if (trimmedReason.length < 10 || trimmedReason.length > 500) return;
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const response = await fetch(`/api/admin/seller-permissions/${market}/${item.user_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope_id: item.scope_id, reason: trimmedReason }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Permission বাতিল করা যায়নি।");
+      setItems(current => current.filter(candidate => itemKey(candidate) !== itemKey(item)));
+      setConfirming(null);
+      setReason("");
+      setFeedback({ tone: "success", text: "নির্বাচিত module-এর access বাতিল হয়েছে; কারণ audit log-এ সংরক্ষিত হয়েছে।" });
+    } catch (error) {
+      setFeedback({ tone: "error", text: error instanceof Error ? error.message : "নেটওয়ার্ক সমস্যা হয়েছে।" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AdminPanel className="mt-8">
+      <AdminSectionHeader
+        title="Seller Module Access"
+        description="Active create grants · Marketplace organization-scoped · Plant Market global-scoped"
+        action={<AdminStatusBadge tone="neutral">{items.length} active grants</AdminStatusBadge>}
+      />
+      <div className="mb-5 flex flex-wrap items-center gap-2">
+        <button type="button" aria-pressed={market === "marketplace"} onClick={() => { setMarket("marketplace"); setConfirming(null); setReason(""); }} className={market === "marketplace" ? "min-h-10 rounded-lg bg-[var(--admin-primary)] px-4 text-sm font-bold text-white" : "min-h-10 rounded-lg border border-[var(--admin-border-strong)] bg-white px-4 text-sm font-semibold text-[var(--admin-ink)]"}>Marketplace</button>
+        <button type="button" aria-pressed={market === "plant-market"} onClick={() => { setMarket("plant-market"); setConfirming(null); setReason(""); }} className={market === "plant-market" ? "min-h-10 rounded-lg bg-[var(--admin-primary)] px-4 text-sm font-bold text-white" : "min-h-10 rounded-lg border border-[var(--admin-border-strong)] bg-white px-4 text-sm font-semibold text-[var(--admin-ink)]"}>Plant Market</button>
+        <button type="button" onClick={() => void load()} disabled={loading} className="min-h-10 rounded-lg border border-[var(--admin-border-strong)] bg-white px-4 text-sm font-semibold disabled:opacity-50">Refresh</button>
+      </div>
+
+      {feedback && <div className="mb-4"><AdminNotice tone={feedback.tone === "success" ? "success" : "danger"}>{feedback.text}</AdminNotice></div>}
+      {loading && <AdminLoadingState label="Seller permission records লোড হচ্ছে…"/>}
+      {!loading && loadFailed && <AdminErrorState title="Permission তালিকা লোড করা যায়নি" description="Authorization service, API response এবং database access যাচাই করুন।" action={<button type="button" onClick={() => void load()} className="min-h-10 rounded-lg border border-rose-300 bg-white px-4 text-sm font-bold text-rose-900">আবার চেষ্টা করুন</button>}/>}
+      {!loading && !loadFailed && items.length === 0 && <AdminEmptyState title="কোনো active create grant নেই" description="এই module-এ বর্তমানে revoke করার মতো active seller permission পাওয়া যায়নি।"/>}
+
+      {!loading && !loadFailed && items.length > 0 && <div className="space-y-3">
+        {items.map(item => {
+          const key = itemKey(item);
+          return <article key={key} className="rounded-xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="break-all font-mono text-sm font-bold text-[var(--admin-ink)]">{item.user_id}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <AdminStatusBadge tone="success">Active · create</AdminStatusBadge>
+                  <AdminStatusBadge tone="neutral">{item.scope_type === "organization" ? "Organization scope" : "Global scope"}</AdminStatusBadge>
+                </div>
+                <p className="mt-2 break-all text-xs text-[var(--admin-ink-muted)]">{item.scope_id ? `Scope: ${item.scope_id} · ` : ""}Granted {new Date(item.granted_at).toLocaleString("en-GB")}</p>
+                {item.expires_at && <p className="mt-1 text-xs text-[var(--admin-ink-muted)]">Expires {new Date(item.expires_at).toLocaleString("en-GB")}</p>}
+                {item.reason && <p className="mt-2 text-xs text-[var(--admin-ink-muted)]">Grant reason: {item.reason}</p>}
+              </div>
+              <button type="button" disabled={loading} onClick={() => { setConfirming(key); setReason(""); }} className="min-h-10 rounded-lg border border-rose-200 px-4 text-sm font-bold text-rose-800 hover:bg-rose-50 disabled:opacity-50">এই মার্কেটের Permission বাতিল</button>
+            </div>
+            {confirming === key && <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
+              <p className="font-bold text-rose-950">এই seller-এর {market === "marketplace" ? "Marketplace" : "Plant Market"} access বাতিল করবেন?</p>
+              <p className="mt-1 text-xs leading-5 text-rose-800">শুধু নির্বাচিত module ও scope-এর grant বাতিল হবে। অন্য module-এর access পরিবর্তন হবে না। এই action audit log-এ রেকর্ড হবে।</p>
+              <label className="mt-3 block text-sm font-semibold text-rose-950">Permission বাতিলের কারণ (১০–৫০০ অক্ষর)
+                <textarea value={reason} onChange={event => setReason(event.target.value)} minLength={10} maxLength={500} rows={3} className="mt-2 w-full rounded-lg border border-rose-200 bg-white p-3 text-sm text-slate-900" placeholder="কেন এই seller-এর access বাতিল করা হচ্ছে তা লিখুন"/>
+              </label>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" disabled={loading || reason.trim().length < 10} onClick={() => void revoke(item)} className="min-h-10 rounded-lg bg-rose-800 px-4 text-sm font-bold text-white disabled:opacity-50">কারণসহ বাতিল নিশ্চিত করুন</button>
+                <button type="button" disabled={loading} onClick={() => { setConfirming(null); setReason(""); }} className="min-h-10 rounded-lg border border-rose-200 bg-white px-4 text-sm font-semibold text-rose-900">Cancel</button>
+              </div>
+            </div>}
+          </article>;
+        })}
+      </div>}
+    </AdminPanel>
+  );
 }

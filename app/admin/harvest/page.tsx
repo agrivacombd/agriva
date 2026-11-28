@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import OptimizedImage from "@/components/ui/OptimizedImage";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -53,7 +54,7 @@ export default async function AdminHarvestPage({ searchParams }: { searchParams:
     .order("created_at", { ascending: false }).limit(200);
   const unitName = (unit: string) => ({ kg: "কেজি", maund: "মণ", ton: "টন", bag: "বস্তা" }[unit] ?? unit);
   const statusName = (status: string) => ({ available: "বিক্রির জন্য চালু", paused: "সাময়িক বন্ধ", sold_out: "বিক্রি শেষ" }[status] ?? status);
-  return <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6"><div className="mx-auto max-w-6xl">
+  return <AdminPageLayout className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6"><div className="mx-auto max-w-6xl">
     <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white"><div><Link href="/admin" className="text-xl font-black">AGRIVA Admin</Link><p className="mt-1 text-xs text-emerald-100">Sell My Harvest · Moderation</p></div><Link href="/admin" className="rounded-xl bg-white/10 px-4 py-2 text-sm font-bold">← Admin overview</Link></header>
     <div className="mt-7"><h1 className="text-3xl font-black">কৃষকের ফসলের পোস্ট</h1><p className="mt-2 text-sm text-slate-600">পোস্টগুলো যাচাই করুন। প্রয়োজন হলে সাময়িক বন্ধ, প্রত্যাখ্যান অথবা বন্ধ পোস্ট পুনরায় চালু করুন। বিক্রি শেষ হওয়া পোস্ট পুনরায় চালু করা যাবে না।</p></div>
     {params.notice && noticeLabels[params.notice] && <p role="status" className="mt-5 rounded-xl border border-emerald-200 bg-white p-3 text-sm">{noticeLabels[params.notice]}</p>}
@@ -68,5 +69,5 @@ export default async function AdminHarvestPage({ searchParams }: { searchParams:
       </div></div>
     </article>)}</div>
     {!error && (listings ?? []).length === 0 && <div className="mt-6 rounded-2xl bg-white p-10 text-center text-slate-600">এখনো কোনো ফসল বিক্রির পোস্ট আসেনি।</div>}
-  </div></main>;
+  </div></AdminPageLayout>;
 }

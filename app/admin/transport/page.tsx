@@ -1,7 +1,9 @@
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { Check } from "lucide-react";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
 
 async function requireAdmin(capability: AdminCapability = "transport.read") {
@@ -65,7 +67,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
   const partners = data ?? [];
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
+    <AdminPageLayout className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
       <header className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
           <div><Link href="/" className="text-2xl font-black">AGRIVA<span className="text-[#d9b85b]">.</span></Link><p className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-emerald-100">Transport partner review</p></div>
@@ -89,8 +91,8 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
           ].map(([value, label]) => <Link key={value} href={`/admin/transport?status=${value}`} className={`rounded-full border px-4 py-2 text-sm font-bold ${selectedStatus === value ? "border-[#17452c] bg-[#17452c] text-white" : "border-[#d9e3d5] bg-white text-[#34543b] hover:border-[#36764a]"}`}>{label}</Link>)}
         </nav>
 
-        {error && <p className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">আবেদন লোড করা যায়নি। নতুন migration প্রয়োগ হয়েছে কি না যাচাই করুন।</p>}
-        {!error && partners.length === 0 && <div className="mt-5 rounded-2xl border border-dashed border-[#cbdcc7] bg-white p-10 text-center"><h2 className="text-xl font-black">কোনো আবেদন নেই</h2><p className="mt-2 text-sm text-[#68786b]">এই ক্যাটাগরিতে এখনো কোনো পরিবহন পার্টনার নেই।</p></div>}
+        {error && <div className="mt-5"><AdminErrorState title="আবেদন লোড করা যায়নি" description="নতুন migration প্রয়োগ হয়েছে কি না যাচাই করুন।"/></div>}
+        {!error && partners.length === 0 && <div className="mt-5"><AdminEmptyState title="কোনো আবেদন নেই" description="এই ক্যাটাগরিতে এখনো কোনো পরিবহন পার্টনার নেই।"/></div>}
 
         <section className="mt-5 grid gap-4 lg:grid-cols-2">
           {partners.map(partner => <article key={partner.user_id} className="rounded-2xl border border-[#dfe8dc] bg-white p-5 shadow-sm">
@@ -112,15 +114,15 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
                 <textarea name="note" maxLength={1000} defaultValue={partner.verification_note ?? ""} rows={2} className="mt-1.5 w-full rounded-xl border border-[#d9e3d5] bg-white px-3 py-2 text-sm outline-none focus:border-emerald-600" placeholder="যাচাইয়ের সংক্ষিপ্ত কারণ লিখুন" />
               </label>
               <div className="mt-3 flex flex-wrap gap-2">
-                {partner.verification_status !== "verified" && <button name="status" value="verified" className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#22613d]"><Check size={15} aria-hidden="true" className="mr-1 inline-block" />অনুমোদন করুন</button>}
-                {partner.verification_status !== "rejected" && <button name="status" value="rejected" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800 hover:bg-rose-100">প্রত্যাখ্যান</button>}
-                {partner.verification_status !== "suspended" && <button name="status" value="suspended" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-100">স্থগিত করুন</button>}
+                {partner.verification_status !== "verified" && <AdminConfirmSubmitButton name="status" value="verified" confirmMessage="এই transport partner-কে verified হিসেবে অনুমোদন করবেন?" className="rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white hover:bg-[#22613d]"><Check size={15} aria-hidden="true" className="mr-1 inline-block" />অনুমোদন করুন</AdminConfirmSubmitButton>}
+                {partner.verification_status !== "rejected" && <AdminConfirmSubmitButton name="status" value="rejected" confirmMessage="এই transport partner application প্রত্যাখ্যান করবেন?" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-bold text-rose-800 hover:bg-rose-100">প্রত্যাখ্যান</AdminConfirmSubmitButton>}
+                {partner.verification_status !== "suspended" && <AdminConfirmSubmitButton name="status" value="suspended" confirmMessage="এই verified transport partner-কে suspend করবেন?" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-bold text-amber-900 hover:bg-amber-100">স্থগিত করুন</AdminConfirmSubmitButton>}
               </div>
             </form>
           </article>)}
         </section>
         <p className="mt-8 text-center text-xs text-[#879187]">সার্ভার-সাইড admin role check এবং database RPC authorization দ্বারা সুরক্ষিত।</p>
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }

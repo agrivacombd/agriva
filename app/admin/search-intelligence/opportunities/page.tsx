@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+
 import { useCallback, useEffect, useState } from "react";
 
 type Opportunity = {
@@ -74,7 +76,7 @@ export default function Page() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
+    <AdminPageLayout className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Intelligence</p>
         <h1 className="mt-3 text-3xl font-black sm:text-4xl">Live Content Opportunities</h1>
@@ -148,6 +150,6 @@ export default function Page() {
           Opportunity workflow only. Publishing content itself must use the separate authenticated publishing action.
         </div>
       </section>
-    </main>
+    </AdminPageLayout>
   );
 }

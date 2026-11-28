@@ -1,3 +1,5 @@
+import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -52,7 +54,7 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
     .limit(100);
 
   return (
-    <main className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6">
+    <AdminPageLayout className="min-h-screen bg-[#f5f8f1] px-4 py-8 text-[#17351f] sm:px-6">
       <div className="mx-auto max-w-6xl">
         <Link href="/admin" className="text-sm font-bold text-emerald-800 underline underline-offset-4">← Admin Dashboard</Link>
         <header className="mt-5">
@@ -69,15 +71,9 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
           ))}
         </nav>
         {error ? (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-white p-6">
-            <h2 className="font-bold">মডারেশন ডেটা লোড করা যায়নি</h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">Green Exchange migration এখনো প্রয়োগ না হলে এই পেজ কাজ করবে না। নিরাপদ migration reconciliation শেষ করে পুনরায় চেষ্টা করুন।</p>
-          </div>
+          <div className="mt-6"><AdminErrorState title="মডারেশন ডেটা লোড করা যায়নি" description="Green Exchange migration ও database permissions যাচাই করুন।"/></div>
         ) : !listings?.length ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-emerald-200 bg-white p-10 text-center">
-            <h2 className="text-lg font-bold">এই তালিকায় কোনো পোস্ট নেই</h2>
-            <p className="mt-2 text-sm text-slate-600">নতুন পোস্ট জমা হলে এখানে দেখা যাবে।</p>
-          </div>
+          <div className="mt-6"><AdminEmptyState title="এই তালিকায় কোনো পোস্ট নেই" description="নতুন পোস্ট জমা হলে এখানে দেখা যাবে।"/></div>
         ) : (
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             {listings.map((item) => (
@@ -93,15 +89,15 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
                 <p className="mt-3 text-sm text-slate-600">এলাকা: {item.area}{item.district ? `, ${item.district}` : ""} · পরিমাণ: {item.quantity}</p>
                 <p className="mt-1 break-all text-xs text-slate-400">Owner ID: {item.owner_id} · {new Date(item.created_at).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dhaka" })}</p>
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                  {item.moderation_status !== "approved" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="approved" /><button className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">অনুমোদন করুন</button></form>}
-                  {item.moderation_status !== "rejected" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="rejected" /><button className="min-h-10 rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-800">প্রত্যাখ্যান</button></form>}
-                  {item.moderation_status !== "pending" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="pending" /><button className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">পুনরায় যাচাইয়ে পাঠান</button></form>}
+                  {item.moderation_status !== "approved" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="approved" /><AdminConfirmSubmitButton confirmMessage="এই Green Exchange listing অনুমোদন করে প্রকাশযোগ্য করবেন?" className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">অনুমোদন করুন</AdminConfirmSubmitButton></form>}
+                  {item.moderation_status !== "rejected" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="rejected" /><AdminConfirmSubmitButton confirmMessage="এই Green Exchange listing প্রত্যাখ্যান করবেন?" className="min-h-10 rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-800">প্রত্যাখ্যান</AdminConfirmSubmitButton></form>}
+                  {item.moderation_status !== "pending" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="pending" /><AdminConfirmSubmitButton confirmMessage="এই listing পুনরায় যাচাইয়ের জন্য pending করবেন?" className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">পুনরায় যাচাইয়ে পাঠান</AdminConfirmSubmitButton></form>}
                 </div>
               </article>
             ))}
           </div>
         )}
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }

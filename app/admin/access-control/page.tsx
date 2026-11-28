@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin/authz";
@@ -63,7 +64,7 @@ export default async function AdminAccessControlPage() {
   const rolesById = new Map(roles.map((role) => [role.id, role]));
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
+    <AdminPageLayout className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
           <div><p className="text-xs font-bold uppercase tracking-[.18em] text-emerald-200">Security & governance</p><h1 className="mt-2 text-2xl font-black">Admin Access Control</h1><p className="mt-1 text-sm text-emerald-100">কার কোন প্রশাসনিক ক্ষমতা আছে—এক জায়গায় পর্যালোচনা করুন।</p></div>
@@ -96,7 +97,7 @@ export default async function AdminAccessControlPage() {
         <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-5">
           <h2 className="text-xl font-black">Active role assignments</h2>
           <p className="mt-1 text-sm text-[#718072]">মেয়াদোত্তীর্ণ assignment বাদ দিয়ে বর্তমান access দেখানো হচ্ছে।</p>
-          <div className="mt-4 overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs text-[#6d7b6e]"><tr><th className="px-3 py-3">Admin</th><th className="px-3 py-3">Role</th><th className="px-3 py-3">Scope</th><th className="px-3 py-3">Granted</th><th className="px-3 py-3">Expires</th></tr></thead><tbody>{activeAssignments.map((assignment) => {
+          <div role="region" aria-label="Active role assignments table, horizontally scrollable" tabIndex={0} className="mt-4 overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="bg-[#f7faf5] text-xs text-[#6d7b6e]"><tr><th className="px-3 py-3">Admin</th><th className="px-3 py-3">Role</th><th className="px-3 py-3">Scope</th><th className="px-3 py-3">Granted</th><th className="px-3 py-3">Expires</th></tr></thead><tbody>{activeAssignments.map((assignment) => {
             const profile = profiles.get(assignment.user_id);
             const role = rolesById.get(assignment.role_id);
             return <tr key={assignment.id} className="border-t border-[#edf1ea]"><td className="px-3 py-3"><p className="font-semibold">{profile?.full_name || "Unnamed admin"}</p><p className="text-xs text-[#7b887d]">{assignment.user_id.slice(0, 8) + "…"}</p></td><td className="px-3 py-3 font-semibold">{role?.display_name ?? "Unknown role"}</td><td className="px-3 py-3">{assignment.scope_type}{assignment.scope_id ? " · " + assignment.scope_id.slice(0, 8) : ""}</td><td className="px-3 py-3">{new Date(assignment.granted_at).toLocaleDateString("en-GB")}</td><td className="px-3 py-3">{assignment.expires_at ? new Date(assignment.expires_at).toLocaleDateString("en-GB") : "No expiry"}</td></tr>;
@@ -105,6 +106,6 @@ export default async function AdminAccessControlPage() {
 
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>নিরাপত্তা নোট:</strong> এই পেজটি বর্তমানে read-only। নিরাপদ grant/revoke workflow, privilege-escalation protection, expiry validation এবং audit RPC যাচাই না হওয়া পর্যন্ত এখান থেকে কাউকে নতুন admin access দেওয়া বা সরানো যাবে না। Finance approval ও payout completion আলাদা capability হিসেবেই থাকবে।</div>
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }

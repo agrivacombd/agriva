@@ -1,8 +1,10 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage } from "@/lib/admin/authz";
 import { MAX_PRODUCT_DESCRIPTION_HTML_LENGTH, sanitizeProductDescription } from "@/lib/marketplace/product-description";
 import AdminSeedRichTextEditor from "@/components/admin/AdminSeedRichTextEditor";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 
 async function saveCommonSection(formData: FormData) {
   "use server";
@@ -99,7 +101,7 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
   const detailByProduct = new Map((details ?? []).map((item) => [item.product_id, item]));
   const notice = searchParams?.notice;
 
-  return <main className="mx-auto min-h-[calc(100vh-68px)] max-w-[1600px] px-4 py-6 text-[#17351f] sm:px-6 xl:px-8">
+  return <AdminPageLayout className="mx-auto min-h-[calc(100vh-68px)] max-w-[1600px] px-4 py-6 text-[#17351f] sm:px-6 xl:px-8">
     <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Marketplace knowledge base</p>
     <h1 className="mt-2 text-2xl font-black sm:text-3xl">Seeds Information Manager</h1>
     <p className="mt-2 max-w-4xl text-sm leading-6 text-[#637266]">সাধারণ বীজ তথ্য একবার সংরক্ষণ করুন, ফসলভিত্তিক গাইড তৈরি করুন এবং প্রতিটি বীজ পণ্যের নিজস্ব বৈশিষ্ট্য যুক্ত করুন। এই ম্যানেজার শুধু category_slug = seeds পণ্য নিয়ে কাজ করে।</p>
@@ -119,10 +121,10 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
         <AdminSeedRichTextEditor name="content_html" value="" label="বিস্তারিত নির্দেশনা" placeholder="বীজ সংরক্ষণের নির্দেশনা লিখুন..." />
         <div className="md:col-span-2"><button className="rounded-xl bg-[#17452c] px-5 py-3 text-sm font-extrabold text-white">Common information save করুন</button></div>
       </form>
-      <div className="mt-6 space-y-3">{(sections ?? []).map((section) => <div key={section.id}><form action={saveCommonSection} className="rounded-xl border border-[#e5ece2] p-4">
+      <div className="mt-6 space-y-3">{!(sections ?? []).length && !sectionsError && <p className="mt-4 rounded-xl border border-dashed p-4 text-sm text-[#68776b]">এখনো কোনো common information section তৈরি হয়নি। উপরের ফর্ম দিয়ে প্রথম section যোগ করুন।</p>}{(sections ?? []).map((section) => <div key={section.id}><form action={saveCommonSection} className="rounded-xl border border-[#e5ece2] p-4">
         <input type="hidden" name="id" value={section.id}/>
         <div className="grid gap-3 md:grid-cols-2"><label className="text-sm font-bold">Key<input name="section_key" defaultValue={section.section_key} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">শিরোনাম<input name="title" defaultValue={section.title} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold md:col-span-2">Product page-এর সংক্ষিপ্ত সারাংশ<input name="summary" defaultValue={section.summary ?? ""} maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">ক্রম<input name="sort_order" type="number" defaultValue={section.sort_order} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">অবস্থা<select name="is_enabled" defaultValue={String(section.is_enabled)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label><AdminSeedRichTextEditor name="content_html" value={section.content_html} label="বিস্তারিত নির্দেশনা" /></div><div className="mt-3 flex justify-end"><button className="rounded-lg border border-[#17452c] px-4 py-2 text-sm font-bold">Update</button></div>
-      </form><form action={deleteCommonSection} className="mt-2 flex justify-end"><input type="hidden" name="id" value={section.id}/><button className="rounded-lg border border-red-200 px-4 py-2 text-sm font-bold text-red-700">Delete section</button></form></div>)}</div>
+      </form><form action={deleteCommonSection} className="mt-2 flex justify-end"><input type="hidden" name="id" value={section.id}/><AdminConfirmSubmitButton confirmMessage="এই common information section স্থায়ীভাবে delete করবেন? এই কাজটি undo করা যাবে না।" className="rounded-lg border border-red-200 px-4 py-2 text-sm font-bold text-red-700">Delete section</AdminConfirmSubmitButton></form></div>)}</div>
     </section>
 
     <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-6">
@@ -138,9 +140,9 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
         <label className="text-sm font-bold">অবস্থা<select name="is_active" defaultValue="true" className="mt-1.5 w-full rounded-xl border bg-white px-3 py-2.5 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label>
         <div className="md:col-span-2"><button className="rounded-xl bg-[#17452c] px-5 py-3 text-sm font-extrabold text-white">Crop guide save করুন</button></div>
       </form>
-      <div className="mt-6 space-y-3">{(guides ?? []).map((guide) => <div key={guide.id}><form action={saveCropGuide} className="rounded-xl border border-[#e5ece2] p-4">
+      <div className="mt-6 space-y-3">{!(guides ?? []).length && !guidesError && <p className="mt-4 rounded-xl border border-dashed p-4 text-sm text-[#68776b]">এখনো কোনো crop guide তৈরি হয়নি। উপরের ফর্ম দিয়ে প্রথম guide যোগ করুন।</p>}{(guides ?? []).map((guide) => <div key={guide.id}><form action={saveCropGuide} className="rounded-xl border border-[#e5ece2] p-4">
         <input type="hidden" name="id" value={guide.id}/><div className="grid gap-3 md:grid-cols-2"><label className="text-sm font-bold">Slug<input name="crop_slug" defaultValue={guide.crop_slug} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">ফসলের নাম<input name="crop_name" defaultValue={guide.crop_name} required className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold md:col-span-2">সংক্ষিপ্ত পরিচিতি<input name="summary" defaultValue={guide.summary} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><AdminSeedRichTextEditor name="content_html" value={guide.content_html} label="পূর্ণ চাষাবাদ নির্দেশনা" /><label className="text-sm font-bold">ক্রম<input name="sort_order" type="number" defaultValue={guide.sort_order} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">অবস্থা<select name="is_active" defaultValue={String(guide.is_active)} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 font-normal"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select></label></div><div className="mt-3 flex justify-end"><button className="rounded-lg border border-[#17452c] px-4 py-2 text-sm font-bold">Update guide</button></div>
-      </form><form action={deleteCropGuide} className="mt-2 flex justify-end"><input type="hidden" name="id" value={guide.id}/><button className="rounded-lg border border-red-200 px-4 py-2 text-sm font-bold text-red-700">Delete guide</button></form></div>)}</div>
+      </form><form action={deleteCropGuide} className="mt-2 flex justify-end"><input type="hidden" name="id" value={guide.id}/><AdminConfirmSubmitButton confirmMessage="এই crop guide স্থায়ীভাবে delete করবেন? সংশ্লিষ্ট product link থাকলে database constraint deletion আটকাতে পারে।" className="rounded-lg border border-red-200 px-4 py-2 text-sm font-bold text-red-700">Delete guide</AdminConfirmSubmitButton></form></div>)}</div>
     </section>
 
     <section className="mt-6 rounded-2xl border border-[#dfe8dc] bg-white p-4 shadow-sm sm:p-6">
@@ -152,5 +154,5 @@ export default async function AdminSeedInformationPage({ searchParams }: { searc
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3"><label className="text-sm font-bold">Crop guide<select name="crop_guide_id" defaultValue={detail?.crop_guide_id ?? ""} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 font-normal"><option value="">গাইড নির্বাচন করুন</option>{(guides ?? []).map((guide) => <option key={guide.id} value={guide.id}>{guide.crop_name}</option>)}</select></label><label className="text-sm font-bold">জাত / Variety<input name="variety_name" defaultValue={detail?.variety_name ?? ""} maxLength={160} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">Germination (%)<input name="germination_rate" type="number" min="0" max="100" step="0.01" defaultValue={detail?.germination_rate ?? ""} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold">Purity (%)<input name="purity_rate" type="number" min="0" max="100" step="0.01" defaultValue={detail?.purity_rate ?? ""} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold md:col-span-2">Seed treatment<input name="seed_treatment" defaultValue={detail?.seed_treatment ?? ""} maxLength={4000} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label><label className="text-sm font-bold md:col-span-2">Special warnings<textarea name="special_warnings" rows={3} defaultValue={detail?.special_warnings ?? ""} maxLength={8000} className="mt-1 w-full rounded-lg border px-3 py-2 font-normal"/></label></div><div className="mt-3 flex justify-end"><button className="rounded-lg bg-[#17452c] px-4 py-2 text-sm font-bold text-white">পণ্যের Seed Details save করুন</button></div>
       </form>;})}</div>
     </section>
-  </main>;
+  </AdminPageLayout>;
 }

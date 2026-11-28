@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import {requireAdminPage} from "@/lib/admin/authz";
 import ContentRemovalActions from "@/app/admin/content-drafts/ContentRemovalActions";
@@ -67,7 +68,7 @@ export default async function AdminArticlesPage({searchParams}:{searchParams?:Pr
     {href:"/admin/opportunities",label:"Keyword Ideas",hint:"বিষয় খুঁজুন"},
     {href:"/admin/seo",label:"SEO Dashboard",hint:"SEO পর্যবেক্ষণ"},
   ];
-  return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
+  return <AdminPageLayout className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <header className="flex flex-wrap items-end justify-between gap-4">
       <div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">Editorial catalogue</p>
         <h1 className="mt-2 text-2xl font-black sm:text-3xl">নিবন্ধ ব্যবস্থাপনা</h1>
@@ -146,10 +147,10 @@ export default async function AdminArticlesPage({searchParams}:{searchParams?:Pr
       {!articles?.length&&<div className="p-8 text-center text-sm text-slate-600">এই Search/Filter-এ কোনো Article পাওয়া যায়নি। <Link className="font-bold underline" href="/admin/articles">সব নিবন্ধ দেখুন</Link></div>}
     </section>}
     <nav aria-label="Article pagination" className="mt-4 flex items-center justify-between gap-3">
-      {page>1?<Link href={link({page:page-1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">← Previous</Link>:<span className="rounded-xl border px-4 py-2 text-sm opacity-40">← Previous</span>}
+      {page>1?<Link href={link({page:page-1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">← Previous</Link>:<span aria-disabled="true" className="rounded-xl border bg-[#edf2ec] px-4 py-2 text-sm text-[#536457]">← Previous</span>}
       <span className="text-sm text-[#637266]">Page {page} / {Math.max(1,Math.ceil(total/pageSize))}</span>
-      {page*pageSize<total?<Link href={link({page:page+1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">Next →</Link>:<span className="rounded-xl border px-4 py-2 text-sm opacity-40">Next →</span>}
+      {page*pageSize<total?<Link href={link({page:page+1})} className="rounded-xl border bg-white px-4 py-2 text-sm font-bold">Next →</Link>:<span aria-disabled="true" className="rounded-xl border bg-[#edf2ec] px-4 py-2 text-sm text-[#536457]">Next →</span>}
     </nav>
     <p className="mt-5 text-xs leading-6 text-slate-600">Trash থেকে Restore করা যায়; Permanently Delete ফিরিয়ে আনা যায় না। SEO Meta OK শুধু title/description-এর দৈর্ঘ্য যাচাই করে—উৎস ও তথ্য সম্পাদকীয়ভাবে যাচাই করতে হবে।</p>
-  </main>;
+  </AdminPageLayout>;
 }

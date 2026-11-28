@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import axe from "axe-core";
 import { chromium } from "playwright";
 
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
@@ -91,6 +92,8 @@ try {
   const navigationSearch = page.getByRole("textbox", { name: "Search admin pages" });
   await navigationSearch.fill("Seller applications");
   await mobileNavigation.locator('a[href="/admin/seller-applications"]').waitFor({ state: "visible" });
+  await navigationSearch.fill("Plant Market verification");
+  await mobileNavigation.locator('a[href="/admin/plant-market-applications"]').waitFor({ state: "visible" });
   await navigationSearch.fill("");
   await mobileNavigation.getByRole("complementary").getByRole("button", { name: "Close navigation" }).click();
   results.push({ test: "mobile admin drawer opens, page search filters links, and drawer closes", status: "passed" });
@@ -111,6 +114,79 @@ try {
   await page.getByRole("button", { name: "Open admin navigation" }).waitFor({ state: "hidden" });
   results.push({ test: "desktop sidebar and navigation search are visible at 1440px", status: "passed" });
 
+
+  // Authenticated Admin route smoke + responsive overflow matrix.
+  // A route may redirect when the synthetic role lacks a delegated capability;
+  // server failures are never accepted as an expected permission boundary.
+  const adminRoutes = [
+    "/admin", "/admin/command-center", "/admin/access-control", "/admin/ai-content",
+    "/admin/articles", "/admin/articles/11111111-1111-4111-8111-111111111111",
+    "/admin/audit", "/admin/categories", "/admin/content-drafts", "/admin/content-studio",
+    "/admin/custom-orders", "/admin/demand-intelligence", "/admin/finance",
+    "/admin/green-exchange", "/admin/growth-intelligence", "/admin/harvest",
+    "/admin/identity-verification", "/admin/jobs", "/admin/opportunities",
+    "/admin/plant-market-applications",
+    "/admin/orders", "/admin/plant-market-products", "/admin/products", "/admin/reports",
+    "/admin/search-intelligence", "/admin/search-intelligence/opportunities",
+    "/admin/seed-information", "/admin/seller-applications", "/admin/seo",
+    "/admin/seo-pages", "/admin/settings", "/admin/transport", "/admin/users",
+  ];
+  const responsiveWidths = [390, 768, 1024, 1440];
+  const routeResults = [];
+  const accessibilityAudits = [];
+  for (const route of adminRoutes) {
+    const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 20_000 });
+    const status = response?.status() ?? 0;
+    assert.ok(status < 500, `Authenticated Admin route returned server error: ${route} (${status})`);
+    const landedPath = new URL(page.url()).pathname;
+    const redirected = landedPath !== route;
+    if (!redirected && status !== 404) {
+      const routeSlug = (route.startsWith("/admin/") ? route.slice(7) : "overview").replaceAll("/", "-") || "overview";
+      for (const width of responsiveWidths) {
+        await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+        if (width === 390) await page.addScriptTag({ content: axe.source });
+        const dimensions = await page.evaluate(() => ({
+          viewport: document.documentElement.clientWidth,
+          document: document.documentElement.scrollWidth,
+        }));
+        assert.ok(dimensions.document <= dimensions.viewport + 1, `${route} overflows at ${width}px: ${JSON.stringify(dimensions)}`);
+        await page.screenshot({
+          path: `test-results/admin-route-matrix/${routeSlug}-${width}.png`,
+          fullPage: true,
+          animations: "disabled",
+        });
+        if (width === 390 || width === 1440) {
+          const audit = await page.evaluate(async () => {
+            const result = await window.axe.run(document, {
+              runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] },
+            });
+            return {
+              violations: result.violations.map((violation) => ({
+                id: violation.id, impact: violation.impact, help: violation.help,
+                nodes: violation.nodes.map((node) => ({ target: node.target, failureSummary: node.failureSummary })),
+              })),
+              passes: result.passes.length, incomplete: result.incomplete.length,
+            };
+          });
+          accessibilityAudits.push({ route, width, ...audit });
+        }
+      }
+    }
+    routeResults.push({ route, status, landedPath, permissionRedirect: redirected });
+  }
+  const expectedCanonicalRedirect = "/admin/articles/11111111-1111-4111-8111-111111111111";
+  const unexpectedPermissionRedirects = routeResults.filter(item => item.permissionRedirect && item.route !== expectedCanonicalRedirect);
+  assert.deepEqual(unexpectedPermissionRedirects, [], `Synthetic full-access Admin unexpectedly lacked route permissions: ${JSON.stringify(unexpectedPermissionRedirects)}`);
+  results.push({
+    test: "authenticated Admin route matrix and 390/768/1024/1440 responsive overflow",
+    status: "passed",
+    routes: routeResults.length,
+    responsiveWidths,
+    permissionRedirects: routeResults.filter(item => item.permissionRedirect).map(item => item.route),
+    routeResults,
+  });
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   const apiResult = await page.evaluate(async (base) => {
     const response = await fetch(`${base}/api/buyer-demands/convert-to-rfq`, {
       method: "POST",
@@ -128,6 +204,9 @@ try {
   assert.ok([401, 403].includes(apiResult.status), `Unauthenticated browser API request must be rejected: ${JSON.stringify(apiResult)}`);
   results.push({ test: "RFQ conversion API rejects unauthenticated browser request", status: "passed", httpStatus: apiResult.status });
 
+  await writeFile("test-results/admin-wcag-audit.json", JSON.stringify(accessibilityAudits, null, 2));
+  const violationCount = accessibilityAudits.reduce((total, audit) => total + audit.violations.length, 0);
+  results.push({ test: "automated axe WCAG 2.2 AA audit artifact generated for authenticated Admin routes at 390px and 1440px", status: "completed", audits: accessibilityAudits.length, violations: violationCount });
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join("; ")}`);
   results.push({ test: "no uncaught browser runtime errors", status: "passed" });
 

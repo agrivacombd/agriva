@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import "@/components/admin/ui/admin-design-system.css";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 import { requireAdminPage } from "@/lib/admin/authz";

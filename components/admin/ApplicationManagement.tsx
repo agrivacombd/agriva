@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 import { reviewModuleApplication } from "@/lib/admin/application-review";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
+import { AdminPage, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 
-type Scope = "identity" | "seller";
+type Scope = "identity" | "seller" | "plant";
 type StatusFilter = "pending" | "approved" | "rejected" | "all";
-type Props = { scope: Scope; status?: string; q?: string };
+type Props = { scope: Scope; status?: string; q?: string; category?: string };
 
 const STATUS_FILTERS: StatusFilter[] = ["pending", "approved", "rejected", "all"];
 const STATUS_LABELS: Record<StatusFilter, string> = {
@@ -28,6 +30,34 @@ const MODULE_LABELS: Record<string, string> = {
   sell_harvest: "Harvest",
   farm_management: "Farm management",
 };
+const SELLER_CATEGORY_LABELS: Record<string, string> = {
+  retailer: "Retailer / shop",
+  wholesaler: "Wholesaler",
+  authorized_dealer: "Authorized dealer",
+  manufacturer: "Manufacturer / brand",
+  cooperative: "Cooperative",
+  agri_service_provider: "Agricultural service provider",
+  other_business: "Other business",
+  nursery_owner: "Nursery owner / operator",
+  plant_grower: "Plant grower",
+  fruit_sapling_grower: "Fruit sapling grower",
+  ornamental_plant_seller: "Ornamental plant seller",
+  seed_cutting_seller: "Seeds / cuttings seller",
+  plant_reseller: "Plant reseller",
+  gardening_supplies: "Gardening supplies",
+  hobby_gardener: "Hobby gardener",
+};
+const PLANT_CATEGORY_KEYS = new Set(["nursery_owner","plant_grower","fruit_sapling_grower","ornamental_plant_seller","seed_cutting_seller","plant_reseller","gardening_supplies","hobby_gardener"]);
+const EVIDENCE_TYPE_LABELS: Record<string, string> = {
+  identity_support: "Identity supporting document",
+  business_registration: "Business registration",
+  dealer_authorization: "Dealer authorization",
+  supplier_invoice: "Supplier / purchase proof",
+  nursery_photos: "Nursery / plant photos",
+  nursery_registration: "Nursery registration",
+  product_license: "Product authorization",
+  other: "Other supporting document",
+};
 
 function textValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
@@ -36,18 +66,21 @@ function textValue(value: unknown): string {
   return String(value);
 }
 
-export default async function ApplicationManagement({ scope, status, q = "" }: Props) {
+export default async function ApplicationManagement({ scope, status, q = "", category = "" }: Props) {
   const { supabase } = await requireAdminPage("identity.review");
   const activeStatus: StatusFilter = STATUS_FILTERS.includes(status as StatusFilter)
     ? (status as StatusFilter)
     : "pending";
   const isSeller = scope === "seller";
-  const moduleKey = isSeller ? "marketplace" : null;
-  const basePath = isSeller ? "/admin/seller-applications" : "/admin/identity-verification";
-  const title = isSeller ? "Seller applications" : "Identity verification";
+  const isPlant = scope === "plant";
+  const moduleKey = isSeller ? "marketplace" : isPlant ? "plant_market" : null;
+  const basePath = isSeller ? "/admin/seller-applications" : isPlant ? "/admin/plant-market-applications" : "/admin/identity-verification";
+  const title = isSeller ? "Marketplace seller applications" : isPlant ? "Plant Market seller verification" : "Identity verification";
   const description = isSeller
-    ? "Marketplace business seller applications. Approved and rejected decisions remain available in the history."
-    : "Review private identity evidence and module-access requests. Approval grants the requested module permissions.";
+    ? "Review Marketplace businesses, seller categories, business evidence and access decisions."
+    : isPlant
+      ? "Dedicated nursery and plant-seller review queue. Verify seller category, growing model, nursery details, product types and private evidence before granting Plant Market access."
+      : "Review private identity evidence and module-access requests. Approval grants the requested module permissions.";
 
   let query = supabase.from("module_access_applications")
     .select("id,user_id,module,applicant_type,organization_id,status,applicant_data,review_note,reviewed_by,reviewed_at,created_at,updated_at")
@@ -91,24 +124,39 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
       ? details.evidence_paths.filter((path): path is string =>
           typeof path === "string" && path.startsWith(app.user_id + "/")).slice(0, 5)
       : [];
-    const signed = await Promise.all(paths.map(async (path) => {
+    const evidenceTypes = Array.isArray(details.evidence_types)
+      ? details.evidence_types.filter((type): type is string => typeof type === "string")
+      : [];
+    const signed = await Promise.all(paths.map(async (path, index) => {
       const { data: object } = await supabase.storage.from("identity-verification").createSignedUrl(path, 300);
-      return object?.signedUrl || null;
+      return object?.signedUrl
+        ? { url: object.signedUrl, type: evidenceTypes[index] || "other" }
+        : null;
     }));
     return {
       ...app,
       details,
-      applicantName: String(details.organization_name || profileNames.get(app.user_id) || app.applicant_type),
-      evidence: signed.filter((url): url is string => Boolean(url)),
+      applicantName: String(details.nursery_name || details.organization_name || profileNames.get(app.user_id) || app.applicant_type),
+      evidence: signed.filter((item): item is { url: string; type: string } => Boolean(item)),
       events: eventsByApplication.get(app.id) || [],
     };
   }));
 
   const needle = q.trim().toLocaleLowerCase();
-  const filteredItems = needle ? items.filter((app) => [
+  const searchedItems = needle ? items.filter((app) => [
     app.id, app.user_id, app.applicantName, app.module, app.applicant_type,
-    textValue(app.details.district), textValue(app.details.business_address),
+    textValue(app.details.seller_category), textValue(app.details.district),
+    textValue(app.details.business_address), textValue(app.details.nursery_name),
+    textValue(app.details.nursery_address), textValue(app.details.gardening_types),
   ].join(" ").toLocaleLowerCase().includes(needle)) : items;
+  const categoryKeys = Object.keys(SELLER_CATEGORY_LABELS);
+  const activeCategory = isPlant && categoryKeys.includes(category) && PLANT_CATEGORY_KEYS.has(category) ? category : "";
+  const filteredItems = activeCategory
+    ? searchedItems.filter((app) => app.details.seller_category === activeCategory)
+    : searchedItems;
+  const plantCategoryCounts = isPlant ? Object.entries(SELLER_CATEGORY_LABELS).map(([key, label]) => ({
+    key, label, count: items.filter((app) => app.details.seller_category === key).length,
+  })).filter((item) => item.count > 0) : [];
 
   const counts: Record<StatusFilter, number | null> = {
     pending: pendingCount.error ? null : pendingCount.count,
@@ -119,7 +167,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
   const hasCountErrors = Object.values(counts).some((count) => count === null);
 
   return (
-    <main className="mx-auto w-full max-w-7xl p-4 text-[#173b2d] sm:p-6">
+    <AdminPage className="!max-w-7xl !p-4 text-[#173b2d] sm:!p-6">
       <header className="relative isolate overflow-hidden rounded-[26px] border border-[#e2ebe0] bg-gradient-to-br from-white via-[#fbfdf9] to-[#eef6e9] p-5 shadow-[0_8px_28px_rgba(23,59,45,0.045)] sm:rounded-[28px] sm:p-7">
         <div aria-hidden="true" className="pointer-events-none absolute -right-12 -top-20 h-56 w-56 rounded-full border-[28px] border-[#d9ead3]/55" />
         <div className="relative flex flex-wrap items-start justify-between gap-4">
@@ -132,9 +180,17 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
         </div>
       </header>
 
+      {isPlant && <section className="mt-5 rounded-2xl border border-[#dce9d8] bg-gradient-to-r from-[#f3f8ef] to-white p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><p className="text-[10px] font-extrabold uppercase tracking-[.16em] text-[#779080]">Plant Market review desk</p><h2 className="mt-1 text-lg font-black text-[#173b2d]">Nursery & plant seller checks</h2><p className="mt-1 text-xs leading-5 text-[#637568]">Review actual nursery operations and evidence; do not require a trade licence from every small grower or hobby seller.</p></div>
+          <span className="rounded-xl border border-[#dce7dc] bg-white px-3 py-2 text-xs font-bold text-[#41634d]">{items.length} applications in current view</span>
+        </div>
+        {plantCategoryCounts.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{plantCategoryCounts.map((item) => <Link key={item.key} href={`${basePath}?status=${activeStatus}&category=${item.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${activeCategory === item.key ? "border-[#126b4f] bg-[#eaf4eb] text-[#126b4f]" : "border-[#e1e9df] bg-white text-[#637568] hover:border-[#9bb8a3]"}`}>{item.label} <span className="ml-1 tabular-nums">{item.count}</span></Link>)}</div>}
+      </section>}
+
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STATUS_FILTERS.map((key) => (
-          <Link key={key} href={`${basePath}?status=${key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+          <Link key={key} href={`${basePath}?status=${key}${activeCategory ? `&category=${activeCategory}` : ""}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
             aria-current={activeStatus === key ? "page" : undefined}
             className={`group rounded-2xl border p-4 shadow-[0_2px_12px_rgba(23,59,45,0.025)] transition duration-150 hover:-translate-y-0.5 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${activeStatus === key ? "border-[#126b4f] bg-[#eaf4eb] ring-1 ring-[#126b4f]" : "border-[#e1e9df] bg-white hover:border-[#9bb8a3]"}`}>
             <span className="text-xs font-bold text-[#637568]">{STATUS_LABELS[key]}</span>
@@ -150,12 +206,13 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
         <input name="q" defaultValue={q} aria-label="Search applications" placeholder="Search applicant, business, user ID or application ID…"
           className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-[#16835f] focus:ring-2 focus:ring-emerald-100"/>
         <button className="min-h-11 rounded-xl bg-[#126b4f] px-5 text-sm font-bold text-white">Search</button>
-        {q && <Link href={`${basePath}?status=${activeStatus}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Clear</Link>}
+        {isPlant && <select name="category" defaultValue={activeCategory} aria-label="Filter by Plant Market seller category" className="min-h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm"><option value="">All seller categories</option>{Object.entries(SELLER_CATEGORY_LABELS).filter(([key]) => key in SELLER_CATEGORY_LABELS && PLANT_CATEGORY_KEYS.has(key)).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select>}
+        {q || activeCategory ? <Link href={`${basePath}?status=${activeStatus}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Clear filters</Link> : null}
       </form>
 
-      {error && <p role="alert" className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">Application list could not be loaded. Check the identity workflow migration and admin database access.</p>}
+      {error && <div className="mt-5"><AdminErrorState title="Application list could not be loaded" description="Check the identity workflow migration and admin database access."/></div>}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-black">{STATUS_LABELS[activeStatus]} <span className="font-medium text-[#829084]">({filteredItems.length} shown)</span></h2>
+        <h2 className="font-black">{isPlant ? "Plant Market applications" : STATUS_LABELS[activeStatus]} <span className="font-medium text-[#829084]">({filteredItems.length} shown)</span></h2>
         <p className="text-xs text-[#829084]">Newest first · up to 500 records per view</p>
       </div>
 
@@ -182,17 +239,33 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
               </div>
 
               <dl className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                {Object.entries(app.details).filter(([key]) => key !== "evidence_paths").map(([key, value]) => (
+                {Object.entries(app.details).filter(([key]) => key !== "evidence_paths" && key !== "schema_version" && !(isPlant && ["nursery_name","nursery_address","gardening_types","experience_note","operating_model","source_declaration"].includes(key))).map(([key, value]) => (
                   <div key={key} className="min-w-0 rounded-xl bg-[#f8faf6] p-3">
-                    <dt className="text-[11px] font-bold uppercase tracking-wide text-[#718174]">{key.replaceAll("_", " ")}</dt>
-                    <dd className="mt-1 break-words text-sm font-medium">{textValue(value)}</dd>
+                    <dt className="text-[11px] font-bold uppercase tracking-wide text-[#718174]">{key === "seller_category" ? "Seller category" : key.replaceAll("_", " ")}</dt>
+                    <dd className="mt-1 break-words text-sm font-medium">
+                      {key === "seller_category"
+                        ? SELLER_CATEGORY_LABELS[String(value)] || textValue(value)
+                        : key === "evidence_types" && Array.isArray(value)
+                          ? value.map((type) => EVIDENCE_TYPE_LABELS[String(type)] || String(type)).join(", ")
+                          : textValue(value)}
+                    </dd>
                   </div>
                 ))}
               </dl>
 
+              {isPlant && <section className="mt-4 rounded-2xl border border-[#dce9d8] bg-[#fbfdf9] p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2"><h4 className="text-sm font-black text-[#234b35]">Plant Market verification details</h4><span className="text-[10px] font-bold uppercase tracking-wide text-[#779080]">Review before decision</span></div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {[["Nursery name",app.details.nursery_name],["Nursery location",app.details.nursery_address],["Operating model",app.details.operating_model],["Product / plant types",app.details.gardening_types],["Growing / selling experience",app.details.experience_note],["Product source declaration",app.details.source_declaration]].map(([label,value]) => <div key={String(label)} className="min-w-0 rounded-xl border border-[#e6eee3] bg-white p-3"><p className="text-[10px] font-extrabold uppercase tracking-wide text-[#829084]">{String(label)}</p><p className="mt-1 whitespace-pre-wrap break-words text-sm text-[#294d39]">{textValue(value)}</p></div>)}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2 text-[11px]">{[
+                  ["Seller category",Boolean(app.details.seller_category)],["Contact & district",Boolean(app.details.contact_name && app.details.contact_phone && app.details.district)],["Delivery coverage",Boolean(app.details.delivery_coverage)],["Nursery name & location",app.details.seller_category !== "nursery_owner" || Boolean(app.details.nursery_name && app.details.nursery_address)],["Source declaration",String(app.details.source_declaration || "").trim().length >= 20],["Supporting evidence",app.evidence.length > 0],["Seller policy consent",app.details.policy_accepted === true],
+                ].map(([label,ok]) => <span key={String(label)} className={`rounded-full px-2.5 py-1 font-bold ${ok ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"}`}>{ok ? "✓" : "!"} {String(label)}</span>)}</div>
+              </section>}
+
               {app.evidence.length > 0 && <div className="mt-4 flex flex-wrap gap-2">
-                {app.evidence.map((url, index) => <a key={url} href={url} target="_blank" rel="noreferrer"
-                  className="rounded-lg border border-[#dce7d9] px-3 py-2 text-xs font-bold text-[#126b4f]">Private evidence {index + 1} ↗</a>)}
+                {app.evidence.map((item, index) => <a key={item.url} href={item.url} target="_blank" rel="noreferrer"
+                  className="rounded-lg border border-[#dce7d9] px-3 py-2 text-xs font-bold text-[#126b4f]">{EVIDENCE_TYPE_LABELS[item.type] || "Supporting document"} · {index + 1} ↗</a>)}
               </div>}
 
               {app.review_note && <div className="mt-4 rounded-xl border border-rose-100 bg-rose-50 p-3">
@@ -213,16 +286,17 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
 
               {canReview && <form action={reviewModuleApplication} className="mt-5 grid gap-3 border-t border-[#edf1ea] pt-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
                 <input type="hidden" name="applicationId" value={app.id}/>
+                {(isSeller || isPlant) && <input type="hidden" name="expectedModule" value={isPlant ? "plant_market" : "marketplace"}/>}
                 <input name="reviewNote" maxLength={1000} placeholder="Review note (required when rejecting)" aria-label="Review note"
                   className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"/>
-                <button name="decision" value="rejected" formNoValidate className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</button>
-                <button name="decision" value="approved" className="min-h-11 rounded-xl bg-[#126b4f] px-4 text-sm font-bold text-white hover:bg-[#0f5942]">Approve & grant access</button>
+                <AdminConfirmSubmitButton name="decision" value="rejected" requiredFieldName="reviewNote" requiredWhenValue="rejected" confirmMessage="এই application প্রত্যাখ্যান করবেন? Rejection note যাচাই করুন।" className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</AdminConfirmSubmitButton>
+                <AdminConfirmSubmitButton name="decision" value="approved" confirmMessage="এই application approve করে seller access grant করবেন?" className="min-h-11 rounded-xl bg-[#126b4f] px-4 text-sm font-bold text-white hover:bg-[#0f5942]">Approve & grant access</AdminConfirmSubmitButton>
               </form>}
             </article>
           );
         })}
       </div>
-      {!filteredItems.length && !error && <p className="mt-6 rounded-2xl border border-[#e1e9df] bg-white p-8 text-center text-sm text-[#6a7b6e]">No applications found for this filter.</p>}
-    </main>
+      {!filteredItems.length && !error && <div className="mt-6"><AdminEmptyState title="No applications found" description="No applications match the selected status and search filters."/></div>}
+    </AdminPage>
   );
 }

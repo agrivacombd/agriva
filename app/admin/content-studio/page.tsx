@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -40,7 +41,7 @@ export default async function ContentStudioPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-8 lg:py-12">
+    <AdminPageLayout className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-8 lg:py-12">
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div><p className="text-xs font-bold uppercase tracking-[.2em] text-[#a47a20]">AGRIVA / Editorial Operations</p><h1 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Content Management Studio</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-[#647468]">A single workspace for editorial planning, SEO, drafting and review. Content remains unpublished until approved through the existing workflow.</p></div>
@@ -62,6 +63,6 @@ export default async function ContentStudioPage() {
         <AgricultureTrends />
         <section className="mt-10"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-[.16em] text-[#a47a20]">Workspace</p><h2 className="mt-2 text-2xl font-black">Content management tools</h2></div><p className="text-sm text-[#647468]">Existing admin modules · Access controlled</p></div><div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{sections.map((section)=><Link key={section.href} href={section.href} className="group rounded-2xl border border-[#e4e9df] bg-white p-6 shadow-sm transition hover:border-[#8ca98f] hover:shadow-md"><div className="flex items-start justify-between"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eef5ed] text-sm font-black text-[#315d3c]">{section.icon}</span><span aria-hidden="true" className="text-xl text-[#79947d] transition group-hover:translate-x-1">↗</span></div><h3 className="mt-5 text-lg font-bold">{section.title}</h3><p className="mt-2 text-sm leading-6 text-[#647468]">{section.description}</p></Link>)}</div></section>
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }

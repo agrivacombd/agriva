@@ -1,4 +1,5 @@
 "use client";
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import {useEffect,useMemo,useRef,useState} from "react";
 import Link from "next/link";
 import {createBrowserClient} from "@supabase/ssr";
@@ -124,7 +125,7 @@ export default function ContentDraftsClient(){
     finally{setBusy(false);}
   }
 
-  return <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
+  return <AdminPageLayout className="min-h-screen bg-[#f5f7f2] text-[#17351f]"><section className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><p className="text-xs font-bold uppercase tracking-wide text-[#a77d2f]">AGRIVA Editorial</p><h1 className="mt-2 text-2xl font-black sm:text-3xl">SEO Content Drafts</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">Create → Edit → Review → Approve → Publish. Only approved Articles become visible in the Blog after publication.</p></div>
       <nav className="flex flex-wrap gap-2" aria-label="Editorial tools">
@@ -199,6 +200,6 @@ export default function ContentDraftsClient(){
         {error&&<p role="alert" className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-800">{error}</p>}
       </div>
     </div>}
-  </section></main>;
+  </section></AdminPageLayout>;
 }
 function Info({label,value}:{label:string;value:string}){return <div className="rounded-xl bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">{label}</p><p className="mt-1 break-words text-sm font-semibold">{value}</p></div>}

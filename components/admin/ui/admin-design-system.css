@@ -1,0 +1,123 @@
+/* AGRIVA Admin Design System — shared tokens and primitives */
+:root {
+  --admin-canvas: #f4f7f2;
+  --admin-surface: #ffffff;
+  --admin-surface-muted: #f7faf6;
+  --admin-sidebar: #102f25;
+  --admin-sidebar-elevated: #173d2f;
+  --admin-ink: #173b2d;
+  --admin-ink-muted: #536457;
+  --admin-ink-subtle: #536457;
+  --admin-border: #e2eae0;
+  --admin-border-strong: #cbdacb;
+  --admin-primary: #17633f;
+  --admin-primary-hover: #104d32;
+  --admin-accent: #c6ef72;
+  --admin-accent-ink: #173b2d;
+  --admin-success: #167447;
+  --admin-success-bg: #eaf6ee;
+  --admin-warning: #9a6412;
+  --admin-warning-bg: #fff6df;
+  --admin-danger: #b42318;
+  --admin-danger-bg: #fff0ee;
+  --admin-info: #245c9b;
+  --admin-info-bg: #edf5ff;
+  --admin-radius-sm: 0.625rem;
+  --admin-radius-md: 0.875rem;
+  --admin-radius-lg: 1.125rem;
+  --admin-radius-xl: 1.375rem;
+  --admin-shadow-card: 0 1px 2px rgb(20 45 30 / 4%), 0 8px 24px rgb(20 45 30 / 4%);
+  --admin-shadow-popover: 0 16px 48px rgb(12 35 24 / 16%);
+  --admin-content-width: 1600px;
+}
+.admin-shell { background: var(--admin-canvas); color: var(--admin-ink); }
+.admin-sidebar { background: var(--admin-sidebar); color: #fff; }
+.admin-topbar { background: rgb(255 255 255 / 94%); border-color: var(--admin-border); }
+.admin-page { width: 100%; max-width: var(--admin-content-width); margin-inline: auto; padding: clamp(1rem, 2vw, 2rem); }
+.admin-panel { min-width: 0; border: 1px solid var(--admin-border); border-radius: var(--admin-radius-lg); background: var(--admin-surface); box-shadow: var(--admin-shadow-card); }
+.admin-panel-muted { background: var(--admin-surface-muted); }
+.admin-eyebrow { color: var(--admin-ink-muted); font-size: .6875rem; font-weight: 800; letter-spacing: .14em; line-height: 1.4; text-transform: uppercase; }
+.admin-focus-ring:focus-visible { outline: 3px solid rgb(23 99 63 / 35%); outline-offset: 2px; }
+.admin-scrollbar { scrollbar-color: #9bb49f transparent; scrollbar-width: thin; }
+.admin-scrollbar::-webkit-scrollbar { width: 7px; height: 7px; }
+.admin-scrollbar::-webkit-scrollbar-thumb { border-radius: 999px; background: #9bb49f; }
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *, .admin-shell *::before, .admin-shell *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* Workspace-wide defaults: existing modules inherit the same responsive canvas. */
+.admin-workspace { min-width: 0; background: var(--admin-canvas); }
+.admin-workspace > main { width: 100%; max-width: var(--admin-content-width); margin-inline: auto; padding: clamp(1rem, 2vw, 2rem); }
+.admin-workspace :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 2.75rem; border-color: var(--admin-border-strong); border-radius: var(--admin-radius-sm);
+}
+.admin-workspace :where(input, select, textarea):focus-visible {
+  outline: 3px solid rgb(23 99 63 / 22%); outline-offset: 1px; border-color: var(--admin-primary);
+}
+.admin-workspace :where(button, a) { -webkit-tap-highlight-color: transparent; }
+.admin-workspace :where(table) { width: 100%; border-collapse: separate; border-spacing: 0; }
+.admin-workspace :where(th) { color: var(--admin-ink-muted); font-size: .6875rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.admin-workspace :where(td, th) { padding: .75rem 1rem; border-bottom: 1px solid var(--admin-border); text-align: left; vertical-align: middle; }
+.admin-workspace :where(tr:last-child td) { border-bottom: 0; }
+@media (max-width: 640px) {
+  .admin-workspace > main { padding: 1rem; }
+  .admin-workspace :where(button, a, input, select) { scroll-margin-block: 1rem; }
+}
+
+
+/* Final cross-module consistency layer: applies to legacy pages until each
+   module is migrated to the typed Admin primitives. */
+.admin-workspace > main {
+  min-height: auto !important;
+  background-color: var(--admin-canvas) !important;
+  color: var(--admin-ink);
+}
+.admin-workspace :where(section[class*="rounded-2xl"][class*="bg-white"], article[class*="rounded-2xl"][class*="bg-white"]) {
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow-card);
+}
+.admin-workspace :where(button, a, input, select, textarea) {
+  accent-color: var(--admin-primary);
+}
+.admin-workspace :where(button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible) {
+  outline-color: var(--admin-primary);
+}
+.admin-workspace :where(button:disabled, input:disabled, select:disabled, textarea:disabled) {
+  cursor: not-allowed;
+  opacity: .58;
+}
+.admin-workspace :where(table) {
+  font-variant-numeric: tabular-nums;
+}
+.admin-workspace :where(tbody tr) {
+  transition: background-color .14s ease;
+}
+.admin-workspace :where(tbody tr:hover) {
+  background-color: var(--admin-surface-muted);
+}
+.admin-workspace :where(pre) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  .admin-workspace :where(section, article) { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-workspace :where(tbody tr) { transition: none; }
+}
+
+
+/* WCAG AA contrast normalization for legacy Admin module text. */
+.admin-shell :where(
+  [class~="text-[#718174]"], [class~="text-[#748074]"], [class~="text-[#879187]"],
+  [class~="text-[#91a094]"], [class~="text-[#728274]"], [class~="text-[#718072]"],
+  [class~="text-[#9caca3]"], [class~="text-[#64766a]"], [class~="text-[#829084]"],
+  [class~="text-[#8a968a]"], [class~="text-[#637568]"], [class~="text-[#7b887d]"],
+  [class~="text-[#718071]"], [class~="text-[#6d7b6e]"], [class~="text-[#849084]"],
+  [class~="text-[#788579]"]
+) { color: #536457 !important; }
+.admin-shell :where(
+  [class~="text-[#b58b28]"], [class~="text-[#a47b20]"], [class~="text-[#a77d2f]"],
+  [class~="text-[#a47a20]"], [class~="text-[#9a7624]"]
+) { color: #6b4b00 !important; }
+.admin-sidebar [class~="text-emerald-100/45"] { color: #a9c6b8 !important; }

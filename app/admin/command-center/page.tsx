@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { ArrowUpRight, ClipboardCheck, Package, ShieldCheck, ShoppingCart, Sprout, TrendingUp, Users } from "lucide-react";
 import { requireAdminPage } from "@/lib/admin/authz";
@@ -52,10 +53,11 @@ export default async function AdminCommandCenterPage() {
 
   const metricResults = [users, farmers, products, orders, pendingIdentity, pendingSeller];
   const hasErrors = metricResults.some((item) => Boolean(item.error));
-  const firstName = user.email?.split("@")[0] ?? "Admin";
+  const metadataName = typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name.trim() : "";
+  const firstName = metadataName ? metadataName.split(/\\s+/)[0] : "Admin";
 
   return (
-    <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+    <AdminPageLayout className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <section className="relative isolate overflow-hidden rounded-[26px] bg-gradient-to-br from-[#153f30] via-[#123b2d] to-[#0b2b20] px-5 py-7 text-white shadow-[0_18px_45px_rgba(18,59,45,0.13)] sm:rounded-[30px] sm:px-8 sm:py-9">
         <div aria-hidden="true" className="pointer-events-none absolute -right-16 -top-28 h-80 w-80 rounded-full border-[42px] border-lime-300/[0.08]" />
         <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 right-[28%] h-64 w-64 rounded-full bg-lime-300/[0.06] blur-3xl" />
@@ -123,7 +125,7 @@ export default async function AdminCommandCenterPage() {
         </div>
       </section>
 
-      <p className="mt-8 border-t border-[#e2e9df] pt-4 text-[11px] leading-5 text-[#91a094]">Read-only overview · High-risk changes remain inside their existing permission-checked workflows · Signed in as {user.email ?? "administrator"}</p>
-    </main>
+      <p className="mt-8 border-t border-[#e2e9df] pt-4 text-[11px] leading-5 text-[#91a094]">Read-only overview · High-risk changes remain inside their existing permission-checked workflows · Secure Admin workspace</p>
+    </AdminPageLayout>
   );
 }

@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
+import { checkAdminPermission } from "@/lib/admin/permission-service";
 
 type OrderStatus = "processing" | "shipped" | "delivered" | "completed" | "cancelled";
 
@@ -32,11 +35,13 @@ async function updateOrderStatus(formData: FormData) {
 async function recordCodCollection(formData: FormData) {
   "use server";
   const checkoutId = String(formData.get("checkoutId") ?? "").trim();
-  const amount = Number(formData.get("collectedAmount"));
+  const amountText = String(formData.get("collectedAmount") ?? "").trim();
+  const amount = Number(amountText);
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
-  if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0) redirect("/admin/orders?notice=invalid");
-  const supabase = await requireAdmin("orders.transition");
-  const { error } = await supabase.rpc("record_cod_collection", {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(checkoutId) || !amountText || !Number.isFinite(amount) || amount < 0 || amount > 9999999999.99 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) redirect("/admin/orders?notice=invalid");
+  const permission = await checkAdminPermission("payments.reconcile");
+  if (!permission.allowed) redirect(`/admin/orders?notice=${permission.reason === "authorization_unavailable" ? "authorization-unavailable" : "collection-forbidden"}`);
+  const { error } = await permission.supabase.rpc("record_cod_collection", {
     p_checkout_id: checkoutId, p_collected_amount: amount, p_note: note || null,
   });
   revalidatePath("/admin/orders");
@@ -65,6 +70,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
   const notice = typeof params?.notice === "string" ? params.notice : "";
   const selectedStatus = typeof params?.status === "string" ? params.status : "";
   const supabase = await requireAdmin();
+  const codPermission = await checkAdminPermission("payments.reconcile");
+  const canReconcileCod = codPermission.allowed;
   const { data: orders, error: ordersError } = await supabase
     .from("marketplace_orders")
     .select("id,checkout_id,total_amount,delivery_fee,unit_price,quantity,status,payment_method,payment_status,created_at,paid_at,shipped_at,delivered_at,reseller_id,shipping_address,products(name)")
@@ -92,14 +99,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
     return acc;
   }, {});
 
-  return <main className="mx-auto min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
+  return <AdminPageLayout className="min-h-[calc(100vh-68px)] w-full max-w-[1600px] px-4 py-5 text-[#17351f] sm:px-6 sm:py-7 xl:px-8">
     <div className="min-w-0">
       <p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">COD order operations · বাংলাদেশ</p>
       <h1 className="mt-2 text-2xl font-black sm:text-3xl">অর্ডার ও ডেলিভারি ম্যানেজমেন্ট</h1>
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">অর্ডারের ঠিকানা, COD-তে আদায়যোগ্য টাকা এবং ডেলিভারির অবস্থা এক জায়গা থেকে দেখুন। Delivered মানেই টাকা আদায় হয়েছে—এমন ধরে নেওয়া হয় না।</p>
 
       {notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
-        {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
+        {notice === "saved" ? "অর্ডারের অবস্থা আপডেট হয়েছে।" : notice === "collection-saved" ? "COD collection audit সংরক্ষিত হয়েছে।" : notice === "collection-error" ? "COD collection সংরক্ষণ করা যায়নি।" : notice === "collection-forbidden" ? "COD collection রেকর্ড করতে payments.reconcile permission প্রয়োজন।" : notice === "authorization-unavailable" ? "Permission যাচাই করা যায়নি; নিরাপত্তার জন্য action বন্ধ রাখা হয়েছে।" : notice === "invalid" ? "অর্ডার বা status সঠিক নয়।" : "অবস্থা আপডেট করা যায়নি। অর্ডার বন্ধ হয়ে থাকলে বা permission না থাকলে transition প্রত্যাখ্যাত হতে পারে।"}
       </p>}
       {ordersError && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-800">অর্ডার তালিকা লোড করা যায়নি। Database schema এবং admin access যাচাই করুন।</p>}
 
@@ -153,7 +160,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                       <option value="processing">প্রসেসিং / নতুন</option><option value="shipped">শিপড</option><option value="delivered">ডেলিভারি সম্পন্ন</option><option value="completed">সম্পন্ন</option><option value="cancelled">বাতিল</option>
                     </select>
                   </label>
-                  <button className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</button>
+                  <AdminConfirmSubmitButton confirmMessage="এই অর্ডারের delivery status পরিবর্তন করবেন? পরিবর্তনটি customer-facing workflow-তে প্রভাব ফেলতে পারে।" className="w-full rounded-xl bg-[#17452c] px-4 py-2.5 text-sm font-extrabold text-white">অবস্থা আপডেট করুন</AdminConfirmSubmitButton>
                 </form>
                 <p className="mt-3 text-xs leading-5 text-[#748074]">Status update database authorization মেনে চলে। বাতিল করলে বর্তমান database RPC stock ফেরত দেওয়ার চেষ্টা করে।</p>
               </div>
@@ -164,12 +171,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
                 {(collectionEventsByCheckout.get(checkout.id) ?? []).map((event) => <p key={event.id} className="mt-2 border-t border-amber-200 pt-2 text-xs leading-5 text-[#654b18]">
                   {new Date(event.created_at).toLocaleString("bn-BD", { timeZone: "Asia/Dhaka" })} · Admin {String(event.collected_by).slice(0, 8)} · আদায় ৳{Number(event.collected_amount).toLocaleString("bn-BD")} · মোট ৳{Number(event.cumulative_collected).toLocaleString("bn-BD")} · পার্থক্য ৳{Number(event.discrepancy_amount).toLocaleString("bn-BD")}{event.note ? ` · ${event.note}` : ""}
                 </p>)}
-                {checkout.payment_status !== "paid" && <form action={recordCodCollection} className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
+                {checkout.payment_status !== "paid" && canReconcileCod && <form action={recordCodCollection} className="mt-3 grid gap-2 sm:grid-cols-[1fr_1.5fr_auto]">
                   <input type="hidden" name="checkoutId" value={checkout.id}/>
                   <label className="text-xs font-bold">এবার আদায় (৳)<input required name="collectedAmount" type="number" min="0" step="0.01" className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="0.00"/></label>
                   <label className="text-xs font-bold">নোট / পার্থক্যের কারণ<input name="note" maxLength={500} className="mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm" placeholder="ঐচ্ছিক"/></label>
-                  <button className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</button>
+                  <AdminConfirmSubmitButton confirmMessage="এই COD collection amount audit ledger-এ স্থায়ীভাবে রেকর্ড করবেন? Amount ও note যাচাই করুন।" className="self-end rounded-lg bg-[#17452c] px-4 py-2.5 text-sm font-bold text-white">আদায় রেকর্ড</AdminConfirmSubmitButton>
                 </form>}
+                {checkout.payment_status !== "paid" && !canReconcileCod && <p className="mt-3 text-xs text-amber-900">COD collection action-এর জন্য delegated <strong>payments.reconcile</strong> permission প্রয়োজন।</p>}
               </div>}
             </div>
           </article>;
@@ -179,5 +187,5 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams?:
       </section>
 
     </div>
-  </main>;
+  </AdminPageLayout>;
 }
