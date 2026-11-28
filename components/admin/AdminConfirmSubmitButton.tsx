@@ -1,7 +1,9 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 type AdminConfirmSubmitButtonProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   confirmMessage: string;
   className?: string;
 };
