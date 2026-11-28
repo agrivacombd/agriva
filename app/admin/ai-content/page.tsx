@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import AIContentDashboard from "@/components/admin/AIContentDashboard";
@@ -27,7 +28,7 @@ export default async function AIContentDashboardPage() {
   if (profileError || profile?.role !== "admin") redirect("/dashboard");
 
   return (
-    <main className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
+    <AdminPageLayout className="min-h-screen bg-[#f5f7f2] text-[#17351f]">
       <section className="mx-auto max-w-7xl px-6 py-10">
         <p className="text-sm font-bold uppercase tracking-[.18em] text-[#b58b28]">AGRIVA Admin</p>
         <h1 className="mt-2 text-4xl font-black">AI Content Intelligence</h1>
@@ -37,6 +38,6 @@ export default async function AIContentDashboardPage() {
         </p>
         <AIContentDashboard />
       </section>
-    </main>
+    </AdminPageLayout>
   );
 }
