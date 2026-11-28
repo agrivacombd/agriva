@@ -125,3 +125,33 @@ No production data or production schema was changed during this review. The curr
 - Current branch head at this follow-up: `8a35d4085be762ba695cef35c4d0f1a451eca9f0`.
 - CI for this exact head is running; do not treat the earlier #4173 result as validation of this new Settings change.
 - Exact-SHA Preview, populated authenticated workflow QA and accessibility review remain pending.
+
+
+## Latest exact-head verification and screenshot review — 2026-11-29
+
+**Verified application SHA:** `efdb78b2d5df9685256a3239c32833aa32622eca`  
+**AGRIVA CI:** #4188 (`46181308056`) — completed / success.  
+**Plant Market Release Gate:** #257 (`46181308073`) — completed / success.
+
+- The AGRIVA CI `quality` job passed dependency checks, lint, TypeScript, Admin authorization/P0/control-center/sensitive-action regressions, and the production build.
+- The isolated Supabase Auth + PostgREST integration job passed, including the Admin P0 migration fixture.
+- The Plant Market gate passed its release contract smoke test, TypeScript check and production build.
+- The CI browser job uploaded `agriva-browser-qa-evidence` (18.1 MB; SHA-bound artifact) containing 124 route screenshots: 31 rendered Admin pages × 4 viewports (390, 768, 1024, 1440px), plus login and Command Center evidence. The legacy article-detail URL is a canonical redirect, not a separately rendered page.
+- First-pass visual contact-sheet review of the 390px and 1440px route matrices shows a consistent shell and responsive page canvas. The screenshot evidence is useful for layout/overflow review, but many modules show empty or query/schema/permission error states because the isolated CI database does not seed realistic records for every Admin module. It does not prove populated-data UX or successful mutations.
+- The CI browser job also passed authenticated route smoke, mobile drawer search/close, desktop navigation visibility, unauthenticated RFQ API rejection, and zero uncaught browser runtime errors. Its explicit layout assertions passed at all four viewport widths.
+- **Settings confirmation follow-up is included in this exact-head CI:** the sensitive-action regression checks the Settings page adoption and confirmation text.
+
+### Superseding earlier review notes
+
+- Earlier sections that say the sensitive actions lack confirmation are historical findings. Orders/COD, Custom Orders/RFQ, Seller Applications, Identity Verification, Green Exchange, Transport and Jobs now use the shared confirmation and duplicate-click guard.
+- Earlier notes that Settings/provider saves lack confirmation are superseded: Growth & Tracking configuration and general site settings now use the shared guard; boolean platform settings receive an explicit high-impact confirmation.
+- Earlier CI #4173/#4154 references are historical. The latest verified application SHA is `efdb78b...`, with #4188 and #257 green.
+
+### Still open — do not mark release-ready yet
+
+1. **Exact-SHA Preview:** Vercel has no deployment record for `efdb78b...`; no current Preview URL/commit metadata exists. Previous free daily deployment quota failures remain the known blocker.
+2. **Populated authenticated QA:** CI fixtures do not contain realistic rows for every module. Orders/COD, RFQ quote lifecycle, Seller Applications, Identity Verification, Seller Access revocation, Green Exchange, Transport, Jobs, Content Drafts, SEO pages, Settings and Finance need synthetic populated-data walkthroughs on an exact-SHA Preview or dedicated staging.
+3. **Formal accessibility:** keyboard-only end-to-end review, screen-reader announcements, focus restoration/trapping across dialogs and drawer, contrast measurement against WCAG 2.2 AA, and reduced-motion behavior are not yet evidenced by an accessibility audit.
+4. **Independent review:** no independent PR review submission is currently recorded for PR #410.
+5. **Release controls:** production migration/rollback review and explicit release authorization remain outstanding. No production migration, merge or deployment has been performed.
+
