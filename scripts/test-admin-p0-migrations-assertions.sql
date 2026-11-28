@@ -121,8 +121,14 @@ END;
 $$;
 
 SELECT set_config('request.jwt.claim.sub', '22222222-2222-4222-8222-222222222222', true);
-DO $$
+DO $
 BEGIN
+  BEGIN
+    PERFORM public.record_cod_collection('44444444-4444-4444-8444-444444444444', 1.00, 'unauthorized test');
+    RAISE EXCEPTION 'Non-admin unexpectedly reconciled COD';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
   BEGIN
     PERFORM public.admin_moderate_green_exchange_listing('77777777-7777-4777-8777-777777777777', 'rejected');
     RAISE EXCEPTION 'Non-admin unexpectedly moderated a Green Exchange listing';
