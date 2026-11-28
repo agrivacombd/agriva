@@ -86,3 +86,60 @@ BEGIN
   END IF;
 END
 $test$;
+
+-- Positive API-role execution: the three public RPCs remain callable.
+SET LOCAL ROLE anon;
+DO $positive_anon$
+BEGIN
+  PERFORM * FROM public.get_ranked_marketplace_products(1, NULL, NULL);
+  PERFORM * FROM public.get_ranked_plant_market_products(1);
+  PERFORM * FROM public.get_green_impact_metrics();
+END
+$positive_anon$;
+
+-- Negative API-role execution: internal telemetry remains unreadable directly.
+DO $negative_anon$
+BEGIN
+  BEGIN
+    EXECUTE 'SELECT 1 FROM public.product_rank_daily_metrics LIMIT 1';
+    RAISE EXCEPTION 'anon unexpectedly read internal product ranking metrics';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+  BEGIN
+    EXECUTE 'SELECT 1 FROM public.product_rank_events LIMIT 1';
+    RAISE EXCEPTION 'anon unexpectedly read internal product ranking events';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+END
+$negative_anon$;
+RESET ROLE;
+
+SET LOCAL ROLE authenticated;
+DO $positive_authenticated$
+BEGIN
+  PERFORM * FROM public.get_ranked_marketplace_products(1, NULL, NULL);
+  PERFORM * FROM public.get_ranked_plant_market_products(1);
+  PERFORM * FROM public.get_green_impact_metrics();
+END
+$positive_authenticated$;
+
+DO $negative_authenticated$
+BEGIN
+  BEGIN
+    EXECUTE 'SELECT 1 FROM public.product_rank_daily_metrics LIMIT 1';
+    RAISE EXCEPTION 'authenticated unexpectedly read internal product ranking metrics';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+  BEGIN
+    EXECUTE 'SELECT 1 FROM public.product_rank_events LIMIT 1';
+    RAISE EXCEPTION 'authenticated unexpectedly read internal product ranking events';
+  EXCEPTION WHEN insufficient_privilege THEN
+    NULL;
+  END;
+END
+$negative_authenticated$;
+RESET ROLE;
+
