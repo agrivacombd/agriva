@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import axe from "axe-core";
 import { chromium } from "playwright";
 
 const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
@@ -132,6 +133,7 @@ try {
   ];
   const responsiveWidths = [390, 768, 1024, 1440];
   const routeResults = [];
+  const accessibilityAudits = [];
   for (const route of adminRoutes) {
     const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded", timeout: 20_000 });
     const status = response?.status() ?? 0;
@@ -142,17 +144,32 @@ try {
       const routeSlug = (route.startsWith("/admin/") ? route.slice(7) : "overview").replaceAll("/", "-") || "overview";
       for (const width of responsiveWidths) {
         await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
+        if (width === 390) await page.addScriptTag({ content: axe.source });
         const dimensions = await page.evaluate(() => ({
           viewport: document.documentElement.clientWidth,
           document: document.documentElement.scrollWidth,
         }));
         assert.ok(dimensions.document <= dimensions.viewport + 1, `${route} overflows at ${width}px: ${JSON.stringify(dimensions)}`);
-        // Keep visual evidence for every Admin route at every supported QA breakpoint.
         await page.screenshot({
           path: `test-results/admin-route-matrix/${routeSlug}-${width}.png`,
           fullPage: true,
           animations: "disabled",
         });
+        if (width === 390 || width === 1440) {
+          const audit = await page.evaluate(async () => {
+            const result = await window.axe.run(document, {
+              runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"] },
+            });
+            return {
+              violations: result.violations.map((violation) => ({
+                id: violation.id, impact: violation.impact, help: violation.help,
+                nodes: violation.nodes.map((node) => ({ target: node.target, failureSummary: node.failureSummary })),
+              })),
+              passes: result.passes.length, incomplete: result.incomplete.length,
+            };
+          });
+          accessibilityAudits.push({ route, width, ...audit });
+        }
       }
     }
     routeResults.push({ route, status, landedPath, permissionRedirect: redirected });
@@ -187,6 +204,9 @@ try {
   assert.ok([401, 403].includes(apiResult.status), `Unauthenticated browser API request must be rejected: ${JSON.stringify(apiResult)}`);
   results.push({ test: "RFQ conversion API rejects unauthenticated browser request", status: "passed", httpStatus: apiResult.status });
 
+  await writeFile("test-results/admin-wcag-audit.json", JSON.stringify(accessibilityAudits, null, 2));
+  const violationCount = accessibilityAudits.reduce((total, audit) => total + audit.violations.length, 0);
+  results.push({ test: "automated axe WCAG 2.2 AA audit artifact generated for authenticated Admin routes at 390px and 1440px", status: "completed", audits: accessibilityAudits.length, violations: violationCount });
   assert.deepEqual(pageErrors, [], `Browser runtime errors: ${pageErrors.join("; ")}`);
   results.push({ test: "no uncaught browser runtime errors", status: "passed" });
 
