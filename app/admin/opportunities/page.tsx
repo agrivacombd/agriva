@@ -1,10 +1,11 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import {requireAdminPage} from "@/lib/admin/authz";
 export const metadata={title:"Content Opportunities | AGRIVA Admin",robots:{index:false,follow:false}};
 export default async function OpportunitiesPage(){
   const {supabase}=await requireAdminPage("content.read");
   const {data: opportunities,error: opportunitiesError}=await supabase.from("content_opportunities").select("id,keyword,intent,search_count,opportunity_type,status").order("search_count",{ascending:false}).limit(100);
-  return <main className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
+  return <AdminPageLayout className="min-h-screen bg-[#f6f8f3] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
     <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">AGRIVA · Search Intelligence</p>
     <h1 className="mt-2 text-2xl font-black sm:text-3xl">Content Opportunities</h1><p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">বৈধ search opportunities থেকে SEO Draft তৈরি করুন। Draft তৈরি হলে Editor → Review → Approval → Publication ধাপগুলো ব্যবহার করুন।</p>
     <div className="mt-4 flex flex-wrap gap-2"><Link href="/admin/seo" className="rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-bold">SEO Dashboard</Link><Link href="/admin/content-drafts" className="rounded-xl bg-emerald-800 px-4 py-2 text-sm font-bold text-white">SEO Drafts</Link></div>
@@ -18,5 +19,5 @@ export default async function OpportunitiesPage(){
       </article>)}
       {!opportunitiesError && !opportunities?.length&&<p className="p-5 text-sm text-slate-600">এখনো কোনো Search Opportunity নেই।</p>}
     </section>
-  </div></main>;
+  </div></AdminPageLayout>;
 }
