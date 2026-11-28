@@ -113,6 +113,8 @@ jobs:
         run: node scripts/smoke-blog-learn-feed.mjs
       - name: Admin authorization regression test
         run: npm run test:admin-authorization
+      - name: AGRIVA Control Center route and navigation regression
+        run: npm run test:admin-control-center-navigation
       - name: Sell My Harvest immediate publication regression test
         run: npm run test:sell-harvest-publication
       - name: Admin product RPC contract regression test
