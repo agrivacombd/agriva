@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 import { reviewModuleApplication } from "@/lib/admin/application-review";
-import { AdminPage } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
 
 type Scope = "identity" | "seller";
 type StatusFilter = "pending" | "approved" | "rejected" | "all";
@@ -154,7 +154,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
         {q && <Link href={`${basePath}?status=${activeStatus}`} className="inline-flex min-h-11 items-center justify-center rounded-xl border px-4 text-sm font-bold">Clear</Link>}
       </form>
 
-      {error && <p role="alert" className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">Application list could not be loaded. Check the identity workflow migration and admin database access.</p>}
+      {error && <div className="mt-5"><AdminErrorState title="Application list could not be loaded" description="Check the identity workflow migration and admin database access."/></div>}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-black">{STATUS_LABELS[activeStatus]} <span className="font-medium text-[#829084]">({filteredItems.length} shown)</span></h2>
         <p className="text-xs text-[#829084]">Newest first · up to 500 records per view</p>
@@ -223,7 +223,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
           );
         })}
       </div>
-      {!filteredItems.length && !error && <p className="mt-6 rounded-2xl border border-[#e1e9df] bg-white p-8 text-center text-sm text-[#6a7b6e]">No applications found for this filter.</p>}
+      {!filteredItems.length && !error && <div className="mt-6"><AdminEmptyState title="No applications found" description="No applications match the selected status and search filters."/></div>}
     </AdminPage>
   );
 }
