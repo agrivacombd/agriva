@@ -115,3 +115,13 @@ No production data or production schema was changed during this review. The curr
 - Orders/COD, Custom Orders/RFQ, Seller Applications, Identity Verification, Green Exchange, Transport and Jobs now use the shared confirmation/duplicate-click guard. This supersedes earlier findings that these actions had no confirmation.
 - SEO Landing Pages loading/error/retry and publish/unpublish confirmation, plus Seed Information delete confirmation and empty states, are implemented and included in the successful CI candidate. Exact Preview interaction review is still outstanding.
 - Settings/provider enable confirmation, complete populated-data workflow QA, formal accessibility review, and operator-scale pagination/search remain follow-up items.
+
+
+## Admin Settings confirmation hardening — latest follow-up
+
+- Growth & Tracking configuration saves now use the shared confirmation and duplicate-submit guard.
+- General site-setting saves also use the guard; boolean platform settings (including COD and online-payment switches) receive an explicit high-impact confirmation prompt.
+- Added the Settings page to `test:admin-sensitive-actions` so CI checks that the guarded control is adopted.
+- Current branch head at this follow-up: `8a35d4085be762ba695cef35c4d0f1a451eca9f0`.
+- CI for this exact head is running; do not treat the earlier #4173 result as validation of this new Settings change.
+- Exact-SHA Preview, populated authenticated workflow QA and accessibility review remain pending.
