@@ -124,7 +124,7 @@ assert.ok(ordersPage.includes("{!ordersError && !orders?.length"), "admin orders
 
 const opportunitiesPage = read("app/admin/opportunities/page.tsx");
 assert.ok(opportunitiesPage.includes("error: opportunitiesError"), "admin opportunities page must retain query errors");
-assert.ok(opportunitiesPage.includes('role="alert"'), "admin opportunities page must surface query failures");
+assert.ok(opportunitiesPage.includes('role="alert"') || opportunitiesPage.includes("AdminErrorState"), "admin opportunities page must surface query failures through the shared accessible error state");
 assert.ok(opportunitiesPage.includes("!opportunitiesError && !opportunities?.length"), "admin opportunities page must not claim there is no data when the query failed");
 
 const harvestPage = read("app/admin/harvest/page.tsx");
