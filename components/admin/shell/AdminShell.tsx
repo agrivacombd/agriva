@@ -259,7 +259,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
       )}
 
       {drawerOpen && (
-        <div id="admin-mobile-navigation" className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
+        <div id="admin-mobile-navigation" role="dialog" aria-modal="true" aria-label="Admin navigation" className="fixed inset-0 z-50 lg:hidden">
           <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/65 backdrop-blur-[2px]" />
           <aside onKeyDown={keepFocusInside} className="admin-sidebar relative flex h-full w-[min(88vw,340px)] flex-col text-white shadow-2xl">
             <div className="absolute right-3 top-5 z-10">
