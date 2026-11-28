@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 
@@ -64,7 +65,7 @@ export default async function AdminDemandIntelligencePage() {
   const quoteByRequest = new Map<string, number>();
   for (const quote of quotes) quoteByRequest.set(quote.request_id, (quoteByRequest.get(quote.request_id) ?? 0) + 1);
 
-  return <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
+  return <AdminPageLayout className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
     <section className="relative overflow-hidden rounded-[28px] bg-[#123b2d] px-5 py-7 text-white sm:px-8 sm:py-9">
       <div aria-hidden="true" className="pointer-events-none absolute -right-10 -top-24 h-72 w-72 rounded-full border-[36px] border-lime-300/10" />
       <div className="relative max-w-3xl">
@@ -119,5 +120,5 @@ export default async function AdminDemandIntelligencePage() {
       </article>
     </section>
     <p className="mt-6 border-t border-[#e2e9df] pt-4 text-xs leading-5 text-[#829084]">Read-only analytics · No buyer phone numbers, private contact details or quote moderation actions are exposed here. Counts are bounded to the latest 500 quotes/wholesalers and latest 100 RFQs.</p>
-  </main>;
+  </AdminPageLayout>;
 }
