@@ -1,4 +1,21 @@
 -- Disposable local Supabase fixture for SECURITY DEFINER permission tests.
+-- Earlier migration fixtures may have installed a database-wide event trigger
+-- that auto-creates RLS tables. Remove only triggers bound to this synthetic
+-- event-trigger function before replacing it, so fixture setup is repeatable.
+DO $cleanup$
+DECLARE
+  trigger_name text;
+BEGIN
+  FOR trigger_name IN
+    SELECT evtname
+    FROM pg_event_trigger
+    WHERE evtfoid = to_regprocedure('public.rls_auto_enable()')
+  LOOP
+    EXECUTE format('DROP EVENT TRIGGER %I', trigger_name);
+  END LOOP;
+END
+$cleanup$;
+
 CREATE OR REPLACE FUNCTION public.rls_auto_enable()
 RETURNS event_trigger LANGUAGE plpgsql SECURITY DEFINER
 SET search_path TO pg_catalog AS $fixture$
