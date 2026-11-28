@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdminPage, type AdminCapability } from "@/lib/admin/authz";
@@ -32,7 +33,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
     self: "নিজের role পরিবর্তন করা যাবে না।",
     error: "Role পরিবর্তন করা যায়নি। Migration 024 ও admin permissions যাচাই করুন।",
   };
-  return <main className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
+  return <AdminPageLayout className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
     <div>
       <div className="mb-6"><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#a47b20]">People & access</p><h1 className="mt-2 text-3xl font-black">ব্যবহারকারী ব্যবস্থাপনা</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-[#637266]">ব্যবহারকারীর পরিচিতি দেখুন এবং Farmer/Reseller role পরিবর্তন করুন। নিরাপত্তার জন্য এই প্যানেল থেকে কাউকে Admin করা বা নিজের role পরিবর্তন করা যায় না।</p></div>
       {params?.notice && <p role="status" className={`mt-5 rounded-xl border p-3 text-sm font-semibold ${params.notice === "saved" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-800"}`}>{notice[params.notice] ?? "অপারেশন সম্পন্ন হয়েছে।"}</p>}
@@ -43,5 +44,5 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
       </div>
       <p className="mt-4 text-xs leading-5 text-[#7b887d]">Role পরিবর্তন হলে dashboard access পরিবর্তিত হতে পারে। Admin promotion আলাদা, নিরাপদ owner-controlled process দিয়ে করতে হবে।</p>
     </div>
-  </main>;
+  </AdminPageLayout>;
 }
