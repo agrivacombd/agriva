@@ -217,7 +217,7 @@ export default async function ApplicationManagement({ scope, status, q = "" }: P
                 <input type="hidden" name="applicationId" value={app.id}/>
                 <input name="reviewNote" maxLength={1000} placeholder="Review note (required when rejecting)" aria-label="Review note"
                   className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"/>
-                <AdminConfirmSubmitButton name="decision" value="rejected" confirmMessage="এই application প্রত্যাখ্যান করবেন? Rejection note যাচাই করুন।" className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</AdminConfirmSubmitButton>
+                <AdminConfirmSubmitButton name="decision" value="rejected" requiredFieldName="reviewNote" requiredWhenValue="rejected" confirmMessage="এই application প্রত্যাখ্যান করবেন? Rejection note যাচাই করুন।" className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</AdminConfirmSubmitButton>
                 <AdminConfirmSubmitButton name="decision" value="approved" confirmMessage="এই application approve করে seller access grant করবেন?" className="min-h-11 rounded-xl bg-[#126b4f] px-4 text-sm font-bold text-white hover:bg-[#0f5942]">Approve & grant access</AdminConfirmSubmitButton>
               </form>}
             </article>
