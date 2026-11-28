@@ -169,7 +169,7 @@ UI requirements:
 - Approving Plant Market grants only global Plant Market access.
 - Rejection does not grant access and retains review history.
 - No NID/selfie/liveness claim is shown.
-- No database migration or production mutation occurs in Phase 1 initial slice.
+- No new database migration, production schema/data/permission mutation or deployment is introduced by this Phase 1 implementation slice. Existing production migrations are applied only to disposable local Supabase during E2E CI.
 
 ## 9. Implementation sequence
 
