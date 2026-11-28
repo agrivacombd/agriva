@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 
@@ -27,7 +28,7 @@ export default async function SeoDashboardPage(){
     {href:"/admin/seo-pages",name:"SEO Landing Pages",note:"Separate landing-page workflow (not blog articles)"},
     {href:"/blog",name:"Public Blog",note:"Read only published articles"},
   ];
-  return <main className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
+  return <AdminPageLayout className="min-h-screen bg-[#f5f7f2] px-4 py-8 text-[#17351f] sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
     <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-700">AGRIVA / SEO OPERATIONS</p>
     <h1 className="mt-2 text-2xl font-black sm:text-3xl">SEO Dashboard</h1>
     <p className="mt-3 max-w-3xl text-sm leading-7 text-[#647468]">Opportunity → Draft → Review → Approved → Published → Live Blog. Approval is not publication; only explicit publish makes an article public.</p>
@@ -42,5 +43,5 @@ export default async function SeoDashboardPage(){
       <h2 className="text-lg font-black">Approved articles · Next action</h2><p className="mt-1 text-xs text-slate-600">Only the SEO article editor can publish. Verify headings, factual sources, links and SEO metadata first.</p>
       {approved.length?<div className="mt-4 space-y-2">{approved.slice(0,12).map(article=><Link key={article.id} href={"/admin/content-drafts?draft="+article.id} className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-100 bg-[#f8faf7] p-3 text-sm font-bold text-[#17351f] hover:border-emerald-300"><span className="min-w-0 break-words">{article.title}</span><span className="text-xs text-emerald-800">Review / Publish →</span></Link>)}</div>:<p className="mt-4 text-sm text-slate-500">কোনো Approved article পাওয়া যায়নি।</p>}
     </section>
-  </div></main>;
+  </div></AdminPageLayout>;
 }
