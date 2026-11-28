@@ -90,3 +90,28 @@ No production data or production schema was changed during this review. The curr
 **Scope note:** This is client-side duplicate-click protection and explicit confirmation UX. Server-side authorization, RPC transition validation, and transactional audit remain the security boundary; no new idempotency-key/database schema was introduced. Full authenticated workflow QA remains required.
 
 **Verification:** The current SHA has no PR-triggered GitHub Actions run reported yet. The only combined status currently reported is Vercel `build-rate-limit`; that is a deployment quota blocker, not a successful build or test. Earlier green CI applies only to the earlier SHA. No production migration, merge or deployment was performed.
+
+
+## Release candidate verification update — 2026-11-29
+
+**Verified head at review:** `9008a1a4e04fc6d9683897a51f30d2ea35994996`.
+
+- AGRIVA CI run #4173 (`46180086634`) is **completed / success**. Both the `quality` job and the isolated Supabase Auth + PostgREST integration job completed successfully. The quality job includes lint, the Admin authorization/P0/control-center/sensitive-action regressions, production build and route/browser checks.
+- Plant Market Release Gate #251 (`46180086696`) is **completed / success**, including TypeScript and production build.
+- The shared sensitive-action confirmation control is now covered by the successful exact-head CI run. It is client-side duplicate-click protection only; server-side authorization and transactional RPC/audit remain the security boundary.
+- Vercel has **no Preview deployment record** for this exact SHA. The project previously returned `api-deployments-free-per-day`; do not treat an earlier commit's Preview as evidence for this candidate.
+- PR #410 remains open and mergeable. Independent reviewer approval is still outstanding.
+
+### Remaining release work
+
+1. Obtain independent security/UX approval against the exact PR head.
+2. Generate a Vercel Preview for the exact final SHA once the free deployment quota resets; verify its commit metadata before testing.
+3. Run authenticated synthetic-data walkthroughs on that Preview for every sensitive action, filter, drawer, timeline, bulk RFQ workflow, and settings/provider toggle. CI's isolated schema does not contain realistic populated fixtures for every module.
+4. Inspect the complete route screenshot artifact at 390, 768, 1024 and 1440px; separately complete keyboard, screen-reader, focus, contrast and reduced-motion checks.
+5. Complete production migration/release review and rollback plan. Production migrations, merge and deployment remain unperformed and require explicit release authorization.
+
+### Scope corrections
+
+- Orders/COD, Custom Orders/RFQ, Seller Applications, Identity Verification, Green Exchange, Transport and Jobs now use the shared confirmation/duplicate-click guard. This supersedes earlier findings that these actions had no confirmation.
+- SEO Landing Pages loading/error/retry and publish/unpublish confirmation, plus Seed Information delete confirmation and empty states, are implemented and included in the successful CI candidate. Exact Preview interaction review is still outstanding.
+- Settings/provider enable confirmation, complete populated-data workflow QA, formal accessibility review, and operator-scale pagination/search remain follow-up items.
