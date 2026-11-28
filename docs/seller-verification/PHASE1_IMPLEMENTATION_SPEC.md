@@ -115,6 +115,7 @@ Payload must remain an object and below 32 KB. Reject unknown seller category va
 - Validate website as HTTPS URL if present.
 - Validate district, seller category and existing organization type against allowlists.
 - Validate conditional nursery fields for nursery owner.
+- Require a document labelled `dealer_authorization` when the applicant selects `authorized_dealer`.
 - Validate source declaration and policy consent.
 - Preserve 1–5 private evidence files, current extension/size restrictions and caller-owned UUID paths.
 - Ensure storage object existence and ownership before insert.
