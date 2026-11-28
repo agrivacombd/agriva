@@ -1,4 +1,4 @@
-import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
+import { AdminPage as AdminPageLayout, AdminErrorState } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { requireAdminPage } from "@/lib/admin/authz";
 
@@ -32,7 +32,7 @@ export default async function SeoDashboardPage(){
     <p className="text-xs font-bold uppercase tracking-[.2em] text-emerald-700">AGRIVA / SEO OPERATIONS</p>
     <h1 className="mt-2 text-2xl font-black sm:text-3xl">SEO Dashboard</h1>
     <p className="mt-3 max-w-3xl text-sm leading-7 text-[#647468]">Opportunity → Draft → Review → Approved → Published → Live Blog. Approval is not publication; only explicit publish makes an article public.</p>
-    {(drafts.error||opportunities.error||landings.error)&&<p role="alert" className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">কিছু database metric পাওয়া যায়নি; “—” মানে unavailable, zero নয়।</p>}
+    {(drafts.error||opportunities.error||landings.error)&&<div className="mt-5"><AdminErrorState title="কিছু SEO metric পাওয়া যায়নি" description="“—” মানে unavailable, zero নয়। Database access ও schema যাচাই করুন।"/></div>}
     <section aria-label="SEO status overview" className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
       {cards.map(card=><div key={card.name} className="min-w-0 rounded-2xl border border-emerald-100 bg-white p-3 shadow-sm sm:p-4"><p className="text-xs font-bold text-slate-600">{card.name}</p><p className="mt-2 text-2xl font-black text-emerald-900">{card.value}</p><p className="mt-1 text-[11px] text-slate-500">{card.note}</p></div>)}
     </section>
