@@ -35,28 +35,37 @@ BEGIN
     RAISE EXCEPTION 'Public aggregate metrics RPC lost intended API grants';
   END IF;
 
-  FOR fn IN
-    SELECT p.oid::regprocedure AS signature,
-           coalesce(array_to_string(p.proconfig, ','), '') AS config
-    FROM pg_proc p
-    JOIN pg_namespace n ON n.oid = p.pronamespace
-    WHERE n.nspname = 'public'
-      AND p.prosecdef
-      AND EXISTS (
-        SELECT 1 FROM unnest(coalesce(p.proconfig, ARRAY[]::text[])) AS setting
-        WHERE setting LIKE 'search_path=public%'
-           OR setting LIKE 'search_path=pg_temp%'
-      )
-  LOOP
-    IF fn.config NOT LIKE '%search_path=pg_catalog, public, pg_temp%' THEN
-      RAISE EXCEPTION 'Unsafe SECURITY DEFINER search_path remains on %: %',
-        fn.signature, fn.config;
-    END IF;
-    v_count := v_count + 1;
-  END LOOP;
+  -- The migration must leave no SECURITY DEFINER function with a public-first
+  -- or pg_temp-first search_path, and must have hardened at least one fixture.
+  SELECT count(*) INTO v_count
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.prosecdef
+    AND EXISTS (
+      SELECT 1
+      FROM unnest(coalesce(p.proconfig, ARRAY[]::text[])) AS setting
+      WHERE setting LIKE 'search_path=public%'
+         OR setting LIKE 'search_path=pg_temp%'
+    );
+
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'Unsafe SECURITY DEFINER search_path remains on % function(s)', v_count;
+  END IF;
+
+  SELECT count(*) INTO v_count
+  FROM pg_proc p
+  JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.prosecdef
+    AND EXISTS (
+      SELECT 1
+      FROM unnest(coalesce(p.proconfig, ARRAY[]::text[])) AS setting
+      WHERE setting = 'search_path=pg_catalog, public, pg_temp'
+    );
 
   IF v_count = 0 THEN
-    RAISE EXCEPTION 'Expected SECURITY DEFINER functions to be checked';
+    RAISE EXCEPTION 'Expected at least one SECURITY DEFINER function to be hardened';
   END IF;
 
   -- These internal tables intentionally have RLS enabled and no browser grants.
