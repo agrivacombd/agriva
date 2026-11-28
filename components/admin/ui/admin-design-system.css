@@ -63,3 +63,46 @@
   .admin-workspace > main { padding: 1rem; }
   .admin-workspace :where(button, a, input, select) { scroll-margin-block: 1rem; }
 }
+
+
+/* Final cross-module consistency layer: applies to legacy pages until each
+   module is migrated to the typed Admin primitives. */
+.admin-workspace > main {
+  min-height: auto !important;
+  background-color: var(--admin-canvas) !important;
+  color: var(--admin-ink);
+}
+.admin-workspace :where(section[class*="rounded-2xl"][class*="bg-white"], article[class*="rounded-2xl"][class*="bg-white"]) {
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow-card);
+}
+.admin-workspace :where(button, a, input, select, textarea) {
+  accent-color: var(--admin-primary);
+}
+.admin-workspace :where(button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible) {
+  outline-color: var(--admin-primary);
+}
+.admin-workspace :where(button:disabled, input:disabled, select:disabled, textarea:disabled) {
+  cursor: not-allowed;
+  opacity: .58;
+}
+.admin-workspace :where(table) {
+  font-variant-numeric: tabular-nums;
+}
+.admin-workspace :where(tbody tr) {
+  transition: background-color .14s ease;
+}
+.admin-workspace :where(tbody tr:hover) {
+  background-color: var(--admin-surface-muted);
+}
+.admin-workspace :where(pre) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 767px) {
+  .admin-workspace :where(table) { min-width: 640px; }
+  .admin-workspace :where(section, article) { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-workspace :where(tbody tr) { transition: none; }
+}
