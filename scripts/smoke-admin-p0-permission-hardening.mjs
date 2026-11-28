@@ -26,6 +26,7 @@ assert.match(sellerRead, /checkAdminPermission\("seller_access\.read"\)/, "selle
 assert.match(sellerRevoke, /checkAdminPermission\("seller_access\.revoke"\)/, "seller permission revocation must require its dedicated capability");
 assert.match(sellerRevoke, /reason\.length < 10 \|\| reason\.length > 500/, "seller access revocation must require a bounded reason");
 assert.match(sellerRevoke, /p_reason: reason/, "seller access revocation reason must reach the database audit function");
+assert.match(sellerRevoke, /requireAdminApi\("catalog\\.moderate"\)/, "legacy admin access must remain compatible during the staged migration");
 
 const manager = read("components/admin/SellerPermissionManager.tsx");
 assert.match(manager, /Permission বাতিলের কারণ/, "seller revocation UI must collect an explicit reason");
