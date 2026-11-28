@@ -172,7 +172,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
             </div>
           </div>
         </header>
-        <div className="min-h-[calc(100vh-72px)] min-w-0">{children}</div>
+        <div className="admin-workspace min-h-[calc(100vh-72px)] min-w-0">{children}</div>
       </div>
 
       {drawerOpen && (
