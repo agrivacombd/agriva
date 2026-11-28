@@ -115,6 +115,7 @@ CREATE TABLE IF NOT EXISTS public.bulk_requests (
   quote_deadline timestamptz,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE public.bulk_requests ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 CREATE TABLE IF NOT EXISTS public.bulk_request_items (
   id uuid PRIMARY KEY,
   request_id uuid NOT NULL,
