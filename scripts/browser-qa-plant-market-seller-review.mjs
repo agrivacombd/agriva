@@ -97,7 +97,7 @@ try {
   await nurseryCard.waitFor({ state: "detached", timeout: 15000 });
   await page.goto(`${baseUrl}${route}?status=approved&category=nursery_owner`, { waitUntil: "domcontentloaded" });
   await page.getByText("Synthetic Green Nursery", { exact: true }).first().waitFor();
-  await page.getByText("approved", { exact: true }).waitFor();
+  await page.getByText("approved", { exact: true }).first().waitFor();
   results.push({ test: "Admin confirms and approves a Plant Market nursery application", status: "passed" });
 
   const nurseryRows = await serviceRead(`/rest/v1/module_access_applications?id=eq.${nurseryAppId}&select=id,user_id,module,status,reviewed_by,review_note`);
