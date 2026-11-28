@@ -157,6 +157,8 @@ jobs:
         run: npm run test:module-access
       - name: Identity verification workflow regression test
         run: npm run test:identity-verification
+      - name: Seller verification Phase 1 contract regression test
+        run: npm run test:seller-verification-phase1
       - name: Admin application history and seller approval regression test
         run: npm run test:admin-application-management
       - name: Client TRUNCATE privilege regression test
