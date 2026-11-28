@@ -24,6 +24,7 @@ const pageRoutes = [
   "app/admin/orders/page.tsx",
   "app/admin/page.tsx",
   "app/admin/plant-market-products/page.tsx",
+  "app/admin/plant-market-applications/page.tsx",
   "app/admin/products/page.tsx",
   "app/admin/reports/page.tsx",
   "app/admin/search-intelligence/opportunities/page.tsx",
@@ -43,7 +44,7 @@ for (const route of pageRoutes) {
   const source = readFileSync(route, "utf8");
   if (route.endsWith("articles/[id]/page.tsx")) {
     assert.match(source, /redirect\(/, "Legacy article detail route must preserve its redirect workflow");
-  } else if (route.endsWith("identity-verification/page.tsx") || route.endsWith("seller-applications/page.tsx")) {
+  } else if (route.endsWith("identity-verification/page.tsx") || route.endsWith("seller-applications/page.tsx") || route.endsWith("plant-market-applications/page.tsx")) {
     assert.match(source, /ApplicationManagement/, `Application workflow must use the shared page component: ${route}`);
   } else if (route.endsWith("content-drafts/page.tsx")) {
     assert.match(source, /ContentDraftsClient/, "Content drafts must retain its interactive workflow component");
@@ -60,7 +61,7 @@ const shell = readFileSync("components/admin/shell/AdminShell.tsx", "utf8");
 const requiredNavigation = [
   "/admin", "/admin/command-center", "/admin/products", "/admin/categories",
   "/admin/seed-information", "/admin/orders", "/admin/harvest",
-  "/admin/plant-market-products", "/admin/green-exchange", "/admin/custom-orders",
+  "/admin/plant-market-products", "/admin/plant-market-applications", "/admin/green-exchange", "/admin/custom-orders",
   "/admin/users", "/admin/identity-verification", "/admin/seller-applications",
   "/admin/transport", "/admin/jobs", "/admin/finance", "/admin/reports",
   "/admin/articles", "/admin/content-studio", "/admin/ai-content",
