@@ -1,4 +1,5 @@
 import { AdminPage as AdminPageLayout, AdminErrorState, AdminEmptyState } from "@/components/admin/ui/AdminPrimitives";
+import AdminConfirmSubmitButton from "@/components/admin/AdminConfirmSubmitButton";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -88,9 +89,9 @@ export default async function AdminGreenExchangePage({ searchParams }: { searchP
                 <p className="mt-3 text-sm text-slate-600">এলাকা: {item.area}{item.district ? `, ${item.district}` : ""} · পরিমাণ: {item.quantity}</p>
                 <p className="mt-1 break-all text-xs text-slate-400">Owner ID: {item.owner_id} · {new Date(item.created_at).toLocaleString("bn-BD", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Dhaka" })}</p>
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                  {item.moderation_status !== "approved" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="approved" /><button className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">অনুমোদন করুন</button></form>}
-                  {item.moderation_status !== "rejected" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="rejected" /><button className="min-h-10 rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-800">প্রত্যাখ্যান</button></form>}
-                  {item.moderation_status !== "pending" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="pending" /><button className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">পুনরায় যাচাইয়ে পাঠান</button></form>}
+                  {item.moderation_status !== "approved" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="approved" /><AdminConfirmSubmitButton confirmMessage="এই Green Exchange listing অনুমোদন করে প্রকাশযোগ্য করবেন?" className="min-h-10 rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">অনুমোদন করুন</AdminConfirmSubmitButton></form>}
+                  {item.moderation_status !== "rejected" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="rejected" /><AdminConfirmSubmitButton confirmMessage="এই Green Exchange listing প্রত্যাখ্যান করবেন?" className="min-h-10 rounded-lg border border-rose-300 px-4 py-2 text-sm font-bold text-rose-800">প্রত্যাখ্যান</AdminConfirmSubmitButton></form>}
+                  {item.moderation_status !== "pending" && <form action={moderateListing}><input type="hidden" name="listing_id" value={item.id} /><input type="hidden" name="moderation_status" value="pending" /><AdminConfirmSubmitButton confirmMessage="এই listing পুনরায় যাচাইয়ের জন্য pending করবেন?" className="min-h-10 rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">পুনরায় যাচাইয়ে পাঠান</AdminConfirmSubmitButton></form>}
                 </div>
               </article>
             ))}
