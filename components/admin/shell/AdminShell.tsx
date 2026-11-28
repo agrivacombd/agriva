@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import OrderNotificationBell from "./OrderNotificationBell";
 import SignOutButton from "@/components/SignOutButton";
 import {
@@ -20,8 +20,8 @@ const groups: NavGroup[] = [
   { label: "Overview", items: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Command Center", href: "/admin/command-center", icon: Activity },
-    { label: "Demand & RFQ", href: "/admin/demand-intelligence", icon: Handshake },
-    { label: "Module directory", href: "/super-admin", icon: Boxes },
+    { label: "Demand Intelligence", href: "/admin/demand-intelligence", icon: Handshake },
+    { label: "Growth Intelligence", href: "/admin/growth-intelligence", icon: TrendingUp },
   ]},
   { label: "Marketplace", items: [
     { label: "Products", href: "/admin/products", icon: Package },
@@ -31,6 +31,7 @@ const groups: NavGroup[] = [
     { label: "Harvest", href: "/admin/harvest", icon: Sprout },
     { label: "Plant Market", href: "/admin/plant-market-products", icon: Leaf },
     { label: "Green Exchange", href: "/admin/green-exchange", icon: Leaf },
+    { label: "Custom Orders & RFQ", href: "/admin/custom-orders", icon: Handshake },
   ]},
   { label: "People & operations", items: [
     { label: "Users", href: "/admin/users", icon: Users },
@@ -53,6 +54,7 @@ const groups: NavGroup[] = [
     { label: "SEO pages", href: "/admin/seo-pages", icon: Search },
     { label: "Search intelligence", href: "/admin/search-intelligence", icon: Search },
     { label: "Opportunities", href: "/admin/opportunities", icon: Handshake },
+    { label: "Search opportunities", href: "/admin/search-intelligence/opportunities", icon: TrendingUp },
   ]},
   { label: "System & governance", items: [
     { label: "Access control", href: "/admin/access-control", icon: ShieldCheck },
@@ -106,9 +108,29 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [navQuery, setNavQuery] = useState("");
+  const [commandOpen, setCommandOpen] = useState(false);
+  const [commandQuery, setCommandQuery] = useState("");
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setCommandOpen((open) => !open);
+        setCommandQuery("");
+      }
+      if (event.key === "Escape") {
+        setCommandOpen(false);
+        setCommandQuery("");
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
   const currentItem = useMemo(() => groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)), [pathname]);
   const currentGroup = groups.find((group) => group.items.some((item) => item.href === currentItem?.href));
   const pageTitle = currentItem?.label ?? "Admin workspace";
+  const commandItems = useMemo(() => groups.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })))
+    .filter((item) => !commandQuery.trim() || `${item.label} ${item.group} ${item.href}`.toLowerCase().includes(commandQuery.trim().toLowerCase())), [commandQuery]);
 
   const sidebarContent = (mobile = false) => (
     <>
@@ -162,6 +184,9 @@ export default function AdminShell({ children, adminName }: { children: React.Re
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <button type="button" onClick={() => { setCommandOpen(true); setCommandQuery(""); }} className="hidden min-h-9 items-center gap-2 rounded-xl border border-[#e4ebe1] bg-[#f8faf6] px-3 text-xs font-semibold text-[#607266] transition hover:border-[#b9d2b4] hover:bg-white md:inline-flex" aria-label="Open command palette">
+                <Search size={14} /> <span>Quick jump</span><kbd className="rounded-md border border-[#dce6d9] bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
+              </button>
               <OrderNotificationBell />
               <div className="hidden h-8 w-px bg-[#e7ede4] sm:block" />
               <div className="flex items-center gap-2 rounded-xl border border-[#e8eee5] bg-[#f8faf6] px-2 py-1.5 sm:px-3">
@@ -174,6 +199,33 @@ export default function AdminShell({ children, adminName }: { children: React.Re
         </header>
         <div className="admin-workspace min-h-[calc(100vh-72px)] min-w-0">{children}</div>
       </div>
+
+      {commandOpen && (
+        <div className="fixed inset-0 z-[70] flex items-start justify-center bg-[#0b2118]/55 px-3 pt-[12vh] backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setCommandOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-labelledby="admin-command-title" className="w-full max-w-xl overflow-hidden rounded-2xl border border-[#dce7d8] bg-white shadow-2xl">
+            <div className="border-b border-[#e8eee5] p-4">
+              <p id="admin-command-title" className="mb-2 text-[10px] font-extrabold uppercase tracking-[.16em] text-[#718174]">AGRIVA Control Center · Quick navigation</p>
+              <div className="flex items-center gap-3">
+                <Search size={18} className="shrink-0 text-[#718174]" />
+                <input autoFocus value={commandQuery} onChange={(event) => setCommandQuery(event.target.value)} placeholder="Search any admin module…" aria-label="Search admin modules" className="min-h-11 min-w-0 flex-1 border-0 bg-transparent text-sm font-semibold text-[#173b2d] outline-none placeholder:text-[#9aa69c]" />
+                <kbd className="rounded-md border border-[#e1e9de] bg-[#f7faf5] px-2 py-1 text-[10px] text-[#718174]">ESC</kbd>
+              </div>
+            </div>
+            <div className="admin-scrollbar max-h-[55vh] overflow-y-auto p-2">
+              {commandItems.map((item) => {
+                const Icon = item.icon;
+                return <Link key={item.href} href={item.href} onClick={() => setCommandOpen(false)} className="flex min-h-12 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-[#294d39] transition hover:bg-[#f1f7ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700">
+                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#edf5e9] text-[#276442]"><Icon size={16} /></span>
+                  <span className="min-w-0 flex-1"><span className="block truncate">{item.label}</span><span className="block truncate text-[10px] font-medium text-[#829084]">{item.group}</span></span>
+                  <span className="text-[10px] text-[#9aa69c]">{item.href}</span>
+                </Link>;
+              })}
+              {commandItems.length === 0 && <p className="px-4 py-8 text-center text-sm text-[#718174]">কোনো module পাওয়া যায়নি। অন্য keyword দিয়ে খুঁজুন।</p>}
+            </div>
+            <div className="flex items-center justify-between border-t border-[#e8eee5] bg-[#fbfcfa] px-4 py-3 text-[10px] text-[#879488]"><span>Navigate to a module</span><span>Ctrl / ⌘ + K · Esc to close</span></div>
+          </section>
+        </div>
+      )}
 
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
