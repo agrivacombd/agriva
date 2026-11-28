@@ -136,7 +136,7 @@ try {
     const landedPath = new URL(page.url()).pathname;
     const redirected = landedPath !== route;
     if (!redirected && status !== 404) {
-      const routeSlug = route.replace(/^\\/admin\\/?/, "").replaceAll("/", "-") || "overview";
+      const routeSlug = (route.startsWith("/admin/") ? route.slice(7) : "overview").replaceAll("/", "-") || "overview";
       for (const width of responsiveWidths) {
         await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
         const dimensions = await page.evaluate(() => ({
