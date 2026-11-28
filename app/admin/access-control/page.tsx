@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdminPage } from "@/lib/admin/authz";
@@ -63,7 +64,7 @@ export default async function AdminAccessControlPage() {
   const rolesById = new Map(roles.map((role) => [role.id, role]));
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
+    <AdminPageLayout className="min-h-screen bg-[#f4f7f1] px-4 py-8 text-[#17351f] sm:px-6">
       <div className="mx-auto max-w-6xl">
         <header className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#123b27] p-5 text-white">
           <div><p className="text-xs font-bold uppercase tracking-[.18em] text-emerald-200">Security & governance</p><h1 className="mt-2 text-2xl font-black">Admin Access Control</h1><p className="mt-1 text-sm text-emerald-100">কার কোন প্রশাসনিক ক্ষমতা আছে—এক জায়গায় পর্যালোচনা করুন।</p></div>
@@ -105,6 +106,6 @@ export default async function AdminAccessControlPage() {
 
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>নিরাপত্তা নোট:</strong> এই পেজটি বর্তমানে read-only। নিরাপদ grant/revoke workflow, privilege-escalation protection, expiry validation এবং audit RPC যাচাই না হওয়া পর্যন্ত এখান থেকে কাউকে নতুন admin access দেওয়া বা সরানো যাবে না। Finance approval ও payout completion আলাদা capability হিসেবেই থাকবে।</div>
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }
