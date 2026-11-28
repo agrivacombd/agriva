@@ -5,10 +5,10 @@ export type AdminCapability =
   | "dashboard.read" | "users.read" | "users.verify" | "roles.grant"
   | "plant_market.moderate" | "marketplace.moderate" | "harvest.moderate"
   | "transport.moderate" | "farms.manage" | "payments.read"
-  | "payments.reconcile" | "commissions.approve" | "payouts.approve" | "payouts.complete" | "audit.read"
+  | "payments.reconcile" | "seller_access.read" | "seller_access.revoke" | "commissions.approve" | "payouts.approve" | "payouts.complete" | "audit.read"
   | "settings.manage" | "system.recovery";
 export type AdminPermissionResult =
-  | { allowed: true; userId: string }
+  | { allowed: true; userId: string; supabase: Awaited<ReturnType<typeof createSupabaseServerClient>> }
   | { allowed: false; reason: "unauthenticated" | "forbidden" | "authorization_unavailable" };
 
 /** New delegated-admin path; intentionally does not inherit legacy profiles.role grants. */
@@ -18,5 +18,5 @@ export async function checkAdminPermission(capability: AdminCapability): Promise
   if (authError || !user) return { allowed: false, reason: "unauthenticated" };
   const { data, error } = await supabase.rpc("has_admin_permission", { p_capability: capability });
   if (error || typeof data !== "boolean") return { allowed: false, reason: "authorization_unavailable" };
-  return data ? { allowed: true, userId: user.id } : { allowed: false, reason: "forbidden" };
+  return data ? { allowed: true, userId: user.id, supabase } : { allowed: false, reason: "forbidden" };
 }
