@@ -14,6 +14,7 @@ DECLARE
   v_wholesaler uuid;
   v_revoked_user uuid := '55555555-5555-4555-8555-555555555555';
   v_scope uuid := '66666666-6666-4666-8666-666666666666';
+  v_cod_role uuid := 'a1100000-0000-4000-8000-000000000003';
 BEGIN
   SELECT id INTO v_admin
   FROM public.profiles
@@ -40,6 +41,15 @@ BEGIN
   INSERT INTO public.admin_roles(id, role_key)
   VALUES ('33333333-3333-4333-8333-333333333333', 'super_admin')
   ON CONFLICT (role_key) DO NOTHING;
+
+  INSERT INTO public.admin_roles(id, role_key)
+  VALUES (v_cod_role, 'ci_existing_p0_assertion_cod')
+  ON CONFLICT (role_key) DO NOTHING;
+  INSERT INTO public.admin_role_permissions(role_id, capability)
+  VALUES (v_cod_role, 'payments.reconcile')
+  ON CONFLICT (role_id, capability) DO NOTHING;
+  INSERT INTO public.admin_user_roles(user_id, role_id, scope_type, scope_id, granted_by)
+  VALUES (v_admin, v_cod_role, 'global', NULL, v_admin);
 
   INSERT INTO public.marketplace_checkouts(id, payment_method, payment_status, total_amount)
   VALUES (v_checkout, 'cod', 'pending', 100.00);
