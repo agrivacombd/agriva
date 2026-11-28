@@ -136,6 +136,7 @@ try {
     const landedPath = new URL(page.url()).pathname;
     const redirected = landedPath !== route;
     if (!redirected && status !== 404) {
+      const routeSlug = route.replace(/^\\/admin\\/?/, "").replaceAll("/", "-") || "overview";
       for (const width of responsiveWidths) {
         await page.setViewportSize({ width, height: width < 500 ? 844 : 900 });
         const dimensions = await page.evaluate(() => ({
@@ -143,6 +144,12 @@ try {
           document: document.documentElement.scrollWidth,
         }));
         assert.ok(dimensions.document <= dimensions.viewport + 1, `${route} overflows at ${width}px: ${JSON.stringify(dimensions)}`);
+        // Keep visual evidence for every Admin route at every supported QA breakpoint.
+        await page.screenshot({
+          path: `test-results/admin-route-matrix/${routeSlug}-${width}.png`,
+          fullPage: true,
+          animations: "disabled",
+        });
       }
     }
     routeResults.push({ route, status, landedPath, permissionRedirect: redirected });
