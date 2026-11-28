@@ -85,5 +85,7 @@ for (const fn of [
   assert.match(fnBody, /admin_audit_log/, `${fn} must write a transactional central audit event`);
 }
 assert.doesNotMatch(bulkAuditMigration, /v_selection\.id|v_award\.id/, "bulk audit entity IDs must use real primary keys from the existing schema");
+assert.match(bulkAuditMigration, /char_length\(v_display_name\) > 120/, "wholesaler display name must be bounded for every moderation status");
+assert.match(bulkAuditMigration, /FOR UPDATE OF q, r/, "quote moderation must lock both the quote and parent request");
 
 console.log("Admin P0 delegated permissions, scoped seller revocation, and transactional audit regression checks passed.");
