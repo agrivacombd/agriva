@@ -34,5 +34,6 @@ export async function reviewModuleApplication(formData: FormData) {
 
   revalidatePath("/admin/identity-verification");
   revalidatePath("/admin/seller-applications");
+  revalidatePath("/admin/plant-market-applications");
   revalidatePath("/admin/audit");
 }
