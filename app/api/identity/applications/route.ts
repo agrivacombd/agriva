@@ -157,6 +157,8 @@ export async function POST(request: NextRequest) {
       source_declaration: sourceDeclaration,
       delivery_coverage: deliveryCoverage,
       policy_accepted: true,
+      policy_version: "seller-v1",
+      policy_accepted_at: new Date().toISOString(),
       evidence_paths: paths,
       evidence_types: types,
     };
@@ -200,6 +202,10 @@ export async function POST(request: NextRequest) {
         if (error || !organization) return NextResponse.json({ error: "Business profile could not be created" }, { status: 409 });
         organizationId = organization.id;
       }
+    }
+
+    if (category === "authorized_dealer" && !types.includes("dealer_authorization")) {
+      return NextResponse.json({ error: "Authorized dealer applicants must attach and label an authorization document." }, { status: 400 });
     }
 
     applicantType = "business";
