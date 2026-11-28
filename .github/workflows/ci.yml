@@ -301,6 +301,14 @@ jobs:
           done
           docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-admin-p0-migrations-assertions.sql
 
+      - name: Validate SECURITY DEFINER API grants and search_path hardening
+        run: |
+          DB_CONTAINER="$(docker ps --filter 'name=supabase-agriva-database-' --format '{{.Names}}' | head -n 1)"
+          test -n "$DB_CONTAINER" || { echo "Local Supabase database container was not found"; exit 1; }
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/test-security-definer-api-grants-fixture.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/migrations/20261129120000_harden_security_definer_api_grants.sql
+          docker exec -i "$DB_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 < supabase/tests/security_definer_api_grants.sql
+
       - name: Install Node.js and locked app dependencies
         uses: actions/setup-node@v4
         with:
