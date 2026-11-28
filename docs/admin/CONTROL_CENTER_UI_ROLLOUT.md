@@ -53,3 +53,19 @@ The route-level frame is now unified, but not every module's inner data table, f
 - Exact-SHA Vercel Preview remains blocked by the project's free build/deployment rate limit. No stale Preview is accepted as evidence.
 - Authenticated visual QA of every Admin route, all required viewport widths, assistive-technology checks and independent review remain release gates.
 - No production migrations, production data changes or production deployment have been performed.
+
+
+## Final CI verification update — 2026-11-29
+
+**Verified application head:** `9008a1a4e04fc6d9683897a51f30d2ea35994996`.
+
+- AGRIVA CI #4173: completed successfully, including production build and isolated Supabase Auth/PostgREST integration.
+- Plant Market Release Gate #251: completed successfully, including TypeScript and production build.
+- Sensitive-action confirmation and duplicate-submit regression is included in the successful CI run.
+- The documentation-only follow-up commit does not change application behavior; it records the verified status and remaining release gates.
+- PR #410 remains open. Independent reviewer approval and exact-final-SHA Vercel Preview verification are still required.
+- The exact application SHA has no Vercel Preview deployment record due the previously reported free daily deployment quota. Do not use a Preview from an older SHA as final evidence.
+- Full populated-data authenticated workflow QA and formal accessibility review remain incomplete. Current CI screenshots/layout assertions are not a substitute for those checks.
+- No production database migration, merge, or production deployment has been performed.
+
+**Next release gates:** independent approval; exact-SHA Preview; authenticated synthetic-data walkthrough; complete responsive and accessibility review; production migration/rollback review; then explicit release authorization.
