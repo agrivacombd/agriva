@@ -95,7 +95,7 @@ export default async function AdminDemandIntelligencePage() {
         <span className="text-xs text-[#829084]">Latest 100 requests · read-only</span>
       </div>
       {!requests.length ? <p className="mt-5 rounded-xl bg-[#f7faf5] p-5 text-sm text-[#68796c]">{requestsResult.error ? "RFQ data is unavailable for this admin session." : "এখনো কোনো bulk request নেই।"}</p> :
-        <div className="mt-4 overflow-x-auto">
+        <div role="region" aria-label="Buyer RFQ pipeline table, horizontally scrollable" tabIndex={0} className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead><tr className="border-b border-[#e7ede4] text-xs text-[#829084]"><th className="px-3 py-3 font-bold">Product / quantity</th><th className="px-3 py-3 font-bold">Location</th><th className="px-3 py-3 font-bold">Status</th><th className="px-3 py-3 font-bold">Quotes</th><th className="px-3 py-3 font-bold">Created</th></tr></thead>
             <tbody>{requests.map((request) => <tr key={request.id} className="border-b border-[#f0f3ee] last:border-0">
