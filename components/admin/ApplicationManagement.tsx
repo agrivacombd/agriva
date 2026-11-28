@@ -150,7 +150,7 @@ export default async function ApplicationManagement({ scope, status, q = "", cat
     textValue(app.details.nursery_address), textValue(app.details.gardening_types),
   ].join(" ").toLocaleLowerCase().includes(needle)) : items;
   const categoryKeys = Object.keys(SELLER_CATEGORY_LABELS);
-  const activeCategory = isPlant && categoryKeys.includes(category) ? category : "";
+  const activeCategory = isPlant && categoryKeys.includes(category) && PLANT_CATEGORY_KEYS.has(category) ? category : "";
   const filteredItems = activeCategory
     ? searchedItems.filter((app) => app.details.seller_category === activeCategory)
     : searchedItems;
@@ -286,6 +286,7 @@ export default async function ApplicationManagement({ scope, status, q = "", cat
 
               {canReview && <form action={reviewModuleApplication} className="mt-5 grid gap-3 border-t border-[#edf1ea] pt-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
                 <input type="hidden" name="applicationId" value={app.id}/>
+                {(isSeller || isPlant) && <input type="hidden" name="expectedModule" value={isPlant ? "plant_market" : "marketplace"}/>}
                 <input name="reviewNote" maxLength={1000} placeholder="Review note (required when rejecting)" aria-label="Review note"
                   className="min-h-11 rounded-xl border border-slate-200 px-3 text-sm"/>
                 <AdminConfirmSubmitButton name="decision" value="rejected" requiredFieldName="reviewNote" requiredWhenValue="rejected" confirmMessage="এই application প্রত্যাখ্যান করবেন? Rejection note যাচাই করুন।" className="min-h-11 rounded-xl border border-rose-200 px-4 text-sm font-bold text-rose-700 hover:bg-rose-50">Reject</AdminConfirmSubmitButton>
