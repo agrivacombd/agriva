@@ -29,6 +29,7 @@ const groups: NavGroup[] = [
     { label: "Orders", href: "/admin/orders", icon: ShoppingCart },
     { label: "Harvest", href: "/admin/harvest", icon: Sprout },
     { label: "Plant Market", href: "/admin/plant-market-products", icon: Leaf },
+    { label: "Plant Market verification", href: "/admin/plant-market-applications", icon: ShieldCheck },
     { label: "Green Exchange", href: "/admin/green-exchange", icon: Leaf },
     { label: "Custom Orders & RFQ", href: "/admin/custom-orders", icon: Handshake },
   ]},
