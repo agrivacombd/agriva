@@ -87,5 +87,7 @@ for (const fn of [
 assert.doesNotMatch(bulkAuditMigration, /v_selection\.id|v_award\.id/, "bulk audit entity IDs must use real primary keys from the existing schema");
 assert.match(bulkAuditMigration, /char_length\(v_display_name\) > 120/, "wholesaler display name must be bounded for every moderation status");
 assert.match(bulkAuditMigration, /FOR UPDATE OF q, r/, "quote moderation must lock both the quote and parent request");
+assert.match(bulkAuditMigration, /ALTER FUNCTION public\\.admin_create_agri_product\\(jsonb\\)[\\s\\S]*?SET search_path TO 'pg_catalog', 'public', 'pg_temp'/, "agricultural product creation must use a hardened SECURITY DEFINER search path");
+assert.match(bulkAuditMigration, /ALTER FUNCTION public\\.bulk_create_multi_request\\(text, text, text, text, jsonb\\)[\\s\\S]*?SET search_path TO 'pg_catalog', 'public', 'pg_temp'/, "bulk request creation must use a hardened SECURITY DEFINER search path");
 
 console.log("Admin P0 delegated permissions, scoped seller revocation, and transactional audit regression checks passed.");
