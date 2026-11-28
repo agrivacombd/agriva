@@ -409,7 +409,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Seed authenticated synthetic Admin and Plant Market applicants
-        run: node scripts/test-plant-market-seller-review-supabase.mjs
+        run: npm run test:plant-market-seller-review-supabase
 
       - name: Build application against isolated seller verification schema
         run: npm run build
@@ -431,7 +431,7 @@ jobs:
       - name: Run authenticated Plant Market seller verification E2E
         env:
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
-        run: node scripts/browser-qa-plant-market-seller-review.mjs
+        run: npm run test:plant-market-seller-review-browser
 
       - name: Upload Plant Market seller review evidence
         if: always()
