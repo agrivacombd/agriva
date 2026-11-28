@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkAdminPermission } from "@/lib/admin/permission-service";
@@ -57,7 +58,7 @@ export default async function AdminFinancePage() {
   const paidPayoutTotal = payouts.filter((item) => item.status === "paid").reduce((sum, item) => sum + Number(item.amount), 0);
   const hasError = Boolean(payoutResult.error || commissionResult.error);
 
-  return <main className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
+  return <AdminPageLayout className="mx-auto w-full max-w-7xl p-4 text-[#17351f] sm:p-6">
     <div>
       <div className="mb-6"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#a47b20]">Finance operations</p><h2 className="mt-2 text-2xl font-black">কমিশন ও পেআউট</h2><p className="mt-1 text-sm text-[#718072]">আর্থিক কার্যক্রমের queue, settlement status ও reconciliation overview</p></div>
 
@@ -82,5 +83,5 @@ export default async function AdminFinancePage() {
 
       <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950"><strong>Financial safety:</strong> এই ধাপটি read-only। Payout approval, payment completion ও commission settlement-এর action আলাদা capability এবং audited database workflow দিয়ে চালু করতে হবে। রিপোর্টের summary সর্বশেষ ১০০টি record থেকে হিসাব করা—এটি পূর্ণ ledger balance বা bank reconciliation নয়।</div>
     </div>
-  </main>;
+  </AdminPageLayout>;
 }
