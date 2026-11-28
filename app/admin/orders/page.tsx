@@ -33,9 +33,10 @@ async function updateOrderStatus(formData: FormData) {
 async function recordCodCollection(formData: FormData) {
   "use server";
   const checkoutId = String(formData.get("checkoutId") ?? "").trim();
-  const amount = Number(formData.get("collectedAmount"));
+  const amountText = String(formData.get("collectedAmount") ?? "").trim();
+  const amount = Number(amountText);
   const note = String(formData.get("note") ?? "").trim().slice(0, 500);
-  if (!/^[0-9a-f-]{36}$/i.test(checkoutId) || !Number.isFinite(amount) || amount < 0 || amount > 9999999999.99 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) redirect("/admin/orders?notice=invalid");
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(checkoutId) || !amountText || !Number.isFinite(amount) || amount < 0 || amount > 9999999999.99 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) redirect("/admin/orders?notice=invalid");
   const permission = await checkAdminPermission("payments.reconcile");
   if (!permission.allowed) redirect(`/admin/orders?notice=${permission.reason === "authorization_unavailable" ? "authorization-unavailable" : "collection-forbidden"}`);
   const { error } = await permission.supabase.rpc("record_cod_collection", {
