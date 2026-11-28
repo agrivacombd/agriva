@@ -24,6 +24,9 @@ assert.match(api, /marketplaceOrganizationType\(category\)/, "category maps to e
 assert.match(api, /isBangladeshPhone/);
 assert.match(api, /isHttpsUrl/);
 assert.match(api, /policyAccepted !== true/);
+assert.match(api, /policy_version: "seller-v1"/);
+assert.match(api, /policy_accepted_at: new Date\(\)\.toISOString\(\)/);
+assert.match(api, /category === "authorized_dealer" && !types.includes\("dealer_authorization"\)/);
 assert.match(api, /category === "nursery_owner" && \(!nurseryName \|\| !nurseryAddress\)/);
 assert.match(api, /evidencePaths/);
 assert.match(api, /evidenceTypes/);
