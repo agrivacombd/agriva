@@ -21,7 +21,7 @@
 - [ ] Authorized dealer category requires a typed dealer-authorization evidence item.
 - [ ] Website accepts HTTPS only when provided.
 - [ ] Contact phone, district and source declaration are normalized/length-limited.
-- [ ] Consent must be true.
+- [ ] Consent must be true and server records the policy version and acceptance timestamp.
 - [ ] Existing evidence path regex, ownership and object existence remain enforced.
 - [ ] Payload remains within current JSONB constraint.
 - [ ] Duplicate active/approved application is rejected.
