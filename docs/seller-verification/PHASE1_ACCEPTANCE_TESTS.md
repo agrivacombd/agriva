@@ -27,6 +27,28 @@
 - [ ] Duplicate active/approved application is rejected.
 - [ ] Client cannot set status, reviewer, organization ID or module grants.
 
+## Admin Seller Verification Workspace
+- [ ] Dedicated Plant Market verification route is protected by the existing Admin layout and `identity.review` capability.
+- [ ] Plant Market queue filters only `plant_market`; Marketplace queue filters only `marketplace`.
+- [ ] Category chips and category select filter Plant Market seller types without changing other module queues.
+- [ ] Nursery name/location, growing model, product types, experience and source declaration are visible in a dedicated review panel.
+- [ ] Review checklist flags missing evidence/consent and conditionally checks nursery details for nursery owners.
+- [ ] Typed private evidence links are short-lived and remain applicant-path-scoped.
+- [ ] Application timeline and review note remain visible.
+- [ ] Plant Market and Marketplace review forms carry expected module scope; server action verifies the persisted module and pending status before invoking the RPC.
+- [ ] Approve/reject confirmation and duplicate-submit protection remain active.
+- [ ] Desktop, tablet and mobile review layouts have no horizontal overflow.
+
+## Authenticated end-to-end QA
+- [ ] Disposable local Supabase applies the existing module-access, identity-verification and review-history migrations.
+- [ ] Synthetic Admin and two synthetic Plant Market applicants authenticate successfully.
+- [ ] Synthetic applicants submit pending Plant Market applications with private evidence and submission events.
+- [ ] Admin sees nursery and grower applications only in their matching category filter.
+- [ ] Admin approves the nursery and the database records verified gardener profile, global read/create grants and approval event.
+- [ ] Admin rejects the grower with a mandatory note; the database records rejected gardener profile, no active seller grants and note-bearing rejection event.
+- [ ] Browser QA covers 390, 768, 1024 and 1440px layouts and mobile Admin navigation.
+- [ ] Test data and credentials exist only in disposable CI Supabase; no production account or data is used.
+
 ## Regression/security
 - [ ] Existing legacy application payloads render without new keys.
 - [ ] Marketplace and Plant Market grants do not cross.
