@@ -141,13 +141,13 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   );
 
   return (
-    <div className="min-h-screen bg-[#f4f7f2] text-[#173b2d]">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-white/[0.08] bg-[#102f25] text-white shadow-[8px_0_32px_rgba(16,47,37,0.06)] lg:flex">
+    <div className="admin-shell min-h-screen bg-[var(--admin-canvas)] text-[var(--admin-ink)]">
+      <aside className="admin-sidebar fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-white/[0.08] text-white shadow-[8px_0_32px_rgba(16,47,37,0.06)] lg:flex">
         {sidebarContent()}
       </aside>
 
       <div className="min-w-0 lg:pl-[248px]">
-        <header className="sticky top-0 z-20 border-b border-[#e4ebe1] bg-white/90 backdrop-blur-xl">
+        <header className="admin-topbar sticky top-0 z-20 border-b bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-[72px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open admin navigation" aria-expanded={drawerOpen}
@@ -178,7 +178,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Admin navigation">
           <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/65 backdrop-blur-[2px]" />
-          <aside className="relative flex h-full w-[min(88vw,340px)] flex-col bg-[#102f25] text-white shadow-2xl">
+          <aside className="admin-sidebar relative flex h-full w-[min(88vw,340px)] flex-col text-white shadow-2xl">
             <div className="absolute right-3 top-5 z-10">
               <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={18} /></button>
             </div>
