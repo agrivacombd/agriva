@@ -83,7 +83,8 @@
     "test:buyer-demand-rfq-transaction": "node scripts/smoke-buyer-demand-rfq-transaction.mjs",
     "test:buyer-demand-rfq-ui-api": "node scripts/smoke-buyer-demand-rfq-ui-api.mjs",
     "test:buyer-demand-rfq-postgres": "bash scripts/test-buyer-demand-rfq-postgres.sh",
-    "test:read-limited-body": "node scripts/test-read-limited-body.mjs"
+    "test:read-limited-body": "node scripts/test-read-limited-body.mjs",
+    "test:admin-sensitive-actions": "node scripts/smoke-admin-sensitive-actions.mjs"
   },
   "dependencies": {
     "next": "16.4.5",
