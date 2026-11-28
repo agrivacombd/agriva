@@ -224,6 +224,8 @@ export async function POST(request: NextRequest) {
       source_declaration: sourceDeclaration,
       delivery_coverage: deliveryCoverage,
       policy_accepted: true,
+      policy_version: "seller-v1",
+      policy_accepted_at: new Date().toISOString(),
       evidence_paths: paths,
       evidence_types: types,
     };
