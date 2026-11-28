@@ -100,7 +100,6 @@
   overflow-wrap: anywhere;
 }
 @media (max-width: 767px) {
-  .admin-workspace :where(table) { min-width: 640px; }
   .admin-workspace :where(section, article) { min-width: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
