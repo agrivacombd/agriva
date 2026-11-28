@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import {formatBulkDeliveryArea} from "@/lib/bulk-rfq/delivery-area";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -78,7 +79,7 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
  const {data:profiles}=await supabase.from("profiles").select("id,full_name,role").order("full_name",{ascending:true}).limit(300);
  const p=await searchParams;
  const field="rounded-xl border border-slate-300 px-3 py-2 text-sm";
- return <main className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-6xl">
+ return <AdminPageLayout className="min-h-screen bg-[#f7f9f5] px-4 py-10 text-[#17351f]"><div className="mx-auto max-w-6xl">
   <Link href="/admin" className="font-semibold text-emerald-800 underline">← Admin</Link>
   <h1 className="mt-3 text-3xl font-black">Bulk RFQ · Admin Dashboard</h1>
   <p className="mt-2 text-slate-600">চাহিদা যাচাই, পাইকারকে আমন্ত্রণ এবং কোটেশন অনুমোদন।</p>
@@ -129,5 +130,5 @@ export default async function BulkOrdersAdmin({searchParams}:{searchParams:Promi
     <div className="flex gap-2">{(["approved","rejected"] as const).map(status=><form key={status} action={moderateQuote}><input type="hidden" name="id" value={q.id}/><input type="hidden" name="status" value={status}/><button disabled={q.status===status} className="rounded-lg border border-emerald-800 px-3 py-2 font-semibold disabled:opacity-40">{status==="approved"?"অনুমোদন":"বাতিল"}</button></form>)}</div>
    </div>)}</div>
   </section>)}</div>}
- </div></main>;
+ </div></AdminPageLayout>;
 }
