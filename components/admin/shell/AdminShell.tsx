@@ -147,7 +147,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const currentItem = useMemo(() => groups.flatMap((group) => group.items).find((item) => isActive(pathname, item.href)), [pathname]);
   const currentGroup = groups.find((group) => group.items.some((item) => item.href === currentItem?.href));
   const pageTitle = currentItem?.label ?? "Admin workspace";
-  const mobilePageTitle = pageTitle === "Command Center" ? "Command" : pageTitle === "Custom Orders & RFQ" ? "Custom RFQ" : pageTitle === "Identity verification" ? "Identity" : pageTitle === "Seller applications" ? "Sellers" : pageTitle === "Growth Intelligence" ? "Growth" : pageTitle;
+  const mobilePageTitle = pageTitle === "Command Center" ? "Command" : pageTitle === "Custom Orders & RFQ" ? "Custom RFQ" : pageTitle === "Identity verification" ? "Identity" : pageTitle === "Seller applications" ? "Sellers" : pageTitle === "Plant Market verification" ? "Plant verification" : pageTitle === "Growth Intelligence" ? "Growth" : pageTitle;
   const commandItems = useMemo(() => groups.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label })))
     .filter((item) => !commandQuery.trim() || `${item.label} ${item.group} ${item.href}`.toLowerCase().includes(commandQuery.trim().toLowerCase())), [commandQuery]);
 
