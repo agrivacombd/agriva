@@ -75,12 +75,16 @@ CREATE TABLE IF NOT EXISTS public.user_module_grants (
   scope_type text NOT NULL,
   scope_id uuid
 );
+CREATE TABLE IF NOT EXISTS public.organizations (
+  id uuid PRIMARY KEY,
+  name text NOT NULL DEFAULT 'Synthetic organization'
+);
 CREATE TABLE IF NOT EXISTS public.module_access_applications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   module text NOT NULL,
   status text NOT NULL,
-  organization_id uuid,
+  organization_id uuid REFERENCES public.organizations(id),
   review_note text,
   reviewed_by uuid,
   reviewed_at timestamptz,
