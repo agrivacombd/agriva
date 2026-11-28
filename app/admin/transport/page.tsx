@@ -1,3 +1,4 @@
+import { AdminPage as AdminPageLayout } from "@/components/admin/ui/AdminPrimitives";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -65,7 +66,7 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
   const partners = data ?? [];
 
   return (
-    <main className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
+    <AdminPageLayout className="min-h-screen bg-[#f4f7f1] text-[#17351f]">
       <header className="border-b border-[#dfe8dc] bg-[#123b27] text-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5">
           <div><Link href="/" className="text-2xl font-black">AGRIVA<span className="text-[#d9b85b]">.</span></Link><p className="mt-1 text-xs font-bold uppercase tracking-[.18em] text-emerald-100">Transport partner review</p></div>
@@ -121,6 +122,6 @@ export default async function AdminTransportPage({ searchParams }: { searchParam
         </section>
         <p className="mt-8 text-center text-xs text-[#879187]">সার্ভার-সাইড admin role check এবং database RPC authorization দ্বারা সুরক্ষিত।</p>
       </div>
-    </main>
+    </AdminPageLayout>
   );
 }
