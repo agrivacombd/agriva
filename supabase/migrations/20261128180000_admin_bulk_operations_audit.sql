@@ -241,7 +241,7 @@ BEGIN
 
   INSERT INTO public.admin_audit_log (admin_id, action, entity_type, entity_id, metadata)
   VALUES (
-    v_actor, 'bulk.fulfillment_transitioned', 'bulk_selection', v_selection.id,
+    v_actor, 'bulk.fulfillment_transitioned', 'bulk_selection', p_request,
     jsonb_build_object(
       'request_id', p_request,
       'previous_status', v_old_status,
@@ -293,7 +293,7 @@ BEGIN
 
   INSERT INTO public.admin_audit_log (admin_id, action, entity_type, entity_id, metadata)
   VALUES (
-    v_actor, 'bulk.item_fulfillment_transitioned', 'bulk_item_award', v_award.id,
+    v_actor, 'bulk.item_fulfillment_transitioned', 'bulk_item_award', p_item,
     jsonb_build_object(
       'item_id', p_item,
       'previous_status', v_old_status,
