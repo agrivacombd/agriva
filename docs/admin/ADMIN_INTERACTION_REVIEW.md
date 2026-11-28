@@ -155,3 +155,12 @@ No production data or production schema was changed during this review. The curr
 4. **Independent review:** no independent PR review submission is currently recorded for PR #410.
 5. **Release controls:** production migration/rollback review and explicit release authorization remain outstanding. No production migration, merge or deployment has been performed.
 
+
+
+## Custom Orders empty-state follow-up — latest branch change
+
+- Application commit: `73d672c07f403061dee542306cb548495e00c928`.
+- Added the shared `AdminEmptyState` when the Bulk RFQ request query succeeds with zero rows. The Bengali copy explains that RFQs created from buyer demand will appear here for review, wholesaler invitation and quotation workflows.
+- Added a regression assertion in `scripts/smoke-admin-sensitive-actions.mjs`; test commit: `98bb2b5f7a1220d314986d63521aa790eac5d51d`.
+- This change is newer than CI #4188 / Plant Market Gate #257. Fresh CI is required; the connected PR workflow feed currently reports no run for the latest branch head. Do not claim this follow-up is tested.
+- This empty state only handles a successful zero-row result. Query failures continue to use the existing `AdminErrorState`.
