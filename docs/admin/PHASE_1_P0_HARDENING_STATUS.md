@@ -27,15 +27,21 @@
    - Added explicit null/enum validation, row locking, and a transactional audit event recording previous and new moderation status.
    - Added static regression coverage for the Server Action capability and database guard.
 
-4. **RLS event-trigger exposure**
+4. **Additional privileged mutation audit coverage**
+   - Added transactional audit events for Green Exchange listing moderation, marketplace product shipping changes, bulk quote/request moderation, bulk fulfillment transitions, and wholesaler verification/status changes.
+   - Added explicit null/input validation to these RPCs, preserved their existing legacy-admin guard, and upgraded their fixed search paths to put `pg_catalog` first.
+   - Bulk quote moderation now locks both the quote and its parent request before applying eligibility checks.
+   - Added a synthetic schema fixture and behavior assertions for the COD, seller revoke, Green Exchange, shipping, and bulk workflows. CI now applies the three Admin P0 migrations only to its disposable local Supabase database.
+
+5. **RLS event-trigger exposure**
    - Read-only advisor metadata showed `public.rls_auto_enable()` is a live `ddl_command_end` event-trigger function and inherited client EXECUTE exposure was reported.
    - Migration revokes EXECUTE from `PUBLIC`, `anon` and `authenticated`; the PostgreSQL event-trigger binding itself is left intact.
 
-5. **RLS no-policy tables**
+6. **RLS no-policy tables**
    - Read-only privilege checks confirmed all five advisor-listed tables (`buyer_demand_rfq_conversions`, `crop_health_feed_slug_registry`, `marketplace_order_idempotency`, `product_rank_daily_metrics`, `product_rank_events`) deny SELECT/INSERT/UPDATE to both `anon` and `authenticated`.
    - These are currently server-only/private tables; no permissive policy was added.
 
-6. **Intentional public SECURITY DEFINER reads**
+7. **Intentional public SECURITY DEFINER reads**
    - `get_green_impact_metrics()` returns aggregate counts only.
    - `get_ranked_marketplace_products()` and `get_ranked_plant_market_products()` return public active catalogue fields with a hard upper limit of 1,000 rows.
    - These three public functions were not blindly revoked because public site/catalogue workflows rely on them. Their returned columns and filters were source-reviewed; independent response tests remain required.
@@ -46,7 +52,7 @@
 - `npm run test:admin-p0-hardening`
 - GitHub Actions CI step: **Admin P0 delegated permission and audit regression test**
 
-Latest GitHub Actions run [46128615121](https://github.com/agrivacombd/agriva/actions/runs/46128615121) passed: lint, TypeScript, existing Admin authorization regression, new P0 hardening regression, Plant Market regression, production build, isolated local Auth/PostgREST integration, and application build against isolated Supabase. A further Green Exchange audit migration and regression assertions have since been committed and require a fresh CI run.
+Latest GitHub Actions run [46128615121](https://github.com/agrivacombd/agriva/actions/runs/46128615121) passed: lint, TypeScript, existing Admin authorization regression, new P0 hardening regression, Plant Market regression, production build, isolated local Auth/PostgREST integration, and application build against isolated Supabase. Follow-up Green Exchange and bulk workflow audit migrations, synthetic fixture/assertions, and a CI step that applies them to disposable local Supabase have since been committed; those new gates require the current CI run.
 
 ## Remaining P0 gates — not yet signed off
 
