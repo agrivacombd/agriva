@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import OrderNotificationBell from "./OrderNotificationBell";
 import SignOutButton from "@/components/SignOutButton";
 import {
@@ -126,6 +126,19 @@ export default function AdminShell({ children, adminName }: { children: React.Re
   const [navQuery, setNavQuery] = useState("");
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
+  const drawerTriggerRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerCloseRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      drawerTriggerRef.current?.focus();
+    };
+  }, [drawerOpen]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -190,7 +203,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
         <header className="admin-topbar sticky top-0 z-20 border-b bg-white/90 backdrop-blur-xl">
           <div className="flex min-h-[72px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
-              <button type="button" onClick={() => setDrawerOpen(true)} aria-label="Open admin navigation" aria-expanded={drawerOpen}
+              <button ref={drawerTriggerRef} type="button" onClick={() => setDrawerOpen(true)} aria-label="Open admin navigation" aria-expanded={drawerOpen} aria-controls="admin-mobile-navigation"
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#e0e8dd] text-[#17452f] transition hover:bg-[#f1f6ee] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 lg:hidden">
                 <Menu size={19} />
               </button>
@@ -250,7 +263,7 @@ export default function AdminShell({ children, adminName }: { children: React.Re
           <button type="button" aria-label="Close navigation" onClick={() => setDrawerOpen(false)} className="absolute inset-0 bg-[#0b2118]/65 backdrop-blur-[2px]" />
           <aside onKeyDown={keepFocusInside} className="admin-sidebar relative flex h-full w-[min(88vw,340px)] flex-col text-white shadow-2xl">
             <div className="absolute right-3 top-5 z-10">
-              <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={18} /></button>
+              <button ref={drawerCloseRef} type="button" onClick={() => setDrawerOpen(false)} aria-label="Close navigation" className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-300"><X size={18} /></button>
             </div>
             {sidebarContent(true)}
           </aside>
