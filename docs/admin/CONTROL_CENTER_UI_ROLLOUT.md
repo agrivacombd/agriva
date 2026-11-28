@@ -40,3 +40,16 @@ The route-level frame is now unified, but not every module's inner data table, f
 - Verify no horizontal overflow, no broken forms/tables, no missing loading/empty/error/retry states, and no changed business/permission behavior.
 - Independent review and approval before merge.
 - Production deployment only after the parent UI PR and dependent security PR are both ready; no production schema/data changes are part of this UI rollout.
+
+
+## Consolidated release-candidate update — 2026-11-28
+
+- P0 security implementation from the former stacked PR #411 has been reconciled into the Control Center branch. PR #411 is closed as superseded; PR #410 is the single review target.
+- COD collection is guarded by delegated `payments.reconcile` in the Server Action and database RPC. The action validates UUID and monetary precision/range and fails closed if permission verification is unavailable.
+- Seller access read/revoke API, reason-required confirmation UI, three P0 migrations, SQL fixture/assertions and static regression test are now included on this branch.
+- Standardized reusable loading, error, notice and empty-state primitives were added. Marketplace products/categories, Green Exchange, jobs, transport, custom orders, SEO and opportunities now use the shared error/empty-state patterns where their page queries can fail or return no rows.
+- Users, Finance and Audit Log use the shared Control Center table/panel/header primitives. Orders retains the shared Admin page shell while enforcing the P0 COD gate.
+- The first consolidated CI run exposed a YAML shell-loop escaping error in the isolated migration test step. The loop has been corrected to a single-line shell `for` statement; rerun must pass before this branch can be called green.
+- Exact-SHA Vercel Preview remains blocked by the project's free build/deployment rate limit. No stale Preview is accepted as evidence.
+- Authenticated visual QA of every Admin route, all required viewport widths, assistive-technology checks and independent review remain release gates.
+- No production migrations, production data changes or production deployment have been performed.
